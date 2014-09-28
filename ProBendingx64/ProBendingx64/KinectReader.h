@@ -1,13 +1,14 @@
 #pragma once
 #include <kinect.h>
 
-class BodyReader;
+class KinectBodyReader;
+class KinectSensorListener;
 
 class KinectReader
 {
 
 public:
-
+KinectBodyReader*		bodyReader;	
 private:
 	bool deleteReadersOnClose;
 
@@ -21,7 +22,9 @@ private:
 
 	DepthSpacePoint			mWindowSize;
 
-	BodyReader*				bodyReader;				
+		
+	
+	KinectSensorListener*	kinectListener;
 
 	BOOLEAN					isOpen;
 	BOOLEAN					isAvailable;
@@ -36,18 +39,29 @@ public:
 	//<Param: windowHeight> Height of the Render Window
 	HRESULT InitializeKinect(const UINT32 windowWidth, const UINT32 windowHeight);
 
+	///True if connected and available, false if not
+	bool KinectConnected()const;
+
 	///Acquires the latest frames for any attached and initialized Readers
 	HRESULT Capture();
 
 	///<summary>
-	///Register a BodyReader to the Kinect
+	///Open the body reader
 	///</summary>
-	///<param name="reader">The reader to register to the Kinect</param>
 	///<returns>True if successful, false if not</returns>
-	bool RegisterBodyReader(BodyReader* reader);
+	bool OpenBodyReader();
 
 	//Returns a pointer to the body reader currently attached to the Kinect Reader
-	const BodyReader* const GetBodyReader()const;
+	const KinectBodyReader* const GetBodyReader()const;
+
+	///Returns a pointer to the Kinect Sensor
+	IKinectSensor* const GetKinectSensor() const;
+
+	///Registers a Kinect Sensor Listener to the reader, and returns the old one, if any
+	KinectSensorListener* RegisterSensorListener(KinectSensorListener* listener);
+
+	///Unregisters a Kinect Sensor Listener from the reader and returns it
+	KinectSensorListener* UnregisterSensorListener();
 
 	//Set the size of the window. Call this when a window is resized
 	//<Param: width> Width of the Render Window
@@ -66,4 +80,18 @@ public:
 	DepthSpacePoint BodyToScreen(const CameraSpacePoint& bodyPoint)const;
 };
 
+class KinectSensorListener
+{
+	friend class KinectReader;
+
+public:
+
+	KinectSensorListener(){}
+
+	virtual ~KinectSensorListener(){}
+
+protected:
+	virtual void SensorDisconnected(){}
+
+};
 

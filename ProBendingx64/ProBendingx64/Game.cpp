@@ -51,9 +51,19 @@ void Game::Run()
 
 	/////////////////////////////////////KINECT TEST/////////////////////////////////////////
 	kinectReader.InitializeKinect(ogreBase->mWindow->getWidth(), ogreBase->mWindow->getHeight());
-	kinectReader.RegisterBodyReader(&bodyReader);
+	kinectReader.OpenBodyReader();
 	
-	kinectController = new KinectController();
+	gestureReader.Initialize(&kinectReader);
+	
+	KinectGestureDatabase::GetInstance()->OpenDatabase(std::wstring(L"C:\\Users\\Adam\\Desktop\\Test.gbd"));
+
+	KinectGestureDatabase::GetInstance()->FillSourceWithAllGestures(&gestureReader);
+	
+	KinectGestureDatabase::GetInstance()->CloseDatabase();
+	
+	KinectGestureDatabase::GetInstance()->DestroySingleton();
+	
+	kinectController = BodyController();
 	
 	AllocConsole();
 	freopen("conin$","r",stdin);
@@ -127,10 +137,27 @@ bool Game::frameRenderingQueued(const Ogre::FrameEvent& evt)
 	kinectReader.Capture();
 
 
-if(!kinectController->IsListening())
-	kinectController->ListenToNewBody(bodyReader);
+	if(!kinectController.IsListening())
+	{
+		const KinectBodyReader* bodyReader = kinectReader.GetBodyReader();
 
-	
+		int bodyID = bodyReader->GetFirstValidUnlistenedBodyIndex();
+
+		kinectReader.RegisterSensorListener(&kinectController);
+
+		if(bodyID >=0)
+		{
+			KinectBody* body = bodyReader->GetBodyAtIndex(bodyID);
+			body->AttachGestureReader(&gestureReader);
+				
+			if(KinectBodyEventNotifier::GetInstance()->RegisterListener(body, &kinectController))
+				printf("Body Connected - Body Index: %i", bodyID);
+			/*	std::cout << "Body Connected - Body Index: " << std::to_string(bodyID)
+				<< " IsListening = " << kinectController.IsListening() <<
+				"Tracking ID: " << std::to_string(body->GetBodyTrackingID()) << std::endl;*/
+		}
+
+	}
 
 	
 
