@@ -19,32 +19,52 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="BodyListener.cpp" />
-    <ClCompile Include="BodyReader.cpp" />
+    <ClCompile Include="BodyController.cpp" />
     <ClCompile Include="Game.cpp" />
-    <ClCompile Include="GestureListener.cpp" />
-    <ClCompile Include="GestureReader.cpp" />
     <ClCompile Include="GUIManager.cpp" />
+    <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="InputNotifier.cpp" />
-    <ClCompile Include="KinectController.cpp" />
+    <ClCompile Include="KinectAudioEventNotifier.cpp" />
+    <ClCompile Include="KinectAudioStream.cpp" />
+    <ClCompile Include="KinectBody.cpp" />
+    <ClCompile Include="KinectBodyEventNotifier.cpp" />
+    <ClCompile Include="KinectBodyReader.cpp" />
+    <ClCompile Include="KinectGestureDatabase.cpp" />
+    <ClCompile Include="KinectGestureReader.cpp" />
     <ClCompile Include="KinectReader.cpp" />
+    <ClCompile Include="KinectSpeechReader.cpp" />
+    <ClCompile Include="KinectSpeechRecognizer.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="OgreBase.cpp" />
+    <ClCompile Include="SpeechController.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="BodyListener.h" />
-    <ClInclude Include="BodyReader.h" />
+    <ClInclude Include="BodyController.h" />
     <ClInclude Include="Game.h" />
-    <ClInclude Include="GestureListener.h" />
-    <ClInclude Include="GestureReader.h" />
     <ClInclude Include="GUIManager.h" />
     <ClInclude Include="InputListener.h" />
+    <ClInclude Include="InputManager.h" />
     <ClInclude Include="InputNotifier.h" />
     <ClInclude Include="InputObserver.h" />
-    <ClInclude Include="KinectController.h" />
+    <ClInclude Include="KinectAudioEventNotifier.h" />
+    <ClInclude Include="KinectAudioListener.h" />
+    <ClInclude Include="KinectAudioStream.h" />
+    <ClInclude Include="KinectBody.h" />
+    <ClInclude Include="KinectBodyEventNotifier.h" />
+    <ClInclude Include="KinectBodyListener.h" />
+    <ClInclude Include="KinectBodyReader.h" />
+    <ClInclude Include="KinectGestureDatabase.h" />
+    <ClInclude Include="KinectGestureReader.h" />
+    <ClInclude Include="KinectInput.h" />
     <ClInclude Include="KinectReader.h" />
+    <ClInclude Include="KinectSpeechReader.h" />
+    <ClInclude Include="KinectSpeechRecognizer.h" />
     <ClInclude Include="OgreBase.h" />
     <ClInclude Include="PhysXErrorReporter.h" />
+    <ClInclude Include="SpeechController.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ClassDiagram.cd" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{546E72DD-043A-4088-98ED-349D98EC6B35}</ProjectGuid>
@@ -113,12 +133,12 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>Libraries\Kinect\inc;Libraries\OGRE-SDK-1.9.0-vc110-x64\include\OIS;Libraries\CEGUI Build x64;Libraries\boost_1_56_0_x64;C:\Users\Adam\Documents\Visual Studio 2012\Projects\BaseProjects\OgreAndCEGUIx64\OgreAndCEGUIx64\Libraries\OGRE-SDK-1.9.0-vc110-x64\include\OGRE;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files %28x86%29\Visual Leak Detector\include;Libraries\Speech\Include;Libraries\Kinect\inc;Libraries\OGRE-SDK-1.9.0-vc110-x64\include\OIS;Libraries\CEGUI Build x64;Libraries\boost_1_56_0_x64;C:\Users\Adam\Documents\Visual Studio 2012\Projects\BaseProjects\OgreAndCEGUIx64\OgreAndCEGUIx64\Libraries\OGRE-SDK-1.9.0-vc110-x64\include\OGRE;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>Libraries\Kinect\Lib\x64;Libraries\OGRE-SDK-1.9.0-vc110-x64\lib\Debug;Libraries\CEGUI Build x64\lib;Libraries\boost_1_56_0_x64\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Kinect20.lib;OgreMain_d.lib;OIS_d.lib;CEGUIBase-0_d.lib;CEGUIOgreRenderer-0_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Program Files %28x86%29\Visual Leak Detector\lib\Win64;Libraries\Speech\Lib;Libraries\Kinect\Lib\x64;Libraries\OGRE-SDK-1.9.0-vc110-x64\lib\Debug;Libraries\CEGUI Build x64\lib;Libraries\boost_1_56_0_x64\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>sapi.lib;Kinect20.VisualGestureBuilder.lib;Kinect20.lib;OgreMain_d.lib;OIS_d.lib;CEGUIBase-0_d.lib;CEGUIOgreRenderer-0_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

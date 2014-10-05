@@ -1,9 +1,9 @@
 #pragma once
 #include "ogrebase.h"
 #include "InputNotifier.h"
-#include "KinectReader.h"
-#include "BodyReader.h"
-#include "KinectController.h"
+#include "KinectInput.h"
+#include "BodyController.h"
+#include "SpeechController.h"
 
 class Game : public Ogre::FrameListener
 {
@@ -16,9 +16,7 @@ protected:
 public:
 	InputNotifier inputManager;
 
-	KinectReader kinectReader;
-	BodyReader bodyReader;
-	KinectController* kinectController;
+	BodyController kinectController;
 
 	Ogre::SceneNode* mCamNode;
 

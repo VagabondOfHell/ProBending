@@ -150,6 +150,7 @@ void OgreBase::InitializeOIS(const bool bufferedInput, OIS::MouseListener* _mous
 	std::ostringstream windowHndStr;
  
 	mWindow->getCustomAttribute("WINDOW", &windowHnd);
+	
 	windowHndStr << windowHnd;
 	pl.insert(std::make_pair(std::string("WINDOW"), windowHndStr.str()));
  

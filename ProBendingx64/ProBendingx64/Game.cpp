@@ -1,5 +1,10 @@
 #include "Game.h"
 #include "GUIManager.h"
+#include "InputManager.h"
+
+#include "vld.h"
+
+SpeechController speechController = SpeechController(NULL);
 
 Game::Game(void) 
 {
@@ -9,6 +14,8 @@ Game::Game(void)
 Game::~Game(void)
 {
 	GUIManager::DestroySingleton();
+	InputManager::GetInstance()->DestroySingleton();
+	OgreBase::DestroySingleton();
 	::FreeConsole();
 }
 
@@ -50,11 +57,31 @@ void Game::Run()
 
 
 	/////////////////////////////////////KINECT TEST/////////////////////////////////////////
-	kinectReader.InitializeKinect(ogreBase->mWindow->getWidth(), ogreBase->mWindow->getHeight());
-	kinectReader.RegisterBodyReader(&bodyReader);
+	InputManager* inputManager = InputManager::GetInstance();
+
+	inputManager->InitializeKinect(ogreBase->mWindow->getWidth(), ogreBase->mWindow->getHeight());
 	
-	kinectController = new KinectController();
+	inputManager->FillGestureReader(L"C:\\Users\\Adam\\Desktop\\Test.gbd");
+
+	KinectSpeechReader* speechReader = inputManager->GetSpeechReader();
+
+	if(speechReader)
+	{
+		speechReader->LoadGrammarFile("SpeechBasics-D2D.grxml");
 	
+		speechReader->SetConfidenceThreshold(0.3f);
+
+		speechController = SpeechController(inputManager->GetSpeechReader());
+		
+		inputManager->RegisterAudioListener(&speechController);
+	}
+
+	kinectController = BodyController();
+
+	inputManager->RegisterSensorListener(&kinectController);
+
+	inputManager->BeginAllCapture();
+
 	AllocConsole();
 	freopen("conin$","r",stdin);
 freopen("conout$","w",stdout);
@@ -124,17 +151,16 @@ bool Game::frameRenderingQueued(const Ogre::FrameEvent& evt)
     instance->mMouse->capture();
 
 	/////////////////////////////////////KINECT TEST/////////////////////////////////////////
-	kinectReader.Capture();
+	InputManager* inputManager = InputManager::GetInstance();
+	inputManager->ProcessEvents();
 
+	if(!kinectController.IsListening())
+	{
+		inputManager->RegisterListenerToNewBody(&kinectController);
+			
+		inputManager->FillGestureReader(L"C:\\Users\\Adam\\Desktop\\Test2.gbd");
+	}
 
-if(!kinectController->IsListening())
-	kinectController->ListenToNewBody(bodyReader);
-
-	
-
-	
-
-	
 	/////////////////////////////////////KINECT TEST/////////////////////////////////////////
 
 	CEGUI::System::getSingleton().injectTimePulse(evt.timeSinceLastFrame);
