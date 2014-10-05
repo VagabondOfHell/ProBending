@@ -1,5 +1,4 @@
 #include "KinectBody.h"
-#include <array>
 #include "KinectBodyEventNotifier.h"
 #include "KinectGestureReader.h"
 
@@ -19,14 +18,19 @@ KinectBody::~KinectBody(void)
 
 KinectGestureReader* KinectBody::AttachGestureReader(KinectGestureReader* reader)
 {
-	KinectGestureReader* old = gestureReader;
+	if(gestureReader != reader)
+	{
+		KinectGestureReader* old = gestureReader;
 
-	gestureReader = reader;
+		gestureReader = reader;
 
-	gestureReader->SetBody(this);
-	gestureReader->SetBodyID(bodyKinectTrackingIndex);
+		//Connect the gesture reader to this body and tell it the tracking ID to follow
+		gestureReader->SetBody(this);
+		gestureReader->SetBodyID(bodyKinectTrackingIndex);
 
-	return old;
+		return old;
+	}
+	return NULL;
 }
 
 KinectGestureReader* KinectBody::DetachGestureReader()
@@ -38,16 +42,6 @@ KinectGestureReader* KinectBody::DetachGestureReader()
 		gestureReader = NULL;
 	}
 	return old;
-}
-
-KinectBodyReader* const KinectBody::GetBodyReader()const
-{
-	return bodyReader;
-}
-
-KinectGestureReader* const KinectBody::GetGestureReader()const
-{
-	return gestureReader;
 }
 
 void KinectBody::RecieveBodyInformation(IBody* body)
@@ -119,7 +113,7 @@ void KinectBody::RecieveBodyInformation(IBody* body)
 	}
 
 	//Pass the data to the KinectBodyEventNotifier
-	KinectBodyEventNotifier::GetInstance()->InjectBodyFrameData(this, previousData, currBodyData);
+	KinectBodyEventNotifier::GetInstance()->InjectBodyFrameData(this, &previousData, &currBodyData);
 	
 	//If the tracking ID has changed, fill in the data for the body
 	if(currBodyData.BodyTrackingID != previousData.BodyTrackingID)
@@ -134,21 +128,7 @@ void KinectBody::RecieveBodyInformation(IBody* body)
 		gestureReader->Capture();
 }
 
-UINT8 KinectBody::GetBodyID()const
-{
-	return bodyArrayIndex;
-}
-UINT64 KinectBody::GetBodyTrackingID()const
-{
-	return bodyKinectTrackingIndex;
-}
-
-bool KinectBody::GetTrackingIDIsValid()const
-{
-	return bodyKinectTrackingIndex != 0;
-}
-
-void KinectBody::SetBodyTrackingID(const UINT64 bodyID)
+inline void KinectBody::SetBodyTrackingID(const UINT64 bodyID)
 {
 	bodyKinectTrackingIndex = bodyID;
 

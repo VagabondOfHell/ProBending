@@ -1,11 +1,5 @@
 #pragma once 
-#include <Kinect.VisualGestureBuilder.h>
 #include "KinectGestureReader.h"
-#include <string>
-#include <vector>
-#include <map>
-#include <locale>
-#include <codecvt>
 
 struct KinectGesture;
 
@@ -42,9 +36,22 @@ public:
 	
 	~KinectGestureDatabase();
 
-	static KinectGestureDatabase* GetInstance();
+	inline static KinectGestureDatabase* GetInstance()
+	{
+		if(!instance)
+			instance = new KinectGestureDatabase();
 
-	void DestroySingleton();
+		return instance;
+	}
+
+	inline void KinectGestureDatabase::DestroySingleton()
+	{
+		if(instance)
+		{
+			delete instance;
+			instance = NULL;
+		}
+	}
 
 	///The maximum file name size in character count to expect
 	static const int MaxFileNameSize;
@@ -52,10 +59,12 @@ public:
 	bool OpenDatabase(std::wstring& filePath);
 	bool OpenDatabase(std::string& filePath);
 
-	//Do we need to call release on each gesture here?
-	void CloseDatabase();
+	inline void CloseDatabase();
 
-	bool IsOpen()const;
+	inline bool KinectGestureDatabase::IsOpen()const
+	{
+		return database != NULL;
+	}
 
 	/// <summary>
 	/// Converts the specifed string to its Wide String equivalent

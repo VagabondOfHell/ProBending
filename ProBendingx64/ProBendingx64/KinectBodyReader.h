@@ -1,5 +1,4 @@
 #pragma once
-#include <kinect.h>
 #include "KinectBody.h"
 #include <vector>
 
@@ -22,7 +21,7 @@ public:
 	/// </summary>
 	/// <param name="bodyTrackingID">The ID to set</param>
 	/// <returns>True if successful, false if not</returns>
-	bool OverrideHandTracking(UINT64 bodyTrackingID);
+	bool OverrideHandTracking(UINT64 bodyTrackingID)const;
 
 	/// <summary>
 	///Tells the Kinect which body to check hand states for
@@ -30,12 +29,15 @@ public:
 	/// <param name="oldTrackingID">The ID to replace</param>
 	/// <param name="newTrackingID">The ID to set</param>
 	/// <returns>True if successful, false if not</returns>
-	bool ReplaceAndOverrideHandTracking(UINT64 oldTrackingID, UINT64 newTrackingID);
+	bool ReplaceAndOverrideHandTracking(UINT64 oldTrackingID, UINT64 newTrackingID)const;
 
-	HRESULT Capture();
+	HRESULT Capture()const;
 	
 	//Gets the Kinect Reader that owns the body reader
-	KinectReader* GetKinectReader()const;
+	inline KinectReader* KinectBodyReader::GetKinectReader()const
+	{
+		return mKinectReader;
+	}
 
 	/// <summary>
 	///Gets the body index from the provided tracking ID

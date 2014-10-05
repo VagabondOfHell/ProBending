@@ -1,5 +1,10 @@
 #include "Game.h"
 #include "GUIManager.h"
+#include "InputManager.h"
+
+#include "vld.h"
+
+SpeechController speechController = SpeechController(NULL);
 
 Game::Game(void) 
 {
@@ -9,6 +14,8 @@ Game::Game(void)
 Game::~Game(void)
 {
 	GUIManager::DestroySingleton();
+	InputManager::GetInstance()->DestroySingleton();
+	OgreBase::DestroySingleton();
 	::FreeConsole();
 }
 
@@ -50,21 +57,31 @@ void Game::Run()
 
 
 	/////////////////////////////////////KINECT TEST/////////////////////////////////////////
-	kinectReader.InitializeKinect(ogreBase->mWindow->getWidth(), ogreBase->mWindow->getHeight());
-	kinectReader.OpenBodyReader();
-	
-	gestureReader.Initialize(&kinectReader);
-	
-	KinectGestureDatabase::GetInstance()->OpenDatabase(std::wstring(L"C:\\Users\\Adam\\Desktop\\Test.gbd"));
+	InputManager* inputManager = InputManager::GetInstance();
 
-	KinectGestureDatabase::GetInstance()->FillSourceWithAllGestures(&gestureReader);
+	inputManager->InitializeKinect(ogreBase->mWindow->getWidth(), ogreBase->mWindow->getHeight());
 	
-	KinectGestureDatabase::GetInstance()->CloseDatabase();
+	inputManager->FillGestureReader(L"C:\\Users\\Adam\\Desktop\\Test.gbd");
+
+	KinectSpeechReader* speechReader = inputManager->GetSpeechReader();
+
+	if(speechReader)
+	{
+		speechReader->LoadGrammarFile("SpeechBasics-D2D.grxml");
 	
-	KinectGestureDatabase::GetInstance()->DestroySingleton();
-	
+		speechReader->SetConfidenceThreshold(0.3f);
+
+		speechController = SpeechController(inputManager->GetSpeechReader());
+		
+		inputManager->RegisterAudioListener(&speechController);
+	}
+
 	kinectController = BodyController();
-	
+
+	inputManager->RegisterSensorListener(&kinectController);
+
+	inputManager->BeginAllCapture();
+
 	AllocConsole();
 	freopen("conin$","r",stdin);
 freopen("conout$","w",stdout);
@@ -134,34 +151,16 @@ bool Game::frameRenderingQueued(const Ogre::FrameEvent& evt)
     instance->mMouse->capture();
 
 	/////////////////////////////////////KINECT TEST/////////////////////////////////////////
-	kinectReader.Capture();
-
+	InputManager* inputManager = InputManager::GetInstance();
+	inputManager->ProcessEvents();
 
 	if(!kinectController.IsListening())
 	{
-		const KinectBodyReader* bodyReader = kinectReader.GetBodyReader();
-
-		int bodyID = bodyReader->GetFirstValidUnlistenedBodyIndex();
-
-		kinectReader.RegisterSensorListener(&kinectController);
-
-		if(bodyID >=0)
-		{
-			KinectBody* body = bodyReader->GetBodyAtIndex(bodyID);
-			body->AttachGestureReader(&gestureReader);
-				
-			if(KinectBodyEventNotifier::GetInstance()->RegisterListener(body, &kinectController))
-				printf("Body Connected - Body Index: %i", bodyID);
-			/*	std::cout << "Body Connected - Body Index: " << std::to_string(bodyID)
-				<< " IsListening = " << kinectController.IsListening() <<
-				"Tracking ID: " << std::to_string(body->GetBodyTrackingID()) << std::endl;*/
-		}
-
+		inputManager->RegisterListenerToNewBody(&kinectController);
+			
+		inputManager->FillGestureReader(L"C:\\Users\\Adam\\Desktop\\Test2.gbd");
 	}
 
-	
-
-	
 	/////////////////////////////////////KINECT TEST/////////////////////////////////////////
 
 	CEGUI::System::getSingleton().injectTimePulse(evt.timeSinceLastFrame);

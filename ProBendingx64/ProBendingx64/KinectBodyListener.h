@@ -1,22 +1,24 @@
 #pragma once
 #include "KinectBody.h"
 #include "KinectGestureReader.h"
-#include <vector>
 
 class KinectBodyListener
 {
 	friend class KinectBodyEventNotifier;
 private:
 	KinectBody* body;
-
-	void AddNewConnection(KinectBody* const _body)
+	
+	//Connect a body to this listener for easy access
+	inline void AddNewConnection(KinectBody* const _body)
 	{
 		//Because KinectBodyEventNotifier calls this method, we trust it not
 		//to send us a duplicate body index
  		body = _body;
+
+		BodyAcquired();
 	}
 
-	void RemoveConnection()
+	inline void RemoveConnection()
 	{
 		body = NULL;	
 	}
@@ -29,18 +31,25 @@ public:
 
 	virtual ~KinectBodyListener(){}
 
-	bool IsListening()const
+	inline bool IsListening()const
 	{
 		return body != NULL;
 	}
 
-	KinectBody* const GetBody()const
+	//Returns the body associated to the reader, 
+	//otherwise it returns NULL if its invalid or not attached
+	inline KinectBody* const GetBody()const
 	{
-		return body;
+		if(body)
+		{
+			return body;
+		}
+
+		return NULL;
 	}
 
 protected:
-
+	virtual void BodyAcquired(){}
 	virtual void BodyLost( const CompleteData& currentData, const CompleteData& previousData){}
 
 	virtual void BodyTrackChanged(const CompleteData& currentData, const CompleteData& previousData){}

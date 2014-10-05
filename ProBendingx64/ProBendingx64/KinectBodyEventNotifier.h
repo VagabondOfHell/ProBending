@@ -1,14 +1,10 @@
 #pragma once
-#include <Kinect.h>
-#include "KinectBody.h"
 #include "KinectBodyListener.h"
-#include "KinectGestureReader.h"
-#include <vector>
-#include <array>
 
 class KinectBodyEventNotifier
 {
 private:
+	
 	enum ChangedData
 	{
 		None = 0,
@@ -22,16 +18,31 @@ private:
 		RightHandTrackingStateChanged = 1 << 7
 	};
 
-	KinectBodyEventNotifier(void);
+	static KinectBodyEventNotifier* instance;
 
-	std::array<std::vector<KinectBodyListener*>, BODY_COUNT> listenersToRemove;
+	KinectBodyEventNotifier(void);
 	
 public:
 	
 	~KinectBodyEventNotifier(void);
 
-	static KinectBodyEventNotifier* const GetInstance();
-	void DestroySingleton();
+	static KinectBodyEventNotifier* const GetInstance()
+	{
+		if(!instance)
+			instance = new KinectBodyEventNotifier();
+
+		return instance;
+	}
+	
+	
+	inline void DestroySingleton()
+	{
+		if(instance)
+		{
+			delete instance;
+			instance = NULL;
+		}
+	}
 
 	/// <summary>
 	///Checks if the indicated body index currently has a listener attached
@@ -84,20 +95,26 @@ public:
 	void FlagListenerForRemoval(KinectBody* const _body, KinectBodyListener* listener);
 
 	/// <summary>
-	///Injects data from the current Body Frame to evaluate and fire appropriate events
+	///Injects data from the current Body Frame
 	/// </summary>
 	/// <param name="body">The Body the events will pertain to</param>	
 	/// <param name="previousData">The data from the last frame</param>	
 	/// <param name="currentData">The data from this frame</param>	
-	void InjectBodyFrameData(KinectBody* const body, CompleteData& previousData, CompleteData& currentData);
+	void InjectBodyFrameData(KinectBody* const body, 
+						CompleteData* previousData, CompleteData* currentData);
 
 	/// <summary>
-	///Injects data from the current Gesture Frame to evaluate and fire appropriate events
+	///Injects data from the current Gesture Frame
 	/// </summary>
 	/// <param name="body">The Body the events will pertain to</param>	
 	/// <param name="discreteResults">The data for Discrete Gestures</param>	
 	/// <param name="continuousResults">The data for Continuous Gestures</param>	
-	void InjectGestureFrameData(const KinectBody* const body, std::vector<KinectGestureResult>& discreteResults, 
-		std::vector<KinectGestureResult>& continuousResults)const;
+	void InjectGestureFrameData(KinectBody* const body, std::vector<KinectGestureResult>* discreteResults, 
+	std::vector<KinectGestureResult>* continuousResults)const;
+
+	/// <summary>
+	///Processes the events that are currently available
+	/// </summary>
+	void ProcessEvents();
 };
 

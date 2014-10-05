@@ -1,6 +1,5 @@
 #include "KinectBodyReader.h"
 #include "KinectBodyEventNotifier.h"
-#include <array>
 
 std::array<KinectBody*, BODY_COUNT> bodies;
 
@@ -32,7 +31,7 @@ KinectBodyReader::~KinectBodyReader(void)
 	}
 }
 
-bool KinectBodyReader::OverrideHandTracking(UINT64 bodyTrackingID)
+bool KinectBodyReader::OverrideHandTracking(UINT64 bodyTrackingID)const
 {
 	IBodyFrameSource* source;
 
@@ -49,7 +48,7 @@ bool KinectBodyReader::OverrideHandTracking(UINT64 bodyTrackingID)
 	return false;
 }
 
-bool KinectBodyReader::ReplaceAndOverrideHandTracking(UINT64 oldTrackingID, UINT64 newTrackingID)
+bool KinectBodyReader::ReplaceAndOverrideHandTracking(UINT64 oldTrackingID, UINT64 newTrackingID)const
 {
 	IBodyFrameSource* source;
 
@@ -66,7 +65,7 @@ bool KinectBodyReader::ReplaceAndOverrideHandTracking(UINT64 oldTrackingID, UINT
 	return false;
 }
 
-HRESULT KinectBodyReader::Capture()
+HRESULT KinectBodyReader::Capture()const
 {
 	//Create and acquire a new BodyFrame
 	IBodyFrame* bodyFrame = NULL;
@@ -84,7 +83,7 @@ HRESULT KinectBodyReader::Capture()
 		{
 			for (int i = 0; i < BODY_COUNT; i++)
 			{
-				if (ppBodies[i])
+				if (ppBodies[BODY_COUNT])
 				{
 					bodies[i]->RecieveBodyInformation(ppBodies[i]);
 				}
@@ -110,11 +109,6 @@ HRESULT KinectBodyReader::Capture()
 	}
 
 	return hr;
-}
-
-KinectReader* KinectBodyReader::GetKinectReader()const
-{
-	return mKinectReader;
 }
 
 int KinectBodyReader::FindBodyIndexFromTrackID(UINT64 trackingID)const

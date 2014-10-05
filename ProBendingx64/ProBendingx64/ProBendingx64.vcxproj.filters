@@ -13,33 +13,36 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\Input">
+      <UniqueIdentifier>{e0b5f819-3bd1-40d4-9478-0fbd82be6f02}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Input\General">
+      <UniqueIdentifier>{5cfd8226-2cf6-4407-8b5c-c5c4c8819415}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Input\Kinect">
+      <UniqueIdentifier>{2b8ef797-774c-40bd-a59c-59d48b441424}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Input">
+      <UniqueIdentifier>{81d28a52-5449-470b-83de-97a0245acdcd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Input\General">
+      <UniqueIdentifier>{aa49dfd3-65c6-44eb-9f6e-16f2c37dae36}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Input\Kinect">
+      <UniqueIdentifier>{8250232c-d161-436e-90b6-b0a0bccbb62b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Input\Speech">
+      <UniqueIdentifier>{6737eda1-b5b8-4cce-99c5-e15827ba2a88}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Input\Speech">
+      <UniqueIdentifier>{5cf12c6d-824a-42d7-b698-207323701202}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="BodyListener.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="BodyReader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Game.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GestureListener.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GestureReader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="GUIManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="InputNotifier.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="KinectController.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="KinectReader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp">
@@ -48,39 +51,54 @@
     <ClCompile Include="OgreBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="InputNotifier.cpp">
+      <Filter>Source Files\Input\General</Filter>
+    </ClCompile>
+    <ClCompile Include="BodyController.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="InputManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="KinectAudioStream.cpp">
+      <Filter>Source Files\Input\Speech</Filter>
+    </ClCompile>
+    <ClCompile Include="KinectAudioEventNotifier.cpp">
+      <Filter>Source Files\Input\Speech</Filter>
+    </ClCompile>
+    <ClCompile Include="KinectBody.cpp">
+      <Filter>Source Files\Input\Kinect</Filter>
+    </ClCompile>
+    <ClCompile Include="KinectBodyEventNotifier.cpp">
+      <Filter>Source Files\Input\Kinect</Filter>
+    </ClCompile>
+    <ClCompile Include="KinectBodyReader.cpp">
+      <Filter>Source Files\Input\Kinect</Filter>
+    </ClCompile>
+    <ClCompile Include="KinectGestureDatabase.cpp">
+      <Filter>Source Files\Input\Kinect</Filter>
+    </ClCompile>
+    <ClCompile Include="KinectGestureReader.cpp">
+      <Filter>Source Files\Input\Kinect</Filter>
+    </ClCompile>
+    <ClCompile Include="KinectReader.cpp">
+      <Filter>Source Files\Input\Kinect</Filter>
+    </ClCompile>
+    <ClCompile Include="KinectSpeechRecognizer.cpp">
+      <Filter>Source Files\Input\Speech</Filter>
+    </ClCompile>
+    <ClCompile Include="KinectSpeechReader.cpp">
+      <Filter>Source Files\Input\Speech</Filter>
+    </ClCompile>
+    <ClCompile Include="SpeechController.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="BodyListener.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="BodyReader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Game.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GestureListener.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GestureReader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="GUIManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="InputListener.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="InputNotifier.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="InputObserver.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="KinectController.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="KinectReader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="OgreBase.h">
@@ -89,5 +107,65 @@
     <ClInclude Include="PhysXErrorReporter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="InputListener.h">
+      <Filter>Header Files\Input\General</Filter>
+    </ClInclude>
+    <ClInclude Include="InputNotifier.h">
+      <Filter>Header Files\Input\General</Filter>
+    </ClInclude>
+    <ClInclude Include="InputObserver.h">
+      <Filter>Header Files\Input\General</Filter>
+    </ClInclude>
+    <ClInclude Include="BodyController.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="KinectInput.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="InputManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="KinectAudioEventNotifier.h">
+      <Filter>Header Files\Input\Speech</Filter>
+    </ClInclude>
+    <ClInclude Include="KinectAudioListener.h">
+      <Filter>Header Files\Input\Speech</Filter>
+    </ClInclude>
+    <ClInclude Include="KinectAudioStream.h">
+      <Filter>Header Files\Input\Speech</Filter>
+    </ClInclude>
+    <ClInclude Include="KinectBody.h">
+      <Filter>Header Files\Input\Kinect</Filter>
+    </ClInclude>
+    <ClInclude Include="KinectBodyEventNotifier.h">
+      <Filter>Header Files\Input\Kinect</Filter>
+    </ClInclude>
+    <ClInclude Include="KinectBodyListener.h">
+      <Filter>Header Files\Input\Kinect</Filter>
+    </ClInclude>
+    <ClInclude Include="KinectBodyReader.h">
+      <Filter>Header Files\Input\Kinect</Filter>
+    </ClInclude>
+    <ClInclude Include="KinectGestureDatabase.h">
+      <Filter>Header Files\Input\Kinect</Filter>
+    </ClInclude>
+    <ClInclude Include="KinectGestureReader.h">
+      <Filter>Header Files\Input\Kinect</Filter>
+    </ClInclude>
+    <ClInclude Include="KinectSpeechReader.h">
+      <Filter>Header Files\Input\Speech</Filter>
+    </ClInclude>
+    <ClInclude Include="KinectSpeechRecognizer.h">
+      <Filter>Header Files\Input\Speech</Filter>
+    </ClInclude>
+    <ClInclude Include="KinectReader.h">
+      <Filter>Header Files\Input\Kinect</Filter>
+    </ClInclude>
+    <ClInclude Include="SpeechController.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ClassDiagram.cd" />
   </ItemGroup>
 </Project>

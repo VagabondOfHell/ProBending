@@ -1,11 +1,58 @@
 #include "KinectBodyEventNotifier.h"
-#include <array>
 #include <vector>
+#include <concurrent_queue.h>
+
+struct BodyFrameData
+{
+	KinectBody* Body;
+	CompleteData CurrentData;
+	CompleteData PreviousData;
+
+	BodyFrameData()
+	{
+		Body = NULL;
+	}
+
+	BodyFrameData(KinectBody* const body, CompleteData currentData, CompleteData previousData)
+	{
+		Body = body;
+		CurrentData = currentData;
+		PreviousData = previousData;
+	}
+
+	~BodyFrameData()
+	{
+	}
+};
+
+struct GestureFrameData
+{
+	KinectBody* Body;
+	std::vector<KinectGestureResult> ContinuousGestureResult;
+	std::vector<KinectGestureResult> DiscreteGestureResult;
+
+	GestureFrameData(){}
+
+	GestureFrameData(KinectBody* const body, std::vector<KinectGestureResult> continuousGestureResult, 
+		std::vector<KinectGestureResult>discreteGestureResult)
+	{
+		Body = body;
+		ContinuousGestureResult = continuousGestureResult;
+		DiscreteGestureResult = discreteGestureResult;
+	}
+
+	~GestureFrameData(){}
+};
 
 //Array of body listeners
 std::array<std::vector<KinectBodyListener*>, BODY_COUNT> bodyListeners;
 
-static KinectBodyEventNotifier* instance;
+std::array<std::vector<KinectBodyListener*>, BODY_COUNT> listenersToRemove;
+
+concurrency::concurrent_queue<BodyFrameData> bodyDataToProcess;
+concurrency::concurrent_queue<GestureFrameData> gestureDataToProcess;
+
+KinectBodyEventNotifier* KinectBodyEventNotifier::instance;
 
 KinectBodyEventNotifier::KinectBodyEventNotifier(void)
 {
@@ -13,23 +60,6 @@ KinectBodyEventNotifier::KinectBodyEventNotifier(void)
 
 KinectBodyEventNotifier::~KinectBodyEventNotifier(void)
 {
-}
-
-void KinectBodyEventNotifier::DestroySingleton()
-{
-	if(instance)
-	{
-		delete instance;
-		instance = NULL;
-	}
-}
-
-KinectBodyEventNotifier* const KinectBodyEventNotifier::GetInstance()
-{
-	if(!instance)
-		instance = new KinectBodyEventNotifier();
-
-	return instance;
 }
 
 bool KinectBodyEventNotifier::CheckBodyIndexHasListener(UINT8 bodyIndex)const
@@ -126,103 +156,145 @@ bool KinectBodyEventNotifier::UnregisterListener(KinectBody* const _body, Kinect
 
 void KinectBodyEventNotifier::FlagListenerForRemoval(KinectBody* const _body, KinectBodyListener* listener)
 {
-	UINT8 bodyIndex = _body->GetBodyID();
-
-	if(bodyIndex < bodyListeners.size())
+	if(_body)
 	{
-		listenersToRemove[bodyIndex].push_back(listener);
+		UINT8 bodyIndex = _body->GetBodyID();
+
+		if(bodyIndex < bodyListeners.size())
+		{
+			listenersToRemove[bodyIndex].push_back(listener);
+		}
 	}
 }
 
 void KinectBodyEventNotifier::InjectBodyFrameData(KinectBody* const body, 
-						CompleteData& previousData, CompleteData& currentData)
+					CompleteData* previousData, CompleteData* currentData)
 {
-	char changedData = ChangedData::None;
-
-	if(currentData.BodyTrackingID != previousData.BodyTrackingID)
-		changedData |= ChangedData::TrackingIDLost;
-
-	//Check what data has been changed to fire an appropriate event for it
-	if(currentData.IsTracked != previousData.IsTracked)
-		changedData |= ChangedData::TrackingChanged;
-
-	if(currentData.ClippedEdge != previousData.ClippedEdge)
-		changedData |= ChangedData::BodyClippedChanged;
-	
-	if(currentData.IsEngaged != previousData.IsEngaged)
-		changedData |= ChangedData::EngagedChanged;
-
-	if(currentData.IsRestricted != previousData.IsRestricted)
-		changedData |= ChangedData::RestrictedChanged;
-
-	if(currentData.LeftHandState != previousData.LeftHandState)
-		changedData |= ChangedData::LeftHandTrackingStateChanged;
-
-	if(currentData.RightHandState != previousData.RightHandState)
-		changedData |= ChangedData::RightHandTrackingStateChanged;
-
-	if(currentData.LeanTrackState != previousData.LeanTrackState)
-		changedData |= ChangedData::LeanTrackingStateChanged;
-
-	UINT8 bodyID = body->GetBodyID();
-
-	//Notify each listener of the events that occured
-	for (unsigned int i = 0; i < bodyListeners[bodyID].size(); i++)
-	{
-		if(changedData & ChangedData::TrackingIDLost)
-			bodyListeners[bodyID][i]->BodyLost(currentData, previousData);
-
-		if(changedData & ChangedData::BodyClippedChanged)
-			bodyListeners[bodyID][i]->BodyClipChanged(currentData, previousData);
-		if(changedData & ChangedData::EngagedChanged)
-			bodyListeners[bodyID][i]->BodyEngagedChanged(currentData, previousData);
-		if(changedData & ChangedData::RestrictedChanged)
-			bodyListeners[bodyID][i]->BodyRestrictedChanged(currentData, previousData);
-		if(changedData & ChangedData::TrackingChanged)
-			bodyListeners[bodyID][i]->BodyTrackChanged(currentData, previousData);
-
-		if(changedData & ChangedData::LeanTrackingStateChanged)
-			bodyListeners[bodyID][i]->LeanTrackingStateChanged(currentData, previousData);
-
-		if(changedData & ChangedData::LeftHandTrackingStateChanged)
-			bodyListeners[bodyID][i]->HandTrackingStateChanged(Hand::Left,currentData, previousData);
-		if(changedData & ChangedData::RightHandTrackingStateChanged)
-			bodyListeners[bodyID][i]->HandTrackingStateChanged(Hand::Right, currentData, previousData);
-
-		bodyListeners[bodyID][i]->BodyFrameAcquired(currentData, previousData);
-	}
-
-	//If there are listeners to remove from this body index
-	if(listenersToRemove[bodyID].size() > 0)
-	{
-		//Loop through each one and unregister it
-		for (int i = 0; i < listenersToRemove[bodyID].size(); i++)
-		{
-			UnregisterListener(body, listenersToRemove[bodyID][i]);
-			listenersToRemove[bodyID].erase(listenersToRemove[bodyID].begin() + i);
-		}
-	}
+	bodyDataToProcess.push(BodyFrameData(body, *currentData, *previousData));
 }
 
-void KinectBodyEventNotifier::InjectGestureFrameData(const KinectBody* const body, std::vector<KinectGestureResult>& discreteResults, 
-	std::vector<KinectGestureResult>& continuousResults)const
+/// <summary>
+///Injects data from the current Gesture Frame
+/// </summary>
+/// <param name="body">The Body the events will pertain to</param>	
+/// <param name="discreteResults">The data for Discrete Gestures</param>	
+/// <param name="continuousResults">The data for Continuous Gestures</param>	
+void KinectBodyEventNotifier::InjectGestureFrameData(KinectBody* const body, std::vector<KinectGestureResult>* discreteResults, 
+std::vector<KinectGestureResult>* continuousResults)const
 {
-	UINT8 bodyID = body->GetBodyID();
+	gestureDataToProcess.push(GestureFrameData(body, *continuousResults, *discreteResults));
+}
 
-	int discreteSize = (int)discreteResults.size();
-	int continuousSize = (int)continuousResults.size();
+void KinectBodyEventNotifier::ProcessEvents()
+{
+	bool processing = true;
 
-	//If there are results
-	if(discreteSize > 0 || continuousSize > 0)
+	while (processing)
 	{
-		for (unsigned int i = 0; i < bodyListeners[bodyID].size(); i++)
-		{
-			//Notify listeners if we have results for the specified type
-			if(discreteSize > 0)
-				bodyListeners[bodyID][i]->DiscreteGesturesAcquired(discreteResults);
+		BodyFrameData frameData;
 
-			if(continuousSize > 0)
-				bodyListeners[bodyID][i]->ContinuousGesturesAcquired(continuousResults);
+		processing = bodyDataToProcess.try_pop(frameData);
+
+		if(processing)
+		{
+			char changedData = ChangedData::None;
+
+			if(frameData.CurrentData.BodyTrackingID != frameData.PreviousData.BodyTrackingID)
+				changedData |= ChangedData::TrackingIDLost;
+
+			//Check what data has been changed to fire an appropriate event for it
+			if(frameData.CurrentData.IsTracked != frameData.PreviousData.IsTracked)
+				changedData |= ChangedData::TrackingChanged;
+
+			if(frameData.CurrentData.ClippedEdge != frameData.PreviousData.ClippedEdge)
+				changedData |= ChangedData::BodyClippedChanged;
+	
+			if(frameData.CurrentData.IsEngaged != frameData.PreviousData.IsEngaged)
+				changedData |= ChangedData::EngagedChanged;
+
+			if(frameData.CurrentData.IsRestricted != frameData.PreviousData.IsRestricted)
+				changedData |= ChangedData::RestrictedChanged;
+
+			if(frameData.CurrentData.LeftHandState != frameData.PreviousData.LeftHandState)
+				changedData |= ChangedData::LeftHandTrackingStateChanged;
+
+			if(frameData.CurrentData.RightHandState != frameData.PreviousData.RightHandState)
+				changedData |= ChangedData::RightHandTrackingStateChanged;
+
+			if(frameData.CurrentData.LeanTrackState != frameData.PreviousData.LeanTrackState)
+				changedData |= ChangedData::LeanTrackingStateChanged;
+
+			UINT8 bodyID = frameData.Body->GetBodyID();
+
+				//Notify each listener of the events that occured
+			for (unsigned int i = 0; i < bodyListeners[bodyID].size(); i++)
+			{
+				if(changedData & ChangedData::TrackingIDLost)
+					bodyListeners[bodyID][i]->BodyLost(frameData.CurrentData, frameData.PreviousData);
+
+				if(changedData & ChangedData::BodyClippedChanged)
+					bodyListeners[bodyID][i]->BodyClipChanged(frameData.CurrentData, frameData.PreviousData);
+				if(changedData & ChangedData::EngagedChanged)
+					bodyListeners[bodyID][i]->BodyEngagedChanged(frameData.CurrentData, frameData.PreviousData);
+				if(changedData & ChangedData::RestrictedChanged)
+					bodyListeners[bodyID][i]->BodyRestrictedChanged(frameData.CurrentData, frameData.PreviousData);
+				if(changedData & ChangedData::TrackingChanged)
+					bodyListeners[bodyID][i]->BodyTrackChanged(frameData.CurrentData, frameData.PreviousData);
+
+				if(changedData & ChangedData::LeanTrackingStateChanged)
+					bodyListeners[bodyID][i]->LeanTrackingStateChanged(frameData.CurrentData, frameData.PreviousData);
+
+				if(changedData & ChangedData::LeftHandTrackingStateChanged)
+					bodyListeners[bodyID][i]->HandTrackingStateChanged(Hand::Left,frameData.CurrentData, frameData.PreviousData);
+				if(changedData & ChangedData::RightHandTrackingStateChanged)
+					bodyListeners[bodyID][i]->HandTrackingStateChanged(Hand::Right, frameData.CurrentData, frameData.PreviousData);
+
+				bodyListeners[bodyID][i]->BodyFrameAcquired(frameData.CurrentData, frameData.PreviousData);
+			}
+
+			
+			//If there are listeners to remove from this body index
+			if(listenersToRemove[bodyID].size() > 0)
+			{
+				//Loop through each one and unregister it
+				for (int i = 0; i < listenersToRemove[bodyID].size(); i++)
+				{
+					UnregisterListener(frameData.Body, listenersToRemove[bodyID][i]);
+					listenersToRemove[bodyID].erase(listenersToRemove[bodyID].begin() + i);
+				}
+			}
 		}
 	}
+		
+	processing = true;
+
+	while (processing)
+	{
+		GestureFrameData currentData;
+
+		processing = gestureDataToProcess.try_pop(currentData);
+
+		if(processing)
+		{
+			UINT8 bodyID = currentData.Body->GetBodyID();
+
+			int discreteSize = (int)currentData.DiscreteGestureResult.size();
+			int continuousSize = (int)currentData.ContinuousGestureResult.size();
+
+			//If there are results
+			if(discreteSize > 0 || continuousSize > 0)
+			{
+				for (unsigned int i = 0; i < bodyListeners[bodyID].size(); i++)
+				{
+					//Notify listeners if we have results for the specified type
+					if(discreteSize > 0)
+						bodyListeners[bodyID][i]->DiscreteGesturesAcquired(currentData.DiscreteGestureResult);
+
+					if(continuousSize > 0)
+						bodyListeners[bodyID][i]->ContinuousGesturesAcquired(currentData.ContinuousGestureResult);
+				}
+			}
+		}
+	}
+	
 }

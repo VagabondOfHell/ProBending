@@ -3,6 +3,7 @@
 #include "InputNotifier.h"
 #include "KinectInput.h"
 #include "BodyController.h"
+#include "SpeechController.h"
 
 class Game : public Ogre::FrameListener
 {
@@ -15,9 +16,7 @@ protected:
 public:
 	InputNotifier inputManager;
 
-	KinectReader kinectReader;
 	BodyController kinectController;
-	KinectGestureReader gestureReader;
 
 	Ogre::SceneNode* mCamNode;
 

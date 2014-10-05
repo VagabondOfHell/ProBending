@@ -1,4 +1,5 @@
 #include "KinectGestureDatabase.h"
+#include <codecvt>
 
 KinectGestureDatabase* KinectGestureDatabase::instance;
 const int KinectGestureDatabase::MaxFileNameSize = 200;
@@ -133,21 +134,23 @@ bool KinectGestureDatabase::GetGestures()
 	//Set gesture count
 	gestureCount = gestureCountInSource;
 
-	IGesture* gestures;
+	IGesture** gestures = new IGesture*[gestureCount];
 
 	//Try to get the gestures in the database
-	hr = database->get_AvailableGestures(gestureCount, &gestures);	
+	hr = database->get_AvailableGestures(gestureCount, gestures);	
 
 	if(SUCCEEDED(hr))
 	{
 		//For each discovered gesture, add it to the Database's Map
 		for (int i = 0; i < gestureCount; i++)
 		{
-			KinectGesture gesture = KinectGesture(&gestures[i]);
+			KinectGesture gesture = KinectGesture(gestures[i]);
 			
 			AddGestureToMap(gesture);
 		}	
 	}
+
+	delete gestures;
 
 	return true;
 }
@@ -159,23 +162,6 @@ bool KinectGestureDatabase::AddGestureToMap(KinectGesture gesture)
 		gesturesCollection.insert(std::pair<std::wstring, KinectGesture>(gesture.GetWideName(), gesture));
 
 	return result.second;						
-}
-
-KinectGestureDatabase* KinectGestureDatabase::GetInstance()
-{
-	if(!instance)
-		instance = new KinectGestureDatabase();
-
-	return instance;
-}
-
-void KinectGestureDatabase::DestroySingleton()
-{
-	if(instance)
-	{
-		delete instance;
-		instance = NULL;
-	}
 }
 
 bool KinectGestureDatabase::OpenDatabase(std::wstring& filePath)
@@ -225,123 +211,16 @@ void KinectGestureDatabase::CloseDatabase()
 	}
 }
 
-bool KinectGestureDatabase::IsOpen()const
-{
-	return database != NULL;
-}
-
 int KinectGestureDatabase::FillSourceWithAllGestures(KinectGestureReader* reader)
 {
-	std::map<std::wstring, KinectGesture>::const_iterator start = gesturesCollection.begin();
-	std::map<std::wstring, KinectGesture>::const_iterator end = gesturesCollection.end();
-
-	int numberAdded = 0;
-
-	for (start; start != end; ++start)
+	if(reader != NULL)
 	{
-		//Add the gesture to the source
-		HRESULT hr = reader->gestureSource->AddGesture(start->second.GestureInterface);
-		
-		if(SUCCEEDED(hr))
-		{
-			//Add the gesture to the high-level readers map
-			reader->gesturesInSource.insert(std::pair<std::wstring, IGesture*>
-				(start->first, start->second.GestureInterface));
+		std::map<std::wstring, KinectGesture>::const_iterator start = gesturesCollection.begin();
+		std::map<std::wstring, KinectGesture>::const_iterator end = gesturesCollection.end();
 
-			++numberAdded;
-		}
-	}
+		int numberAdded = 0;
 
-	return numberAdded;
-}
-
-int KinectGestureDatabase::FillSourceWithGestures(KinectGestureReader* reader, std::vector<std::wstring>& gestureNames)const
-{
-	std::map<std::wstring, KinectGesture>::const_iterator findResult;
-
-	int numberAdded = 0;
-
-	for (int i = 0; i < gestureNames.size(); i++)
-	{
-		//Find the name in the map
-		findResult = gesturesCollection.find(gestureNames[i]);
-
-		if(findResult != gesturesCollection.end())
-		{
-			//Add the gesture to the source
-			HRESULT hr = reader->gestureSource->AddGesture(findResult->second.GestureInterface);
-		
-			if(SUCCEEDED(hr))
-			{
-				//Add the gesture to the high-level readers map
-				reader->gesturesInSource.insert(std::pair<std::wstring, IGesture*>
-					(findResult->first, findResult->second.GestureInterface));
-
-				++numberAdded;
-			}
-		}
-	}
-
-	return numberAdded;
-}
-
-int KinectGestureDatabase::FillSourceWithGestures(KinectGestureReader* reader, std::vector<std::string>& gestureNames)const
-{
-	std::wstring wideGestureName;
-
-	int numberAdded = 0;
-
-	//Loop through and convert each name to a wide string and add it to the source
-	for (int i = 0; i < gestureNames.size(); i++)
-	{
-		wideGestureName = std::wstring(gestureNames[i].begin(), gestureNames[i].end());
-
-		if(FillSourceWithGesture(reader, wideGestureName))
-			++numberAdded;
-	}
-
-	return numberAdded;
-}
-
-bool KinectGestureDatabase::FillSourceWithGesture(KinectGestureReader* reader, std::wstring& gestureName)const
-{
-	std::map<std::wstring, KinectGesture>::const_iterator findResult = gesturesCollection.find(gestureName);
-
-	if(findResult != gesturesCollection.end())
-	{
-		//Add the gesture to the source
-		HRESULT hr = reader->gestureSource->AddGesture(findResult->second.GestureInterface);
-		
-		if(SUCCEEDED(hr))
-		{
-			//Add the gesture to the high-level readers map
-			reader->gesturesInSource.insert(std::pair<std::wstring, IGesture*>
-				(findResult->first, findResult->second.GestureInterface));
-
-			return true;
-		}
-	}
-
-	return false;
-}
-
-bool KinectGestureDatabase::FillSourceWithGesture(KinectGestureReader* reader, std::string& gestureName)const
-{
-	std::wstring wideGestureName = std::wstring(gestureName.begin(), gestureName.end());
-
-	return FillSourceWithGesture(reader, wideGestureName);
-}
-
-int KinectGestureDatabase::FillSourceWithGestureOfType(KinectGestureReader* reader, GestureType gestureType)const
-{
-	std::map<std::wstring, KinectGesture>::const_iterator start = gesturesCollection.begin();
-	std::map<std::wstring, KinectGesture>::const_iterator end = gesturesCollection.end();
-
-	int numberAdded = 0;
-
-	for (start; start != end; ++start)
-	{
-		if(start->second.Type == gestureType)
+		for (start; start != end; ++start)
 		{
 			//Add the gesture to the source
 			HRESULT hr = reader->gestureSource->AddGesture(start->second.GestureInterface);
@@ -355,7 +234,133 @@ int KinectGestureDatabase::FillSourceWithGestureOfType(KinectGestureReader* read
 				++numberAdded;
 			}
 		}
+		return numberAdded;
 	}
 
-	return numberAdded;
+	return 0;
+}
+
+int KinectGestureDatabase::FillSourceWithGestures(KinectGestureReader* reader, std::vector<std::wstring>& gestureNames)const
+{
+	if(reader != NULL)
+	{
+		std::map<std::wstring, KinectGesture>::const_iterator findResult;
+
+		int numberAdded = 0;
+
+		for (int i = 0; i < gestureNames.size(); i++)
+		{
+			//Find the name in the map
+			findResult = gesturesCollection.find(gestureNames[i]);
+
+			if(findResult != gesturesCollection.end())
+			{
+				//Add the gesture to the source
+				HRESULT hr = reader->gestureSource->AddGesture(findResult->second.GestureInterface);
+		
+				if(SUCCEEDED(hr))
+				{
+					//Add the gesture to the high-level readers map
+					reader->gesturesInSource.insert(std::pair<std::wstring, IGesture*>
+						(findResult->first, findResult->second.GestureInterface));
+
+					++numberAdded;
+				}
+			}
+		}
+
+		return numberAdded;
+	}
+
+	return 0;
+}
+
+int KinectGestureDatabase::FillSourceWithGestures(KinectGestureReader* reader, std::vector<std::string>& gestureNames)const
+{
+	if(reader != NULL)
+	{
+		std::wstring wideGestureName;
+
+		int numberAdded = 0;
+
+		//Loop through and convert each name to a wide string and add it to the source
+		for (int i = 0; i < gestureNames.size(); i++)
+		{
+			wideGestureName = std::wstring(gestureNames[i].begin(), gestureNames[i].end());
+
+			if(FillSourceWithGesture(reader, wideGestureName))
+				++numberAdded;
+		}
+		return numberAdded;
+	}
+
+	return 0;
+}
+
+bool KinectGestureDatabase::FillSourceWithGesture(KinectGestureReader* reader, std::wstring& gestureName)const
+{
+	if(reader != NULL)
+	{
+		std::map<std::wstring, KinectGesture>::const_iterator findResult = gesturesCollection.find(gestureName);
+
+		if(findResult != gesturesCollection.end())
+		{
+			//Add the gesture to the source
+			HRESULT hr = reader->gestureSource->AddGesture(findResult->second.GestureInterface);
+		
+			if(SUCCEEDED(hr))
+			{
+				//Add the gesture to the high-level readers map
+				reader->gesturesInSource.insert(std::pair<std::wstring, IGesture*>
+					(findResult->first, findResult->second.GestureInterface));
+
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+bool KinectGestureDatabase::FillSourceWithGesture(KinectGestureReader* reader, std::string& gestureName)const
+{
+	if(reader != NULL)
+	{
+		std::wstring wideGestureName = std::wstring(gestureName.begin(), gestureName.end());
+
+		return FillSourceWithGesture(reader, wideGestureName);
+	}
+
+	return false;
+}
+
+int KinectGestureDatabase::FillSourceWithGestureOfType(KinectGestureReader* reader, GestureType gestureType)const
+{
+	if(reader != NULL)
+	{
+		std::map<std::wstring, KinectGesture>::const_iterator start = gesturesCollection.begin();
+		std::map<std::wstring, KinectGesture>::const_iterator end = gesturesCollection.end();
+
+		int numberAdded = 0;
+
+		for (start; start != end; ++start)
+		{
+			if(start->second.Type == gestureType)
+			{
+				//Add the gesture to the source
+				HRESULT hr = reader->gestureSource->AddGesture(start->second.GestureInterface);
+		
+				if(SUCCEEDED(hr))
+				{
+					//Add the gesture to the high-level readers map
+					reader->gesturesInSource.insert(std::pair<std::wstring, IGesture*>
+						(start->first, start->second.GestureInterface));
+
+					++numberAdded;
+				}
+			}
+		}
+
+		return numberAdded;
+	}
+	return 0;
 }

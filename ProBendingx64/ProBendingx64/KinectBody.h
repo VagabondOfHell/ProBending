@@ -80,15 +80,34 @@ public:
 	KinectGestureReader* DetachGestureReader();
 
 	//Gets the pointer to the Body Reader that contains this body
-	KinectBodyReader* const GetBodyReader()const;
+	inline KinectBodyReader* const KinectBody::GetBodyReader()const
+	{
+		return bodyReader;
+	}
 
 	//Gets the pointer to the Gesture Reader associated with this body
-	KinectGestureReader* const GetGestureReader()const;
+	inline KinectGestureReader* const KinectBody::GetGestureReader()const
+	{
+		return gestureReader;
+	}
 
-	UINT8 GetBodyID()const;
-	UINT64 GetBodyTrackingID()const;
+	///Get the ID of the body
+	inline UINT8 KinectBody::GetBodyID()const
+	{
+		return bodyArrayIndex;
+	}
 
-	bool GetTrackingIDIsValid()const;
+	///Get the Tracking ID of the body
+	inline UINT64 KinectBody::GetBodyTrackingID()const
+	{
+		return bodyKinectTrackingIndex;
+	}
+
+	//Check if the tracking id is valid
+	inline bool KinectBody::GetTrackingIDIsValid()const
+	{
+		return bodyKinectTrackingIndex != 0;
+	}
 
 };
 

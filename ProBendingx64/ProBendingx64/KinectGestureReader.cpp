@@ -8,8 +8,6 @@ KinectGestureReader::KinectGestureReader(void)
 {
 	gestureReader = NULL;
 	gestureSource = NULL;
-
-	gesturesInSource = std::map<std::wstring, IGesture*>();
 }
 
 KinectGestureReader::~KinectGestureReader(void)
@@ -62,26 +60,6 @@ bool KinectGestureReader::Initialize(KinectReader* const sensor)
 	return true;
 }
 
-void KinectGestureReader::SetBodyID(UINT64 bodyID)
-{
-	//Set the body ID for the gesture to record
-	gestureSource->put_TrackingId(bodyID);
-}
-
-KinectBody* KinectGestureReader::SetBody(KinectBody* body)
-{
-	KinectBody* old = body;
-
-	bodyOwner = body;
-
-	return old;
-}
-
-KinectBody* KinectGestureReader::GetBody()const
-{
-	return bodyOwner;
-}
-
 UINT64 KinectGestureReader::GetBodyID()const
 {
 	UINT64 bodyID;
@@ -104,27 +82,6 @@ bool KinectGestureReader::GetBodyIDIsValid() const
 		return false;
 	else
 		return true;
-}
-
-void KinectGestureReader::PauseReader()const
-{
-	gestureReader->put_IsPaused(true);
-}
-
-void KinectGestureReader::ResumeReader()const
-{
-	gestureReader->put_IsPaused(false);
-}
-
-bool KinectGestureReader::GetPauseState()const
-{
-	BOOLEAN result;
-	HRESULT hr = gestureReader->get_IsPaused(&result);
-	
-	if(result)
-		return true;
-	else
-		return false;
 }
 
 int KinectGestureReader::GetGestureCount()const
@@ -306,7 +263,7 @@ bool KinectGestureReader::Capture()
 	}
 
 	//Pass the gesture data to the Event Manager
-	KinectBodyEventNotifier::GetInstance()->InjectGestureFrameData(bodyOwner, discreteResults, continuousResults);
+	KinectBodyEventNotifier::GetInstance()->InjectGestureFrameData(bodyOwner, &discreteResults, &continuousResults);
 
 	return true;
 }

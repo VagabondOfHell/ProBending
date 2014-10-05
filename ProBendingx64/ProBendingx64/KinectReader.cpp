@@ -1,7 +1,5 @@
 #include "KinectReader.h"
-#include <ostream>
-#include <Kinect.VisualGestureBuilder.h>
-#include "KinectBodyReader.h"
+#include <thread>
 
 const float		KinectReader::cDepthWidthMult = 1.0f / cDepthWidth;
 const float		KinectReader::cDepthHeightMult = 1.0f / cDepthHeight;
@@ -12,7 +10,8 @@ KinectReader::KinectReader(bool _deleteReadersOnClose)
 	bodyReader = NULL;
 	mCoordinateMapper = NULL;
 	kinectListener = NULL;
-	
+	speechReader = NULL;
+
 	deleteReadersOnClose = _deleteReadersOnClose;
 	
 	isOpen = false;
@@ -23,12 +22,10 @@ KinectReader::~KinectReader(void)
 {
 	if(deleteReadersOnClose)
 	{
-		if(bodyReader)
-		{
-			delete bodyReader;
-			bodyReader = nullptr;
-		}
+		CloseBodyReader();
 	}
+
+	CloseSpeechReader();
 
 	if(mCoordinateMapper != NULL)
 	{
@@ -36,10 +33,9 @@ KinectReader::~KinectReader(void)
 		mCoordinateMapper = NULL;
 	}
 
-	mSensor->Close();
-
 	if(mSensor != NULL)
 	{
+		mSensor->Close();
 		mSensor->Release();
 		mSensor = NULL;
 	}
@@ -68,7 +64,9 @@ HRESULT KinectReader::InitializeKinect(const UINT32 windowWidth, const UINT32 wi
 		hr = mSensor->Open();
 
 		mSensor->get_IsOpen(&isOpen);
-		mSensor->get_IsAvailable(&isAvailable);
+		
+		//Get the availability of the sensor
+		IsAvailable();
 
 		//Get required components
 		if (SUCCEEDED(hr))
@@ -87,11 +85,6 @@ HRESULT KinectReader::InitializeKinect(const UINT32 windowWidth, const UINT32 wi
 	return hr;
 }
 
-bool KinectReader::KinectConnected()const
-{
-	return isAvailable && isOpen;
-}
-
 void KinectReader::SetWindowSize(const UINT32 width, const UINT32 height)
 {
 	//Validate
@@ -105,24 +98,21 @@ void KinectReader::SetWindowSize(const UINT32 width, const UINT32 height)
 		throw EXCEPTION_FLT_INVALID_OPERATION;
 }
 
-const DepthSpacePoint KinectReader::GetWindowSize()const
-{
-	return mWindowSize;
-}
-
 HRESULT KinectReader::Capture()
 {
-	HRESULT hr; 
+	HRESULT hr = S_OK; 
 	
-	bool oldAvailable = isAvailable;
+	bool oldAvailable = isAvailable ? true : false;
 
-	hr = mSensor->get_IsAvailable(&isAvailable);
+	//Get the availability of the sensor
+	IsAvailable();
 	
-	if(bodyReader)
+	if(isAvailable)
 	{
-		hr = bodyReader->Capture();
+		CaptureBodyReader();
+		CaptureSpeechReader();
 	}
-	
+
 	if(oldAvailable && !isAvailable)
 		if(kinectListener)
 			kinectListener->SensorDisconnected();
@@ -130,51 +120,78 @@ HRESULT KinectReader::Capture()
 	return hr;
 }
 
-bool KinectReader::OpenBodyReader()
-{	
-	if(bodyReader == NULL)
+bool KinectReader::CaptureBodyReader()
+{
+	HRESULT hr = E_FAIL;
+
+	if(bodyReader)
 	{
-		bodyReader = new KinectBodyReader();
-
-		// Initialize the Kinect and get coordinate mapper and the body reader
-		IBodyFrameSource* pBodyFrameSource = NULL;
-
-		HRESULT hr = mSensor->get_BodyFrameSource(&pBodyFrameSource);
-    
-		//open the reader of our friend BodyReader
-		if (SUCCEEDED(hr))
-		{
-			hr = pBodyFrameSource->OpenReader(&bodyReader->mBodyFrameReader);
-		}
-
-		//Release the Body Frame Source once we have the Reader from it
-		if(pBodyFrameSource != NULL)
-		{
-			pBodyFrameSource->Release();
-			pBodyFrameSource = NULL;
-		}
-
-		if(SUCCEEDED(hr))
-		{
-			bodyReader->mKinectReader = this;
-			return true;
-		}
-		else
-			return false;
+		hr = bodyReader->Capture();
 	}
-	
+
+	return SUCCEEDED(hr) ? true : false;
+}
+
+bool KinectReader::CaptureSpeechReader()
+{
+	if(speechReader)
+	{
+		speechReader->Capture();
+		return true;
+	}
+
 	return false;
 }
 
-const KinectBodyReader* const KinectReader::GetBodyReader()const
-{
-	return bodyReader;
+bool KinectReader::OpenBodyReader()
+{	
+	if(IsAvailable())
+	{
+		if(bodyReader == NULL)
+		{
+			bodyReader = new KinectBodyReader();
+
+			// Initialize the Kinect and get coordinate mapper and the body reader
+			IBodyFrameSource* pBodyFrameSource = NULL;
+
+			HRESULT hr = mSensor->get_BodyFrameSource(&pBodyFrameSource);
+    
+			//open the reader of our friend BodyReader
+			if (SUCCEEDED(hr))
+			{
+				hr = pBodyFrameSource->OpenReader(&bodyReader->mBodyFrameReader);
+			}
+
+			//Release the Body Frame Source once we have the Reader from it
+			if(pBodyFrameSource != NULL)
+			{
+				pBodyFrameSource->Release();
+				pBodyFrameSource = NULL;
+			}
+
+			if(SUCCEEDED(hr))
+			{
+				bodyReader->mKinectReader = this;
+				return true;
+			}
+			else
+				return false;
+		}
+	}
+	return false;
 }
 
-///Returns a pointer to the Kinect Sensor
-IKinectSensor* const KinectReader::GetKinectSensor() const
+bool KinectReader::OpenSpeechReader()
 {
-	return mSensor;
+	if(isAvailable)
+	{
+		if(!speechReader)
+		{
+			speechReader = new KinectSpeechReader(this);
+			return speechReader->Initialize();
+		}
+	}
+	return false;
 }
 
 KinectSensorListener* KinectReader::RegisterSensorListener(KinectSensorListener* listener)

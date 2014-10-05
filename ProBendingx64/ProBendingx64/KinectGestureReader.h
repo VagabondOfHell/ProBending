@@ -54,24 +54,55 @@ public:
 	KinectGestureReader(void);
 	~KinectGestureReader(void);
 	
-	bool Initialize(KinectReader* const sensor);
+	bool Initialize(KinectReader* sensor);
 
 	///Sets the body to the gesture reader, and returns the old body, or Null if there wasnt one
-	KinectBody* SetBody(KinectBody* body);
+	inline KinectBody* KinectGestureReader::SetBody(KinectBody* body)
+	{
+		KinectBody* old = body;
 
-	void SetBodyID(UINT64 bodyID);
+		bodyOwner = body;
 
-	KinectBody* GetBody()const;
+		return old;
+	}
+
+	inline void KinectGestureReader::SetBodyID(UINT64 bodyID)
+	{
+		//Set the body ID for the gesture to record
+		gestureSource->put_TrackingId(bodyID);
+	}
+
+	inline KinectBody* KinectGestureReader::GetBody()const
+	{
+		return bodyOwner;
+	}
 
 	UINT64 GetBodyID()const;
 	bool GetBodyIDIsValid()const;
 
 	//Pause the reader to stop receiving Gesture Events
-	void PauseReader()const;
+	inline void KinectGestureReader::PauseReader()const
+	{
+		gestureReader->put_IsPaused(true);
+	}
+
 	//Resume the reader to continue receiving Gesture Events
-	void ResumeReader()const;
+	inline void KinectGestureReader::ResumeReader()const
+	{
+		gestureReader->put_IsPaused(false);
+	}
+
 	//Get the current pause state of the reader
-	bool GetPauseState()const;
+	inline bool KinectGestureReader::GetPauseState()const
+	{
+		BOOLEAN result;
+		HRESULT hr = gestureReader->get_IsPaused(&result);
+	
+		if(result)
+			return true;
+		else
+			return false;
+	}
 
 	///Gets the number of gestures currently in the GestureReader
 	///Returns -1 on error, otherwise it returns the count
