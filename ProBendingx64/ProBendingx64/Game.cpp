@@ -1,32 +1,169 @@
 #include "Game.h"
+
+#include <OgreConfigFile.h>
+#include <OgreException.h>
+#include <OgreRenderSystem.h>
+#include <OgreCamera.h>
+#include <OgreViewport.h>
+#include <OgreSceneManager.h>
+#include <OgreRenderWindow.h>
+
 #include "GUIManager.h"
 #include "InputManager.h"
+#include "DotSceneLoader.h"
+
+#include "TestScene.h"
+#include "BlankScene.h"
+#include "LoadScene.h"
 
 #include "vld.h"
 
 SpeechController speechController = SpeechController(NULL);
 
-Game::Game(void) 
+float mCamRotationSpeed;
+Game::Game()
+    : mRoot(0), mResourcesCfg(Ogre::StringUtil::BLANK),
+	mPluginsCfg(Ogre::StringUtil::BLANK)
 {
+	//Load appropriate files
+	#ifdef _DEBUG
+		mResourcesCfg = "resources_d.cfg";
+		mPluginsCfg = "plugins_d.cfg";
+	#else
+		mResourcesCfg = "resources.cfg";
+		mPluginsCfg = "plugins.cfg";
+	#endif
 }
 
-
-Game::~Game(void)
+Game::~Game()
 {
-	GUIManager::DestroySingleton();
-	InputManager::GetInstance()->DestroySingleton();
-	OgreBase::DestroySingleton();
-	::FreeConsole();
+	//Remove ourself as a Window listener
+	Ogre::WindowEventUtilities::removeWindowEventListener(mWindow, this);
+	windowClosed(mWindow);
+	delete mRoot;
 }
 
-void Game::Run()
+//Adjust mouse clipping area
+void Game::windowResized(Ogre::RenderWindow* rw)
 {
-	OgreBase* ogreBase = OgreBase::GetInstance();
+    unsigned int width, height, depth;
+    int left, top;
+    rw->getMetrics(width, height, depth, left, top);
+ 
+    const OIS::MouseState &ms = mMouse->getMouseState();
+    ms.width = width;
+    ms.height = height;
+}
+ 
+//Unattach OIS before window shutdown (very important under Linux)
+void Game::windowClosed(Ogre::RenderWindow* rw)
+{
+    //Only close for window that created OIS
+    if(rw == mWindow)
+    {
+        if(mInputManager)
+        {
+            mInputManager->destroyInputObject( mMouse );
+            mInputManager->destroyInputObject( mKeyboard );
+ 
+            OIS::InputManager::destroyInputSystem(mInputManager);
+            mInputManager = 0;
+        }
+    }
+}
 
-	ogreBase->InitializeRootResourcesAndPlugins();
+void Game::InitializeRootResourcesAndPlugins()
+{ 
+    // construct Ogre::Root
+    mRoot = new Ogre::Root(mPluginsCfg);
+	
+	// set up resources
+	// Load resource paths from config file
+	Ogre::ConfigFile cf;
+	cf.load(mResourcesCfg);
+
+	// Go through all sections & settings in the file
+	Ogre::ConfigFile::SectionIterator seci = cf.getSectionIterator();
+ 
+	/*secName is the name of each section: Essential, Popular, General
+    typeName is the type of the resource being defined: FileSystem (folder) or Zip file
+    archName is an absolute path to the resource */
+	Ogre::String secName, typeName, archName;
+	//Loop through each section and store the location of the resource
+	while (seci.hasMoreElements())
+	{
+		secName = seci.peekNextKey();
+		Ogre::ConfigFile::SettingsMultiMap *settings = seci.getNext();
+		Ogre::ConfigFile::SettingsMultiMap::iterator i;
+		for (i = settings->begin(); i != settings->end(); ++i)
+		{
+			typeName = i->first;
+			archName = i->second;
+			Ogre::ResourceGroupManager::getSingleton().addResourceLocation(
+				archName, typeName, secName);
+		}
+	}
+}
+
+void Game::CreateOgreWindow(const Ogre::String& windowTitle = "Ogre App")
+{
+	mWindow = mRoot->initialise(true, windowTitle);
+
+	//Register as a Window listener
+	Ogre::WindowEventUtilities::addWindowEventListener(mWindow, this);
+
+	//Create a log and register this class to listen to it
+	mMainLog = Ogre::LogManager::getSingleton().createLog("Main Log", false, true, true);
+	mMainLog->addListener(this);
+}
+
+void Game::InitializeOIS(bool useBufferedInput)
+{
+	//Set up logger
+	Ogre::LogManager::getSingletonPtr()->logMessage("*** Initializing OIS ***");
+
+	//Initialize OIS
+	OIS::ParamList pl;
+	size_t windowHnd = 0;
+	std::ostringstream windowHndStr;
+ 
+	mWindow->getCustomAttribute("WINDOW", &windowHnd);
+	
+	windowHndStr << windowHnd;
+	pl.insert(std::make_pair(std::string("WINDOW"), windowHndStr.str()));
+ pl.insert(std::make_pair(std::string("WINDOW"), windowHndStr.str()));
+   pl.insert(std::make_pair(std::string("w32_mouse"), std::string("DISCL_FOREGROUND" )));
+    pl.insert(std::make_pair(std::string("w32_mouse"), std::string("DISCL_NONEXCLUSIVE")));
+    pl.insert(std::make_pair(std::string("w32_keyboard"), std::string("DISCL_FOREGROUND")));
+    pl.insert(std::make_pair(std::string("w32_keyboard"), std::string("DISCL_NONEXCLUSIVE")));
+
+	mInputManager = OIS::InputManager::createInputSystem( pl );
+
+	mKeyboard = static_cast<OIS::Keyboard*>(mInputManager->createInputObject( OIS::OISKeyboard, useBufferedInput ));
+	mMouse = static_cast<OIS::Mouse*>(mInputManager->createInputObject( OIS::OISMouse, useBufferedInput ));
+	
+	keyAndMouseManager = InputNotifier(false);
+
+	mKeyboard->setEventCallback(&keyAndMouseManager);
+	mMouse->setEventCallback(&keyAndMouseManager);
+
+	//Set initial mouse clipping size
+	windowResized(mWindow);
+}
+
+void Game::messageLogged(const Ogre::String &message, Ogre::LogMessageLevel lml, bool maskDebug, 
+		const Ogre::String &logName, bool &skipThisMessage)
+{
+	printf(message.c_str());
+	printf("\n");
+}
+
+void Game::InitializeGame()
+{
+	InitializeRootResourcesAndPlugins();
 
 	//Manually set the Rendering System
-	Ogre::RenderSystem *rs =ogreBase->mRoot->getRenderSystemByName("OpenGL Rendering Subsystem");
+	Ogre::RenderSystem *rs = mRoot->getRenderSystemByName("OpenGL Rendering Subsystem");
 	rs->setConfigOption("Full Screen","No");
 	rs->setConfigOption("Video Mode","1024 x 768 @ 32-bit colour");
 	rs->setConfigOption("Display Frequency","50 Hz");
@@ -36,12 +173,12 @@ void Game::Run()
 	rs->setConfigOption("VSync","No");
 	rs->setConfigOption("sRGB Gamma Conversion","No");
 
-	ogreBase->SetRenderSystem(rs);
+	mRoot->setRenderSystem(rs);
 
-	ogreBase->CreateOgreWindow("Physics Lab 1");
+	CreateOgreWindow("Probending");
 	
 	// initialise all resource groups
-	Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
+	//Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
 	
 	// Set default mipmap level (note: some APIs ignore this)
 	Ogre::TextureManager::getSingleton().setDefaultNumMipmaps(5);
@@ -49,19 +186,18 @@ void Game::Run()
 	//Initialize the GUI Manager
 	GUIManager::GetInstance()->InitializeGUI();
 	
-	inputManager = InputNotifier(false);
-
-	ogreBase->InitializeOIS(true, &inputManager, &inputManager);
+	InitializeOIS(true);
 	
-	inputManager.AddObserver(GUIManager::GetInstance());
+	keyAndMouseManager.AddObserver(GUIManager::GetInstance());
+}
 
-
-	/////////////////////////////////////KINECT TEST/////////////////////////////////////////
+void Game::InitializeKinect()
+{
 	InputManager* inputManager = InputManager::GetInstance();
-
-	inputManager->InitializeKinect(ogreBase->mWindow->getWidth(), ogreBase->mWindow->getHeight());
 	
-	inputManager->FillGestureReader(L"C:\\Users\\Adam\\Desktop\\Test.gbd");
+	inputManager->InitializeKinect(mWindow->getWidth(),mWindow->getHeight());
+	
+	//inputManager->FillGestureReader(L"C:\\Users\\Adam\\Desktop\\Test.gbd");
 
 	KinectSpeechReader* speechReader = inputManager->GetSpeechReader();
 
@@ -71,88 +207,87 @@ void Game::Run()
 	
 		speechReader->SetConfidenceThreshold(0.3f);
 
-		speechController = SpeechController(inputManager->GetSpeechReader());
+		//speechController = SpeechController(inputManager->GetSpeechReader());
 		
-		inputManager->RegisterAudioListener(&speechController);
+		//inputManager->RegisterAudioListener(&speechController);
 	}
+}
+
+void Game::CloseGame()
+{
+	GUIManager::DestroySingleton();
+	InputManager::GetInstance()->DestroySingleton();
+	::FreeConsole();
+}
+
+void Game::Run()
+{
+	InitializeGame();
+
+	InitializeKinect();
 
 	kinectController = BodyController();
+
+	InputManager* inputManager = InputManager::GetInstance();
 
 	inputManager->RegisterSensorListener(&kinectController);
 
 	inputManager->BeginAllCapture();
 
+	sceneManager.Initialize(mWindow, mRoot);
+
 	AllocConsole();
 	freopen("conin$","r",stdin);
-freopen("conout$","w",stdout);
-freopen("conout$","w",stderr);
-printf("Debugging Window:\n");
-	/////////////////////////////////////KINECT TEST/////////////////////////////////////////
-
-	CreateScene();
+	freopen("conout$","w",stdout);
+	freopen("conout$","w",stderr);
+	printf("Debugging Window:\n");
 	
-	ogreBase->mRoot->addFrameListener(this);
+		//Ogre::ResourceGroupManager::getSingletonPtr()->initialiseResourceGroup("Popular");
 
-	ogreBase->BeginRender();
-}
+	std::shared_ptr<BlankScene> blankScene(new BlankScene(&sceneManager, mRoot, "Blank Scene", "General"));
+	blankScene->Initialize();
 
-	// configure
-	// Show the configuration dialog and initialise the system
-	/*if(!( mRoot->showConfigDialog()))
+	sceneManager.FlagSceneSwitch(blankScene, true);
+
+	//blankScene->GetOgreSceneManager()->createEntity("SFA", "Sinbad.mesh");
+	bool rendering = true;
+
+	Ogre::Timer gameTimer = Ogre::Timer();
+	float frameTime = 0;
+
+	while (rendering)
 	{
-		return false;
-	}*/
+		frameTime = (float)gameTimer.getMilliseconds();
 
-void Game::CreateScene()
-{
-	OgreBase* ogreBase = OgreBase::GetInstance();
+		if(!Update(frameTime))
+			rendering = false;
 
-	// Create the SceneManager, in this case a generic one
-	ogreBase->mSceneMgr = ogreBase->mRoot->createSceneManager(Ogre::SceneType::ST_GENERIC, "DefaultSceneManager");
-	ogreBase->mSceneMgr->setAmbientLight(Ogre::ColourValue(1, 1, 1, 1));
+		mRoot->renderOneFrame();
 
-	// Create a light
-	Ogre::Light* l = ogreBase->mSceneMgr->createLight("MainLight");
-	l->setPosition(20,80,50);
-	
-	// Create the camera
-	ogreBase->mCamera = ogreBase->mSceneMgr->createCamera("PlayerCam");
-	Ogre::Camera* mCamera = ogreBase->mCamera;
-	
-	mCamRotationSpeed = 0.13f;
+		gameTimer.reset();
+	}
 
-	mCamNode = ogreBase->mSceneMgr->getRootSceneNode()->createChildSceneNode("CameraNode1");
-	mCamNode->attachObject(mCamera);
-	
-	// Position it at 80 in Z direction
-	mCamNode->setPosition(Ogre::Vector3(0,0,80));
-	// Look back along -Z
-	mCamera->lookAt(Ogre::Vector3(0,0,0));
-	mCamera->setNearClipDistance(5);
-	mCamera->setFarClipDistance(1000);
-
-	// Create one viewport, entire window
-	Ogre::Viewport* vp = ogreBase->mWindow->addViewport(mCamera);
-	vp->setBackgroundColour(Ogre::ColourValue(0,0,0));
- 
-	// Alter the camera aspect ratio to match the viewport
-	mCamera->setAspectRatio(Ogre::Real(vp->getActualWidth()) / Ogre::Real(vp->getActualHeight()));
+	CloseGame();
 }
 
-bool Game::frameRenderingQueued(const Ogre::FrameEvent& evt)
-{
-	OgreBase* instance = OgreBase::GetInstance();
+bool once = false;
 
-	if(instance->mWindow->isClosed())
+bool Game::Update(float gameTime)
+{
+	if(mWindow->isClosed())
         return false;
  
     //Need to capture/update each device
-    instance->mKeyboard->capture();
-    instance->mMouse->capture();
+    mKeyboard->capture();
+    mMouse->capture();
 
-	/////////////////////////////////////KINECT TEST/////////////////////////////////////////
 	InputManager* inputManager = InputManager::GetInstance();
 	inputManager->ProcessEvents();
+
+	if(dynamic_cast<LoadScene*>(sceneManager.GetCurrentScene().get()) != 0)
+	{
+		printf("Load scene");
+	}
 
 	if(!kinectController.IsListening())
 	{
@@ -161,12 +296,38 @@ bool Game::frameRenderingQueued(const Ogre::FrameEvent& evt)
 		inputManager->FillGestureReader(L"C:\\Users\\Adam\\Desktop\\Test2.gbd");
 	}
 
-	/////////////////////////////////////KINECT TEST/////////////////////////////////////////
 
-	CEGUI::System::getSingleton().injectTimePulse(evt.timeSinceLastFrame);
+	sceneManager.Update(gameTime);
 
-    if(instance->mKeyboard->isKeyDown(OIS::KC_ESCAPE))
+	CEGUI::System::getSingleton().injectTimePulse(gameTime);
+    if(mKeyboard->isKeyDown(OIS::KC_ESCAPE))
         return false;
 
-    return true;
+	if(mKeyboard->isKeyDown(OIS::KC_S))
+	{
+		if(!once)
+		{
+			std::shared_ptr<TestScene> testScene(new TestScene( &sceneManager, mRoot, "Test Scene", "General"));
+
+			sceneManager.FlagSceneSwitch(testScene, true);
+
+			once = true;
+		}
+	}
+
+	if(mKeyboard->isKeyDown(OIS::KC_C))
+	{
+		if(once)
+		{
+			std::shared_ptr<BlankScene> blankScene(new BlankScene(&sceneManager, mRoot, "Blank Scene", "General"));
+
+			blankScene->Initialize();
+
+			sceneManager.FlagSceneSwitch(blankScene, true);
+
+			once = false;
+		}
+	}
+
+	return true;
 }

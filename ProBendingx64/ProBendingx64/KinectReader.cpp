@@ -188,7 +188,13 @@ bool KinectReader::OpenSpeechReader()
 		if(!speechReader)
 		{
 			speechReader = new KinectSpeechReader(this);
-			return speechReader->Initialize();
+			if(speechReader->Initialize())
+				return true;
+			else
+			{
+				delete speechReader;
+				speechReader = NULL;
+			}
 		}
 	}
 	return false;

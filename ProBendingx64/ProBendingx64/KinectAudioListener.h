@@ -1,6 +1,7 @@
 #pragma once
+#include "KinectSpeechReader.h"
 
-struct AudioData;
+//struct AudioData;
 
 class KinectAudioListener
 {

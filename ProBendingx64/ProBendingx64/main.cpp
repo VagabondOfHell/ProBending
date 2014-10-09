@@ -16,13 +16,10 @@ extern "C" {
     int main(int argc, char *argv[])
 #endif
     {
-        // Create application object
-		Game app = Game();
+		Game game = Game();
 
         try {
-			app.Run();
-
-
+			game.Run();
 
         } catch( Ogre::Exception& e ) {
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
