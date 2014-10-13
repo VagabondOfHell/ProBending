@@ -2,6 +2,7 @@
 #include "OgreRenderWindow.h"
 #include "KinectAudioEventNotifier.h"
 #include "InputNotifier.h"
+#include "GameObject.h"
 
 BlankScene::BlankScene(void)
 	:IScene(NULL, NULL, "", "")
@@ -16,6 +17,12 @@ BlankScene::BlankScene(SceneManager* _owningManager, Ogre::Root* root, std::stri
 
 BlankScene::~BlankScene(void)
 {
+	if(object)
+	{
+		delete object;
+		object = NULL;
+	}
+
 	InputNotifier::GetInstance()->RemoveObserver(guiManager);
 }
 
@@ -32,7 +39,17 @@ void BlankScene::Start()
 
 		mainOgreCamera->setAspectRatio(Ogre::Real(viewport->getActualWidth()) / Ogre::Real(viewport->getActualHeight()));
 
+		mainOgreCamera->setPosition(0, 0, 280.0f);
+		mainOgreCamera->lookAt(0, 0, 0);
+		mainOgreCamera->setNearClipDistance(5);
+		mainOgreCamera->setFarClipDistance(1000);
+		
+		Ogre::Light* light = ogreSceneManager->createLight();
+		light->setType(Ogre::Light::LightTypes::LT_DIRECTIONAL);
+		light->setAttenuation(10000, 1.0, 1, 1);
+
 		KinectAudioEventNotifier::GetInstance()->RegisterAudioListener(this);
+
 
 		started = true;
 
@@ -44,11 +61,15 @@ void BlankScene::Start()
 
 		guiManager->GetChildItem("EffectsDemoRoot/EffectsFrameWindow/MultiLineEditbox1");
 		
+		object = new GameObject(this);
+
+		object->LoadModel("sinbad.mesh");
+
 		CEGUI::Window* window = (CEGUI::Window*)guiManager->GetChildItem("EffectsDemoRoot");
-		window->hide();
+		//window->hide();
 
 		CEGUI::Window* submitButton = (CEGUI::Window*)guiManager->GetChildItem("window1/Submit");
-
+		
 		if(submitButton)
 		{
 			//submitButton->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&BlankScene::ButtonClick, this));
@@ -67,6 +88,7 @@ bool BlankScene::ButtonClick(const CEGUI::EventArgs &e)
 bool BlankScene::Update(float gameTime)
 {
 	guiManager->Update(gameTime);
+	object->gameObjectNode->translate(Ogre::Vector3(0.1f, 0.0f, 0.0f));
 
 	return true;
 }

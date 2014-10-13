@@ -2,10 +2,14 @@
 #include "IScene.h"
 #include "KinectAudioListener.h"
 
+class GameObject;
+
 class BlankScene :
 	public IScene, public KinectAudioListener
 {
 public:
+	GameObject* object;
+
 	BlankScene(void);
 
 	BlankScene(SceneManager* _owningManager, Ogre::Root* root, std::string _sceneName, std::string _resourceGroupName);
