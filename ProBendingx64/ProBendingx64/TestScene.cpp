@@ -1,6 +1,7 @@
 #include "TestScene.h"
 #include "OgreRenderWindow.h"
 #include "DotSceneLoader.h"
+#include "InputNotifier.h"
 
 TestScene::TestScene()
 	:IScene(NULL, NULL, "", "")
@@ -15,6 +16,7 @@ TestScene::TestScene(SceneManager* _owningManager, Ogre::Root* root, std::string
 
 TestScene::~TestScene(void)
 {
+	InputNotifier::GetInstance()->RemoveObserver(guiManager);
 }
 
 void TestScene::Start()
@@ -34,11 +36,15 @@ void TestScene::Start()
 		mainOgreCamera->setAspectRatio(Ogre::Real(viewport->getActualWidth()) / Ogre::Real(viewport->getActualHeight()));
 
 		started = true;
+
+		InputNotifier::GetInstance()->AddObserver(guiManager);
 	}
 }
 
 bool TestScene::Update(float gameTime)
 {
+	guiManager->Update(gameTime);
+
 	return true;
 }
 

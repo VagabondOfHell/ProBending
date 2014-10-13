@@ -1,5 +1,7 @@
 #include "InputNotifier.h"
 
+InputNotifier* InputNotifier::instance = NULL;
+
 InputNotifier::InputNotifier(bool _deleteObserversOnClose )
 {
 	observers = std::vector<InputObserver*>();
@@ -14,6 +16,23 @@ InputNotifier::~InputNotifier(void)
 	if(deleteObserversOnClose)
 	{
 		DeleteObservers();
+	}
+}
+
+InputNotifier* InputNotifier::GetInstance()
+{
+	if(!instance)
+		instance = new InputNotifier(false);
+
+	return instance;
+}
+
+void InputNotifier::DestroySingleton()
+{
+	if(instance)
+	{
+		delete instance;
+		instance = NULL;
 	}
 }
 

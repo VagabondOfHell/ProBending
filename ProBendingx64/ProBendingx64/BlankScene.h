@@ -19,5 +19,7 @@ public:
 	virtual void AudioDataReceived(AudioData* audioData);
 
 	virtual void Close();
+
+	bool ButtonClick(const CEGUI::EventArgs &e);
 };
 

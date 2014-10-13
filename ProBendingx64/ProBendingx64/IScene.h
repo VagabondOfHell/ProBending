@@ -1,5 +1,6 @@
 #pragma once
 #include "SceneManager.h"
+#include "GUIManager.h"
 #include <string>
 
 class IScene
@@ -13,6 +14,8 @@ protected:
 
 	Ogre::Camera* mainOgreCamera;
 
+	GUIManager* guiManager;
+
 	bool started;
 
 	inline void SetResourceGroupName(std::string _resourceGroupName)
@@ -23,6 +26,9 @@ protected:
 public:
 	IScene(SceneManager* _owningManager, Ogre::Root* root, std::string _sceneName, std::string _resourceGroupName)
 	{
+		guiManager = new GUIManager();
+		guiManager->InitializeGUI();
+
 		started = false;
 
 		owningManager = _owningManager;
@@ -31,7 +37,7 @@ public:
 
 		if(!_resourceGroupName.empty())
 		{
-		Ogre::ResourceGroupManager::getSingletonPtr()->initialiseResourceGroup(_resourceGroupName);
+			Ogre::ResourceGroupManager::getSingletonPtr()->initialiseResourceGroup(_resourceGroupName);
 		}
 		resourceGroupName = _resourceGroupName;
 
@@ -40,7 +46,11 @@ public:
 
 	virtual ~IScene()
 	{
-		
+		if(guiManager)
+		{
+			delete guiManager;
+			guiManager = NULL;
+		}
 	}
 
 	virtual void Initialize()

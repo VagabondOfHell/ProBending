@@ -37,7 +37,7 @@ private:
 	Ogre::Log* mMainLog;
 	
 	//Scene manager
-	SceneManager sceneManager;
+	SceneManager* sceneManager;
 
 	//Initializes the Root, Resource File, and Plugins. This method should be
 	//called first. Uses default resource and plugin files unless changed
@@ -66,8 +66,6 @@ public:
 	~Game();
 
 	void CloseGame();
-
-	InputNotifier keyAndMouseManager;
 
 	BodyController kinectController;
 

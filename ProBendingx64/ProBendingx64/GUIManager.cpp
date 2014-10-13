@@ -1,58 +1,129 @@
 #include "GUIManager.h"
 
-static GUIManager* instance;
+CEGUI::OgreRenderer* GUIManager::mRenderer;
 
 GUIManager::GUIManager(void)
 {
+	rootWindow = NULL;
 }
 
 
 GUIManager::~GUIManager(void)
 {
-	mRenderer->destroySystem();
 }
 
-GUIManager* GUIManager::GetInstance()
-{
-	if(!instance)
-		instance = new GUIManager();
-
-	return instance;
-}
-
-void GUIManager::DestroySingleton()
-{
-	if(instance)
-	{
-		delete instance;
-		instance = nullptr;
-	}
-}
-
-bool GUIManager::InitializeGUI()
+void GUIManager::BootstrapSystem()
 {
 	mRenderer = &CEGUI::OgreRenderer::bootstrapSystem();
- 
+}
+
+void GUIManager::DestroySystem()
+{
+	mRenderer->destroySystem();	
+}
+
+void GUIManager::InitializeGUI()
+{
     CEGUI::ImageManager::setImagesetDefaultResourceGroup("ImageSets");
     CEGUI::Font::setDefaultResourceGroup("Fonts");
     CEGUI::Scheme::setDefaultResourceGroup("Schemes");
     CEGUI::WidgetLookManager::setDefaultResourceGroup("LookNFeel");
     CEGUI::WindowManager::setDefaultResourceGroup("Layouts");
- 
+	
     CEGUI::SchemeManager::getSingleton().createFromFile("TaharezLook.scheme");
  
     CEGUI::System::getSingleton().getDefaultGUIContext().getMouseCursor().setDefaultImage("TaharezLook/MouseArrow");
  
 	CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
-    CEGUI::Window *sheet = wmgr.createWindow("DefaultWindow", "CEGUIDemo/Sheet");
- 
-	CEGUI::System::getSingleton().getDefaultGUIContext().setRootWindow(sheet);
+    
+	rootWindow = wmgr.createWindow("DefaultWindow", "RootWindow");
 
-	//If successful, this will return true
-	if(mRenderer)
+	CEGUI::System::getSingleton().getDefaultGUIContext().setRootWindow(rootWindow);
+
+}
+
+void GUIManager::Update(float gameTime)
+{
+	CEGUI::System::getSingleton().injectTimePulse(gameTime);
+}
+
+bool GUIManager::AddScheme(const CEGUI::String& schemeFileName)
+{
+	try
+	{
+		CEGUI::SchemeManager::getSingleton().createFromFile(schemeFileName);
 		return true;
-	else
-		return false;
+	}
+	catch (CEGUI::Exception e)
+	{
+		printf(e.getMessage().c_str());
+	}
+
+	return false;
+}
+
+bool GUIManager::AddWindow(const CEGUI::String& layoutFileName, const CEGUI::String& windowName, const CEGUI::String& schemeFileName)
+{
+	CEGUI::Window* newWindow = NULL;
+	try
+	{
+		if(!schemeFileName.empty())
+			CEGUI::SchemeManager::getSingleton().createFromFile(schemeFileName);
+
+		newWindow = CEGUI::WindowManager::getSingleton().loadLayoutFromFile(layoutFileName);
+	}
+	catch(CEGUI::Exception e)
+	{
+		printf(e.getMessage().c_str());
+	}
+
+	if(newWindow)
+	{
+		if(!windowName.empty())
+			newWindow->setName(windowName);
+
+		rootWindow->addChild(newWindow);
+
+		return true;
+	}
+
+	return false;
+}
+
+bool GUIManager::DestroyWindow(const CEGUI::String& windowName)
+{
+	CEGUI::Window* removeWindow = NULL;
+
+	removeWindow = rootWindow->getChild(windowName);
+		
+	if(removeWindow)
+	{
+		CEGUI::WindowManager::getSingleton().destroyWindow(removeWindow);
+		return true;
+	}
+
+	return false;
+}
+
+CEGUI::NamedElement* GUIManager::GetChildItem(const CEGUI::String& elementPath)
+{
+	CEGUI::NamedElement* returnElement = NULL;
+	
+	try
+	{
+		returnElement = rootWindow->getChildElement(elementPath);
+	}
+	catch(CEGUI::Exception e)
+	{
+		returnElement = NULL;
+	}
+	
+	return returnElement;
+}
+
+void GUIManager::RemoveScheme(const CEGUI::String& schemeName)
+{
+	CEGUI::SchemeManager::getSingleton().destroy(schemeName);
 }
 
 bool GUIManager::mouseMoved( const OIS::MouseEvent &arg )

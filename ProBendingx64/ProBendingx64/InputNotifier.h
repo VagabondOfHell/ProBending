@@ -5,16 +5,22 @@
 class InputNotifier: public OIS::MouseListener, public OIS::KeyListener
 {
 private:
+	static InputNotifier* instance;
+
 	std::vector<InputObserver*> observers;
 	bool deleteObserversOnClose;
 
-public:
 	//InputNotifier Constructor
 	//<Param: _deleteObserversOnClose> When the Input Notifier is deleted
 	//if this is true it will delete all observers as well. 
 	InputNotifier(bool _deleteObserversOnClose = false);
 
+public:
+
 	~InputNotifier(void);
+
+	static InputNotifier* GetInstance();
+	static void DestroySingleton();
 
 	//Adds an observer
 	//<Param: observer> The observer to add. Will not add if already in list

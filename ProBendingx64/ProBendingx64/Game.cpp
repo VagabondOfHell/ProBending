@@ -8,13 +8,11 @@
 #include <OgreSceneManager.h>
 #include <OgreRenderWindow.h>
 
-#include "GUIManager.h"
 #include "InputManager.h"
 #include "DotSceneLoader.h"
 
 #include "TestScene.h"
 #include "BlankScene.h"
-#include "LoadScene.h"
 
 #include "vld.h"
 
@@ -37,6 +35,8 @@ Game::Game()
 
 Game::~Game()
 {
+	CloseGame();
+
 	//Remove ourself as a Window listener
 	Ogre::WindowEventUtilities::removeWindowEventListener(mWindow, this);
 	windowClosed(mWindow);
@@ -141,11 +141,9 @@ void Game::InitializeOIS(bool useBufferedInput)
 
 	mKeyboard = static_cast<OIS::Keyboard*>(mInputManager->createInputObject( OIS::OISKeyboard, useBufferedInput ));
 	mMouse = static_cast<OIS::Mouse*>(mInputManager->createInputObject( OIS::OISMouse, useBufferedInput ));
-	
-	keyAndMouseManager = InputNotifier(false);
 
-	mKeyboard->setEventCallback(&keyAndMouseManager);
-	mMouse->setEventCallback(&keyAndMouseManager);
+	mKeyboard->setEventCallback(InputNotifier::GetInstance());
+	mMouse->setEventCallback(InputNotifier::GetInstance());
 
 	//Set initial mouse clipping size
 	windowResized(mWindow);
@@ -183,12 +181,7 @@ void Game::InitializeGame()
 	// Set default mipmap level (note: some APIs ignore this)
 	Ogre::TextureManager::getSingleton().setDefaultNumMipmaps(5);
 
-	//Initialize the GUI Manager
-	GUIManager::GetInstance()->InitializeGUI();
-	
 	InitializeOIS(true);
-	
-	keyAndMouseManager.AddObserver(GUIManager::GetInstance());
 }
 
 void Game::InitializeKinect()
@@ -215,7 +208,13 @@ void Game::InitializeKinect()
 
 void Game::CloseGame()
 {
-	GUIManager::DestroySingleton();
+	if(sceneManager)
+	{
+		delete sceneManager;
+		sceneManager = NULL;
+	}
+
+	InputNotifier::DestroySingleton();
 	InputManager::GetInstance()->DestroySingleton();
 	::FreeConsole();
 }
@@ -234,7 +233,8 @@ void Game::Run()
 
 	inputManager->BeginAllCapture();
 
-	sceneManager.Initialize(mWindow, mRoot);
+	sceneManager = new SceneManager();
+	sceneManager->Initialize(mWindow, mRoot);
 
 	AllocConsole();
 	freopen("conin$","r",stdin);
@@ -244,10 +244,10 @@ void Game::Run()
 	
 		//Ogre::ResourceGroupManager::getSingletonPtr()->initialiseResourceGroup("Popular");
 
-	std::shared_ptr<BlankScene> blankScene(new BlankScene(&sceneManager, mRoot, "Blank Scene", "General"));
+	std::shared_ptr<BlankScene> blankScene(new BlankScene(sceneManager, mRoot, "Blank Scene", "General"));
 	blankScene->Initialize();
 
-	sceneManager.FlagSceneSwitch(blankScene, true);
+	sceneManager->FlagSceneSwitch(blankScene, true);
 
 	//blankScene->GetOgreSceneManager()->createEntity("SFA", "Sinbad.mesh");
 	bool rendering = true;
@@ -266,8 +266,6 @@ void Game::Run()
 
 		gameTimer.reset();
 	}
-
-	CloseGame();
 }
 
 bool once = false;
@@ -284,11 +282,6 @@ bool Game::Update(float gameTime)
 	InputManager* inputManager = InputManager::GetInstance();
 	inputManager->ProcessEvents();
 
-	if(dynamic_cast<LoadScene*>(sceneManager.GetCurrentScene().get()) != 0)
-	{
-		printf("Load scene");
-	}
-
 	if(!kinectController.IsListening())
 	{
 		inputManager->RegisterListenerToNewBody(&kinectController);
@@ -296,10 +289,8 @@ bool Game::Update(float gameTime)
 		inputManager->FillGestureReader(L"C:\\Users\\Adam\\Desktop\\Test2.gbd");
 	}
 
+	sceneManager->Update(gameTime);
 
-	sceneManager.Update(gameTime);
-
-	CEGUI::System::getSingleton().injectTimePulse(gameTime);
     if(mKeyboard->isKeyDown(OIS::KC_ESCAPE))
         return false;
 
@@ -307,9 +298,9 @@ bool Game::Update(float gameTime)
 	{
 		if(!once)
 		{
-			std::shared_ptr<TestScene> testScene(new TestScene( &sceneManager, mRoot, "Test Scene", "General"));
+			std::shared_ptr<TestScene> testScene(new TestScene(sceneManager, mRoot, "Test Scene", "General"));
 
-			sceneManager.FlagSceneSwitch(testScene, true);
+			sceneManager->FlagSceneSwitch(testScene, true);
 
 			once = true;
 		}
@@ -319,11 +310,11 @@ bool Game::Update(float gameTime)
 	{
 		if(once)
 		{
-			std::shared_ptr<BlankScene> blankScene(new BlankScene(&sceneManager, mRoot, "Blank Scene", "General"));
+			std::shared_ptr<BlankScene> blankScene(new BlankScene(sceneManager, mRoot, "Blank Scene", "General"));
 
 			blankScene->Initialize();
 
-			sceneManager.FlagSceneSwitch(blankScene, true);
+			sceneManager->FlagSceneSwitch(blankScene, true);
 
 			once = false;
 		}

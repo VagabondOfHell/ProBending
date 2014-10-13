@@ -1,6 +1,7 @@
 #include "BlankScene.h"
 #include "OgreRenderWindow.h"
 #include "KinectAudioEventNotifier.h"
+#include "InputNotifier.h"
 
 BlankScene::BlankScene(void)
 	:IScene(NULL, NULL, "", "")
@@ -15,6 +16,7 @@ BlankScene::BlankScene(SceneManager* _owningManager, Ogre::Root* root, std::stri
 
 BlankScene::~BlankScene(void)
 {
+	InputNotifier::GetInstance()->RemoveObserver(guiManager);
 }
 
 void BlankScene::Start()
@@ -33,11 +35,38 @@ void BlankScene::Start()
 		KinectAudioEventNotifier::GetInstance()->RegisterAudioListener(this);
 
 		started = true;
+
+		InputNotifier::GetInstance()->AddObserver(guiManager);
+
+		guiManager->AddScheme("VanillaSkin.scheme");
+		guiManager->AddWindow("VanillaConsole.layout", "window1");
+		guiManager->AddWindow("EffectsDemo.layout");
+
+		guiManager->GetChildItem("EffectsDemoRoot/EffectsFrameWindow/MultiLineEditbox1");
+		
+		CEGUI::Window* window = (CEGUI::Window*)guiManager->GetChildItem("EffectsDemoRoot");
+		window->hide();
+
+		CEGUI::Window* submitButton = (CEGUI::Window*)guiManager->GetChildItem("window1/Submit");
+
+		if(submitButton)
+		{
+			//submitButton->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&BlankScene::ButtonClick, this));
+			submitButton->subscribeEvent(CEGUI::PushButton::EventMouseEntersSurface, CEGUI::Event::Subscriber(&BlankScene::ButtonClick, this));
+		}
 	}
+}
+
+bool BlankScene::ButtonClick(const CEGUI::EventArgs &e)
+{
+	printf("Button is clicked");
+
+	return true;
 }
 
 bool BlankScene::Update(float gameTime)
 {
+	guiManager->Update(gameTime);
 
 	return true;
 }
