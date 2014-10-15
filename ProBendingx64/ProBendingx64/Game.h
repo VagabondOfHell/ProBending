@@ -13,6 +13,9 @@
 #include "BodyController.h"
 #include "SpeechController.h"
 
+#include "PxPhysicsAPI.h"
+#include "PhysXErrorReporter.h"
+
 class Game:public Ogre::WindowEventListener, public Ogre::LogListener
 {
 private:
@@ -39,6 +42,17 @@ private:
 	//Scene manager
 	SceneManager* sceneManager;
 
+	//Version Checker
+	physx::PxFoundation* foundation;
+	//The base of PhysX
+	static physx::PxPhysics* gPhysicsSDK;
+	//Custom error reporter
+	static PhysXErrorReporter gMyPhysXErrorReporter;
+	//Default Allocator
+	static physx::PxDefaultAllocator gDefaultAllocatorCallback;
+	//For Profiling (in Debug Mode)
+	physx::PxProfileZoneManager* mProfileZoneManager;
+
 	//Initializes the Root, Resource File, and Plugins. This method should be
 	//called first. Uses default resource and plugin files unless changed
 	virtual void InitializeRootResourcesAndPlugins();
@@ -49,6 +63,11 @@ private:
 	//Initialize the OIS Input System
 	virtual void InitializeOIS(bool useBufferedInput = true);
 	
+	///Initialize the PhysX system
+	void InitializePhysX();
+
+	bool ConnectToPVD();
+
 	void InitializeKinect();
 	void InitializeGame();
 

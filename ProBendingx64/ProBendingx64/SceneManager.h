@@ -12,7 +12,6 @@ class SceneManager
 {
 private:
 	Ogre::RenderWindow* window;
-	Ogre::Root* ogreRoot;
 
 	Ogre::Camera* mainCamera;
 
@@ -27,6 +26,10 @@ private:
 	std::shared_ptr<IScene> SwapScene(std::shared_ptr<IScene> newScene);
 
 public:
+	//Pointer to the Ogre Root
+	Ogre::Root* ogreRoot;
+
+
 	SceneManager(void);
 	~SceneManager(void);
 

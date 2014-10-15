@@ -18,11 +18,28 @@
 
 SpeechController speechController = SpeechController(NULL);
 
-float mCamRotationSpeed;
+physx::PxPhysics* Game::gPhysicsSDK;
+//Custom error reporter
+PhysXErrorReporter Game::gMyPhysXErrorReporter;
+//Default Allocator
+physx::PxDefaultAllocator Game::gDefaultAllocatorCallback;
+
 Game::Game()
     : mRoot(0), mResourcesCfg(Ogre::StringUtil::BLANK),
 	mPluginsCfg(Ogre::StringUtil::BLANK)
 {
+	mRoot = NULL;
+	mWindow = NULL;
+	
+	mInputManager = NULL;
+	mMouse = NULL;
+	mKeyboard = NULL;
+	mMainLog = NULL;
+	
+	sceneManager = NULL;
+	
+	mProfileZoneManager = NULL;
+	
 	//Load appropriate files
 	#ifdef _DEBUG
 		mResourcesCfg = "resources_d.cfg";
@@ -149,6 +166,63 @@ void Game::InitializeOIS(bool useBufferedInput)
 	windowResized(mWindow);
 }
 
+void Game::InitializePhysX()
+{
+	//Create the foundation of the physX SDK to check for SDK Version validity and create Allocation and Error callbacks
+	foundation = PxCreateFoundation(PX_PHYSICS_VERSION, gDefaultAllocatorCallback, gMyPhysXErrorReporter);
+	
+	bool recordMemoryAllocations;
+
+	//If in debug mode, activate the Profiling Manager
+#if _DEBUG
+	recordMemoryAllocations = true;
+	mProfileZoneManager = &physx::PxProfileZoneManager::createProfileZoneManager(foundation);		if(!mProfileZoneManager)		printf("PxProfileZoneManager::createProfileZoneManager failed!");
+
+	gPhysicsSDK = PxCreatePhysics(PX_PHYSICS_VERSION, *foundation, physx::PxTolerancesScale(), recordMemoryAllocations, mProfileZoneManager);
+#else
+	recordMemoryAllocations = false;
+	gPhysicsSDK = PxCreatePhysics(PX_PHYSICS_VERSION, *foundation, PxTolerancesScale());
+#endif
+
+	PxInitExtensions(*gPhysicsSDK);
+}
+
+bool Game::ConnectToPVD()
+{
+	if (!gPhysicsSDK->getPvdConnectionManager())
+	{
+		std::cout << "Warning: PhysX Visual Debugger not found running!\n";
+		return false;
+	}
+
+	if(gPhysicsSDK->getPvdConnectionManager()->isConnected())
+		return true;
+
+	const char* pvdHostIP = "127.0.0.1";
+	int port = 5425;
+	unsigned int timeout = 100;
+	physx::PxVisualDebuggerConnectionFlags flags =
+		physx::PxVisualDebuggerConnectionFlag::eDEBUG
+		| physx::PxVisualDebuggerConnectionFlag::eMEMORY
+		| physx::PxVisualDebuggerConnectionFlag::ePROFILE;
+	
+	// Create connection with PhysX Visual Debugger
+	physx::PxVisualDebuggerConnection* conn = physx::PxVisualDebuggerExt::createConnection(
+	gPhysicsSDK->getPvdConnectionManager(),	pvdHostIP,	port, timeout, flags);
+ 
+	if (conn)
+	{
+		std::cout << "Connected to PhysX Visual Debugger!\n";
+ 
+		gPhysicsSDK->getVisualDebugger()->setVisualizeConstraints(true);
+		gPhysicsSDK->getVisualDebugger()->setVisualDebuggerFlag(physx::PxVisualDebuggerFlag::eTRANSMIT_CONTACTS, true);
+
+		return true;
+	}
+
+	return false;
+}
+
 void Game::messageLogged(const Ogre::String &message, Ogre::LogMessageLevel lml, bool maskDebug, 
 		const Ogre::String &logName, bool &skipThisMessage)
 {
@@ -182,6 +256,8 @@ void Game::InitializeGame()
 	Ogre::TextureManager::getSingleton().setDefaultNumMipmaps(5);
 
 	InitializeOIS(true);
+
+	InitializePhysX();
 }
 
 void Game::InitializeKinect()
@@ -216,13 +292,21 @@ void Game::CloseGame()
 
 	InputNotifier::DestroySingleton();
 	InputManager::GetInstance()->DestroySingleton();
+
+	///Release Physx Systems
+	if(mProfileZoneManager)
+		mProfileZoneManager->release();
+	gPhysicsSDK->release();
+	PxCloseExtensions();
+	foundation->release();
+
 	::FreeConsole();
 }
 
 void Game::Run()
 {
 	InitializeGame();
-
+	ConnectToPVD();
 	InitializeKinect();
 
 	kinectController = BodyController();
@@ -249,22 +333,27 @@ void Game::Run()
 
 	sceneManager->FlagSceneSwitch(blankScene, true);
 
+	blankScene.reset();
+
 	//blankScene->GetOgreSceneManager()->createEntity("SFA", "Sinbad.mesh");
 	bool rendering = true;
 
 	Ogre::Timer gameTimer = Ogre::Timer();
-	float frameTime = 0;
+	float currentTime = 0;
+	float previousTime = 0;
 
 	while (rendering)
 	{
-		frameTime = (float)gameTimer.getMilliseconds();
-
-		if(!Update(frameTime))
+		gameTimer.reset();
+		
+		if(!Update(currentTime / 1000.0f))
 			rendering = false;
 
 		mRoot->renderOneFrame();
 
-		gameTimer.reset();
+		currentTime = (float)gameTimer.getMilliseconds();
+		
+		previousTime = currentTime;
 	}
 }
 
@@ -318,6 +407,16 @@ bool Game::Update(float gameTime)
 
 			once = false;
 		}
+	}
+
+	if(mKeyboard->isKeyDown(OIS::KeyCode::KC_D))
+	{
+		bool res = ConnectToPVD();
+
+		if(res)
+		printf("True");
+		else
+			printf("False");
 	}
 
 	return true;

@@ -3,6 +3,8 @@
 #include "KinectAudioEventNotifier.h"
 #include "InputNotifier.h"
 #include "GameObject.h"
+#include "OgreManualObject.h"
+#include "OgreEntity.h"
 
 BlankScene::BlankScene(void)
 	:IScene(NULL, NULL, "", "")
@@ -12,7 +14,7 @@ BlankScene::BlankScene(void)
 BlankScene::BlankScene(SceneManager* _owningManager, Ogre::Root* root, std::string _sceneName, std::string _resourceGroupName)
 	:IScene(_owningManager, root, _sceneName, _resourceGroupName)
 {
-
+	
 }
 
 BlankScene::~BlankScene(void)
@@ -30,6 +32,8 @@ void BlankScene::Start()
 {
 	if(!started)
 	{
+		InitializePhysics(physx::PxVec3(0.0f, -9.8f, 0.0f));
+
 		mainOgreCamera = ogreSceneManager->createCamera("MainCamera");
 
 		owningManager->GetRenderWindow()->removeAllViewports();
@@ -39,7 +43,7 @@ void BlankScene::Start()
 
 		mainOgreCamera->setAspectRatio(Ogre::Real(viewport->getActualWidth()) / Ogre::Real(viewport->getActualHeight()));
 
-		mainOgreCamera->setPosition(0, 0, 280.0f);
+		mainOgreCamera->setPosition(0, 0, 180.0f);
 		mainOgreCamera->lookAt(0, 0, 0);
 		mainOgreCamera->setNearClipDistance(5);
 		mainOgreCamera->setFarClipDistance(1000);
@@ -56,14 +60,34 @@ void BlankScene::Start()
 		InputNotifier::GetInstance()->AddObserver(guiManager);
 
 		guiManager->AddScheme("VanillaSkin.scheme");
-		guiManager->AddWindow("VanillaConsole.layout", "window1");
-		guiManager->AddWindow("EffectsDemo.layout");
+	/*	guiManager->AddWindow("VanillaConsole.layout", "window1");
+		guiManager->AddWindow("EffectsDemo.layout");*/
 
 		guiManager->GetChildItem("EffectsDemoRoot/EffectsFrameWindow/MultiLineEditbox1");
 		
 		object = new GameObject(this);
 
 		object->LoadModel("sinbad.mesh");
+
+		Ogre::AxisAlignedBox box = object->entity->getBoundingBox();
+		Ogre::Vector3 boxCenter = box.getCenter();
+		Ogre::Vector3 boxHalfSize = box.getHalfSize();
+
+		physx::PxMaterial* mMaterial = PxGetPhysics().createMaterial(0.5,0.5,0.5);
+
+		physx::PxReal density = 1.0f;
+		physx::PxTransform transform(physx::PxVec3(boxCenter.x, boxCenter.y, boxCenter.z), physx::PxQuat::createIdentity());
+		physx::PxVec3 dimensions(boxHalfSize.x, boxHalfSize.y, boxHalfSize.z);
+		physx::PxBoxGeometry geometry(dimensions);
+
+		object->rigidBody = physx::PxCreateDynamic(PxGetPhysics(), transform, geometry, *mMaterial, density);
+
+		object->GetDynamicRigidBody()->setAngularDamping(0.75);
+		object->GetDynamicRigidBody()->setLinearVelocity(physx::PxVec3(10.0f,0,0)); 
+		
+		physicsWorld->addActor(*object->rigidBody);
+		
+		object->CreatePhysXDebug();
 
 		CEGUI::Window* window = (CEGUI::Window*)guiManager->GetChildItem("EffectsDemoRoot");
 		//window->hide();
@@ -88,7 +112,13 @@ bool BlankScene::ButtonClick(const CEGUI::EventArgs &e)
 bool BlankScene::Update(float gameTime)
 {
 	guiManager->Update(gameTime);
-	object->gameObjectNode->translate(Ogre::Vector3(0.1f, 0.0f, 0.0f));
+	object->gameObjectNode->translate(Ogre::Vector3(0.0f, 0.0f, 0.0f));
+
+	physicsWorld->simulate(gameTime);
+
+	physicsWorld->fetchResults(true);
+
+	object->Update(gameTime);
 
 	return true;
 }
