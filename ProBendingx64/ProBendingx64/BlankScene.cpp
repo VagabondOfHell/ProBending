@@ -1,5 +1,4 @@
 #include "BlankScene.h"
-#include "OgreRenderWindow.h"
 #include "KinectAudioEventNotifier.h"
 #include "InputNotifier.h"
 #include "GameObject.h"

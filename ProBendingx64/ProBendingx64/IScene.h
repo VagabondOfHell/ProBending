@@ -1,6 +1,7 @@
 #pragma once
 #include "SceneManager.h"
 #include "GUIManager.h"
+#include "OgreRenderWindow.h"
 #include <string>
 #include "PxPhysicsAPI.h"
 

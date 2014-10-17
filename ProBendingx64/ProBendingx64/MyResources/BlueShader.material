@@ -1,0 +1,34 @@
+fragment_program SimpleFp_GLSL glsl
+{
+   source BlueShader.frag
+}
+
+vertex_program SimpleVp_GLSL glsl
+{
+   source BlueShader.vert
+}
+
+material BlueShader
+{
+   technique
+   {
+      pass
+      {
+	  lighting off
+	  //depth_write off
+         vertex_program_ref SimpleVp_GLSL
+         {
+		 param_named_auto worldViewProj worldviewproj_matrix
+		  }
+         
+        fragment_program_ref SimpleFp_GLSL
+         {
+         }
+		
+		texture_unit
+         {
+            texture spidey.jpg 2d
+         }
+	  }
+   }
+}

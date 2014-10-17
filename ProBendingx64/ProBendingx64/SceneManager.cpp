@@ -19,9 +19,8 @@ std::shared_ptr<IScene> SceneManager::SwapScene(std::shared_ptr<IScene> newScene
 
 	if(oldScene)
 	{
-		oldScene->UnloadResources();
 		oldScene->Close();
-		ogreRoot->destroySceneManager(oldScene->GetOgreSceneManager());
+		oldScene.reset();
 	}
 
 	currentScene = newScene;

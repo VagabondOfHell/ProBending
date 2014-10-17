@@ -13,6 +13,7 @@
 
 #include "TestScene.h"
 #include "BlankScene.h"
+#include "FluidScene.h"
 
 #include "vld.h"
 
@@ -248,10 +249,7 @@ void Game::InitializeGame()
 	mRoot->setRenderSystem(rs);
 
 	CreateOgreWindow("Probending");
-	
-	// initialise all resource groups
-	//Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
-	
+	///https://github.com/oysteinkrog/gpusphsim/tree/master/SPHSimOgreApp
 	// Set default mipmap level (note: some APIs ignore this)
 	Ogre::TextureManager::getSingleton().setDefaultNumMipmaps(5);
 
@@ -387,9 +385,13 @@ bool Game::Update(float gameTime)
 	{
 		if(!once)
 		{
-			std::shared_ptr<TestScene> testScene(new TestScene(sceneManager, mRoot, "Test Scene", "General"));
+			/*std::shared_ptr<TestScene> testScene(new TestScene(sceneManager, mRoot, "Test Scene", "General"));
 
-			sceneManager->FlagSceneSwitch(testScene, true);
+			sceneManager->FlagSceneSwitch(testScene, true);*/
+
+			std::shared_ptr<FluidScene> fluidScene(new FluidScene(sceneManager, mRoot, "Fluid Scene", "General"));
+
+			sceneManager->FlagSceneSwitch(fluidScene, true);
 
 			once = true;
 		}
