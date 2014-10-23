@@ -7,8 +7,14 @@ class FluidScene :
 	public IScene
 {
 private:
+	static const int NUM_PARTICLES = 1000;
+
 	Ogre::ParticleSystem* sunParticle;
 	Ogre::SceneNode* particleNode;
+
+	physx::PxVec3 particlePositions[NUM_PARTICLES];
+	physx::PxVec3 particleVelocities[NUM_PARTICLES];
+	physx::PxU32 particleIndices[NUM_PARTICLES];
 
 	GameObject* object;
 

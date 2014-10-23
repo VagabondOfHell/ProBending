@@ -4,7 +4,8 @@
 #include "OgreRenderWindow.h"
 #include <string>
 #include "PxPhysicsAPI.h"
-
+#include <gl\GL.h>
+#pragma comment( lib, "opengl32.lib" )
 class IScene
 {
 protected:
@@ -21,6 +22,9 @@ protected:
 
 	physx::PxScene* physicsWorld;
 	physx::PxDefaultCpuDispatcher* mCpuDispatcher;
+	
+	//Cuda Manager for GPU Processor usage
+	physx::PxCudaContextManager* cudaContextManager;
 
 	bool started;
 
@@ -71,6 +75,13 @@ public:
 		if(physicsWorld)
 			physicsWorld->release();
 
+		//Delete cuda after deleting the physics world
+		if(cudaContextManager)
+		{
+			cudaContextManager->release();
+			cudaContextManager = NULL;
+		}
+
 		owningManager->ogreRoot->destroySceneManager(ogreSceneManager);
 
 	}
@@ -80,7 +91,7 @@ public:
 		ogreSceneManager->setAmbientLight(Ogre::ColourValue(1.0f, 1.0f, 1.0f, 1.0f));
 	}
 
-	virtual void InitializePhysics(physx::PxVec3& gravity)
+	virtual void InitializePhysics(physx::PxVec3& gravity = physx::PxVec3(0.0f, -9.8f, 0.0f), bool initializeCuda = false)
 	{
 		physx::PxSceneDesc descriptor(PxGetPhysics().getTolerancesScale());
 		
@@ -92,6 +103,19 @@ public:
 			descriptor.cpuDispatcher = mCpuDispatcher;
 		}
 
+		if(initializeCuda)
+		{
+			if(!descriptor.gpuDispatcher)
+			{
+				// create cuda context manager
+				physx::PxCudaContextManagerDesc cudaContextManagerDesc;
+
+				cudaContextManager = physx::PxCreateCudaContextManager(PxGetFoundation(), cudaContextManagerDesc, PxGetPhysics().getProfileZoneManager());
+				   
+				if(cudaContextManager)
+					descriptor.gpuDispatcher = cudaContextManager->getGpuDispatcher();
+			}
+		}
 		if(!descriptor.filterShader)
 			descriptor.filterShader  = physx::PxDefaultSimulationFilterShader;
 			
@@ -132,6 +156,11 @@ public:
 	inline Ogre::SceneManager* GetOgreSceneManager()const
 	{
 		return ogreSceneManager;
+	}
+
+	inline physx::PxCudaContextManager* const GetCudaContextManager()const
+	{
+		return cudaContextManager;
 	}
 
 	///This method unloads all resources in the group, but in addition it removes all those 

@@ -179,12 +179,12 @@ void Game::InitializePhysX()
 	recordMemoryAllocations = true;
 	mProfileZoneManager = &physx::PxProfileZoneManager::createProfileZoneManager(foundation);		if(!mProfileZoneManager)		printf("PxProfileZoneManager::createProfileZoneManager failed!");
 
-	gPhysicsSDK = PxCreatePhysics(PX_PHYSICS_VERSION, *foundation, physx::PxTolerancesScale(), recordMemoryAllocations, mProfileZoneManager);
+	gPhysicsSDK = PxCreatePhysics(PX_PHYSICS_VERSION, *foundation, physx::PxTolerancesScale(), recordMemoryAllocations, NULL);
 #else
 	recordMemoryAllocations = false;
 	gPhysicsSDK = PxCreatePhysics(PX_PHYSICS_VERSION, *foundation, PxTolerancesScale());
 #endif
-
+	
 	PxInitExtensions(*gPhysicsSDK);
 }
 
