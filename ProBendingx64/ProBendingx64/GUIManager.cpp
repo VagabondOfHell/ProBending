@@ -12,9 +12,9 @@ GUIManager::~GUIManager(void)
 {
 }
 
-void GUIManager::BootstrapSystem()
+void GUIManager::BootstrapSystem(Ogre::RenderTarget* renderTarget)
 {
-	mRenderer = &CEGUI::OgreRenderer::bootstrapSystem();
+	mRenderer = &CEGUI::OgreRenderer::bootstrapSystem(*renderTarget);
 }
 
 void GUIManager::DestroySystem()

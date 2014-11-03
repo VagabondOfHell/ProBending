@@ -4,8 +4,12 @@
 #include "OgreRenderWindow.h"
 #include <string>
 #include "PxPhysicsAPI.h"
-#include <gl\GL.h>
-#pragma comment( lib, "opengl32.lib" )
+//#include <gl\GL.h>
+
+#include <OgreGLRenderSystem.h>
+#include <OgreWin32Window.h>
+#include <OgreWin32Context.h>
+#pragma comment(lib, "opengl32")
 class IScene
 {
 protected:
@@ -107,11 +111,27 @@ public:
 		{
 			if(!descriptor.gpuDispatcher)
 			{
+				Ogre::RenderWindow* window = (Ogre::RenderWindow*)Ogre::Root::getSingleton().getRenderSystem()->getRenderTarget("Probending");
+				HWND hg;
+				window->getCustomAttribute("WINDOW", &hg);
+
 				// create cuda context manager
 				physx::PxCudaContextManagerDesc cudaContextManagerDesc;
-
+				cudaContextManagerDesc.interopMode = physx::PxCudaInteropMode::OGL_INTEROP;
+				cudaContextManagerDesc.graphicsDevice = (void*)&hg;
+				cudaContextManagerDesc.ctx = NULL;
+				
 				cudaContextManager = physx::PxCreateCudaContextManager(PxGetFoundation(), cudaContextManagerDesc, PxGetPhysics().getProfileZoneManager());
 				   
+				std::string result;
+
+				if(cudaContextManager->contextIsValid())
+					result = "CUDA Context Valid";
+				else
+					result = "CUDA Context Not Valid";
+
+				Ogre::LogManager::getSingleton().logMessage(Ogre::LogMessageLevel::LML_NORMAL, result.c_str());
+			
 				if(cudaContextManager)
 					descriptor.gpuDispatcher = cudaContextManager->getGpuDispatcher();
 			}
@@ -161,6 +181,11 @@ public:
 	inline physx::PxCudaContextManager* const GetCudaContextManager()const
 	{
 		return cudaContextManager;
+	}
+
+	inline physx::PxScene* const GetPhysXScene()const
+	{
+		return physicsWorld;
 	}
 
 	///This method unloads all resources in the group, but in addition it removes all those 

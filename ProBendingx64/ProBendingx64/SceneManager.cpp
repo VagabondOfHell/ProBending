@@ -35,7 +35,7 @@ void SceneManager::Initialize(Ogre::RenderWindow* _window, Ogre::Root* _ogreRoot
 	window = _window;
 	ogreRoot = _ogreRoot;
 
-	GUIManager::BootstrapSystem();
+	GUIManager::BootstrapSystem(_window);
 }
 
 bool SceneManager::Update(float gameTime)

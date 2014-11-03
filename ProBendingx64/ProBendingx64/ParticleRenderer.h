@@ -3,6 +3,7 @@
 #include "PxPhysicsAPI.h"
 
 class IScene;
+class CudaInteropBuffer;
 
 class ParticleRenderer : public Ogre::SimpleRenderable
 {
@@ -13,20 +14,27 @@ private:
 
 	IScene* owningScene;
 
-	CUgraphicsResource cudaBuffer;
+	physx::PxParticleSystem* particleSystem;
 
-	//Pointers to buffer data
-	Ogre::HardwareVertexBufferSharedPtr mVertexBufferPosition;
-	Ogre::HardwareVertexBufferSharedPtr mVertexBufferColor;
+	CudaInteropBuffer* positionBuffer;
 
+	//Ogre::HardwareVertexBufferSharedPtr mVertexBufferColor;
+	
 	void CreateVertexBuffers();
 
-	void MapToCudaBuffer();
 
 public:
 	ParticleRenderer(IScene* sceneOwner, UINT32 numParticles = 100);
 	virtual ~ParticleRenderer(void);
 
-	
+	void Resize(UINT32 newParticleNumber);
+	void UpdateParticles(physx::PxVec3* posArray, UINT32 size);
+
+	void Update(float gameTime);
+
+	Ogre::Real getBoundingRadius(void) const;
+
+	Ogre::Real getSquaredViewDepth(const Ogre::Camera*)const;
+CUgraphicsResource cudaPositionBuffer;
 };
 

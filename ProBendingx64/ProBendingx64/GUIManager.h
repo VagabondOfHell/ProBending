@@ -20,7 +20,7 @@ public:
 	GUIManager(void);
 	virtual ~GUIManager(void);
 	
-	static void BootstrapSystem();
+	static void BootstrapSystem(Ogre::RenderTarget* renderTarget);
 	static void DestroySystem();
 
 	void InitializeGUI();	
