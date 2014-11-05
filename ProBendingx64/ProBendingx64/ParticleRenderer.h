@@ -2,8 +2,10 @@
 #include "OgreSimpleRenderable.h"
 #include "PxPhysicsAPI.h"
 
+#include "CudaInteropBuffer.h"
+
 class IScene;
-class CudaInteropBuffer;
+//class CudaInteropBuffer;
 
 class ParticleRenderer : public Ogre::SimpleRenderable
 {
@@ -11,6 +13,9 @@ class ParticleRenderer : public Ogre::SimpleRenderable
 private:
 	UINT32 particleCount;
 	UINT32 volumeSize;
+
+	CUmodule module;
+	CUfunction updateParticlesKernel;
 
 	IScene* owningScene;
 

@@ -1,9 +1,12 @@
 #include "ParticleRenderer.h"
 
-#include "CudaInteropBuffer.h"
+//#include "CudaInteropBuffer.h"
 #include "OgreRoot.h"
 #include "PxPhysicsAPI.h"
 #include "IScene.h"
+
+#include "kernelTest.cuh"
+#include "device_launch_parameters.h"
 
 ParticleRenderer::ParticleRenderer(IScene* _sceneOwner, UINT32 numParticles)
 	:particleCount(0), volumeSize(2)
@@ -70,6 +73,8 @@ ParticleRenderer::~ParticleRenderer(void)
 		delete positionBuffer;
 		positionBuffer = NULL;
 	}
+
+	cuModuleUnload(module);
 }
 
 void ParticleRenderer::Resize(UINT32 newParticleNumber)
@@ -95,8 +100,8 @@ void ParticleRenderer::CreateVertexBuffers()
 	// POSITIONS
 	// define the vertex format
 	size_t currOffset = 0;
-	mRenderOp.vertexData->vertexDeclaration->addElement(0, currOffset, Ogre::VET_FLOAT4, Ogre::VES_POSITION);
-	currOffset += Ogre::VertexElement::getTypeSize(Ogre::VET_FLOAT4);
+	mRenderOp.vertexData->vertexDeclaration->addElement(0, currOffset, Ogre::VET_FLOAT3, Ogre::VES_POSITION);
+	currOffset += Ogre::VertexElement::getTypeSize(Ogre::VET_FLOAT3);
 
 	// allocate the vertex buffer
 	Ogre::HardwareVertexBufferSharedPtr mVertexBufferPosition = Ogre::HardwareBufferManager::getSingleton().createVertexBuffer(
@@ -109,17 +114,43 @@ void ParticleRenderer::CreateVertexBuffers()
 	mRenderOp.vertexData->vertexBufferBinding->setBinding(0, mVertexBufferPosition);
 
 	// Fill some random positions for particles
-	Ogre::Vector4* pVertexPos = static_cast<Ogre::Vector4*>(mVertexBufferPosition->lock(Ogre::HardwareBuffer::HBL_NORMAL));
+	Ogre::Vector3* pVertexPos = static_cast<Ogre::Vector3*>(mVertexBufferPosition->lock(Ogre::HardwareBuffer::HBL_NORMAL));
 
 	for(UINT32 i = 0; i< particleCount;i++)
 	{
-		Ogre::Vector4 pos = Ogre::Vector4(1 + i * 0.2f, 0.0f, 0, 1.0f);
+		Ogre::Vector3 pos = Ogre::Vector3(1 + i * 0.2f, 0.0f, 0);//, 1.0f);
 		pVertexPos[i] = pos;
 	}
 
 	mVertexBufferPosition->unlock();
 
 	positionBuffer = new CudaInteropBuffer(owningScene, mVertexBufferPosition);
+
+	
+	 FILE *fp = fopen("C:\\Users\\Adam\\Desktop\\Capstone\\ProBendingx64\\ProBendingx64\\KernelTest.ptx", "rb");
+            fseek(fp, 0, SEEK_END);
+            int file_size = ftell(fp);
+            char *buf = new char[file_size+1];
+            fseek(fp, 0, SEEK_SET);
+            fread(buf, sizeof(char), file_size, fp);
+            fclose(fp);
+            buf[file_size] = '\0';
+            
+	CUresult res = cuModuleLoadData(&module, buf );
+
+	if(res != CUDA_SUCCESS)
+	{
+		printf("err");
+	}
+
+	res = cuModuleGetFunction(&updateParticlesKernel, module, "UpdateParticlesKernel");
+
+	if(res != CUDA_SUCCESS)
+	{
+		printf("err");
+	}
+
+	delete[] buf;
 
 	// COLORS
 	// define the vertex format
@@ -183,6 +214,8 @@ void ParticleRenderer::Update(float gameTime)
 	physx::PxParticleReadData* rd = particleSystem->lockParticleReadData(physx::PxDataAccessFlag::eDEVICE);
 
 	CUdeviceptr dev = reinterpret_cast<CUdeviceptr>(&rd->positionBuffer[0]);
+	CUdeviceptr d_ValidBitmap = reinterpret_cast<CUdeviceptr>(&rd->validParticleBitmap);
+	PxU32 validRange = rd->validParticleRange;
 
 	CUresult result = positionBuffer->MapAndGetCudaGraphicsMemoryPointer();
 
@@ -191,19 +224,67 @@ void ParticleRenderer::Update(float gameTime)
 		printf("Get Map Graphics Resource FAILED: %i", result);
 	}
 
-	positionBuffer->LaunchPhysxCopyKernel(dev);
+	//positionBuffer->LaunchPhysxCopyKernel(dev);
 
-	Ogre::Vector4* pVertexPos = new Ogre::Vector4[particleCount];
+	///Take in cuDevicePtrs for this function. In this function, perform Cuda memCpy Device to Device like in AddKernel.
+	///Therefore we need the cuDevicePtrs and the buffer sizes
+	//LaunchUpdateParticlesKernel((physx::PxVec3*)positionBuffer->GetCudaDevicePointer(), 12, (physx::PxVec4*)dev, (physx::PxU32*)d_ValidBitmap, validRange);
+
+	CUdeviceptr p = positionBuffer->GetCudaDevicePointer();
+	int stride = 12;
+	CUdeviceptr d_stride;
+	CUresult res = cuMemAlloc(&d_stride, sizeof(int));
+	if(res!= CUDA_SUCCESS)
+		printf("err");
+
+	res = cuMemcpyHtoD(d_stride, &stride, sizeof(int));
+	if(res!= CUDA_SUCCESS)
+		printf("err");
+
+	CUdeviceptr d_validRange;
+	res = cuMemAlloc(&d_validRange, sizeof(PxU32));
+	if(res!= CUDA_SUCCESS)
+		printf("err");
+
+	res = cuMemcpyHtoD(d_validRange, &validRange, sizeof(PxU32));
+	if(res!= CUDA_SUCCESS)
+		printf("err");
+
+	void* args[2] = 
+	{
+		&p,
+		&dev
+	};
+
+	/*void* args[5] = {
+		(void*)&p,
+		&d_stride,
+		&dev,
+		&d_ValidBitmap,
+		&d_validRange
+	};*/
+	
+	res = cuLaunchKernel(updateParticlesKernel, 1, 1, 1, 100, 1, 1, 0, 0, args, 0); 
+
+	if(res != CUDA_SUCCESS)
+	{
+		printf("err");
+	}
+
+	Ogre::Vector3* pVertexPos = new Ogre::Vector3[particleCount];
 
 	result = cuMemcpyDtoH_v2(pVertexPos, positionBuffer->GetCudaDevicePointer(), positionBuffer->GetBufferSize());
 
-	rd->unlock();
+	
 	
 	if(result != CUDA_SUCCESS)
 	{
 		printf("Copy To Host FAILED: %i", result);
 	}
 	
+	if(rd)
+		rd->unlock();
+
 	rd = particleSystem->lockParticleReadData(physx::PxDataAccessFlag::eREADABLE);
 
 	if(rd)
@@ -220,7 +301,7 @@ void ParticleRenderer::Update(float gameTime)
 				const physx::PxVec3& velocity = *velocityIter;
 
 				printf("Position %i: %f, %f, %f \n", i, position.x, position.y, position.z);
-				printf("OgrePosition %i: %f, %f, %f, %f \n", i, pVertexPos[i].x, pVertexPos[i].y, pVertexPos[i].z, pVertexPos[i].w);
+				printf("OgrePosition %i: %f, %f, %f\n", i, pVertexPos[i].x, pVertexPos[i].y, pVertexPos[i].z);
 			}
 		}
 
@@ -232,9 +313,7 @@ void ParticleRenderer::Update(float gameTime)
 		rd->unlock();
 	}
 
-	//cuGraphicsUnmapResources(1, &cudaPositionBuffer, 0);
-	positionBuffer->UnmapFromCudaBuffer();
-
+positionBuffer->UnmapFromCudaBuffer();
 	owningScene->GetCudaContextManager()->releaseContext();
 
 	delete particleForces;

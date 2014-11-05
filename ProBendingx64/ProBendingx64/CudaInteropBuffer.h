@@ -127,21 +127,21 @@ public:
 
 	///<summary>Gets whether or not the CUDA resource is currently mapped</summary>
 	///<returns>True if mapped, false if not</returns>
-	inline bool GetIsMapped()
+	inline bool GetIsMapped()const
 	{
 		return isMapped;
 	}
 
 	///<summary>Gets whether or not the CUDA resource has been registered</summary>
 	///<returns>True if registered, false if not</returns>
-	inline bool GetIsRegistered()
+	inline bool GetIsRegistered()const
 	{
 		return isRegistered;
 	}
 
 	///<summary>Gets the GL Buffer address</summary>
 	///<returns>GLuint representing the address of the buffer</returns>
-	inline GLuint GetGLBufferID()
+	inline GLuint GetGLBufferID()const
 	{
 		Ogre::GLHardwareVertexBuffer* bufferGL = static_cast<Ogre::GLHardwareVertexBuffer*>(mOgreBuffer.getPointer());
 		return bufferGL->getGLBufferId();
@@ -149,21 +149,21 @@ public:
 
 	///<summary>Gets the Cuda Device Pointer. Should only be retrieved while mapped, or shortly after</summary>
 	///<returns>The Cuda Device Pointer of this buffer</returns>
-	inline const CUdeviceptr GetCudaDevicePointer()
+	inline CUdeviceptr GetCudaDevicePointer()const
 	{
 		return cudaPointer;
 	}
 
 	///<summary>Gets the size of the Buffer of the Cuda Device Pointer. Should only be retrieved while mapped, or shortly after</summary>
 	///<returns>The size of this buffer</returns>
-	inline const size_t GetBufferSize()
+	inline const size_t GetBufferSize()const
 	{
 		return bufferSize;
 	}
 
 	///<summary>Gets the Ogre GL Buffer</summary>
 	///<returns>The Ogre GL Vertex Hardware Buffer</returns>
-	inline Ogre::HardwareVertexBufferSharedPtr GetOgreBuffer()
+	inline Ogre::HardwareVertexBufferSharedPtr GetOgreBuffer()const
 	{
 		return mOgreBuffer;
 	}
