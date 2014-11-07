@@ -8,7 +8,7 @@ class FluidScene :
 	public IScene
 {
 private:
-	static const int NUM_PARTICLES = 100;
+	static const int NUM_PARTICLES = 10000;
 
 	Ogre::ParticleSystem* sunParticle;
 	Ogre::SceneNode* particleNode;

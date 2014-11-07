@@ -8,6 +8,8 @@
 #include "kernelTest.cuh"
 #include "device_launch_parameters.h"
 
+#include "CudaModuleHelper.h"
+
 ParticleRenderer::ParticleRenderer(IScene* _sceneOwner, UINT32 numParticles)
 	:particleCount(0), volumeSize(2)
 {
@@ -56,7 +58,7 @@ ParticleRenderer::ParticleRenderer(IScene* _sceneOwner, UINT32 numParticles)
 	ps->setParticleReadDataFlag(physx::PxParticleReadDataFlag::eVELOCITY_BUFFER, true);
 	
 	ps->setMaxMotionDistance(10.0f);
-
+	
 	owningScene->GetPhysXScene()->addActor(*ps);
 
 	particleSystem = ps;
@@ -110,7 +112,7 @@ void ParticleRenderer::CreateVertexBuffers()
 			Ogre::HardwareBuffer::HBU_DISCARDABLE,///Add dynamicWriteOnly as well?
 			false);
 
-	// bind positions to 0
+	// bind positions to location 0
 	mRenderOp.vertexData->vertexBufferBinding->setBinding(0, mVertexBufferPosition);
 
 	// Fill some random positions for particles
@@ -126,31 +128,11 @@ void ParticleRenderer::CreateVertexBuffers()
 
 	positionBuffer = new CudaInteropBuffer(owningScene, mVertexBufferPosition);
 
-	
-	 FILE *fp = fopen("C:\\Users\\Adam\\Desktop\\Capstone\\ProBendingx64\\ProBendingx64\\KernelTest.ptx", "rb");
-            fseek(fp, 0, SEEK_END);
-            int file_size = ftell(fp);
-            char *buf = new char[file_size+1];
-            fseek(fp, 0, SEEK_SET);
-            fread(buf, sizeof(char), file_size, fp);
-            fclose(fp);
-            buf[file_size] = '\0';
-            
-	CUresult res = cuModuleLoadData(&module, buf );
+	if(!CudaModuleHelper::LoadCUDAModule(&module, "x64/Debug/KernelTest.ptx"))
+		printf("Load CUDA Module failed! Error: %i\n", CudaModuleHelper::GetLastCudaError());
 
-	if(res != CUDA_SUCCESS)
-	{
-		printf("err");
-	}
-
-	res = cuModuleGetFunction(&updateParticlesKernel, module, "UpdateParticlesKernel");
-
-	if(res != CUDA_SUCCESS)
-	{
-		printf("err");
-	}
-
-	delete[] buf;
+	if(!CudaModuleHelper::LoadCUDAFunction(&updateParticlesKernel, module, "UpdateParticlesKernel"))
+		printf("Load CUDA Function failed! Error: %i\n", CudaModuleHelper::GetLastCudaError());
 
 	// COLORS
 	// define the vertex format
@@ -212,9 +194,11 @@ void ParticleRenderer::Update(float gameTime)
 	owningScene->GetCudaContextManager()->acquireContext();
 
 	physx::PxParticleReadData* rd = particleSystem->lockParticleReadData(physx::PxDataAccessFlag::eDEVICE);
-
+	
 	CUdeviceptr dev = reinterpret_cast<CUdeviceptr>(&rd->positionBuffer[0]);
 	CUdeviceptr d_ValidBitmap = reinterpret_cast<CUdeviceptr>(&rd->validParticleBitmap);
+	CUdeviceptr d_Velocities = reinterpret_cast<CUdeviceptr>(&rd->velocityBuffer[0]);
+
 	PxU32 validRange = rd->validParticleRange;
 
 	CUresult result = positionBuffer->MapAndGetCudaGraphicsMemoryPointer();
@@ -224,66 +208,46 @@ void ParticleRenderer::Update(float gameTime)
 		printf("Get Map Graphics Resource FAILED: %i", result);
 	}
 
-	//positionBuffer->LaunchPhysxCopyKernel(dev);
-
-	///Take in cuDevicePtrs for this function. In this function, perform Cuda memCpy Device to Device like in AddKernel.
-	///Therefore we need the cuDevicePtrs and the buffer sizes
-	//LaunchUpdateParticlesKernel((physx::PxVec3*)positionBuffer->GetCudaDevicePointer(), 12, (physx::PxVec4*)dev, (physx::PxU32*)d_ValidBitmap, validRange);
-
 	CUdeviceptr p = positionBuffer->GetCudaDevicePointer();
-	int stride = 12;
-	CUdeviceptr d_stride;
-	CUresult res = cuMemAlloc(&d_stride, sizeof(int));
-	if(res!= CUDA_SUCCESS)
-		printf("err");
-
-	res = cuMemcpyHtoD(d_stride, &stride, sizeof(int));
-	if(res!= CUDA_SUCCESS)
-		printf("err");
 
 	CUdeviceptr d_validRange;
-	res = cuMemAlloc(&d_validRange, sizeof(PxU32));
-	if(res!= CUDA_SUCCESS)
-		printf("err");
 
-	res = cuMemcpyHtoD(d_validRange, &validRange, sizeof(PxU32));
-	if(res!= CUDA_SUCCESS)
-		printf("err");
+	if(!CudaModuleHelper::AllocateAndCopyHostToDevice(&d_validRange, sizeof(PxU32), &validRange, sizeof(PxU32)))
+		printf("Error with Device Allocation or Copying! Error: %i\n", CudaModuleHelper::GetLastCudaError());
 
-	void* args[2] = 
+	//Set up Kernel Arguments
+	void* args[3] = 
 	{
 		&p,
-		&dev
-	};
-
-	/*void* args[5] = {
-		(void*)&p,
-		&d_stride,
 		&dev,
-		&d_ValidBitmap,
-		&d_validRange
-	};*/
+		&d_Velocities
+	};
 	
-	res = cuLaunchKernel(updateParticlesKernel, 1, 1, 1, 100, 1, 1, 0, 0, args, 0); 
+	CUresult res = cuLaunchKernel(updateParticlesKernel, 1000, 1, 1, 10, 1, 1, 0, 0, args, 0); 
+	//positionBuffer->LaunchPhysxCopyKernel(dev);
 
-	if(res != CUDA_SUCCESS)
-	{
-		printf("err");
-	}
+	cuMemFree(d_validRange);
 
-	Ogre::Vector3* pVertexPos = new Ogre::Vector3[particleCount];
+	//if(res != CUDA_SUCCESS)
+	//{
+	//	printf("err");
+	//}
 
-	result = cuMemcpyDtoH_v2(pVertexPos, positionBuffer->GetCudaDevicePointer(), positionBuffer->GetBufferSize());
+	//Ogre::Vector3* pVertexPos = new Ogre::Vector3[particleCount];
+
+	//result = cuMemcpyDtoH_v2(pVertexPos, positionBuffer->GetCudaDevicePointer(), positionBuffer->GetBufferSize());
 
 	
-	
+	/*
 	if(result != CUDA_SUCCESS)
 	{
 		printf("Copy To Host FAILED: %i", result);
 	}
-	
+	*/
 	if(rd)
 		rd->unlock();
+
+	std::vector<unsigned int> tempIndices = std::vector<unsigned int>();
 
 	rd = particleSystem->lockParticleReadData(physx::PxDataAccessFlag::eREADABLE);
 
@@ -291,26 +255,34 @@ void ParticleRenderer::Update(float gameTime)
 	{
 		physx::PxStrideIterator<const physx::PxParticleFlags> flagsIter(rd->flagsBuffer);
 		physx::PxStrideIterator<const physx::PxVec3> positionIter (rd->positionBuffer);
-		physx::PxStrideIterator<const physx::PxVec3> velocityIter (rd->velocityBuffer);
 		
-		for (unsigned int i = 0; i < rd->validParticleRange; ++i, ++flagsIter, ++velocityIter, ++positionIter)
+		for (unsigned int i = 0; i < rd->validParticleRange; ++i, ++flagsIter, ++positionIter)
 		{
 			if(*flagsIter & physx::PxParticleFlag::eVALID)
 			{
 				const physx::PxVec3& position = *positionIter;
-				const physx::PxVec3& velocity = *velocityIter;
 
-				printf("Position %i: %f, %f, %f \n", i, position.x, position.y, position.z);
-				printf("OgrePosition %i: %f, %f, %f\n", i, pVertexPos[i].x, pVertexPos[i].y, pVertexPos[i].z);
+				if(position.magnitude() > 25.0f)
+				{
+					tempIndices.push_back(i);
+				}
 			}
 		}
 
 		particleSystem->addForces(particleCount, physx::PxStrideIterator<physx::PxU32>(particleIndices),
 			physx::PxStrideIterator<physx::PxVec3>(particleForces), physx::PxForceMode::eFORCE);
-		/*particleSystem->setPositions(particleCount, physx::PxStrideIterator<physx::PxU32>(particleIndices),
-			physx::PxStrideIterator<physx::PxVec3>(particleForces));*/
+
+	//	
+	//	/*particleSystem->setPositions(particleCount, physx::PxStrideIterator<physx::PxU32>(particleIndices),
+	//		physx::PxStrideIterator<physx::PxVec3>(particleForces));*/
 
 		rd->unlock();
+	}
+
+	if(tempIndices.size() > 0)
+	{
+		RemoveParticles(tempIndices.size(), PxStrideIterator<PxU32>(&tempIndices[0]));
+		SpawnParticles(tempIndices.size(), PxStrideIterator<PxU32>(&tempIndices[0]));
 	}
 
 positionBuffer->UnmapFromCudaBuffer();
@@ -318,7 +290,37 @@ positionBuffer->UnmapFromCudaBuffer();
 
 	delete particleForces;
 	delete particleIndices;
-	delete pVertexPos;
+//	delete pVertexPos;
+}
+
+void ParticleRenderer::SpawnParticles(unsigned int numToSpawn, PxStrideIterator<PxU32> indices)
+{
+	PxParticleCreationData spawnData;
+	spawnData.numParticles = numToSpawn;
+	
+	PxVec3 *positions = new PxVec3[numToSpawn];
+	PxVec3 *velocities = new PxVec3[numToSpawn];
+
+	for (int i = 0; i < numToSpawn; i++)
+	{
+		positions[i] = PxVec3(0.0f);
+		
+		velocities[i] = PxVec3(rand() % 20 + 1);
+	}
+
+	spawnData.indexBuffer = indices;
+	spawnData.positionBuffer = PxStrideIterator<PxVec3>(positions);
+	spawnData.velocityBuffer = PxStrideIterator<PxVec3>(velocities);
+
+	particleSystem->createParticles(spawnData);
+
+	delete positions;
+	delete velocities;
+}
+
+void ParticleRenderer::RemoveParticles(unsigned int numToRemove, PxStrideIterator<PxU32> indices)
+{
+	particleSystem->releaseParticles(numToRemove, indices);
 }
 
 Ogre::Real ParticleRenderer::getBoundingRadius(void) const

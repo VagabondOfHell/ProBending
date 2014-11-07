@@ -94,15 +94,25 @@ void FluidScene::Start()
 	testNode->translate(5.0f, 0.0f, 0.0f);
 }
 
+bool simulate = false;
+
 bool FluidScene::Update(float gameTime)
 {	
-	physicsWorld->simulate(gameTime);
+	if(!simulate)
+	{
+		physicsWorld->simulate(gameTime);
+		simulate = true;
+	}
+
+	if(simulate)
+		if(physicsWorld->checkResults())
+		{
+			physicsWorld->fetchResults(true);
+			particleRenderer->Update(gameTime);
+			simulate = false;
+		}
 
 	
-
-	physicsWorld->fetchResults(true);
-
-	particleRenderer->Update(gameTime);
 	/*for (int i = 0; i < NUM_PARTICLES; i++)
 	{
 		particleVelocities[i] = physx::PxVec3(0.0f, 0.2f, 0.0f);
@@ -111,7 +121,7 @@ bool FluidScene::Update(float gameTime)
 
 	particleRenderer->UpdateParticles(particlePositions, NUM_PARTICLES);*/
 
-	object->Update(gameTime);
+	//object->Update(gameTime);
 
 
 	return true;

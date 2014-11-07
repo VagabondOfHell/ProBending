@@ -37,6 +37,10 @@ public:
 
 	void Update(float gameTime);
 
+	void SpawnParticles(unsigned int numToSpawn, physx::PxStrideIterator<physx::PxU32> indices);
+
+	void RemoveParticles(unsigned int numToRemove, physx::PxStrideIterator<physx::PxU32> indices);
+
 	Ogre::Real getBoundingRadius(void) const;
 
 	Ogre::Real getSquaredViewDepth(const Ogre::Camera*)const;

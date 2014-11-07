@@ -52,6 +52,8 @@ private:
 	static physx::PxDefaultAllocator gDefaultAllocatorCallback;
 	//For Profiling (in Debug Mode)
 	physx::PxProfileZoneManager* mProfileZoneManager;
+	//Connection to PVD for Debug Mode
+	physx::PxVisualDebuggerConnection* mPvdConnection;
 
 	//Initializes the Root, Resource File, and Plugins. This method should be
 	//called first. Uses default resource and plugin files unless changed

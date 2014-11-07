@@ -40,7 +40,8 @@ Game::Game()
 	sceneManager = NULL;
 	
 	mProfileZoneManager = NULL;
-	
+	mPvdConnection = NULL;
+
 	//Load appropriate files
 	#ifdef _DEBUG
 		mResourcesCfg = "resources_d.cfg";
@@ -208,10 +209,10 @@ bool Game::ConnectToPVD()
 		| physx::PxVisualDebuggerConnectionFlag::ePROFILE;
 	
 	// Create connection with PhysX Visual Debugger
-	physx::PxVisualDebuggerConnection* conn = physx::PxVisualDebuggerExt::createConnection(
+	mPvdConnection = physx::PxVisualDebuggerExt::createConnection(
 	gPhysicsSDK->getPvdConnectionManager(),	pvdHostIP,	port, timeout, flags);
  
-	if (conn)
+	if (mPvdConnection)
 	{
 		std::cout << "Connected to PhysX Visual Debugger!\n";
  
@@ -234,16 +235,14 @@ void Game::messageLogged(const Ogre::String &message, Ogre::LogMessageLevel lml,
 void Game::InitializeGame()
 {
 	InitializeRootResourcesAndPlugins();
-
 	//Manually set the Rendering System
 	Ogre::RenderSystem *rs = mRoot->getRenderSystemByName("OpenGL Rendering Subsystem");
 	rs->setConfigOption("Full Screen","No");
 	rs->setConfigOption("Video Mode","1024 x 768 @ 32-bit colour");
-	rs->setConfigOption("Display Frequency","50 Hz");
 	rs->setConfigOption("FSAA","16");
 	rs->setConfigOption("Fixed Pipeline Enabled","Yes");
 	rs->setConfigOption("RTT Preferred Mode","FBO");
-	rs->setConfigOption("VSync","No");
+	rs->setConfigOption("VSync","Yes");
 	rs->setConfigOption("sRGB Gamma Conversion","No");
 
 	mRoot->setRenderSystem(rs);
@@ -294,6 +293,10 @@ void Game::CloseGame()
 	///Release Physx Systems
 	if(mProfileZoneManager)
 		mProfileZoneManager->release();
+	
+	if(mPvdConnection)
+		mPvdConnection->release();
+
 	gPhysicsSDK->release();
 	PxCloseExtensions();
 	foundation->release();
@@ -327,6 +330,7 @@ void Game::Run()
 		//Ogre::ResourceGroupManager::getSingletonPtr()->initialiseResourceGroup("Popular");
 
 	std::shared_ptr<BlankScene> blankScene(new BlankScene(sceneManager, mRoot, "Blank Scene", "General"));
+
 	blankScene->Initialize();
 
 	sceneManager->FlagSceneSwitch(blankScene, true);
@@ -352,6 +356,10 @@ void Game::Run()
 		currentTime = (float)gameTimer.getMilliseconds();
 		
 		previousTime = currentTime;
+
+		printf("Last FPS: %f\n", mRoot->getAutoCreatedWindow()->getLastFPS());
+		printf("Average FPS: %f\n", mRoot->getAutoCreatedWindow()->getAverageFPS());
+		printf("Best FPS: %f\n", mRoot->getAutoCreatedWindow()->getBestFPS());
 	}
 }
 
