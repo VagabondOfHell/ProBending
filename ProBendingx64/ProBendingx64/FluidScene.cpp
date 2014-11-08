@@ -2,9 +2,6 @@
 #include "SceneManager.h"
 #include "InputNotifier.h"
 #include "OgreEntity.h"
-#include "OgreParticleAffector.h"
-#include "OgreParticle.h"
-#include "OgreParticleEmitter.h"
 
 FluidScene::FluidScene(void)
 	:IScene(NULL, NULL, "", "")

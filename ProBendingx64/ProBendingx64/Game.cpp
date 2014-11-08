@@ -351,6 +351,7 @@ void Game::Run()
 		if(!Update(currentTime / 1000.0f))
 			rendering = false;
 
+		//Ogre::WindowEventUtilities::messagePump();
 		mRoot->renderOneFrame();
 
 		currentTime = (float)gameTimer.getMilliseconds();
@@ -379,9 +380,8 @@ bool Game::Update(float gameTime)
 
 	if(!kinectController.IsListening())
 	{
-		inputManager->RegisterListenerToNewBody(&kinectController);
-			
-		inputManager->FillGestureReader(L"C:\\Users\\Adam\\Desktop\\Test2.gbd");
+		if(inputManager->RegisterListenerToNewBody(&kinectController))			
+			inputManager->FillGestureReader(L"C:\\Users\\Adam\\Desktop\\Test2.gbd");
 	}
 
 	sceneManager->Update(gameTime);
