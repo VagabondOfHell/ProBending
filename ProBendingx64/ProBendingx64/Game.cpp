@@ -15,7 +15,7 @@
 #include "BlankScene.h"
 #include "FluidScene.h"
 
-#include "vld.h"
+//#include "vld.h"
 
 SpeechController speechController = SpeechController(NULL);
 
@@ -358,9 +358,9 @@ void Game::Run()
 		
 		previousTime = currentTime;
 
-		printf("Last FPS: %f\n", mRoot->getAutoCreatedWindow()->getLastFPS());
+		/*printf("Last FPS: %f\n", mRoot->getAutoCreatedWindow()->getLastFPS());
 		printf("Average FPS: %f\n", mRoot->getAutoCreatedWindow()->getAverageFPS());
-		printf("Best FPS: %f\n", mRoot->getAutoCreatedWindow()->getBestFPS());
+		printf("Best FPS: %f\n", mRoot->getAutoCreatedWindow()->getBestFPS());*/
 	}
 }
 

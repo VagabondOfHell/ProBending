@@ -3,12 +3,14 @@
 #include "OgreParticleSystem.h"
 #include "GameObject.h"
 #include "ParticleRenderer.h"
+#include "ParticleSystem.h"
+#include "DefaultParticlePolicy.h"
 
 class FluidScene :
 	public IScene
 {
 private:
-	static const int NUM_PARTICLES = 10000;
+	static const int NUM_PARTICLES = 100000;
 
 	Ogre::ParticleSystem* sunParticle;
 	Ogre::SceneNode* particleNode;
@@ -17,7 +19,9 @@ private:
 	physx::PxVec3 particleVelocities[NUM_PARTICLES];
 	physx::PxU32 particleIndices[NUM_PARTICLES];
 
-	ParticleRenderer* particleRenderer;
+	//ParticleRenderer* particleRenderer;
+
+	ParticleSystem<DefaultParticlePolicy>* particleSystem;
 
 	GameObject* object;
 	Ogre::SceneNode* testNode;

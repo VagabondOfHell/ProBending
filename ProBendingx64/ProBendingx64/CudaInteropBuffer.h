@@ -1,6 +1,6 @@
 #pragma once
 #include "RenderSystems/GL/OgreGLHardwareVertexBuffer.h"
-#include "PxPhysicsAPI.h"
+//#include "PxPhysicsAPI.h" ///Try to avoid including physx api in so many headers
 #include "cuda.h"
 
 class IScene;

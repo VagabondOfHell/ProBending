@@ -24,11 +24,14 @@ FluidScene::~FluidScene(void)
 		object = NULL;
 	}
 
-	if(particleRenderer)
+	if(particleSystem)
+		delete particleSystem;
+
+	/*if(particleRenderer)
 	{
 		delete particleRenderer;
 		particleRenderer = NULL;
-	}
+	}*/
 }
 
 void FluidScene::Start()
@@ -44,7 +47,7 @@ void FluidScene::Start()
 
 	mainOgreCamera->setAspectRatio(Ogre::Real(viewport->getActualWidth()) / Ogre::Real(viewport->getActualHeight()));
 
-	mainOgreCamera->setPosition(0, 0, 180.0f);
+	mainOgreCamera->setPosition(0, 0, 50.0f);
 	mainOgreCamera->lookAt(0, 0, 0);
 	mainOgreCamera->setNearClipDistance(5);
 	mainOgreCamera->setFarClipDistance(10000);
@@ -65,7 +68,7 @@ void FluidScene::Start()
 
 	object = new GameObject(this);
 
-	object->LoadModel("sinbad.mesh");
+	//object->LoadModel("sinbad.mesh");
 
 	//object->entity->setMaterialName("BlueShader");
 
@@ -76,37 +79,43 @@ void FluidScene::Start()
 		particleVelocities[i] = physx::PxVec3(0.0f, 0.0f, 0.0f);
 	}
 
-	particleRenderer = new ParticleRenderer(this, NUM_PARTICLES);
+	/*particleRenderer = new ParticleRenderer(this, NUM_PARTICLES);
 
 	particleRenderer->Resize(NUM_PARTICLES);
 
 	particleRenderer->setMaterial("SkyChange");
 
-	particleRenderer->UpdateParticles(particlePositions, NUM_PARTICLES);
+	particleRenderer->UpdateParticles(particlePositions, NUM_PARTICLES);*/
+
+	particleSystem = new ParticleSystem<DefaultParticlePolicy>(new DefaultParticlePolicy(1000), 
+		physx::PxParticleReadDataFlag::ePOSITION_BUFFER | physx::PxParticleReadDataFlag::eFLAGS_BUFFER | physx::PxParticleReadDataFlag::eVELOCITY_BUFFER,
+		NUM_PARTICLES, true, cudaContextManager);
+
+	particleSystem->Initialize(physicsWorld);
 
 	testNode = ogreSceneManager->getRootSceneNode()->createChildSceneNode();
 
-	testNode->attachObject(particleRenderer);
+	testNode->attachObject((DefaultParticlePolicy*)particleSystem->GetPolicy());
+	//testNode->attachObject(particleRenderer);
 
 	testNode->translate(5.0f, 0.0f, 0.0f);
 }
 
-bool simulate = false;
-
 bool FluidScene::Update(float gameTime)
 {	
-	if(!simulate)
+	if(!physxSimulating)
 	{
-		physicsWorld->simulate(gameTime);
-		simulate = true;
+		physicsWorld->simulate(0.016f);
+		physxSimulating = true;
 	}
 
-	if(simulate)
+	if(physxSimulating)
 		if(physicsWorld->checkResults())
 		{
 			physicsWorld->fetchResults(true);
-			particleRenderer->Update(gameTime);
-			simulate = false;
+			particleSystem->Update(0.016f);
+			//particleRenderer->Update(gameTime);
+			physxSimulating = false;
 		}
 
 	
@@ -126,5 +135,11 @@ bool FluidScene::Update(float gameTime)
 
 void FluidScene::Close()
 {
-
+	if(physxSimulating)
+		if(physicsWorld->checkResults(true))
+		{
+			physicsWorld->fetchResults(true);
+			//particleRenderer->Update(gameTime);
+			physxSimulating = false;
+		}
 }

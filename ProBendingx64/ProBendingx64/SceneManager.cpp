@@ -11,6 +11,9 @@ SceneManager::SceneManager(void)
 SceneManager::~SceneManager(void)
 {
 	GUIManager::DestroySystem();
+
+	if(currentScene)
+		currentScene->Close();
 }
 
 std::shared_ptr<IScene> SceneManager::SwapScene(std::shared_ptr<IScene> newScene)

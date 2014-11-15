@@ -25,6 +25,8 @@ protected:
 	GUIManager* guiManager;
 
 	physx::PxScene* physicsWorld;
+	bool physxSimulating;
+
 	physx::PxDefaultCpuDispatcher* mCpuDispatcher;
 	
 	//Cuda Manager for GPU Processor usage
@@ -41,6 +43,7 @@ public:
 	IScene(SceneManager* _owningManager, Ogre::Root* root, std::string _sceneName, std::string _resourceGroupName)
 	{
 		physicsWorld = NULL;
+		physxSimulating = false;
 
 		guiManager = new GUIManager();
 		guiManager->InitializeGUI();

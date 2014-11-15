@@ -216,11 +216,10 @@ void ParticleRenderer::Update(float gameTime)
 		printf("Error with Device Allocation or Copying! Error: %i\n", CudaModuleHelper::GetLastCudaError());
 
 	//Set up Kernel Arguments
-	void* args[3] = 
+	void* args[2] = 
 	{
 		&p,
-		&dev,
-		&d_Velocities
+		&dev
 	};
 	
 	CUresult res = cuLaunchKernel(updateParticlesKernel, 1000, 1, 1, 10, 1, 1, 0, 0, args, 0); 
