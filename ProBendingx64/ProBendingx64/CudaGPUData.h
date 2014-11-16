@@ -172,7 +172,7 @@ public:
 		mappedData->reserve(graphicsResourceCount);
 
 		//loop through each resource
-		for (int i = 0; i < graphicsResourceCount; i++)
+		for (unsigned int i = 0; i < graphicsResourceCount; i++)
 		{
 			//Get mapped pointers
 			CUdeviceptr devPointer;
