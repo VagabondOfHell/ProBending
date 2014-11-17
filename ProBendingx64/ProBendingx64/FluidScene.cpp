@@ -54,12 +54,12 @@ void FluidScene::Start()
 	//pass->setPointMaxSize(-0.500f);
 	//pass->setPointMinSize(0.0f);
 	pass->setPointAttenuation(true, 0, 1, 0);
-pass->setPointSize(0.001f);
+pass->setPointSize(0.01f);
 
 //pass->setPointSpritesEnabled(true);
-	particleSystem = new ParticleSystem<DefaultParticlePolicy>(new DefaultParticlePolicy(1), 
+	particleSystem = new ParticleSystem<DefaultParticlePolicy>(new DefaultParticlePolicy(100000), 
 		physx::PxParticleReadDataFlag::ePOSITION_BUFFER | physx::PxParticleReadDataFlag::eFLAGS_BUFFER,
-		NUM_PARTICLES, true, cudaContextManager);
+		NUM_PARTICLES, false, cudaContextManager);
 
 	particleSystem->Initialize(physicsWorld);
 
@@ -74,7 +74,7 @@ bool FluidScene::Update(float gameTime)
 {	
 	if(!physxSimulating)
 	{
-		physicsWorld->simulate(0.016f);
+		physicsWorld->simulate(gameTime);
 		physxSimulating = true;
 	}
 
@@ -82,7 +82,7 @@ bool FluidScene::Update(float gameTime)
 		if(physicsWorld->checkResults())
 		{
 			physicsWorld->fetchResults(true);
-			particleSystem->Update(0.016f);
+			particleSystem->Update(gameTime);
 			physxSimulating = false;
 		}
 
@@ -105,14 +105,14 @@ bool FluidScene::keyPressed( const OIS::KeyEvent &arg )
 	if(arg.key == OIS::KC_UP)
 	{
 		Ogre::Vector3 camPos = mainOgreCamera->getPosition();
-		camPos.z += 10;
+		camPos.z += 40;
 		mainOgreCamera->setPosition(camPos);
 	}
 
 	if(arg.key == OIS::KC_DOWN)
 	{
 		Ogre::Vector3 camPos = mainOgreCamera->getPosition();
-		camPos.z -= 10;
+		camPos.z -= 40;
 		mainOgreCamera->setPosition(camPos);
 	}
 

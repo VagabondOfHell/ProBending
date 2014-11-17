@@ -9,7 +9,7 @@ class FluidScene :
 	public IScene, public InputObserver
 {
 private:
-	static const int NUM_PARTICLES = 1000;
+	static const int NUM_PARTICLES = 1000000;
 
 	ParticleSystem<DefaultParticlePolicy>* particleSystem;
 

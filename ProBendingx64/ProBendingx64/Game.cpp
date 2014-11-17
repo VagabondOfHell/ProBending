@@ -384,7 +384,7 @@ bool Game::Update(float gameTime)
 			inputManager->FillGestureReader(L"C:\\Users\\Adam\\Desktop\\Test2.gbd");
 	}
 
-	sceneManager->Update(gameTime);
+	sceneManager->Update(0.016f);
 
     if(mKeyboard->isKeyDown(OIS::KC_ESCAPE))
         return false;

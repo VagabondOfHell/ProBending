@@ -58,6 +58,13 @@ public:
 		particlePolicy = NULL;
 	}
 
+	///<summary>Constructor of the particle system</summary>
+	///<param name="_particlePolicy">The instantiation of the particle policy. This particle system assumes control of it</param>
+	///<param name="readFlags">The flags to use for physX particle system</param>
+	///<param name="_maximumParticles">The maximum allowed number of particles in the system</param>
+	///<param name="useCudaGPU">True to utilize the GPU, false if not</param>
+	///<param name="_cudaContext">The cuda context to use with the GPU. If useCudaGPU is true, this must not be NULL </param>
+	///<param name="perParticleRestOffset">True to use per particle rest offsets. This is passed to PhysX on creation of the system</param>
 	ParticleSystem(ParticlesPolicy* _particlePolicy, physx::PxParticleReadDataFlags readFlags, size_t _maximumParticles, 
 		bool useCudaGPU = false, physx::PxCudaContextManager* _cudaContext = NULL, bool perParticleRestOffset = false)
 	{
@@ -67,17 +74,29 @@ public:
 		onGPU = useCudaGPU;
 		cudaContextManager = _cudaContext;
 
+		//Check for gpu usage validity
+		if(cudaContextManager == NULL)
+			onGPU = false;
+
 		//Create the particle system on PhysX's end
 		pxParticleSystem = PxGetPhysics().createParticleSystem(maximumParticles, perParticleRestOffset);
 		
 		//place the system on the GPU if it should be
 		pxParticleSystem->setParticleBaseFlag(physx::PxParticleBaseFlag::eGPU, onGPU);
 		
-		physx::PxParticleReadDataFlags currentFlags = pxParticleSystem->getParticleReadDataFlags();
+		//Check that PhysX didn't overwrite our GPU selection. If they did, reset our information
+		if(!(pxParticleSystem->getParticleBaseFlags() & physx::PxParticleBaseFlag::eGPU))
+		{
+			onGPU = false;
+			cudaContextManager = NULL;
+		}
 
+		//The maximum motion distance. Set to a default of 10. The policy has access to this, so they can customize it from there
 		pxParticleSystem->setMaxMotionDistance(10.0f);
+		pxParticleSystem->setGridSize(400);
 
 		//If the current read data (the defaults) doesn't match the passed read flags, set as desired
+		physx::PxParticleReadDataFlags currentFlags = pxParticleSystem->getParticleReadDataFlags();
 		if(currentFlags != readFlags)
 			SetParticleReadFlags(readFlags);
 	}
@@ -94,9 +113,11 @@ public:
 	{
 		particlePolicy->Initialize(maximumParticles, pxParticleSystem);
 
+		//If we have GPU info, allow the policy to initialize its GPU data
 		if(onGPU && cudaContextManager != NULL)
 			particlePolicy->InitializeGPUData(cudaContextManager);
 
+		//Add it to the scene
 		scene->addActor(*pxParticleSystem);
 	}
 
@@ -119,19 +140,6 @@ public:
 	void Update(float time)
 	{
 		using namespace physx;
-
-		PxParticleCreationData* creationData =  particlePolicy->Emit();
-
-		if(creationData)
-		{
-			if(creationData->isValid())
-			{
-				bool result = pxParticleSystem->createParticles(*creationData);
-			}
-
-			delete creationData;
-			creationData = NULL;
-		}
 		
 		//We then call the update attributes for CPU readable data, even if the system utilizes the GPU
 		PxParticleReadData* rd = pxParticleSystem->lockParticleReadData(PxDataAccessFlag::eREADABLE);
@@ -147,22 +155,46 @@ public:
 		if(onGPU)			
 			if(cudaContextManager)
 			{
+				//Prepare the data on the GPU
 				cudaContextManager->acquireContext();
 				rd = pxParticleSystem->lockParticleReadData(PxDataAccessFlag::eDEVICE);
 
 				if(rd)
 				{
+					//Call the policies update GPU method
 					particlePolicy->UpdatePolicyGPU(time, rd, readableData);
 					rd->unlock();
 				}
-
-				std::vector<unsigned int> indicesToRemove = particlePolicy->ReleaseParticles();
-
-				if(indicesToRemove.size() > 0)
-					pxParticleSystem->releaseParticles(indicesToRemove.size(), PxStrideIterator<PxU32>(&indicesToRemove[0]));
-		
+				//release the cuda context
 				cudaContextManager->releaseContext();
 			}
+
+		//Collect the indices to remove from the policy
+		std::vector<unsigned int> indicesToRemove = particlePolicy->ReleaseParticles();
+
+		//If we should remove some, remove them
+		if(indicesToRemove.size() > 0)
+			pxParticleSystem->releaseParticles(indicesToRemove.size(), PxStrideIterator<PxU32>(&indicesToRemove[0]));
+
+		//Get emission data from the policy
+		PxParticleCreationData* creationData =  particlePolicy->Emit(time);
+
+		//If creation data exists
+		if(creationData)
+		{
+			//Check validity
+			if(creationData->isValid())
+			{
+				//Create the particles. Don't catch the results, because we won't be doing anything with them
+				if(pxParticleSystem->createParticles(*creationData))
+					particlePolicy->ParticlesCreated(creationData->numParticles);
+				else
+					printf("CREATION ERROR");
+			}
+			//Clean up the creation data
+			delete creationData;
+			creationData = NULL;
+		}
 	}
 
 };

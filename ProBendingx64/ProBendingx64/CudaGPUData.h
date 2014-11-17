@@ -282,8 +282,8 @@ public:
 		if(cudaNonGraphicsResources[index].isValid)
 		{
 			//Try the copy action
-			previousError = cuMemcpyHtoD_v2(cudaNonGraphicsResources[index].devicePointer, srcData, dataSizeInBytes);
-			
+			//previousError = cuMemcpyHtoD_v2(cudaNonGraphicsResources[index].devicePointer, srcData, dataSizeInBytes);
+			previousError = cuMemcpyHtoDAsync_v2(cudaNonGraphicsResources[index].devicePointer, srcData, dataSizeInBytes, 0);
 			return previousError == CUDA_SUCCESS;
 		}
 		else
