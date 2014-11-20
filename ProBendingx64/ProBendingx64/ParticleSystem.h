@@ -1,12 +1,15 @@
 #pragma once
 #include "particles\PxParticleSystem.h"
 #include "pxtask\PxCudaContextManager.h"
+#include <vector>
 
 template <class ParticlesPolicy>
 class ParticleSystem
 {
 private:
 	
+	std::vector<PxU32> availableIndices; //The available indices within the particle system
+
 	physx::PxParticleSystem* pxParticleSystem; ///The physX particle system
 	physx::PxCudaContextManager* cudaContextManager; ///The physX cuda context manager
 
@@ -93,7 +96,7 @@ public:
 
 		//The maximum motion distance. Set to a default of 10. The policy has access to this, so they can customize it from there
 		pxParticleSystem->setMaxMotionDistance(10.0f);
-		pxParticleSystem->setGridSize(400);
+		pxParticleSystem->setGridSize(1000);
 
 		//If the current read data (the defaults) doesn't match the passed read flags, set as desired
 		physx::PxParticleReadDataFlags currentFlags = pxParticleSystem->getParticleReadDataFlags();
@@ -168,7 +171,7 @@ public:
 				//release the cuda context
 				cudaContextManager->releaseContext();
 			}
-
+			
 		//Collect the indices to remove from the policy
 		std::vector<unsigned int> indicesToRemove = particlePolicy->ReleaseParticles();
 
@@ -185,7 +188,7 @@ public:
 			//Check validity
 			if(creationData->isValid())
 			{
-				//Create the particles. Don't catch the results, because we won't be doing anything with them
+				//Create the particles
 				if(pxParticleSystem->createParticles(*creationData))
 					particlePolicy->ParticlesCreated(creationData->numParticles);
 				else

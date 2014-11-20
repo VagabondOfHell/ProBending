@@ -5,7 +5,7 @@
 #include "CudaModuleHelper.h"
 #include "CudaGPUData.h"
 
-namespace DevicePointers{enum DevicePointers{Lifetimes, Count};};
+namespace DevicePointers{enum DevicePointers{Lifetimes, ValidBitmap, Count};};
 namespace GraphicsResourcePointers{enum GraphicsResourcePointers{Positions, Count};};
 
 class DefaultParticlePolicy: public Ogre::SimpleRenderable
@@ -13,7 +13,6 @@ class DefaultParticlePolicy: public Ogre::SimpleRenderable
 protected:
 	unsigned int particlesPerSecond;
 	float particlesToEmitThisFrame;
-	unsigned int particlesEmitted;
 
 	unsigned int maxParticles;
 

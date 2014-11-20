@@ -49,7 +49,7 @@ void FluidScene::Start()
 	
 	Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().getByName("DefaultParticleShader");
 	Ogre::GpuProgramParametersSharedPtr params = material->getTechnique(0)->getPass(0)->getVertexProgramParameters();
-	params->setNamedConstant("newcolor", Ogre::Vector4(0.0, 0.0, 1.0, 1.0));
+	params->setNamedConstant("newcolor", Ogre::Vector4(1.0, 1.0, 1.0, 1.0));
 	Ogre::Pass* pass = material->getTechnique(0)->getPass(0);
 	//pass->setPointMaxSize(-0.500f);
 	//pass->setPointMinSize(0.0f);
@@ -57,7 +57,7 @@ void FluidScene::Start()
 pass->setPointSize(0.01f);
 
 //pass->setPointSpritesEnabled(true);
-	particleSystem = new ParticleSystem<DefaultParticlePolicy>(new DefaultParticlePolicy(100000), 
+	particleSystem = new ParticleSystem<DefaultParticlePolicy>(new DefaultParticlePolicy(1000), 
 		physx::PxParticleReadDataFlag::ePOSITION_BUFFER | physx::PxParticleReadDataFlag::eFLAGS_BUFFER,
 		NUM_PARTICLES, false, cudaContextManager);
 
