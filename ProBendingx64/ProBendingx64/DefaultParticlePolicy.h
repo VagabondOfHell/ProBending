@@ -5,15 +5,12 @@
 #include "CudaModuleHelper.h"
 #include "CudaGPUData.h"
 
-namespace DevicePointers{enum DevicePointers{Lifetimes, ValidBitmap, Count};};
+namespace DevicePointers{enum DevicePointers{ValidBitmap, Count};};
 namespace GraphicsResourcePointers{enum GraphicsResourcePointers{Positions, Count};};
 
 class DefaultParticlePolicy: public Ogre::SimpleRenderable
 {
 protected:
-	unsigned int particlesPerSecond;
-	float particlesToEmitThisFrame;
-
 	unsigned int maxParticles;
 
 	bool onGPU;
@@ -32,19 +29,17 @@ protected:
 	CudaGPUData* gpuBuffers;
 	Ogre::HardwareVertexBufferSharedPtr mVertexBufferPosition;
 
+	//physx::PxU32* mParticleValidity;
+	//physx::PxU32  mValidParticleRange;
+
 	float* lifetimes;
 
-	std::vector<unsigned int> availableIndices;
-	std::vector<unsigned int> indicesToRemove;
-	
 	std::vector<physx::PxVec3>forces;
-	physx::PxVec3 emitterPosition;
 
 	void InitializeVertexBuffers();
 
 public:
 	DefaultParticlePolicy(void);
-	DefaultParticlePolicy(unsigned int _particlesPerSecond);
 
 	~DefaultParticlePolicy(void);
 	
@@ -67,27 +62,16 @@ public:
 		framesTillCopy = frameCount;
 	}
 
-	///<summary>Performs any particle emissions required this frame</summary>
-	///<param name="gameTime">The gametime that has passed, in order to allow particle per second emission</param>
-	///<returns>The physx particle creation data for this frame</returns>
-	virtual physx::PxParticleCreationData* Emit(float gameTime);
-
 	///<summary>Callback for the policy to confirm the particles were created</summary>
 	///<param name="createdCount>The amount of particles that were created</param>
-	virtual void ParticlesCreated(unsigned int createdCount);
-
-	///<summary>Gets the vector of indices to remove from the particle system</summary>
-	///<returns>The vector of indices that should be removed</returns>
-	virtual std::vector<unsigned int> ReleaseParticles()
-	{
-		return indicesToRemove;
-	}
+	///<param name="emittedIndices>The indices that were used this creation frame</param>
+	virtual void ParticlesCreated(unsigned int createdCount, physx::PxStrideIterator<const physx::PxU32> emittedIndices);
 
 	///<summary>Updates the policy. Any CPU focused updating should go here</summary>
 	///<param name="time">The time that has passed between frames</param>
 	///<param name="readData">The particle data as provided by PhysX</param>
 	///<param name="readableData">The flags representing readable data provided by PhysX </param>
-	virtual void UpdatePolicy(float time, physx::PxParticleReadData* readData, physx::PxParticleReadDataFlags readableData);
+	virtual std::vector<const physx::PxU32> UpdatePolicy(float time, physx::PxParticleReadData* readData, physx::PxParticleReadDataFlags readableData);
 
 	///<summary>Updates the policy. Any GPU focused updating should go here. This is only called if physX 
 	///is running on the GPU</summary>

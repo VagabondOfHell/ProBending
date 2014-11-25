@@ -357,10 +357,6 @@ void Game::Run()
 		currentTime = (float)gameTimer.getMilliseconds();
 		
 		previousTime = currentTime;
-
-		/*printf("Last FPS: %f\n", mRoot->getAutoCreatedWindow()->getLastFPS());
-		printf("Average FPS: %f\n", mRoot->getAutoCreatedWindow()->getAverageFPS());
-		printf("Best FPS: %f\n", mRoot->getAutoCreatedWindow()->getBestFPS());*/
 	}
 }
 
@@ -419,7 +415,7 @@ bool Game::Update(float gameTime)
 		}
 	}
 
-	if(mKeyboard->isKeyDown(OIS::KeyCode::KC_D))
+	/*if(mKeyboard->isKeyDown(OIS::KeyCode::KC_D))
 	{
 		bool res = ConnectToPVD();
 
@@ -427,7 +423,7 @@ bool Game::Update(float gameTime)
 		printf("True");
 		else
 			printf("False");
-	}
+	}*/
 
 	return true;
 }

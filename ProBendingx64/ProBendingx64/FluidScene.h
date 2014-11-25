@@ -3,6 +3,7 @@
 #include "GameObject.h"
 #include "ParticleSystem.h"
 #include "DefaultParticlePolicy.h"
+#include "ParticlePointEmitter.h"
 #include "InputObserver.h"
 
 class FluidScene :
@@ -12,8 +13,12 @@ private:
 	static const int NUM_PARTICLES = 100;
 
 	ParticleSystem<DefaultParticlePolicy>* particleSystem;
+	ParticleSystem<DefaultParticlePolicy>* particleSystem2;
+
+	ParticlePointEmitter* particlePointEmitter;
 
 	Ogre::SceneNode* testNode;
+	Ogre::SceneNode* testNode2;
 
 public:
 	FluidScene(void);

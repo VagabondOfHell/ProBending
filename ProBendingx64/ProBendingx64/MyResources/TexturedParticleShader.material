@@ -1,0 +1,46 @@
+fragment_program TexturedParticleShaderFragGLSL glsl
+{
+   source TexturedParticleShader.frag
+}
+
+vertex_program TexturedParticleShaderVertexGLSL glsl
+{
+   source TexturedParticleShader.vert
+   
+}
+
+material TexturedParticleShader
+{
+   technique
+   {
+      pass
+      {
+	  lighting off
+	  depth_write off
+	  scene_blend alpha_blend
+	  point_sprites on
+	  point_size 1.0
+	  point_size_attenuation on [0 1 0]
+
+         vertex_program_ref TexturedParticleShaderVertexGLSL
+         {
+			param_named_auto worldViewProj worldviewproj_matrix
+         }
+         
+        fragment_program_ref TexturedParticleShaderFragGLSL
+         {
+			param_named tex int 0
+         }
+
+		 texture_unit
+		 {
+				//cubic_texture spidey.jpg spidey.jpg spidey.jpg spidey.jpg spidey.jpg spidey.jpg separateUV
+				texture spidey.jpg 2D
+				tex_address_mode clamp
+				//filtering linear linear none
+				tex_coord_set 0
+		}
+		
+		}
+   }
+}

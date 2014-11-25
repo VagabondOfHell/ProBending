@@ -5,6 +5,7 @@
 #include "OgreLogManager.h"
 #include "pxtask\PxGpuCopyDesc.h"
 #include "pxtask\PxGpuDispatcher.h"
+#include "foundation/PxMemory.h"
 #include "PsBitUtils.h"
 #include <math.h>
 
@@ -14,34 +15,11 @@ DefaultParticlePolicy::DefaultParticlePolicy(void)
 {
 	//The box around the Ogre::SimpleRenderer
 	mBox.setInfinite();
-	particlesPerSecond = 0;
-	particlesToEmitThisFrame = 0;
-	emitterPosition = PxVec3(0.0f);
 	
 	framesPassed = 0;
 	framesTillCopy = 0;
 
 	onGPU = false;
-
-	setMaterial("DefaultParticleShader");
-}
-
-DefaultParticlePolicy::DefaultParticlePolicy(unsigned int _particlesPerSecond)
-{
-	particlesPerSecond = _particlesPerSecond;
-	particlesToEmitThisFrame  = 0;
-
-	emitterPosition = PxVec3(0.0f, 0.0f, 0.0f);	
-	
-	framesPassed = 0;
-	framesTillCopy = 0;
-
-	onGPU = false;
-
-	//The box around the Ogre::SimpleRenderer
-	mBox.setInfinite();
-
-	setMaterial("DefaultParticleShader");
 }
 
 DefaultParticlePolicy::~DefaultParticlePolicy(void)
@@ -57,7 +35,7 @@ DefaultParticlePolicy::~DefaultParticlePolicy(void)
 
 	if(lifetimes)
 	{
-		delete lifetimes;
+		delete[] lifetimes;
 		lifetimes = NULL;
 	}
 
@@ -74,16 +52,13 @@ void DefaultParticlePolicy::Initialize(unsigned int _maxParticles, PxParticleSys
 
 	lifetimes = new float[maxParticles];
 
-	//Try to prevent excessive resizing by reserving space
-	availableIndices.reserve(maxParticles);
-	//indicesToRemove.reserve(particlesPerSecond * 0.01f);
-
 	//loop through, indicate available indices, and initialize all lifetimes to 0
 	for (int i = maxParticles - 1; i >= 0; --i)
 	{
-		availableIndices.push_back(i);
 		lifetimes[i] = 0.0f;
 	}
+
+	_particleSystem->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
 
 	// our vertices are just points
 	mRenderOp.operationType = Ogre::RenderOperation::OT_POINT_LIST;
@@ -106,9 +81,8 @@ void DefaultParticlePolicy::InitializeVertexBuffers()
 	// allocate the vertex buffer
 	mVertexBufferPosition = Ogre::HardwareBufferManager::getSingleton().createVertexBuffer(
 			Ogre::VertexElement::getTypeSize(Ogre::VET_FLOAT3),
-			//mRenderOp.vertexData->vertexCount,
 			maxParticles,
-			Ogre::HardwareBuffer::HBU_DISCARDABLE,///Add dynamicWriteOnly as well?
+			Ogre::HardwareBuffer::HBU_DYNAMIC_WRITE_ONLY_DISCARDABLE,///Add dynamicWriteOnly as well?
 			false);
 
 	PxVec3* positions = static_cast<PxVec3*>(mVertexBufferPosition->lock(Ogre::HardwareBuffer::LockOptions::HBL_WRITE_ONLY));
@@ -123,7 +97,7 @@ void DefaultParticlePolicy::InitializeVertexBuffers()
 	// bind positions to location 0
 	mRenderOp.vertexData->vertexBufferBinding->setBinding(0, mVertexBufferPosition);
 
-	mRenderOp.vertexData->vertexCount = 0;
+	mRenderOp.vertexData->vertexCount = maxParticles;
 }
 
 void DefaultParticlePolicy::InitializeGPUData(physx::PxCudaContextManager* contextManager)
@@ -149,10 +123,7 @@ void DefaultParticlePolicy::InitializeGPUData(physx::PxCudaContextManager* conte
 	//Register the resource to CUDA
 	gpuAllocationResult = gpuBuffers->RegisterCudaGraphicsResource(GraphicsResourcePointers::Positions, mVertexBufferPosition);
 
-	//Allocate room on the GPU once for the lifetimes and bitmaps
-	if(gpuAllocationResult)
-		gpuAllocationResult = gpuBuffers->AllocateGPUMemory(DevicePointers::Lifetimes, sizeof(float) * maxParticles);
-	
+	//Allocate room on the GPU once for the validity bitmaps
 	if(gpuAllocationResult)
 		gpuAllocationResult = gpuBuffers->AllocateGPUMemory(DevicePointers::ValidBitmap, sizeof(PxU32) * (maxParticles + 31) >> 5);
 
@@ -160,14 +131,16 @@ void DefaultParticlePolicy::InitializeGPUData(physx::PxCudaContextManager* conte
 	onGPU = gpuAllocationResult;
 }
 
-void DefaultParticlePolicy::UpdatePolicy(float time, physx::PxParticleReadData* readData, 
+std::vector<const physx::PxU32> DefaultParticlePolicy::UpdatePolicy(float time, physx::PxParticleReadData* readData, 
 							physx::PxParticleReadDataFlags readableData)
 {
-	indicesToRemove.clear();
+	std::vector<const physx::PxU32> indicesToRemove;
 
-	physx::PxStrideIterator<const physx::PxParticleFlags> flagsIter(readData->flagsBuffer);
-	physx::PxStrideIterator<const physx::PxVec3> positionIter (readData->positionBuffer);
-	physx::PxStrideIterator<const physx::PxU32> validBitmapIter (readData->validParticleBitmap);
+	//PxMemCopy(mParticleValidity, readData->validParticleBitmap, ((readData->validParticleRange + 31) >> 5) << 2);
+
+	//Reserve 5% of the max particles for removal
+	indicesToRemove.reserve(maxParticles * 0.05f);
+	PxU32 newValidRange = 0;
 
 	//Check if there is any updating to do
 	if (readData->validParticleRange > 0)
@@ -193,12 +166,12 @@ void DefaultParticlePolicy::UpdatePolicy(float time, physx::PxParticleReadData* 
 					PxU32 index = (w << 5 | shdfnd::lowestSetBit(b));
 
 					//Check particle validity
-					if(flagsIter[index] & PxParticleFlag::eSPATIAL_DATA_STRUCTURE_OVERFLOW ||
-						!(flagsIter[index] & PxParticleFlag::eVALID) || lifetimes[index] <= 0.0f )
+					if(readData->flagsBuffer[index] & PxParticleFlag::eSPATIAL_DATA_STRUCTURE_OVERFLOW ||
+						!(readData->flagsBuffer[index] & PxParticleFlag::eVALID) || lifetimes[index] <= 0.0f )
 					{
 						//If lifetime is equal or below zero
 						indicesToRemove.push_back(index); //indicate removal
-						availableIndices.push_back(index); //add index to list of available indices
+						
 						lifetimes[index] = 0.0f;//set lifetime to 0
 						
 						if(!onGPU)
@@ -210,7 +183,8 @@ void DefaultParticlePolicy::UpdatePolicy(float time, physx::PxParticleReadData* 
 					else
 					{
 						lifetimes[index] -= time;
-						numParticles++;
+						++numParticles;
+						newValidRange = index;
 					}
 						
 					if(!onGPU)
@@ -231,11 +205,15 @@ void DefaultParticlePolicy::UpdatePolicy(float time, physx::PxParticleReadData* 
 			if(performCopyThisFrame)
 				mVertexBufferPosition->unlock();
 
-		mRenderOp.vertexData->vertexCount = numParticles;
+		if(onGPU)
+			mRenderOp.vertexData->vertexCount = numParticles;
+		//mValidParticleRange = newValidRange;
 	}//end if valid range > 0
 
 	//increment frames passed here, because the GPU version may not get called, but this one is guaranteed to be called
 	framesPassed++;
+
+	return indicesToRemove;
 }
 
 void DefaultParticlePolicy::UpdatePolicyGPU(float time, physx::PxParticleReadData* readData, physx::PxParticleReadDataFlags readableData)
@@ -245,8 +223,6 @@ void DefaultParticlePolicy::UpdatePolicyGPU(float time, physx::PxParticleReadDat
 		//CPU Update calculates this bool for us. If true, copy Host to Device
 		if(performCopyThisFrame)
 		{
-			/*if(!gpuBuffers->CopyHostToDevice(DevicePointers::Lifetimes, &lifetimes[0], sizeof(float) * maxParticles))
-				printf("Copy lifetimes to GPU Failed");*/
 			if(!gpuBuffers->CopyHostToDevice(DevicePointers::ValidBitmap, 
 				&readData->validParticleBitmap[0], sizeof(PxU32)*(maxParticles + 31) >> 5))
 				printf("Copy Validity to GPU Failed");
@@ -256,17 +232,16 @@ void DefaultParticlePolicy::UpdatePolicyGPU(float time, physx::PxParticleReadDat
 
 		MappedGPUData dest_pos_data = gpuBuffers->MapAndGetGPUDataPointer(GraphicsResourcePointers::Positions);
 		MappedGPUData src_bit_data = gpuBuffers->GetNonGraphicsResource(DevicePointers::ValidBitmap);
-		//MappedGPUData src_lifetimes_data = gpuBuffers->GetNonGraphicsResource(DevicePointers::Lifetimes);
 
 		//Ensure we have valid data
-		if(dest_pos_data.isValid)// && src_lifetimes_data.isValid)
+		if(dest_pos_data.isValid)
 		{
 			//Construct the parameters for the Kernel
 			void* args[5] = {
 				&dest_pos_data.devicePointer,
 				&src_pos_data,
-				&src_bit_data.devicePointer,//&src_lifetimes_data.devicePointer,
-				&readData->validParticleRange,
+				&src_bit_data.devicePointer,
+				&readData->nbValidParticles,
 				&maxParticles
 			};
 
@@ -284,75 +259,10 @@ void DefaultParticlePolicy::UpdatePolicyGPU(float time, physx::PxParticleReadDat
 	}
 }
 
-PxParticleCreationData* DefaultParticlePolicy::Emit(float gameTime)
-{
-	//Create creationData object but initialize to NULL
-	PxParticleCreationData* creationData = NULL;
-
-	unsigned int emissionCount(0);
-
-	//Check amount of particles available
-	if(availableIndices.size() > 0)
-	{
-		//If at least one particle is available, prepare creation data
-		creationData = new PxParticleCreationData();
-
-		particlesToEmitThisFrame += particlesPerSecond * gameTime;
-
-		emissionCount = PxFloor(particlesToEmitThisFrame);
-
-		particlesToEmitThisFrame -= emissionCount;
-
-		//Gather available indices
-		if(availableIndices.size() < emissionCount)
-			emissionCount = availableIndices.size();
-	}
-
-	//If we have creation data and indices can be used
-	if(creationData && emissionCount > 0)// && indicesEmitted.size() > 0)
-	{
-		//reset forces
-		forces.clear();
-
-		//Generate initial force and update available indices
-		for (int i = 0; i < emissionCount; i++)
-		{
-			//initialize lifetimes
-			lifetimes[availableIndices[(availableIndices.size() - 1) - i]] = rand() % 40;//initialLifetime;
-
-			//Generate random directions and speed
-			float posX = rand()%2;
-			float posY = rand() % 2;
-			float posZ = rand() % 2;
-
-			float x = ((rand() + 2) % 15);
-			float y = ((rand() + 2) % 10);
-			float z = 0;//rand() % 2;
-
-			if(posX)
-				x = -x;
-			if(posY)
-				y = -y;
-			if(posZ)
-				z = -z;
-
-			forces.push_back(PxVec3(x, y, z));
-		}
-		
-		//set creation data parameters
-		creationData->numParticles = emissionCount;
-		creationData->indexBuffer = physx::PxStrideIterator<PxU32>(&availableIndices[availableIndices.size() - emissionCount]);
-		creationData->positionBuffer = physx::PxStrideIterator<PxVec3>(&emitterPosition, 0);
-		creationData->velocityBuffer = PxStrideIterator<PxVec3>(&forces[0]);
-	}
-
-	return creationData;
-}
-
-void DefaultParticlePolicy::ParticlesCreated(unsigned int createdCount)
+void DefaultParticlePolicy::ParticlesCreated(unsigned int createdCount, physx::PxStrideIterator<const PxU32> emittedIndices)
 {
 	for (int i = 0; i < createdCount; i++)
 	{
-		availableIndices.pop_back();
+		lifetimes[emittedIndices[i]] = 3;// (rand() % 8) + 2;
 	}
 }

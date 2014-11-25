@@ -53,61 +53,41 @@ extern "C"__global__ void UpdateParticlesKernel(PxVec3* destPositions, PxVec4* s
 // validity bitmap and particle life times
 extern "C" __global__ void updateBillboardVB(
 	PxVec3* destPositions,
-	const PxVec4* srcPositions, 
-	float* lifetimes,
-	const PxU32* validParticleBitmap,
-	PxU32 validParticleRange)
+	PxVec4* srcPositions, 
+	PxU32* validParticleBitmap,
+	PxU32 validParticleRange,
+	PxU32 maxParticles)
 {
-	for (int i = threadIdx.x; i < validParticleRange; i+=blockDim.x)
-	{
-		destPositions[i].x = srcPositions[i].x;
-		destPositions[i].y = srcPositions[i].y;
-		destPositions[i].z = srcPositions[i].z;
-	}
+	if (!threadIdx.x)
+		gOffset = 0;
 
-	for (int i = threadIdx.x; i < 100000; i+=blockDim.x)
+	__syncthreads();
+
+	if (validParticleRange)
 	{
-		if(lifetimes[i] <= 0)
+		for (PxU32 w=threadIdx.x; w <= (validParticleRange) >> 5; w+=blockDim.x)
 		{
-			lifetimes[i] = 0.0f;
-			destPositions[i].x = 0.0f;
-			destPositions[i].y = 0.0f;
-			destPositions[i].z = 0.0f;
+			const PxU32 srcBaseIndex = w << 5;
+
+			// reserve space in the output vertex buffer based on
+			// population count of validity bitmap (avoids excess atomic ops)
+			PxU32 destIndex = atomicAdd(&gOffset, __popc(validParticleBitmap[w]));
+
+			for (PxU32 b=validParticleBitmap[w]; b; b &= b-1) 
+			{
+				PxU32 index = srcBaseIndex | __ffs(b)-1;
+
+				const PxU32 offset = destIndex*sizeof(PxVec3);
+
+				// copy position
+				PxVec3* p = ptrOffset(destPositions, offset);
+				p->x = srcPositions[index].x;
+				p->y = srcPositions[index].y;
+				p->z = srcPositions[index].z;
+
+				++destIndex;
+			}
 		}
 	}
-	//if (!threadIdx.x)
-	//	gOffset = 0;
-
-	//__syncthreads();
-
-	//if (validParticleRange)
-	//{
-	//	for (PxU32 w=threadIdx.x; w <= (validParticleRange) >> 5; w+=blockDim.x)
-	//	{
-	//		const PxU32 srcBaseIndex = w << 5;
-
-	//		// reserve space in the output vertex buffer based on
-	//		// population count of validity bitmap (avoids excess atomic ops)
-	//		PxU32 destIndex = atomicAdd(&gOffset, __popc(validParticleBitmap[w]));
-
-	//		for (PxU32 b=validParticleBitmap[w]; b; b &= b-1) 
-	//		{
-	//			PxU32 index = srcBaseIndex | __ffs(b)-1;
-
-	//			const PxU32 offset = destIndex*12;
-
-	//			// copy position
-	//			PxVec3* p = ptrOffset(destPositions, offset);
-	//			p->x = srcPositions[index].x;
-	//			p->y = srcPositions[index].y;
-	//			p->z = srcPositions[index].z;
-
-	//			/*if(srcPositions[index].x >= 12)
-	//				srcLifetimes[index] = 0.0f;*/
-
-	//			++destIndex;
-	//		}
-	//	}
-	//}
 }
 
