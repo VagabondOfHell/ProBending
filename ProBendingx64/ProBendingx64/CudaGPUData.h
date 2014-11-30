@@ -55,7 +55,7 @@ public:
 	///<summary>The constructor of a manager over Cuda resources</summary>
 	///<param name="_cudaContext">The cuda context as supplied by PhysX</param>
 	///<param name="numberOfGraphicsBuffers">The number of buffers shared between OpenGL and PhysX</param>
-	///<param name="numberOfNonGraphicsBuffers>The number of buffers shared between the CPU and GPU</param>
+	///<param name="numberOfNonGraphicsBuffers">The number of buffers shared between the CPU and GPU</param>
 	CudaGPUData(physx::PxCudaContextManager* _cudaContext, unsigned int numberOfGraphicsBuffers, unsigned int numberNonGraphicsBuffers);
 
 	~CudaGPUData(void);

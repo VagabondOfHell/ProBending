@@ -50,6 +50,7 @@ void BlankScene::Start()
 		Ogre::Light* light = ogreSceneManager->createLight();
 		light->setType(Ogre::Light::LightTypes::LT_DIRECTIONAL);
 		light->setAttenuation(10000, 1.0, 1, 1);
+		light->setPosition(0, 0, 20.0f);
 
 		KinectAudioEventNotifier::GetInstance()->RegisterAudioListener(this);
 
@@ -66,25 +67,22 @@ void BlankScene::Start()
 		
 		object = new GameObject(this);
 
-		object->LoadModel("sinbad.mesh");
+		object->LoadModel("Rock_01.mesh");
 
-		Ogre::AxisAlignedBox box = object->entity->getBoundingBox();
-		Ogre::Vector3 boxCenter = box.getCenter();
-		Ogre::Vector3 boxHalfSize = box.getHalfSize();
-
-		physx::PxMaterial* mMaterial = PxGetPhysics().createMaterial(0.5,0.5,0.5);
-
+		object->gameObjectNode->scale(0.5f, 0.5f, 0.5f);
+		
 		physx::PxReal density = 1.0f;
-		physx::PxTransform transform(physx::PxVec3(boxCenter.x, boxCenter.y, boxCenter.z), physx::PxQuat::createIdentity());
-		physx::PxVec3 dimensions(boxHalfSize.x, boxHalfSize.y, boxHalfSize.z);
-		physx::PxBoxGeometry geometry(dimensions);
+		physx::PxTransform transform(physx::PxVec3(0.0f), physx::PxQuat::createIdentity());
+		physx::PxBoxGeometry geometry;
 
-		object->rigidBody = physx::PxCreateDynamic(PxGetPhysics(), transform, geometry, *mMaterial, density);
+		object->ConstructBoxFromEntity(geometry);
+
+		object->rigidBody = physx::PxCreateDynamic(PxGetPhysics(), transform, geometry, *PxGetPhysics().createMaterial(0.5,0.5,0.5), density);
 
 		object->GetDynamicRigidBody()->setAngularDamping(0.75);
 		object->GetDynamicRigidBody()->setLinearVelocity(physx::PxVec3(10.0f,0,0)); 
 		
-		physicsWorld->addActor(*object->rigidBody);
+		//physicsWorld->addActor(*object->rigidBody);
 		
 		object->CreatePhysXDebug();
 

@@ -15,8 +15,6 @@
 #include "BlankScene.h"
 #include "FluidScene.h"
 
-//#include "vld.h"
-
 SpeechController speechController = SpeechController(NULL);
 
 physx::PxPhysics* Game::gPhysicsSDK;

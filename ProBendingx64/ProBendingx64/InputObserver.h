@@ -6,10 +6,17 @@
 
 class InputObserver
 {
+	friend class InputNotifier;
+
 public:
-	InputObserver(){}
+	//True to be notified of events, false to not. This is useful for 
+	//temporarily disabling input notification without removing the listener.
+	bool Enabled;
+
+	InputObserver(){Enabled = true;}
 	virtual ~InputObserver(void) {};
 
+protected:
 	virtual bool keyDown(const OIS::KeyEvent &arg){return true;}
 	virtual bool keyPressed( const OIS::KeyEvent &arg ){return true;}
 	virtual bool keyReleased( const OIS::KeyEvent &arg ){return true;}

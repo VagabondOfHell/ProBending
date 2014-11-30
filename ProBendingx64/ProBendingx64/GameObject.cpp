@@ -103,6 +103,21 @@ bool GameObject::LoadModel(const Ogre::String& modelFileName)
 	return true;
 }
 
+bool GameObject::ConstructBoxFromEntity(physx::PxBoxGeometry& boxGeometry)const
+{
+	if(entity)
+	{
+		//Get the half size of the entity bounding box and modify by scale factor
+		Ogre::Vector3 boxHalfSize = entity->getBoundingBox().getHalfSize() * gameObjectNode->getScale();
+		//Generate physx geometry
+		boxGeometry = physx::PxBoxGeometry(physx::PxVec3(boxHalfSize.x, boxHalfSize.y, boxHalfSize.z));
+		//indicate success
+		return true;
+	}
+
+	return false;
+}
+
 void GameObject::CreatePhysXDebug()
 {
 	if(!physxDebugDraw && rigidBody)

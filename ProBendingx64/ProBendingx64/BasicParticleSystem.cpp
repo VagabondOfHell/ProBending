@@ -1,28 +1,17 @@
-#include "DefaultParticlePolicy.h"
-#include "pxtask\PxCudaContextManager.h"
+#include "BasicParticleSystem.h"
 #include "OgreHardwareBufferManager.h"
-#include "OgreMaterial.h"
 #include "OgreLogManager.h"
-#include "pxtask\PxGpuCopyDesc.h"
-#include "pxtask\PxGpuDispatcher.h"
-#include "foundation/PxMemory.h"
 #include "PsBitUtils.h"
-#include <math.h>
 
-using namespace physx;
-
-DefaultParticlePolicy::DefaultParticlePolicy(void)
+BasicParticleSystem::BasicParticleSystem(AbstractParticleEmitter* _emitter, size_t _maximumParticles, 
+		ParticleSystemParams& paramsStruct,	bool _ownEmitter)
+		: ParticleSystemBase(_emitter, _maximumParticles, paramsStruct, _ownEmitter), framesPassed(0), framesTillCopy(0)
 {
-	//The box around the Ogre::SimpleRenderer
-	mBox.setInfinite();
 	
-	framesPassed = 0;
-	framesTillCopy = 0;
-
-	onGPU = false;
 }
 
-DefaultParticlePolicy::~DefaultParticlePolicy(void)
+
+BasicParticleSystem::~BasicParticleSystem(void)
 {
 	if(gpuBuffers)
 	{
@@ -39,40 +28,43 @@ DefaultParticlePolicy::~DefaultParticlePolicy(void)
 		lifetimes = NULL;
 	}
 
-	cuModuleUnload(module);
+	cuModuleUnload(cudaModule);
 }
 
-void DefaultParticlePolicy::Initialize(unsigned int _maxParticles, PxParticleSystem* _particleSystem)
+void BasicParticleSystem::InitializeParticleSystemData()
 {
+	//Use this in future particle systems if Velocity or other data is required
+	/*	physx::PxParticleReadDataFlags currentFlags = pxParticleSystem->getParticleReadDataFlags();
+		if(currentFlags != readFlags)
+			SetParticleReadFlags(readFlags);*/
+
 	//Assign the variables
-	maxParticles = _maxParticles;
-	particleSystem = _particleSystem;
 	performCopyThisFrame = false;
 	initialLifetime = 2.5f;
 
-	lifetimes = new float[maxParticles];
+	lifetimes = new float[maximumParticles];
 
 	//loop through, indicate available indices, and initialize all lifetimes to 0
-	for (int i = maxParticles - 1; i >= 0; --i)
+	for (int i = maximumParticles - 1; i >= 0; --i)
 	{
 		lifetimes[i] = 0.0f;
 	}
-
-	_particleSystem->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
 
 	// our vertices are just points
 	mRenderOp.operationType = Ogre::RenderOperation::OT_POINT_LIST;
 	mRenderOp.useIndexes = false;//EBO
 	
 	mRenderOp.vertexData = new Ogre::VertexData();
-	mRenderOp.vertexData->vertexCount = maxParticles;
+	mRenderOp.vertexData->vertexCount = maximumParticles;
 	mRenderOp.vertexData->vertexBufferBinding->unsetAllBindings();
 
 	InitializeVertexBuffers();
 }
 
-void DefaultParticlePolicy::InitializeVertexBuffers()
+void BasicParticleSystem::InitializeVertexBuffers()
 {
+	using namespace physx;
+
 	size_t currOffset = 0;
 
 	mRenderOp.vertexData->vertexDeclaration->addElement(0, currOffset, Ogre::VET_FLOAT3, Ogre::VES_POSITION);
@@ -81,13 +73,13 @@ void DefaultParticlePolicy::InitializeVertexBuffers()
 	// allocate the vertex buffer
 	mVertexBufferPosition = Ogre::HardwareBufferManager::getSingleton().createVertexBuffer(
 			Ogre::VertexElement::getTypeSize(Ogre::VET_FLOAT3),
-			maxParticles,
-			Ogre::HardwareBuffer::HBU_DYNAMIC_WRITE_ONLY_DISCARDABLE,///Add dynamicWriteOnly as well?
+			maximumParticles,
+			Ogre::HardwareBuffer::HBU_DYNAMIC_WRITE_ONLY_DISCARDABLE,
 			false);
 
 	PxVec3* positions = static_cast<PxVec3*>(mVertexBufferPosition->lock(Ogre::HardwareBuffer::LockOptions::HBL_WRITE_ONLY));
 
-	for (unsigned int i = 0; i < maxParticles; i++)
+	for (unsigned int i = 0; i < maximumParticles; i++)
 	{
 		positions[i] = PxVec3(std::numeric_limits<float>::quiet_NaN());
 	}
@@ -97,50 +89,66 @@ void DefaultParticlePolicy::InitializeVertexBuffers()
 	// bind positions to location 0
 	mRenderOp.vertexData->vertexBufferBinding->setBinding(0, mVertexBufferPosition);
 
-	mRenderOp.vertexData->vertexCount = maxParticles;
+	//Set the vertex count to the maximum allowed particles in case we are running on the CPU
+	//Otherwise GPU update will override
+	mRenderOp.vertexData->vertexCount = maximumParticles;
 }
 
-void DefaultParticlePolicy::InitializeGPUData(physx::PxCudaContextManager* contextManager)
+void BasicParticleSystem::InitializeGPUData()
 {
-	if(!CudaModuleHelper::LoadCUDAModule(&module, "x64/Debug/KernelTest.ptx"))
+	//Load the module the kernel belongs to (compiled file)
+	if(!CudaModuleHelper::LoadCUDAModule(&cudaModule, "x64/Debug/KernelTest.ptx"))
 	{
 		printf("Load CUDA Module failed! Error: %i\n", CudaModuleHelper::GetLastCudaError());
 		onGPU = false;
 		return;
 	}
 
-	if(!CudaModuleHelper::LoadCUDAFunction(&updateParticlesKernel, module, "updateBillboardVB"))
+	//Load the cuda kernel
+	if(!CudaModuleHelper::LoadCUDAFunction(&updateParticlesKernel, cudaModule, "updateBillboardVB"))
 	{
 		printf("Load CUDA Function failed! Error: %i\n", CudaModuleHelper::GetLastCudaError());
 		onGPU = false;
 		return;
 	}
 	
-	gpuBuffers = new CudaGPUData(contextManager, GraphicsResourcePointers::Count, DevicePointers::Count);
+	//Initialize GPU Data
+	gpuBuffers = new CudaGPUData(cudaContextManager, 
+		GraphicsResourcePointers::GraphicsResourcePointerCount, DevicePointers::DevicePointerCount);
 	
-	bool gpuAllocationResult = false;
+	bool gpuAllocationResult;
 	
 	//Register the resource to CUDA
 	gpuAllocationResult = gpuBuffers->RegisterCudaGraphicsResource(GraphicsResourcePointers::Positions, mVertexBufferPosition);
 
 	//Allocate room on the GPU once for the validity bitmaps
 	if(gpuAllocationResult)
-		gpuAllocationResult = gpuBuffers->AllocateGPUMemory(DevicePointers::ValidBitmap, sizeof(PxU32) * (maxParticles + 31) >> 5);
+		gpuAllocationResult = gpuBuffers->AllocateGPUMemory(DevicePointers::ValidBitmap, 
+			sizeof(physx::PxU32) * (maximumParticles + 31) >> 5); //This was taken from physx particle website
 
 	//If we failed gpu allocation, indicate it in our onGPU result
 	onGPU = gpuAllocationResult;
 }
 
-std::vector<const physx::PxU32> DefaultParticlePolicy::UpdatePolicy(float time, physx::PxParticleReadData* readData, 
-							physx::PxParticleReadDataFlags readableData)
+void BasicParticleSystem::ParticlesCreated(const unsigned int createdCount, physx::PxStrideIterator<const physx::PxU32> emittedIndices)
 {
-	std::vector<const physx::PxU32> indicesToRemove;
+	//Loop through all the created particles and set their lifetimes
+	for (unsigned int i = 0; i < createdCount; i++)
+	{
+		lifetimes[emittedIndices[i]] = initialLifetime;
+	}
+}
+
+std::vector<const physx::PxU32> BasicParticleSystem::UpdatePolicy(const float time, const physx::PxParticleReadData* const readData)
+{
+	using namespace physx;
+
+	std::vector<const PxU32> indicesToRemove;
 
 	//PxMemCopy(mParticleValidity, readData->validParticleBitmap, ((readData->validParticleRange + 31) >> 5) << 2);
 
 	//Reserve 5% of the max particles for removal
-	indicesToRemove.reserve(maxParticles * 0.05f);
-	PxU32 newValidRange = 0;
+	indicesToRemove.reserve(maximumParticles * 0.05f);
 
 	//Check if there is any updating to do
 	if (readData->validParticleRange > 0)
@@ -153,7 +161,9 @@ std::vector<const physx::PxU32> DefaultParticlePolicy::UpdatePolicy(float time, 
 		//If it isn't, modulus the frames passed with the number of frames until copy and check if remainder is 0
 		performCopyThisFrame = framesTillCopy == 0 ? (framesPassed = 0) == 0 : (framesPassed %= framesTillCopy) == 0;
 
-		int numParticles = 0;
+		int numParticles(0);
+
+		//Lock Ogre GL Buffers if not using CUDA so we can update them
 		if(!onGPU)
 			if(performCopyThisFrame)
 				positions = static_cast<PxVec3*>(mVertexBufferPosition->lock(Ogre::HardwareBuffer::LockOptions::HBL_WRITE_ONLY));
@@ -184,7 +194,6 @@ std::vector<const physx::PxU32> DefaultParticlePolicy::UpdatePolicy(float time, 
 					{
 						lifetimes[index] -= time;
 						++numParticles;
-						newValidRange = index;
 					}
 						
 					if(!onGPU)
@@ -207,62 +216,56 @@ std::vector<const physx::PxU32> DefaultParticlePolicy::UpdatePolicy(float time, 
 
 		if(onGPU)
 			mRenderOp.vertexData->vertexCount = numParticles;
-		//mValidParticleRange = newValidRange;
+		
 	}//end if valid range > 0
 
-	//increment frames passed here, because the GPU version may not get called, but this one is guaranteed to be called
+	//increment frames passed here, because the GPU version may not get called, (if CUDA not enabled)
+	//but this one is guaranteed to be called
 	framesPassed++;
 
 	return indicesToRemove;
 }
 
-void DefaultParticlePolicy::UpdatePolicyGPU(float time, physx::PxParticleReadData* readData, physx::PxParticleReadDataFlags readableData)
+void BasicParticleSystem::UpdatePolicyGPU(const float time, physx::PxParticleReadData* const readData)
 {
-	if(readData->nbValidParticles > 0)
+	using namespace physx;
+
+	//CPU Update calculates this bool for us. If true, copy Host to Device
+	if(performCopyThisFrame)
 	{
-		//CPU Update calculates this bool for us. If true, copy Host to Device
-		if(performCopyThisFrame)
-		{
-			if(!gpuBuffers->CopyHostToDevice(DevicePointers::ValidBitmap, 
-				&readData->validParticleBitmap[0], sizeof(PxU32)*(maxParticles + 31) >> 5))
-				printf("Copy Validity to GPU Failed");
-		}
+		if(!gpuBuffers->CopyHostToDevice(DevicePointers::ValidBitmap, 
+			&readData->validParticleBitmap[0], sizeof(PxU32)*(maximumParticles + 31) >> 5))
+			printf("Copy Validity to GPU Failed");
+	}
 
-		CUdeviceptr src_pos_data = reinterpret_cast<CUdeviceptr>(&readData->positionBuffer[0]);
+	CUdeviceptr src_pos_data = reinterpret_cast<CUdeviceptr>(&readData->positionBuffer[0]);
 
-		MappedGPUData dest_pos_data = gpuBuffers->MapAndGetGPUDataPointer(GraphicsResourcePointers::Positions);
-		MappedGPUData src_bit_data = gpuBuffers->GetNonGraphicsResource(DevicePointers::ValidBitmap);
+	MappedGPUData dest_pos_data = gpuBuffers->MapAndGetGPUDataPointer(GraphicsResourcePointers::Positions);
+	MappedGPUData src_bit_data = gpuBuffers->GetNonGraphicsResource(DevicePointers::ValidBitmap);
 
-		//Ensure we have valid data
-		if(dest_pos_data.isValid)
-		{
-			//Construct the parameters for the Kernel
-			void* args[5] = {
-				&dest_pos_data.devicePointer,
-				&src_pos_data,
-				&src_bit_data.devicePointer,
-				&readData->nbValidParticles,
-				&maxParticles
-			};
+	//Ensure we have valid data
+	if(dest_pos_data.isValid)
+	{
+		//Construct the parameters for the Kernel
+		void* args[5] = {
+			&dest_pos_data.devicePointer,
+			&src_pos_data,
+			&src_bit_data.devicePointer,
+			&readData->nbValidParticles,
+			&maximumParticles
+		};
 
-			//Launch the kernel with 1 block of 512 threads. Each thread will complete (MaxParticles/512) worth of particles 
-			CUresult res = cuLaunchKernel(updateParticlesKernel, 1, 1, 1, 512, 1, 1, 0, 0, args, 0); 
+		//Launch the kernel with 1 block of 512 threads. Each thread will complete (MaxParticles/512) worth of particles 
+		CUresult res = cuLaunchKernel(updateParticlesKernel, 1, 1, 1, 512, 1, 1, 0, 0, args, 0); 
 		
-			//If an error, log the problem
-			if(res != CUDA_SUCCESS)
-				Ogre::LogManager::getSingleton().getDefaultLog()->
-					logMessage("Default Particle Policy Cuda Kernel Launch failed", Ogre::LogMessageLevel::LML_CRITICAL);
-		}
+#if _DEBUG
+		//If an error, log the problem
+		if(res != CUDA_SUCCESS)
+			Ogre::LogManager::getSingleton().getDefaultLog()->
+				logMessage("Basic Particle System Cuda Kernel Launch failed", Ogre::LogMessageLevel::LML_CRITICAL);
+#endif
 
 		//Unmap the graphics resource
 		gpuBuffers->UnmapResourceFromCuda(GraphicsResourcePointers::Positions);
-	}
-}
-
-void DefaultParticlePolicy::ParticlesCreated(unsigned int createdCount, physx::PxStrideIterator<const PxU32> emittedIndices)
-{
-	for (int i = 0; i < createdCount; i++)
-	{
-		lifetimes[emittedIndices[i]] = 3;// (rand() % 8) + 2;
 	}
 }

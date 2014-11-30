@@ -85,7 +85,8 @@ bool InputNotifier::keyDown(const OIS::KeyEvent &arg)
 {
 	for (unsigned int i = 0; i < observers.size(); i++)
 	{
-		observers[i]->keyDown(arg);
+		if(observers[i]->Enabled)
+			observers[i]->keyDown(arg);
 	}
 
 	return true;
@@ -95,7 +96,8 @@ bool InputNotifier::keyPressed( const OIS::KeyEvent &arg )
 {
 	for (unsigned int i = 0; i < observers.size(); i++)
 	{
-		observers[i]->keyPressed(arg);
+		if(observers[i]->Enabled)
+			observers[i]->keyPressed(arg);
 	}
 
 	return true;
@@ -105,7 +107,8 @@ bool InputNotifier::keyReleased( const OIS::KeyEvent &arg )
 {
 	for (int i = 0; i < observers.size(); i++)
 	{
-		observers[i]->keyReleased(arg);
+		if(observers[i]->Enabled)
+			observers[i]->keyReleased(arg);
 	}
 
 	return true;
@@ -115,7 +118,8 @@ bool InputNotifier::mouseMoved( const OIS::MouseEvent &arg )
 {
 	for (unsigned int i = 0; i < observers.size(); i++)
 	{
-		observers[i]->mouseMoved(arg);
+		if(observers[i]->Enabled)
+			observers[i]->mouseMoved(arg);
 	}
 
 	return true;
@@ -125,7 +129,8 @@ bool InputNotifier::mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID
 {
 	for (unsigned int i = 0; i < observers.size(); i++)
 	{
-		observers[i]->mousePressed(arg, id);
+		if(observers[i]->Enabled)
+			observers[i]->mousePressed(arg, id);
 	}
 
 	return true;
@@ -135,7 +140,8 @@ bool InputNotifier::mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonI
 {
 	for (int i = 0; i < observers.size(); i++)
 	{
-		observers[i]->mouseReleased(arg, id);
+		if(observers[i]->Enabled)
+			observers[i]->mouseReleased(arg, id);
 	}
 
 	return true;

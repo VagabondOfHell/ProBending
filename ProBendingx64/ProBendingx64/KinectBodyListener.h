@@ -24,9 +24,14 @@ private:
 	}
 
 public:
+	//True to be notified of events, false to not. This is useful for temporarily disabling input notification
+	//without removing the listener. Will still be notified of body lost and body acquired events
+	bool Enabled;
+
 	KinectBodyListener()
 	{
 		body = NULL;
+		Enabled = true;
 	}
 
 	virtual ~KinectBodyListener(){}
@@ -40,12 +45,7 @@ public:
 	//otherwise it returns NULL if its invalid or not attached
 	inline KinectBody* const GetBody()const
 	{
-		if(body)
-		{
-			return body;
-		}
-
-		return NULL;
+		return body;
 	}
 
 protected:

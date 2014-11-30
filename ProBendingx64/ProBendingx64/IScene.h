@@ -27,6 +27,8 @@ protected:
 	physx::PxScene* physicsWorld;
 	bool physxSimulating;
 
+	bool physxEnabled;
+
 	physx::PxDefaultCpuDispatcher* mCpuDispatcher;
 	
 	//Cuda Manager for GPU Processor usage
@@ -44,6 +46,7 @@ public:
 	{
 		physicsWorld = NULL;
 		physxSimulating = false;
+		physxEnabled = false;
 
 		guiManager = new GUIManager();
 		guiManager->InitializeGUI();
@@ -143,6 +146,8 @@ public:
 			descriptor.filterShader  = physx::PxDefaultSimulationFilterShader;
 			
 		physicsWorld = PxGetPhysics().createScene(descriptor);
+
+		physxEnabled = true;
 	}
 
 	virtual void Start() = 0;
@@ -171,6 +176,13 @@ public:
 		return ogreSceneManager->getName();
 	}
 	
+	///<summary>Checks if this scene is utilizing physx for physics</summary>
+	///<returns>True if physx has been initialized, false if not</returns>
+	inline const bool IsUsingPhysX()const
+	{
+		return physxEnabled;
+	}
+
 	inline Ogre::SceneNode* GetSceneRootNode()const
 	{
 		return ogreSceneManager->getRootSceneNode();

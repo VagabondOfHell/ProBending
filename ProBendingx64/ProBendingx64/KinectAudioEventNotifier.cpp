@@ -77,7 +77,8 @@ void KinectAudioEventNotifier::ProcessEvents()
 		{
 			for (int j = 0; j < listeners.size(); j++)
 			{
-				listeners[j]->AudioDataReceived(currentData);
+				if(listeners[j]->Enabled)
+					listeners[j]->AudioDataReceived(currentData);
 			}
 			
 			if(currentData)

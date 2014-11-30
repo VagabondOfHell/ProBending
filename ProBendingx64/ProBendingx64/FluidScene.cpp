@@ -3,6 +3,7 @@
 #include "InputNotifier.h"
 #include "OgreEntity.h"
 #include "ParticlePointEmitter.h"
+#include "BasicParticleSystem.h"
 
 FluidScene::FluidScene(void)
 	:IScene(NULL, NULL, "", "")
@@ -24,6 +25,9 @@ FluidScene::~FluidScene(void)
 
 	if(particleSystem)
 		delete particleSystem;
+
+	if(particleSystem2)
+		delete particleSystem2;
 }
 
 void FluidScene::Start()
@@ -67,26 +71,41 @@ void FluidScene::Start()
 	particlePointEmitter = new ParticlePointEmitter(10, physx::PxVec3(0.0f),
 		physx::PxVec3(0, -3, 0).getNormalized(), physx::PxVec3(0, 3, 0).getNormalized(), 1.0f, 4.0f);
 	
-	particleSystem = new ParticleSystem<DefaultParticlePolicy>(new DefaultParticlePolicy(), particlePointEmitter, 
-		NUM_PARTICLES, ParticleSystemParams(), false, cudaContextManager);
+	ParticleSystemParams psParams = ParticleSystemParams();
+	psParams.cudaContext = cudaContextManager;
+	psParams.useGravity = false;
+
+	particleSystem = new BasicParticleSystem(particlePointEmitter, NUM_PARTICLES, psParams, false);
+	particleSystem2 = new BasicParticleSystem(particlePointEmitter, NUM_PARTICLES, psParams, false);
+
+	/*particleSystem = new ParticleSystem<DefaultParticlePolicy>(new DefaultParticlePolicy(), particlePointEmitter, 
+		NUM_PARTICLES, false, ParticleSystemParams(), false, cudaContextManager);
 	
 	particleSystem2 = new ParticleSystem<DefaultParticlePolicy>(new DefaultParticlePolicy(), particlePointEmitter, 
-		NUM_PARTICLES, ParticleSystemParams(), false, cudaContextManager);
+		NUM_PARTICLES, false, ParticleSystemParams(), false, cudaContextManager);*/
 
 	particleSystem->Initialize(physicsWorld);
 	particleSystem2->Initialize(physicsWorld);
 
+	particleSystem->setMaterial("DefaultParticleShader");
+	particleSystem2->setMaterial(redDefault->getName());
+/*
 	particleSystem->GetPolicy()->setMaterial("DefaultParticleShader");
-	particleSystem2->GetPolicy()->setMaterial(redDefault->getName());
+	particleSystem2->GetPolicy()->setMaterial(redDefault->getName());*/
 
 	testNode = ogreSceneManager->getRootSceneNode()->createChildSceneNode();
 	
-	testNode->attachObject((DefaultParticlePolicy*)particleSystem->GetPolicy());
+	testNode->attachObject(particleSystem);
+/*
+	testNode->attachObject((DefaultParticlePolicy*)particleSystem->GetPolicy());*/
 
 	testNode->translate(5.0f, -10.0f, 0.0f);
 
 	testNode2 = ogreSceneManager->getRootSceneNode()->createChildSceneNode();
-	testNode2->attachObject((DefaultParticlePolicy*)particleSystem2->GetPolicy());
+
+	testNode2->attachObject(particleSystem2);
+
+	/*testNode2->attachObject((DefaultParticlePolicy*)particleSystem2->GetPolicy());*/
 	testNode2->translate(-5.0f, 10.0f, 0.0f);
 
 	particlePointEmitter->position = OgreToPhysXVec3(testNode->getPosition());

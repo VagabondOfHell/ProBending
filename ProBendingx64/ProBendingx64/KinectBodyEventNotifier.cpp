@@ -229,27 +229,31 @@ void KinectBodyEventNotifier::ProcessEvents()
 				//Notify each listener of the events that occured
 			for (unsigned int i = 0; i < bodyListeners[bodyID].size(); i++)
 			{
+				
 				if(changedData & ChangedData::TrackingIDLost)
 					bodyListeners[bodyID][i]->BodyLost(frameData.CurrentData, frameData.PreviousData);
+				
+				if(bodyListeners[bodyID][i]->Enabled)
+				{
+					if(changedData & ChangedData::BodyClippedChanged)
+						bodyListeners[bodyID][i]->BodyClipChanged(frameData.CurrentData, frameData.PreviousData);
+					if(changedData & ChangedData::EngagedChanged)
+						bodyListeners[bodyID][i]->BodyEngagedChanged(frameData.CurrentData, frameData.PreviousData);
+					if(changedData & ChangedData::RestrictedChanged)
+						bodyListeners[bodyID][i]->BodyRestrictedChanged(frameData.CurrentData, frameData.PreviousData);
+					if(changedData & ChangedData::TrackingChanged)
+						bodyListeners[bodyID][i]->BodyTrackChanged(frameData.CurrentData, frameData.PreviousData);
 
-				if(changedData & ChangedData::BodyClippedChanged)
-					bodyListeners[bodyID][i]->BodyClipChanged(frameData.CurrentData, frameData.PreviousData);
-				if(changedData & ChangedData::EngagedChanged)
-					bodyListeners[bodyID][i]->BodyEngagedChanged(frameData.CurrentData, frameData.PreviousData);
-				if(changedData & ChangedData::RestrictedChanged)
-					bodyListeners[bodyID][i]->BodyRestrictedChanged(frameData.CurrentData, frameData.PreviousData);
-				if(changedData & ChangedData::TrackingChanged)
-					bodyListeners[bodyID][i]->BodyTrackChanged(frameData.CurrentData, frameData.PreviousData);
+					if(changedData & ChangedData::LeanTrackingStateChanged)
+						bodyListeners[bodyID][i]->LeanTrackingStateChanged(frameData.CurrentData, frameData.PreviousData);
 
-				if(changedData & ChangedData::LeanTrackingStateChanged)
-					bodyListeners[bodyID][i]->LeanTrackingStateChanged(frameData.CurrentData, frameData.PreviousData);
+					if(changedData & ChangedData::LeftHandTrackingStateChanged)
+						bodyListeners[bodyID][i]->HandTrackingStateChanged(Hand::Left,frameData.CurrentData, frameData.PreviousData);
+					if(changedData & ChangedData::RightHandTrackingStateChanged)
+						bodyListeners[bodyID][i]->HandTrackingStateChanged(Hand::Right, frameData.CurrentData, frameData.PreviousData);
 
-				if(changedData & ChangedData::LeftHandTrackingStateChanged)
-					bodyListeners[bodyID][i]->HandTrackingStateChanged(Hand::Left,frameData.CurrentData, frameData.PreviousData);
-				if(changedData & ChangedData::RightHandTrackingStateChanged)
-					bodyListeners[bodyID][i]->HandTrackingStateChanged(Hand::Right, frameData.CurrentData, frameData.PreviousData);
-
-				bodyListeners[bodyID][i]->BodyFrameAcquired(frameData.CurrentData, frameData.PreviousData);
+					bodyListeners[bodyID][i]->BodyFrameAcquired(frameData.CurrentData, frameData.PreviousData);
+				}
 			}
 
 			
@@ -286,12 +290,15 @@ void KinectBodyEventNotifier::ProcessEvents()
 			{
 				for (unsigned int i = 0; i < bodyListeners[bodyID].size(); i++)
 				{
-					//Notify listeners if we have results for the specified type
-					if(discreteSize > 0)
-						bodyListeners[bodyID][i]->DiscreteGesturesAcquired(currentData.DiscreteGestureResult);
+					if(bodyListeners[bodyID][i]->Enabled)
+					{
+						//Notify listeners if we have results for the specified type
+						if(discreteSize > 0)
+							bodyListeners[bodyID][i]->DiscreteGesturesAcquired(currentData.DiscreteGestureResult);
 
-					if(continuousSize > 0)
-						bodyListeners[bodyID][i]->ContinuousGesturesAcquired(currentData.ContinuousGestureResult);
+						if(continuousSize > 0)
+							bodyListeners[bodyID][i]->ContinuousGesturesAcquired(currentData.ContinuousGestureResult);
+					}
 				}
 			}
 		}

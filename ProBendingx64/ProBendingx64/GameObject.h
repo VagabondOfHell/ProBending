@@ -37,9 +37,14 @@ public:
 	void AttachComponent(ComponentType componentType);
 	
 	///<summary>Loads a model for Ogre, providing a Try Catch to handle errors</summary>
-	///<param "modelFileName">The name of the model with the extension to load from Ogre resources</param>
+	///<param name="modelFileName">The name of the model with the extension to load from Ogre resources</param>
 	///<returns>True if loaded, false if failed</returns>
 	bool LoadModel(const Ogre::String& modelFileName);
+
+	///<summary>Creates a box from the ogre entity dimensions, with scaling</summary>
+	///<param name="boxGeometry">The out value to be filled</param>
+	///<returns>True if successful, false if not. Unsuccessful when entity has not been set</returns>
+	bool ConstructBoxFromEntity(physx::PxBoxGeometry& boxGeometry)const;
 
 	///<summary>Creates an outline of all physX shapes attached to the rigid body
 	///CURRENTLY ONLY SUPPORTS CUBES</summary>

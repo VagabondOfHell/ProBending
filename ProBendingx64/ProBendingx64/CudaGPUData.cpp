@@ -64,7 +64,7 @@ void CudaGPUData::UnregisterAllGraphicsResources()
 	cudaContext->acquireContext();
 
 	//Loop through and attempt to unregister each
-	for (int i = 0; i < graphicsResourceCount; i++)
+	for (unsigned int i = 0; i < graphicsResourceCount; i++)
 	{
 		cudaContext->unregisterResourceInCuda(cudaGraphicsResources[i]);
 	}

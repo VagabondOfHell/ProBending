@@ -94,7 +94,7 @@ public:
 	bool FillGestureReader(std::wstring databaseFileName);
 	
 	///<summary>Registers a listener to the kinect sensor</summary>
-	///<param "listener">The listener to register </param>
+	///<param name="listener">The listener to register </param>
 	///<returns>The old Sensor Listener, or NULL if none existed</returns>
 	inline KinectSensorListener* RegisterSensorListener(KinectSensorListener* listener)
 	{
@@ -102,34 +102,34 @@ public:
 	}
 
 	///<summary>Registers the specified listener to a new unlistened body</summary>
-	///<param "listener">The new body listener to register</param>
+	///<param name="listener">The new body listener to register</param>
 	///<returns>True if successful, false if not</returns>
 	bool RegisterListenerToNewBody(KinectBodyListener* listener);
 
 	///<summary>Registers the specified listener to the specified body</summary>
-	///<param "bodyID">The ID of the body to register to</param>
-	///<param "listener">The listener to attach</param>
+	///<param name="bodyID">The ID of the body to register to</param>
+	///<param name="listener">The listener to attach</param>
 	///<returns>True if successful, false if not</returns>
 	bool RegisterListenerToBody(UINT8 bodyID, KinectBodyListener* listener);
 
 	///<summary>Swaps the bodies that each listener is listening to</summary>
-	///<param "listener1">The listener to switch from</param>
-	///<param "listener2">The listener to switch to</param>
+	///<param name="listener1">The listener to switch from</param>
+	///<param name="listener2">The listener to switch to</param>
 	///<returns>True if successful, false if not</returns>
 	bool SwapBodyListeners(KinectBodyListener* listener1, KinectBodyListener* listener2);
 
 	///<summary>Remove the listener from all listening</summary>
-	///<param "listener">The listener to unregister</param>
+	///<param name="listener">The listener to unregister</param>
 	///<returns>True if successful, false if not</returns>
 	void UnregisterBodyListener(KinectBodyListener* listener);
 
 	///<summary>Registers an audio listener</summary>
-	///<param "audioListener">The listener to register</param>
+	///<param name="audioListener">The listener to register</param>
 	///<returns>True if successful, false if not</returns>
 	bool RegisterAudioListener(KinectAudioListener* audioListener);
 
 	///<summary>Unregisters an audio listener</summary>
-	///<param "audioListener">The listener to unregister</param>
+	///<param name="audioListener">The listener to unregister</param>
 	///<returns>True if successful, false if not</returns>
 	bool UnregisterAudioListener(KinectAudioListener* audioListener);
 
@@ -137,11 +137,11 @@ public:
 	void BeginAllCapture();
 
 	///<summary>Set the pause state of Speech Capture</summary>
-	///<param "enabled">True to pause, false to unpause</param>
+	///<param name="enabled">True to pause, false to unpause</param>
 	void SetSpeechCaptureState(bool enabled);
 
 	///<summary>Set the pause state of Body Capture</summary>
-	///<param "enabled">True to pause, false to unpause</param>
+	///<param name="enabled">True to pause, false to unpause</param>
 	void SetBodyCaptureState(bool enabled);
 
 	///<summary>Processes the events of the Kinect</summary>
