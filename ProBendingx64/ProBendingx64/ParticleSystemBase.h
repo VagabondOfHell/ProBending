@@ -45,7 +45,8 @@ struct ParticleSystemParams
 		physx::PxReal _restOffset = 1.0f, physx::PxReal _staticFriction = 0.0f, physx::PxReal _dynamicFriction = 0.0f,
 		physx::PxReal _restitution = 1.0f, physx::PxReal _contactOffset = 0.0f, physx::PxReal _damping = 0.0f)
 		
-		:gridSize(_gridSize), maxMotionDistance(_maxMotionDistance), externalAcceleration(_externalAcceleration), 
+		:gridSize(_gridSize), maxMotionDistance(_maxMotionDistance), cudaContext(_cudaContext),
+		externalAcceleration(_externalAcceleration), 
 		useGravity(_useGravity), particleMass(_particleMass), baseFlags(_baseFlags), perParticleRestOffset(_perParticleRestOffset), 
 		restOffset(_restOffset), staticFriction(_staticFriction), dynamicFriction(_dynamicFriction), 
 		restitution(_restitution), contactOffset(_contactOffset), damping(_damping) 
@@ -58,7 +59,6 @@ class ParticleSystemBase: public Ogre::SimpleRenderable
 {
 protected:
 	AbstractParticleEmitter* emitter;
-	bool ownEmitter;
 
 	std::vector<physx::PxU32> availableIndices; //The available indices within the particle system
 
@@ -104,6 +104,8 @@ protected:
 #pragma endregion
 
 public:
+	bool ownEmitter;
+
 	ParticleSystemBase(AbstractParticleEmitter* _emitter, size_t _maximumParticles, 
 		ParticleSystemParams& paramsStruct = ParticleSystemParams(), bool _ownEmitter = true);
 
@@ -134,9 +136,6 @@ public:
 		return 0;
 	}
 
-	virtual Ogre::Real getSquaredViewDepth(const Ogre::Camera*)const
-	{
-		return 0;
-	}
+	virtual Ogre::Real getSquaredViewDepth(const Ogre::Camera* cam)const;
 };
 

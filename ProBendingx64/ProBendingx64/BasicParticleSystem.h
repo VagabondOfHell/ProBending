@@ -29,7 +29,7 @@ protected:
 	void InitializeVertexBuffers();
 
 public:
-	BasicParticleSystem(AbstractParticleEmitter* _emitter, size_t _maximumParticles, 
+	BasicParticleSystem(AbstractParticleEmitter* _emitter, size_t _maximumParticles, float _initialLifetime,
 		ParticleSystemParams& paramsStruct = ParticleSystemParams(), bool _ownEmitter = true);
 
 	virtual ~BasicParticleSystem(void);

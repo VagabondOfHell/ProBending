@@ -16,14 +16,19 @@ material DefaultParticleShader
       pass
       {
 	  lighting off
-	  depth_write off
-	  scene_blend alpha_blend
-	  point_size 0.10
-	  point_size_attenuation on [0 1 0]
+	  //depth_write off
+	  scene_blend one one_minus_src_alpha
+	  //scene_blend alpha_blend
+	  //point_sprites on
 
          vertex_program_ref DefaultParticleShaderVertexGLSL
          {
+		 param_named_auto world inverse_world_matrix
+		 param_named_auto view view_matrix
+		 param_named_auto proj projection_matrix
+		 
 		 param_named_auto worldViewProj worldviewproj_matrix
+		 param_named_auto camPos camera_position
          }
          
         fragment_program_ref DefaultParticleShaderFragGLSL

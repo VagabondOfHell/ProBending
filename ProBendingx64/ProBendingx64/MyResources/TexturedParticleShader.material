@@ -17,14 +17,17 @@ material TexturedParticleShader
       {
 	  lighting off
 	  depth_write off
-	  scene_blend alpha_blend
+	  scene_blend one one_minus_src_alpha
+	  //scene_blend alpha_blend
 	  point_sprites on
-	  point_size 1.0
-	  point_size_attenuation on [0 1 0]
-
+	  point_size 5
+point_size_attenuation on 0 0 1
+    point_size_min 0 
+    point_size_max 10
          vertex_program_ref TexturedParticleShaderVertexGLSL
          {
 			param_named_auto worldViewProj worldviewproj_matrix
+			param_named_auto camPos camera_position
          }
          
         fragment_program_ref TexturedParticleShaderFragGLSL
@@ -35,7 +38,7 @@ material TexturedParticleShader
 		 texture_unit
 		 {
 				//cubic_texture spidey.jpg spidey.jpg spidey.jpg spidey.jpg spidey.jpg spidey.jpg separateUV
-				texture spidey.jpg 2D
+				texture smoke.png 2D // spidey.jpg 2D
 				tex_address_mode clamp
 				//filtering linear linear none
 				tex_coord_set 0

@@ -58,4 +58,16 @@ public:
 	///<param name="availableIndiceCount">The count of currently available indices </summary>
 	///<param name="creationData">The creation data to fill. This is given from the particle system</summary>
 	virtual void Emit(float gameTime, unsigned int availableIndiceCount, physx::PxParticleCreationData& creationData) = 0;
+
+	void SetMaximumDirection(physx::PxVec3 newMax)
+	{
+		maximumDirection = newMax;
+		ValidateMinAndMax(minimumDirection, maximumDirection);
+	}
+
+	void SetMinimumDirection(physx::PxVec3 newMin)
+	{
+		minimumDirection = newMin;
+		ValidateMinAndMax(minimumDirection, maximumDirection);
+	}
 };

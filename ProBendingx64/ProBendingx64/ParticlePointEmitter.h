@@ -15,7 +15,6 @@ private:
 	std::random_device rd;
 	std::mt19937_64 eng;
 public:
-
 	///<summary>Constructor of the particle point emitter, which emits particles from a central point</summary>
 	///<param name="particlesPerSecond">The number of particles to emit per second. If below 0, it is flipped to positive</param>
 	///<param name="emitterPosition">Position of the emitter</param>

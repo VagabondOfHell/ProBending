@@ -3,9 +3,10 @@
 #include "OgreLogManager.h"
 #include "PsBitUtils.h"
 
-BasicParticleSystem::BasicParticleSystem(AbstractParticleEmitter* _emitter, size_t _maximumParticles, 
+BasicParticleSystem::BasicParticleSystem(AbstractParticleEmitter* _emitter, size_t _maximumParticles, float _initialLifetime, 
 		ParticleSystemParams& paramsStruct,	bool _ownEmitter)
-		: ParticleSystemBase(_emitter, _maximumParticles, paramsStruct, _ownEmitter), framesPassed(0), framesTillCopy(0)
+		: ParticleSystemBase(_emitter, _maximumParticles, paramsStruct, _ownEmitter), initialLifetime(_initialLifetime),
+		framesPassed(0), framesTillCopy(0)
 {
 	
 }
@@ -40,7 +41,6 @@ void BasicParticleSystem::InitializeParticleSystemData()
 
 	//Assign the variables
 	performCopyThisFrame = false;
-	initialLifetime = 2.5f;
 
 	lifetimes = new float[maximumParticles];
 
@@ -186,13 +186,15 @@ std::vector<const physx::PxU32> BasicParticleSystem::UpdatePolicy(const float ti
 						
 						if(!onGPU)
 							positions[index] = PxVec3(std::numeric_limits<float>::quiet_NaN());
-						
+
 						continue;
 					}
 					//If the particle is valid and lifetimes are above 0, subtract this frame
 					else
 					{
 						lifetimes[index] -= time;
+						
+						//printf("Particle Position: %f, %f, %f\n", positions[index].x,positions[index].y, positions[index].z);
 						++numParticles;
 					}
 						

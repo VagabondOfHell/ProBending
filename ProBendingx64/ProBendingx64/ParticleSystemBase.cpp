@@ -2,6 +2,7 @@
 #include "PxPhysics.h"
 #include "PxScene.h"
 #include "AbstractParticleEmitter.h"
+#include "OgreCamera.h"
 
 using namespace physx;
 
@@ -9,8 +10,10 @@ ParticleSystemBase::ParticleSystemBase(AbstractParticleEmitter* _emitter, size_t
 		ParticleSystemParams& paramsStruct,	bool _ownEmitter)
 		: emitter(_emitter), ownEmitter(_ownEmitter), cudaContextManager(paramsStruct.cudaContext)
 {
-	//set ogre simple renderable
-		mBox.setInfinite();
+		onGPU = false;
+
+		//set ogre simple renderable
+		mBox.setExtents(-1000, -1000, -1000, 1000, 1000, 1000);
 
 		maximumParticles = _maximumParticles;
 
@@ -182,4 +185,14 @@ void ParticleSystemBase::Update(float time)
 				printf("CREATION ERROR");
 		}	
 	}
+}
+
+Ogre::Real ParticleSystemBase::getSquaredViewDepth(const Ogre::Camera* cam)const
+{
+		Ogre::Vector3 min, max, mid, dist;
+		min = mBox.getMinimum();
+		max = mBox.getMaximum();
+		mid = ((max - min) * 0.5) + min;
+		dist = cam->getDerivedPosition() - mid;
+		return dist.squaredLength();
 }

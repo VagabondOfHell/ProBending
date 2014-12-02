@@ -5,17 +5,28 @@
 
 class ParticlePointEmitter;
 class ParticleSystemBase;
+class ParticleComponent;
+class Projectile;
+class Probender;
 
 class FluidScene :
 	public IScene, public InputObserver
 {
 private:
-	static const int NUM_PARTICLES = 100;
+	static const int NUM_PARTICLES = 1000;
+
+	GameObject* gameObject;
+	Probender* probender;
 
 	ParticleSystemBase* particleSystem;
 	ParticleSystemBase* particleSystem2;
 
+	ParticleComponent* particleComponent;
+	ParticleComponent* particleComponent2;
+
 	ParticlePointEmitter* particlePointEmitter;
+
+	Projectile* projectile;
 
 	Ogre::SceneNode* testNode;
 	Ogre::SceneNode* testNode2;
@@ -25,6 +36,8 @@ public:
 	FluidScene(SceneManager* _owningManager, Ogre::Root* root, std::string _sceneName, std::string _resourceGroupName);
 
 	~FluidScene(void);
+
+	virtual void Initialize();
 
 	virtual void Start();
 

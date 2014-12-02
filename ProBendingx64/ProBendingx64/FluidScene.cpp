@@ -4,6 +4,10 @@
 #include "OgreEntity.h"
 #include "ParticlePointEmitter.h"
 #include "BasicParticleSystem.h"
+#include "ParticleComponent.h"
+#include "Projectile.h"
+#include "AbilityDescriptor.h"
+#include "Probender.h"
 
 FluidScene::FluidScene(void)
 	:IScene(NULL, NULL, "", "")
@@ -19,15 +23,25 @@ FluidScene::FluidScene(SceneManager* _owningManager, Ogre::Root* root, std::stri
 FluidScene::~FluidScene(void)
 {
 	InputNotifier::GetInstance()->RemoveObserver(guiManager);
+	InputNotifier::GetInstance()->RemoveObserver(this);
 
 	if(particlePointEmitter)
 		delete particlePointEmitter;
 
-	if(particleSystem)
-		delete particleSystem;
+	if(probender)
+		delete probender;
 
-	if(particleSystem2)
-		delete particleSystem2;
+	if(gameObject)
+		delete gameObject;
+
+	if(projectile)
+		delete projectile;
+
+}
+
+void FluidScene::Initialize()
+{
+	IScene::Initialize();
 }
 
 void FluidScene::Start()
@@ -43,72 +57,78 @@ void FluidScene::Start()
 
 	mainOgreCamera->setAspectRatio(Ogre::Real(viewport->getActualWidth()) / Ogre::Real(viewport->getActualHeight()));
 
-	mainOgreCamera->setPosition(0, 0, 250.0f);
+	mainOgreCamera->setPosition(0, 0, 40.50f);
 	mainOgreCamera->lookAt(0, 0, 0);
-	mainOgreCamera->setNearClipDistance(5);
+	mainOgreCamera->setNearClipDistance(0.01);
 	mainOgreCamera->setFarClipDistance(10000);
 		
 	InputNotifier::GetInstance()->AddObserver(guiManager);
 	InputNotifier::GetInstance()->AddObserver(this);
+	probender = new Probender();
 
 	Ogre::Light* light = ogreSceneManager->createLight();
 	light->setType(Ogre::Light::LightTypes::LT_DIRECTIONAL);
 	light->setAttenuation(10000, 1.0, 1, 1);
-	
+	projectile = new Projectile(this, SharedAbilityDescriptor(new AbilityDescriptor(probender)));
+	//projectile->LoadModel("Rock_01.mesh");
 	Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().getByName("DefaultParticleShader");
 	Ogre::GpuProgramParametersSharedPtr params = material->getTechnique(0)->getPass(0)->getVertexProgramParameters();
 	Ogre::GpuProgramParametersSharedPtr fragParams = material->getTechnique(0)->getPass(0)->getFragmentProgramParameters();
 	params->setNamedConstant("newcolor", Ogre::Vector4(1.0, 1.0, 1.0, 0.50));
 	
+	Ogre::Pass* pass = material->getTechnique(0)->getPass(0);
+	//pass->setPointSpritesEnabled(true);
+	pass->setPointAttenuation(true, 0, 1, 0);
+	pass->setPointMaxSize(1.0f);
+	pass->setPointMinSize(0.00f);
+/*	//pass->setPointSize(00.10f);
+*/
 	Ogre::MaterialPtr redDefault = material->clone("RedDefaultParticleShader");
 	params = redDefault->getTechnique(0)->getPass(0)->getVertexProgramParameters();
 	params->setNamedConstant("newcolor", Ogre::Vector4(1.0f, 0.0f, 0.0f, 0.50f));
 
-	//Ogre::Pass* pass = material->getTechnique(0)->getPass(0);
-	/*pass->setPointAttenuation(true, 0, 1, 0);
-	pass->setPointSize(00.10f);*/
+	pass = material->getTechnique(0)->getPass(0);
+	/*pass->setPointSize(0.1);
+	pass->setPointAttenuation(true, 0, 1, 0);
+	pass->setPointMaxSize(1.0f);
+	pass->setPointMinSize(0.00f);*/
 
-	particlePointEmitter = new ParticlePointEmitter(10, physx::PxVec3(0.0f),
-		physx::PxVec3(0, -3, 0).getNormalized(), physx::PxVec3(0, 3, 0).getNormalized(), 1.0f, 4.0f);
+	material = Ogre::MaterialManager::getSingleton().getByName("TexturedParticleShader");
+	//pass = redDefault->getTechnique(0)->getPass(0);
+	pass = material->getTechnique(0)->getPass(0);
+	//pass->setPointSpritesEnabled(true);
+	/*pass->setPointAttenuation(true, 0, 0, 1);
+	pass->setPointSize(1.0f);
+	pass->setPointMaxSize(02.0f);
+	pass->setPointMinSize(0.0f);*/
+	
+/*/**/
+	//gameObject = new GameObject(this, "ParticleHolder");*/
+	
+
+	particlePointEmitter = new ParticlePointEmitter(10, physx::PxVec3(65.0f, 0.0f, 0.0f),
+		physx::PxVec3(-2, 0.0, 0).getNormalized(), physx::PxVec3(2, 1.0f, 0).getNormalized(), 20.0f, 40.0f);
 	
 	ParticleSystemParams psParams = ParticleSystemParams();
 	psParams.cudaContext = cudaContextManager;
 	psParams.useGravity = false;
 
-	particleSystem = new BasicParticleSystem(particlePointEmitter, NUM_PARTICLES, psParams, false);
-	particleSystem2 = new BasicParticleSystem(particlePointEmitter, NUM_PARTICLES, psParams, false);
-
-	/*particleSystem = new ParticleSystem<DefaultParticlePolicy>(new DefaultParticlePolicy(), particlePointEmitter, 
-		NUM_PARTICLES, false, ParticleSystemParams(), false, cudaContextManager);
+	particleSystem = new BasicParticleSystem(particlePointEmitter, NUM_PARTICLES, 5.0f, psParams, false);
+	particleSystem2 = new BasicParticleSystem(particlePointEmitter, NUM_PARTICLES, 2.0f, psParams, false);
 	
-	particleSystem2 = new ParticleSystem<DefaultParticlePolicy>(new DefaultParticlePolicy(), particlePointEmitter, 
-		NUM_PARTICLES, false, ParticleSystemParams(), false, cudaContextManager);*/
+	particleComponent = new ParticleComponent(projectile, particleSystem, particlePointEmitter);
+	projectile->AttachComponent(particleComponent);
+	projectile->gameObjectNode->setScale(0.3f, 0.3f, 0.3f);
 
-	particleSystem->Initialize(physicsWorld);
-	particleSystem2->Initialize(physicsWorld);
+	particlePointEmitter->position = physx::PxVec3(45.0f, 0.0f, 0.0f);
+	particleComponent2 = new ParticleComponent(projectile, particleSystem2, particlePointEmitter, false);
+	projectile->AttachComponent(particleComponent2);
 
-	particleSystem->setMaterial("DefaultParticleShader");
-	particleSystem2->setMaterial(redDefault->getName());
-/*
-	particleSystem->GetPolicy()->setMaterial("DefaultParticleShader");
-	particleSystem2->GetPolicy()->setMaterial(redDefault->getName());*/
-
-	testNode = ogreSceneManager->getRootSceneNode()->createChildSceneNode();
+	particleSystem->setMaterial("TexturedParticleShader");
+	//particleSystem2->setMaterial(redDefault->getName());
+	particleSystem2->setMaterial("DefaultParticleShader");
 	
-	testNode->attachObject(particleSystem);
-/*
-	testNode->attachObject((DefaultParticlePolicy*)particleSystem->GetPolicy());*/
-
-	testNode->translate(5.0f, -10.0f, 0.0f);
-
-	testNode2 = ogreSceneManager->getRootSceneNode()->createChildSceneNode();
-
-	testNode2->attachObject(particleSystem2);
-
-	/*testNode2->attachObject((DefaultParticlePolicy*)particleSystem2->GetPolicy());*/
-	testNode2->translate(-5.0f, 10.0f, 0.0f);
-
-	particlePointEmitter->position = OgreToPhysXVec3(testNode->getPosition());
+	projectile->Start();
 }
 
 bool FluidScene::Update(float gameTime)
@@ -123,10 +143,9 @@ bool FluidScene::Update(float gameTime)
 		if(physicsWorld->checkResults())
 		{
 			physicsWorld->fetchResults(true);
-			particlePointEmitter->position = OgreToPhysXVec3(testNode->getPosition());
-			particleSystem->Update(gameTime);
-			particlePointEmitter->position = OgreToPhysXVec3(testNode2->getPosition());
-			particleSystem2->Update(gameTime);
+
+			projectile->Update(gameTime);
+		
 			physxSimulating = false;
 		}
 
@@ -153,6 +172,16 @@ bool FluidScene::keyPressed( const OIS::KeyEvent &arg )
 		mainOgreCamera->setPosition(camPos);
 	}
 
+	if(arg.key == OIS::KC_P)
+	{
+		mainOgreCamera->yaw(Ogre::Radian(Ogre::Degree(10)));
+	}
+
+	if(arg.key == OIS::KC_O)
+	{
+		mainOgreCamera->yaw(Ogre::Radian(Ogre::Degree(-10)));
+	}
+
 	if(arg.key == OIS::KC_J)
 	{
 		Ogre::Vector3 camPos = mainOgreCamera->getPosition();
@@ -162,48 +191,48 @@ bool FluidScene::keyPressed( const OIS::KeyEvent &arg )
 
 	if(arg.key == OIS::KC_W)
 	{
-		testNode2->translate(0.0f, 1.0f, 0.0f);
+		projectile->gameObjectNode->translate(0.0f, 1.0f, 0.0f);
 	}
 
 	if(arg.key == OIS::KC_S)
 	{
-		testNode2->translate(0.0f, -1.0f, 0.0f);
+		projectile->gameObjectNode->translate(0.0f, -1.0f, 0.0f);
 	}
 
 	if(arg.key == OIS::KC_A)
 	{
-		testNode2->translate(-3.0f, 0.0f, 0.0f);
+		projectile->gameObjectNode->translate(-3.0f, 0.0f, 0.0f);
 	}
 
 	if(arg.key == OIS::KC_D)
 	{
-		testNode2->translate(3.0f, 0.0f, 0.0f);
+		projectile->gameObjectNode->translate(3.0f, 0.0f, 0.0f);
 	}
 
 	if(arg.key == OIS::KC_UP)
 	{
-		testNode->translate(0.0f, 1.0f, 0.0f);
-		particleSystem->GetEmitter()->position = OgreToPhysXVec3(testNode->getPosition());
+		projectile->gameObjectNode->translate(0.0f, 1.0f, 0.0f);
 	}
 
 	if(arg.key == OIS::KC_DOWN)
 	{
-		testNode->translate(0.0f, -1.0f, 0.0f);
-		particleSystem->GetEmitter()->position = OgreToPhysXVec3(testNode->getPosition());
+		projectile->gameObjectNode->translate(0.0f, -1.0f, 0.0f);
 	}
 
 	if(arg.key == OIS::KC_LEFT)
 	{
-		testNode->translate(-3.0f, 0.0f, 0.0f);
-		particleSystem->GetEmitter()->position = OgreToPhysXVec3(testNode->getPosition());
+		projectile->gameObjectNode->translate(-3.0f, 0.0f, 0.0f);
 	}
 
 	if(arg.key == OIS::KC_RIGHT)
 	{
-		testNode->translate(3.0f, 0.0f, 0.0f);
-		particleSystem->GetEmitter()->position = OgreToPhysXVec3(testNode->getPosition());
+		projectile->gameObjectNode->translate(3.0f, 0.0f, 0.0f);
 	}
 	
+	if(arg.key == OIS::KC_SPACE)
+	{
+		particleComponent2->SetTransformationSpace(!particleComponent2->GetTransformationSpace());
+	}
 
 	return true;
 }
