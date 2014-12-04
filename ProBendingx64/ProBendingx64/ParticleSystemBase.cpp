@@ -10,8 +10,6 @@ ParticleSystemBase::ParticleSystemBase(AbstractParticleEmitter* _emitter, size_t
 		ParticleSystemParams& paramsStruct,	bool _ownEmitter)
 		: emitter(_emitter), ownEmitter(_ownEmitter), cudaContextManager(paramsStruct.cudaContext)
 {
-		onGPU = false;
-
 		//set ogre simple renderable
 		mBox.setExtents(-1000, -1000, -1000, 1000, 1000, 1000);
 
@@ -20,6 +18,8 @@ ParticleSystemBase::ParticleSystemBase(AbstractParticleEmitter* _emitter, size_t
 		//Check for gpu usage validity
 		if(cudaContextManager == NULL)
 			onGPU = false;
+		else
+			onGPU = true;
 		
 		//Create the particle system on PhysX's end
 		pxParticleSystem = PxGetPhysics().createParticleSystem(maximumParticles, paramsStruct.perParticleRestOffset);

@@ -5,12 +5,18 @@
 
 struct CharacterAttributes
 {
+	ElementEnum::Element MainElement;
+	ElementEnum::Element SubElement;
+
 	unsigned short Health, Focus, OffensiveStrength, DefensiveStrength, Agility, Luck;
 
-	CharacterAttributes(unsigned short _health = 0, unsigned short _focus = 0, short _offensiveStrength = 0,
+	CharacterAttributes(ElementEnum::Element _mainElement = ElementEnum::InvalidElement, 
+		ElementEnum::Element _subElement = ElementEnum::InvalidElement,
+			unsigned short _health = 0, unsigned short _focus = 0, short _offensiveStrength = 0,
 			unsigned short _defensiveStrength  = 0, unsigned short _agility = 0, short _luck = 0)
-			:Health(_health), Focus(_focus), OffensiveStrength(_offensiveStrength), DefensiveStrength(_defensiveStrength),
-			Agility(_agility), Luck(_luck)
+			:MainElement(_mainElement), SubElement(_subElement), Health(_health), Focus(_focus), 
+			OffensiveStrength(_offensiveStrength), DefensiveStrength(_defensiveStrength), Agility(_agility), 
+			Luck(_luck)
 	{
 		//Check to make sure attributes aren't too high
 		if(Health > ProbenderAttributes::MAX_ATTRIBUTE_POINTS_ALLOWED)
@@ -61,8 +67,8 @@ struct GeneralSkills
 
 struct AbilityPoints
 {
-	typedef std::array<unsigned short, ProbenderAbilitys::NUM_ABILITY_MODIFIERS> SkillPointArray;
-
+	typedef std::array<unsigned short, ProbenderAbilities::NUM_ABILITY_MODIFIERS> SkillPointArray;
+	
 	PassiveAbility* Passive;
 	SkillPointArray SpecialAbility1;//Array of ability skill points
 	SkillPointArray SpecialAbility2;
@@ -96,4 +102,13 @@ struct ProbenderData
 	GeneralSkills Skills;
 	AbilityPoints Abilities;
 	EquipmentData Equipment;
+
+	ProbenderData(CharacterAttributes attributes = CharacterAttributes(), 
+		StatusEffectModifiers statusModifiers = StatusEffectModifiers(),
+		GeneralSkills generalSkills = GeneralSkills(), AbilityPoints abilityPoints = AbilityPoints(),
+		EquipmentData equipment = EquipmentData())
+		: Attributes(attributes), StatusModifiers(statusModifiers), Skills(generalSkills), Abilities(abilityPoints),
+		Equipment(equipment)
+	{	}
+	
 };

@@ -1,10 +1,17 @@
 #pragma once
 #include "OgreVector3.h"
-#include "IScene.h"
-#include "PxPhysics.h"
 #include "HelperFunctions.h"
 #include <map>
 #include "Component.h"
+
+namespace physx
+{
+	class PxRigidActor;
+	class PxRigidDynamic;
+	class PxRigidStatic;
+};
+
+class IScene;
 
 class GameObject
 {
@@ -79,25 +86,13 @@ public:
 	///<summary>Destroys and deletes the Debug component of the physx rigidbody</summary>
 	void DestroyPhysXDebug();
 
-	///<summary>Provides efficient, inlined, type casting to a Dynamic Rigid Body</summary>
+	///<summary>Provides efficient type casting to a Dynamic Rigid Body</summary>
 	///<returns>The dynamic rigid body representation of the rigid body, or NULL if failed</returns>
-	inline physx::PxRigidDynamic* GetDynamicRigidBody()const
-	{
-		if(rigidBody->isRigidDynamic())
-			return (physx::PxRigidDynamic*)rigidBody;
+	physx::PxRigidDynamic* GetDynamicRigidBody()const;
 
-		return NULL;
-	}
-
-	///<summary>Provides efficient, inlined, type casting to a Static Rigid Body</summary>
+	///<summary>Provides efficient type casting to a Static Rigid Body</summary>
 	///<returns>The static rigid body representation of the rigid body, or NULL if failed</returns>
-	inline physx::PxRigidStatic* GetStaticRigidBody()const
-	{
-		if(rigidBody->isRigidStatic())
-			return (physx::PxRigidStatic*)rigidBody;
-
-		return NULL;
-	}
+	physx::PxRigidStatic* GetStaticRigidBody()const;
 
 	///<summary>Gets the name associated with the game object</summary>
 	inline std::string GetName()const {return name;}

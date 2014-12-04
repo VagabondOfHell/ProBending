@@ -1,3 +1,4 @@
+//#include "vld.h"
 #include "Game.h"
 
 #include <OgreConfigFile.h>
@@ -11,9 +12,10 @@
 #include "InputManager.h"
 #include "DotSceneLoader.h"
 
-#include "TestScene.h"
-#include "BlankScene.h"
-#include "FluidScene.h"
+//#include "TestScene.h"
+//#include "BlankScene.h"
+//#include "FluidScene.h"
+#include "GameScene.h"
 
 SpeechController speechController = SpeechController(NULL);
 
@@ -325,17 +327,16 @@ void Game::Run()
 	freopen("conout$","w",stderr);
 	printf("Debugging Window:\n");
 	
-		//Ogre::ResourceGroupManager::getSingletonPtr()->initialiseResourceGroup("Popular");
+	std::vector<ProbenderData> contestantData;
+	ProbenderData player1Data = ProbenderData();
+	player1Data.Attributes.MainElement = ElementEnum::Element::Fire;
+	contestantData.push_back(player1Data);
 
-	std::shared_ptr<BlankScene> blankScene(new BlankScene(sceneManager, mRoot, "Blank Scene", "General"));
+	std::shared_ptr<GameScene> gameScene(new GameScene(sceneManager, mRoot, "Pro-bending Arena", contestantData));
+	sceneManager->FlagSceneSwitch(gameScene, true);
 
-	blankScene->Initialize();
+	gameScene.reset();
 
-	sceneManager->FlagSceneSwitch(blankScene, true);
-
-	blankScene.reset();
-
-	//blankScene->GetOgreSceneManager()->createEntity("SFA", "Sinbad.mesh");
 	bool rendering = true;
 
 	Ogre::Timer gameTimer = Ogre::Timer();
@@ -378,50 +379,12 @@ bool Game::Update(float gameTime)
 			inputManager->FillGestureReader(L"C:\\Users\\Adam\\Desktop\\Test2.gbd");
 	}
 
-	sceneManager->Update(0.016f);
+	if(!sceneManager->Update(0.016f))
+		return false;
 
     if(mKeyboard->isKeyDown(OIS::KC_ESCAPE))
         return false;
 
-	if(mKeyboard->isKeyDown(OIS::KC_S))
-	{
-		if(!once)
-		{
-			/*std::shared_ptr<TestScene> testScene(new TestScene(sceneManager, mRoot, "Test Scene", "General"));
-
-			sceneManager->FlagSceneSwitch(testScene, true);*/
-
-			std::shared_ptr<FluidScene> fluidScene(new FluidScene(sceneManager, mRoot, "Fluid Scene", "General"));
-
-			sceneManager->FlagSceneSwitch(fluidScene, true);
-
-			once = true;
-		}
-	}
-
-	if(mKeyboard->isKeyDown(OIS::KC_C))
-	{
-		if(once)
-		{
-			std::shared_ptr<BlankScene> blankScene(new BlankScene(sceneManager, mRoot, "Blank Scene", "General"));
-
-			blankScene->Initialize();
-
-			sceneManager->FlagSceneSwitch(blankScene, true);
-
-			once = false;
-		}
-	}
-
-	/*if(mKeyboard->isKeyDown(OIS::KeyCode::KC_D))
-	{
-		bool res = ConnectToPVD();
-
-		if(res)
-		printf("True");
-		else
-			printf("False");
-	}*/
 
 	return true;
 }

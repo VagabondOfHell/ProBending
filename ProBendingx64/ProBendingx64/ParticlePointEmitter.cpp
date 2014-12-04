@@ -16,7 +16,7 @@ ParticlePointEmitter::~ParticlePointEmitter(void)
 {
 }
 
-void ParticlePointEmitter::Emit(float gameTime, unsigned int availableIndiceCount, physx::PxParticleCreationData& creationData)
+void ParticlePointEmitter::Emit(const float gameTime, const unsigned int availableIndiceCount, physx::PxParticleCreationData& creationData)
 {
 	unsigned int emissionCount(0);
 

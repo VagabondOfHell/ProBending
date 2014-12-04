@@ -1,11 +1,11 @@
 #include "ArenaBuilder.h"
+#include "Arena.h"
+#include "NotImplementedException.h"
 
-
-ArenaBuilder::ArenaBuilder(void)
+void ArenaBuilder::LoadArena(Arena& arenaToFill, const std::string arenaName)
 {
-}
-
-
-ArenaBuilder::~ArenaBuilder(void)
-{
+	if(arenaName == "Pro-bending Arena")
+	{
+		throw NotImplementedException();
+	}
 }

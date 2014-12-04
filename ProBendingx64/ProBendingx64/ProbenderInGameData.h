@@ -75,10 +75,10 @@ struct ProbenderInGameData
 	///<summary>Gets the Main Element of the character</summary>
 	///<returns>The element associated with the character. If Invalid, then the Ability Structures
 	///for this character are also invalid</returns>
-	inline ElementEnum::Element GetMainElement(){return ElementAbilities.Element;}
+	inline const ElementEnum::Element GetMainElement()const{return ElementAbilities.Element;}
 
 	///<summary>Gets the Sub Element of the character</summary>
 	///<returns>The subelement associated with the character. If Invalid, then the Subelement Ability Structure
 	///for this character is invalid or the character doesn't have a sub element</returns>
-	inline ElementEnum::Element GetSubElement(){return SubelementAbilities.Element;}
+	inline const ElementEnum::Element GetSubElement()const{return SubelementAbilities.Element;}
 };

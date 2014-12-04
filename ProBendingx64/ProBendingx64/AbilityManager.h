@@ -3,18 +3,21 @@
 #include "AbilityDescriptor.h"
 #include <memory>
 
-class Probender;
+///Multimap sorted by Ability Type for Abilities List?
 
-//Easy typedef for a shared pointer of Ability Descriptor
-typedef std::shared_ptr<AbilityDescriptor> SharedAbilityDescriptor;
+class Probender;
+class AbilityFactory;
 
 class AbilityManager
 {
-
+public:
+	//Easy typedef for a shared pointer of Ability Descriptor
+	typedef std::shared_ptr<AbilityDescriptor> SharedAbilityDescriptor;
 
 private:
 	std::vector<SharedAbilityDescriptor> abilitiesList;
-	
+	AbilityFactory* abilityFactory;
+
 public:
 	AbilityManager(void);
 	~AbilityManager(void);
@@ -25,14 +28,18 @@ public:
 	
 	///<summary>Gets the shared pointer created by the Ability Factory, adds it to the manager, and returns it.
 	///If the factory returns an invalid result, it is not added to the manager.</summary>
-	///<param name="abilityName">The name of the ability to have the factory create</param>
-	///<param name="caster">The caster of the ability, so that the attributes of the ability can be appropriately modified</param>
-	///<returns>A shared pointer representing the created ability. If the factory could not produce the ability, it is NULL</returns>
-	SharedAbilityDescriptor CreateAbility(const std::string abilityName, Probender* const caster);
+	///<param name="element">The element that the desired ability belongs to</param>
+	///<param name="abilityID">The ID representing the ability name</param>
+	///<param name="caster">The Probender casting the ability</param>
+	///<returns>A shared pointer containing the ability descriptor</returns>
+	AbilityManager::SharedAbilityDescriptor CreateAbility(const ElementEnum::Element element, 
+		const AbilityIDs::AbilityID abilityID, Probender* const caster);
 
 	///<summary>Removes the specified ability from the vector</summary>
 	///<param name="abilityToRemove">The ability to remove</param>
 	void RemoveAbility(SharedAbilityDescriptor abilityToRemove);
+
+	void Initialize(ElementFlags::ElementFlag elementsToLoad = ElementFlags::All);
 
 	///<summary>Updates the ability manager. This consists of looping and checking all the
 	///abilities, performing their effects, and removing them if they should now be removed</summary>

@@ -91,3 +91,63 @@ extern "C" __global__ void updateBillboardVB(
 	}
 }
 
+// copies positions and alpha to the destination vertex buffer based on 
+// validity bitmap and particle life times
+extern "C" __global__ void UpdateColourSystem(
+	PxVec3* destPositions,
+	PxVec4* srcPositions, 
+	PxU32* validParticleBitmap,
+	float* srcLifetimes,
+	float initialLifetime,
+	PxVec4* colours,
+	PxVec4 startColour,
+	PxVec4 endColour,
+	PxVec4 fadeRate,
+	PxU32 validParticleRange)
+{
+	if (!threadIdx.x)
+		gOffset = 0;
+
+	__syncthreads();
+
+	if (validParticleRange)
+	{
+		for (PxU32 w=threadIdx.x; w <= (validParticleRange) >> 5; w+=blockDim.x)
+		{
+			const PxU32 srcBaseIndex = w << 5;
+
+			// reserve space in the output vertex buffer based on
+			// population count of validity bitmap (avoids excess atomic ops)
+			PxU32 destIndex = atomicAdd(&gOffset, __popc(validParticleBitmap[w]));
+
+			for (PxU32 b=validParticleBitmap[w]; b; b &= b-1) 
+			{
+				PxU32 index = srcBaseIndex | __ffs(b)-1;
+
+				const PxU32 offset = destIndex*sizeof(PxVec3);
+
+				const PxU32 lifeOffset = destIndex * sizeof(float);
+
+				// copy position
+				PxVec3* p = ptrOffset(destPositions, offset);
+				p->x = srcPositions[index].x;
+				p->y = srcPositions[index].y;
+				p->z = srcPositions[index].z;
+
+				float* l = ptrOffset(srcLifetimes, lifeOffset);
+				float percent = (*l / initialLifetime);
+
+				const PxU32 colourOffset = destIndex * sizeof(PxVec4);
+
+				PxVec4* c = ptrOffset(colours, colourOffset);
+				
+				c->x = (startColour.x - endColour.x) * percent;
+				c->y = (startColour.y - endColour.y) * percent;
+				c->z = (startColour.z - endColour.z) * percent;
+				c->w = (startColour.w - endColour.w) * percent;
+
+				++destIndex;
+			}
+		}
+	}
+}

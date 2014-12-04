@@ -4,6 +4,17 @@
 #include "GameObject.h"
 #include "OgreManualObject.h"
 #include "OgreEntity.h"
+#include <CEGUI\EventArgs.h>
+#include "SceneManager.h"
+#include "OgreSceneManager.h"
+#include "GUIManager.h"
+#include "OgreRenderWindow.h"
+#include "PxPhysics.h"
+#include "PxRigidActor.h"
+#include "PxRigidDynamic.h"
+#include "PxRigidStatic.h"
+#include "PxScene.h"
+#include "extensions\PxSimpleFactory.h"
 
 BlankScene::BlankScene(void)
 	:IScene(NULL, NULL, "", "")
@@ -25,6 +36,11 @@ BlankScene::~BlankScene(void)
 	}
 
 	InputNotifier::GetInstance()->RemoveObserver(guiManager);
+}
+
+void BlankScene::Initialize()
+{
+	IScene::Initialize();
 }
 
 void BlankScene::Start()
@@ -60,8 +76,8 @@ void BlankScene::Start()
 		InputNotifier::GetInstance()->AddObserver(guiManager);
 
 		guiManager->AddScheme("VanillaSkin.scheme");
-	/*	guiManager->AddWindow("VanillaConsole.layout", "window1");
-		guiManager->AddWindow("EffectsDemo.layout");*/
+		guiManager->AddWindow("VanillaConsole.layout", "window1");
+		guiManager->AddWindow("EffectsDemo.layout");
 
 		guiManager->GetChildItem("EffectsDemoRoot/EffectsFrameWindow/MultiLineEditbox1");
 		

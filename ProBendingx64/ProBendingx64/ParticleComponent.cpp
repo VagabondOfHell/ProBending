@@ -7,10 +7,18 @@
 #include "IScene.h"
 #include "GameObject.h"
 
-ParticleComponent::ParticleComponent(GameObject* owningObject, ParticleSystemBase* _particleSystem, 
-									 AbstractParticleEmitter* _particleEmitter, bool _useLocalSpace)
-	:Component(owningObject), particleSystem(_particleSystem), particleEmitter(_particleEmitter), useLocalSpace(_useLocalSpace)
+Ogre::SceneNode* ParticleComponent::WORLD_PARTICLES_NODE = NULL;
+int ParticleComponent::NUM_INSTANCES = 0;
+
+ParticleComponent::ParticleComponent(GameObject* owningObject, ParticleSystemBase* _particleSystem, bool _useLocalSpace)
+	:Component(owningObject), particleSystem(_particleSystem), useLocalSpace(_useLocalSpace)
 {
+	if(WORLD_PARTICLES_NODE == NULL)
+	{
+		WORLD_PARTICLES_NODE = owningObject->GetOwningScene()->GetSceneRootNode()->createChildSceneNode("WORLD_PARTICLE_NODE");
+	}
+
+	++NUM_INSTANCES;
 }
 
 ParticleComponent::~ParticleComponent(void)
@@ -19,16 +27,27 @@ ParticleComponent::~ParticleComponent(void)
 
 	if(particleSystem)
 		delete particleSystem;
+
+	--NUM_INSTANCES;
+
+	//If our static is the only reference
+	if(NUM_INSTANCES <= 0)
+	{
+		//Remove the node from the scene
+		owningGameObject->GetOwningScene()->GetOgreSceneManager()->destroySceneNode(WORLD_PARTICLES_NODE);
+		WORLD_PARTICLES_NODE = NULL;
+	}
 }
 
 void ParticleComponent::CreateSceneNode()
 {
-	sceneNode = owningGameObject->gameObjectNode->createChildSceneNode(HelperFunctions::PhysXToOgreVec3(particleEmitter->position));
+	sceneNode = owningGameObject->gameObjectNode->createChildSceneNode(
+		HelperFunctions::PhysXToOgreVec3(particleSystem->GetEmitter()->position));
 	
 	if(useLocalSpace)
 		sceneNode->attachObject(particleSystem);
 	else
-		owningGameObject->GetOwningScene()->GetSceneRootNode()->attachObject(particleSystem);
+		WORLD_PARTICLES_NODE->attachObject(particleSystem);
 
 	sceneNode->setInheritScale(false);
 }
@@ -38,7 +57,7 @@ void ParticleComponent::DestroySceneNode()
 	if(sceneNode)
 	{
 		if(!useLocalSpace)
-			owningGameObject->GetOwningScene()->GetSceneRootNode()->detachObject(particleSystem);
+			WORLD_PARTICLES_NODE->detachObject(particleSystem);
 
 		sceneNode->detachAllObjects();
 
@@ -59,9 +78,9 @@ void ParticleComponent::Start()
 void ParticleComponent::Update(float gameTime)
 {
 	if(useLocalSpace)
-		particleEmitter->position = particleEmitter->position = physx::PxVec3(0.0f);// HelperFunctions::OgreToPhysXVec3(sceneNode->getPosition());
+		particleSystem->GetEmitter()->position = particleSystem->GetEmitter()->position = physx::PxVec3(0.0f);// HelperFunctions::OgreToPhysXVec3(sceneNode->getPosition());
 	else
-		particleEmitter->position = HelperFunctions::OgreToPhysXVec3(sceneNode->_getDerivedPosition());
+		particleSystem->GetEmitter()->position = HelperFunctions::OgreToPhysXVec3(sceneNode->_getDerivedPosition());
 	
 	particleSystem->Update(gameTime);
 }

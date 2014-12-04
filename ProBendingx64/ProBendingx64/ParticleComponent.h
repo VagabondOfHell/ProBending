@@ -2,7 +2,6 @@
 #include <string>
 #include "Component.h"
 
-class AbstractParticleEmitter;
 class ParticleSystemBase;
 
 namespace Ogre
@@ -15,8 +14,10 @@ class ParticleComponent : public Component
 private:
 	bool useLocalSpace;
 
+	static Ogre::SceneNode* WORLD_PARTICLES_NODE;
+	static int NUM_INSTANCES;
+
 protected:	
-	AbstractParticleEmitter* particleEmitter; //The emitter used in the system
 	ParticleSystemBase* particleSystem; //The manipulator of the particles
 
 	///<summary>Creates the scene node as a child to the game objects node</summary>
@@ -28,8 +29,11 @@ protected:
 public:
 	Ogre::SceneNode* sceneNode;//The scene node used to position the particle component
 	
-	ParticleComponent(GameObject* _owningObject, ParticleSystemBase* _particleSystem, 
-		AbstractParticleEmitter* _particleEmitter, bool useLocalSpace = true);
+	///<summary>Constructor of the particle component</summary>
+	///<param name="_owningObject">The object that owns the component</param>
+	///<param name="_particleSystem">The particle system that controls particle data</param>
+	///<param name="useLocalSpace">True to use local space, false to use world space</param>
+	ParticleComponent(GameObject* _owningObject, ParticleSystemBase* _particleSystem, bool useLocalSpace = true);
 
 	virtual ~ParticleComponent(void);
 

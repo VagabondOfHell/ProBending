@@ -57,17 +57,53 @@ public:
 	///<param name="gameTime">The game time that has passed </param>
 	///<param name="availableIndiceCount">The count of currently available indices </summary>
 	///<param name="creationData">The creation data to fill. This is given from the particle system</summary>
-	virtual void Emit(float gameTime, unsigned int availableIndiceCount, physx::PxParticleCreationData& creationData) = 0;
+	virtual void Emit(const float gameTime, const unsigned int availableIndiceCount, physx::PxParticleCreationData& creationData) = 0;
 
-	void SetMaximumDirection(physx::PxVec3 newMax)
+	///<summary>Sets a new maximum direction and ensures it is not less than the min</summary>
+	///<param name="newMax"> The new value for the maximum direction</param>
+	void SetMaximumDirection(const physx::PxVec3 newMax)
 	{
 		maximumDirection = newMax;
 		ValidateMinAndMax(minimumDirection, maximumDirection);
 	}
 
-	void SetMinimumDirection(physx::PxVec3 newMin)
+	///<summary>Sets a new minimum direction and ensures it is not greater than the max</summary>
+	///<param name="newMin">The new value for the minimum direction</param>
+	void SetMinimumDirection(const physx::PxVec3 newMin)
 	{
 		minimumDirection = newMin;
 		ValidateMinAndMax(minimumDirection, maximumDirection);
+	}
+
+	///<summary>Sets new values to the minimum and maximum directions and ensures that maximum is greater
+	///than the minimum</summary>
+	///<param name="newMin">The new minimum direction to use</param>
+	///<param name="newMax">The new maximum direction to use</param>
+	void SetDirections(const physx::PxVec3 newMin, const physx::PxVec3 newMax)
+	{
+		minimumDirection = newMin;
+		maximumDirection = newMax;
+
+		ValidateMinAndMax(minimumDirection, maximumDirection);
+	}
+
+	///<summary>Sets new values to the minimum and maximum speeds and ensures that maximum is greater
+	///than the minimum</summary>
+	///<param name="newMin">The new minimum speed to use</param>
+	///<param name="newMax">The new maximum speed to use</param>
+	void SetSpeeds(const float newMin, const float newMax)
+	{
+		//If the values are reversed, assign them reverse
+		if(newMin > newMax)
+		{
+			minSpeed = newMax;
+			maxSpeed = newMin;
+		}
+		else
+		{
+			//Otherwise assign them normally
+			maxSpeed = newMax;
+			minSpeed = newMin;
+		}
 	}
 };

@@ -5,6 +5,7 @@ CEGUI::OgreRenderer* GUIManager::mRenderer;
 GUIManager::GUIManager(void)
 {
 	rootWindow = NULL;
+	mRenderer->beginRendering();
 }
 
 
@@ -34,12 +35,11 @@ void GUIManager::InitializeGUI()
  
     CEGUI::System::getSingleton().getDefaultGUIContext().getMouseCursor().setDefaultImage("TaharezLook/MouseArrow");
  
-	CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
-    
-	rootWindow = wmgr.createWindow("DefaultWindow", "RootWindow");
+	CEGUI::WindowManager* wmgr = CEGUI::WindowManager::getSingletonPtr();
+	
+	rootWindow = wmgr->createWindow("DefaultWindow", "RootWindow");
 
 	CEGUI::System::getSingleton().getDefaultGUIContext().setRootWindow(rootWindow);
-
 }
 
 void GUIManager::Update(float gameTime)
@@ -167,4 +167,21 @@ CEGUI::MouseButton GUIManager::ConvertButton(OIS::MouseButtonID buttonID)
 	default:
 		return CEGUI::LeftButton;
 	}
+}
+
+CEGUI::PushButton* const GUIManager::CreateGUIButton(const CEGUI::String& style, 
+		const CEGUI::String& buttonName, const CEGUI::String& buttonText, const CEGUI::UVector2& position, const CEGUI::USize& size)
+{
+	CEGUI::Window* button = CEGUI::WindowManager::getSingletonPtr()->createWindow(style, buttonName);
+	
+	if(button)
+	{
+		button->setText(buttonText);
+		button->setSize(size);
+		rootWindow->addChild(button);
+
+		return static_cast<CEGUI::PushButton*>(button);
+	}
+	
+	return NULL;
 }

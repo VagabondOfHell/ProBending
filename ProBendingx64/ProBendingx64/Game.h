@@ -20,7 +20,7 @@ class Game:public Ogre::WindowEventListener, public Ogre::LogListener
 {
 private:
 	//Ogre Root
-    Ogre::Root* mRoot;
+	Ogre::Root* mRoot;
 
 	//Render Window
 	Ogre::RenderWindow* mWindow;
@@ -28,7 +28,7 @@ private:
 	//Resources File
 	Ogre::String mResourcesCfg;
 	//Plugin File
-    Ogre::String mPluginsCfg;
+	Ogre::String mPluginsCfg;
 
 	// OIS Input devices
 	OIS::InputManager* mInputManager;
@@ -38,7 +38,7 @@ private:
 
 	//Log
 	Ogre::Log* mMainLog;
-	
+
 	//Scene manager
 	SceneManager* sceneManager;
 
@@ -64,7 +64,7 @@ private:
 
 	//Initialize the OIS Input System
 	virtual void InitializeOIS(bool useBufferedInput = true);
-	
+
 	///Initialize the PhysX system
 	void InitializePhysX();
 

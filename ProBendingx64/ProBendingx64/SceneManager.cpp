@@ -1,6 +1,10 @@
 #include "SceneManager.h"
 #include "IScene.h"
 #include "GUIManager.h"
+#include "OgreRenderWindow.h"
+#include "OgreRoot.h"
+#include "OgreSceneManager.h"
+#include "OgreResourceGroupManager.h"
 
 SceneManager::SceneManager(void)
 {
@@ -28,8 +32,9 @@ std::shared_ptr<IScene> SceneManager::SwapScene(std::shared_ptr<IScene> newScene
 
 	currentScene = newScene;
 
+	currentScene->Initialize();
 	currentScene->Start();
-
+	
 	return oldScene;
 }
 

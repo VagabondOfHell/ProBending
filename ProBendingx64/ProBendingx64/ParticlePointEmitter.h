@@ -32,6 +32,6 @@ public:
 	///<param name="gameTime">The game time that has passed </param>
 	///<param name="availableIndiceCount">The count of currently available indices </summary>
 	///<param name="creationData">The creation data to fill. This is given from the particle system</summary>
-	virtual void Emit(float gameTime, unsigned int availableIndiceCount, physx::PxParticleCreationData& creationData);
+	virtual void Emit(const float gameTime, const unsigned int availableIndiceCount, physx::PxParticleCreationData& creationData);
 };
 

@@ -2,6 +2,11 @@
 #include "PhysXDebugDraw.h"
 #include "OgreEntity.h"
 #include "OgreManualObject.h"
+#include "IScene.h"
+#include "OgreSceneManager.h"
+#include "PxRigidActor.h"
+#include "PxRigidDynamic.h"
+#include "PxRigidStatic.h"
 
 unsigned int GameObject::InstanceCounter = 0;
 
@@ -247,4 +252,22 @@ void GameObject::DestroyPhysXDebug()
 		owningScene->GetOgreSceneManager()->destroySceneNode(debugNode);
 		physxDebugDraw = NULL;
 	}
+}
+
+physx::PxRigidStatic* GameObject::GetStaticRigidBody()const
+{
+	if(rigidBody)
+		if(rigidBody->isRigidStatic())
+			return (physx::PxRigidStatic*)rigidBody;
+
+	return NULL;
+}
+
+physx::PxRigidDynamic* GameObject::GetDynamicRigidBody()const
+{
+	if(rigidBody)
+		if(rigidBody->isRigidDynamic())
+			return (physx::PxRigidDynamic*)rigidBody;
+
+	return NULL;
 }

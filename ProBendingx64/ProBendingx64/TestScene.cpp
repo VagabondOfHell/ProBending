@@ -2,6 +2,9 @@
 #include "OgreRenderWindow.h"
 #include "DotSceneLoader.h"
 #include "InputNotifier.h"
+#include "SceneManager.h"
+#include "GUIManager.h"
+#include "OgreSceneManager.h"
 
 TestScene::TestScene()
 	:IScene(NULL, NULL, "", "")

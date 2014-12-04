@@ -2,12 +2,16 @@
 #include "SceneManager.h"
 #include "InputNotifier.h"
 #include "OgreEntity.h"
+#include "OgreSceneManager.h"
+#include "OgreRenderWindow.h"
 #include "ParticlePointEmitter.h"
 #include "BasicParticleSystem.h"
 #include "ParticleComponent.h"
 #include "Projectile.h"
 #include "AbilityDescriptor.h"
 #include "Probender.h"
+#include "GUIManager.h"
+#include "PxScene.h"
 
 FluidScene::FluidScene(void)
 	:IScene(NULL, NULL, "", "")
@@ -70,7 +74,7 @@ void FluidScene::Start()
 	light->setType(Ogre::Light::LightTypes::LT_DIRECTIONAL);
 	light->setAttenuation(10000, 1.0, 1, 1);
 	projectile = new Projectile(this, SharedAbilityDescriptor(new AbilityDescriptor(probender)));
-	//projectile->LoadModel("Rock_01.mesh");
+	projectile->LoadModel("Rock_01.mesh");
 	Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().getByName("DefaultParticleShader");
 	Ogre::GpuProgramParametersSharedPtr params = material->getTechnique(0)->getPass(0)->getVertexProgramParameters();
 	Ogre::GpuProgramParametersSharedPtr fragParams = material->getTechnique(0)->getPass(0)->getFragmentProgramParameters();
@@ -81,33 +85,13 @@ void FluidScene::Start()
 	pass->setPointAttenuation(true, 0, 1, 0);
 	pass->setPointMaxSize(1.0f);
 	pass->setPointMinSize(0.00f);
-/*	//pass->setPointSize(00.10f);
-*/
+
 	Ogre::MaterialPtr redDefault = material->clone("RedDefaultParticleShader");
 	params = redDefault->getTechnique(0)->getPass(0)->getVertexProgramParameters();
 	params->setNamedConstant("newcolor", Ogre::Vector4(1.0f, 0.0f, 0.0f, 0.50f));
-
-	pass = material->getTechnique(0)->getPass(0);
-	/*pass->setPointSize(0.1);
-	pass->setPointAttenuation(true, 0, 1, 0);
-	pass->setPointMaxSize(1.0f);
-	pass->setPointMinSize(0.00f);*/
-
-	material = Ogre::MaterialManager::getSingleton().getByName("TexturedParticleShader");
-	//pass = redDefault->getTechnique(0)->getPass(0);
-	pass = material->getTechnique(0)->getPass(0);
-	//pass->setPointSpritesEnabled(true);
-	/*pass->setPointAttenuation(true, 0, 0, 1);
-	pass->setPointSize(1.0f);
-	pass->setPointMaxSize(02.0f);
-	pass->setPointMinSize(0.0f);*/
 	
-/*/**/
-	//gameObject = new GameObject(this, "ParticleHolder");*/
-	
-
-	particlePointEmitter = new ParticlePointEmitter(10, physx::PxVec3(65.0f, 0.0f, 0.0f),
-		physx::PxVec3(-2, 0.0, 0).getNormalized(), physx::PxVec3(2, 1.0f, 0).getNormalized(), 20.0f, 40.0f);
+	particlePointEmitter = new ParticlePointEmitter(100, physx::PxVec3(65.0f, 0.0f, 0.0f),
+		physx::PxVec3(-2, 1.0, 0).getNormalized(), physx::PxVec3(2, 1.0f, 1).getNormalized(), 20.0f, 40.0f);
 	
 	ParticleSystemParams psParams = ParticleSystemParams();
 	psParams.cudaContext = cudaContextManager;
@@ -116,12 +100,12 @@ void FluidScene::Start()
 	particleSystem = new BasicParticleSystem(particlePointEmitter, NUM_PARTICLES, 5.0f, psParams, false);
 	particleSystem2 = new BasicParticleSystem(particlePointEmitter, NUM_PARTICLES, 2.0f, psParams, false);
 	
-	particleComponent = new ParticleComponent(projectile, particleSystem, particlePointEmitter);
+	particleComponent = new ParticleComponent(projectile, particleSystem, false);
 	projectile->AttachComponent(particleComponent);
 	projectile->gameObjectNode->setScale(0.3f, 0.3f, 0.3f);
 
 	particlePointEmitter->position = physx::PxVec3(45.0f, 0.0f, 0.0f);
-	particleComponent2 = new ParticleComponent(projectile, particleSystem2, particlePointEmitter, false);
+	particleComponent2 = new ParticleComponent(projectile, particleSystem2, false);
 	projectile->AttachComponent(particleComponent2);
 
 	particleSystem->setMaterial("TexturedParticleShader");

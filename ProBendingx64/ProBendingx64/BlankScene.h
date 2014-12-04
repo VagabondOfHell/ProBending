@@ -4,6 +4,11 @@
 
 class GameObject;
 
+namespace CEGUI
+{
+	class EventArgs;
+};
+
 class BlankScene :
 	public IScene, public KinectAudioListener
 {
@@ -15,6 +20,8 @@ public:
 	BlankScene(SceneManager* _owningManager, Ogre::Root* root, std::string _sceneName, std::string _resourceGroupName);
 
 	~BlankScene(void);
+
+	virtual void Initialize();
 
 	virtual void Start();
 

@@ -1,7 +1,14 @@
 #pragma once
-#include "OgreRoot.h"
-#include "OgreSceneManager.h"
-#include "OgreResourceGroupManager.h"
+#include <memory>
+
+namespace Ogre
+{
+	class Root;
+	class Camera;
+	class SceneManager;
+	class ResourceGroupManager;
+	class RenderWindow;
+};
 
 class IScene;
 
