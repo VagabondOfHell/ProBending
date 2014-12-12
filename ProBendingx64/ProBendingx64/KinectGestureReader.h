@@ -68,8 +68,9 @@ public:
 
 	inline void KinectGestureReader::SetBodyID(UINT64 bodyID)
 	{
-		//Set the body ID for the gesture to record
-		gestureSource->put_TrackingId(bodyID);
+		if(gestureSource)
+			//Set the body ID for the gesture to record
+			gestureSource->put_TrackingId(bodyID);
 	}
 
 	inline KinectBody* KinectGestureReader::GetBody()const

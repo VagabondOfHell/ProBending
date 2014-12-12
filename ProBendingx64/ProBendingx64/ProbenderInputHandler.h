@@ -83,6 +83,8 @@ public:
 	///<summary>Resumes listening to all input</summary>
 	void ResumeListeningToAll();
 
+	void Update(const float gameTime);
+
 	//Protected section for all inherited listener methods
 protected:
 

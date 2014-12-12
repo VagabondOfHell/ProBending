@@ -42,6 +42,7 @@ void Probender::AttachToScene(IScene* scene)
 
 void Probender::Update(float gameTime)
 {
+	inputHandler.Update(gameTime);
 	stateManager.Update(gameTime);	
 }
 

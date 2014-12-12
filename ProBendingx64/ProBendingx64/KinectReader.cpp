@@ -45,7 +45,7 @@ HRESULT KinectReader::InitializeKinect(const UINT32 windowWidth, const UINT32 wi
 {
 	//Try to get the default kinect sensor and fill in our variable
 	HRESULT hr = GetDefaultKinectSensor(&mSensor);
-	
+
 	//If sensor has been found
 	if (mSensor)
     {
@@ -66,8 +66,8 @@ HRESULT KinectReader::InitializeKinect(const UINT32 windowWidth, const UINT32 wi
 		mSensor->get_IsOpen(&isOpen);
 		
 		//Get the availability of the sensor
-		IsAvailable();
-
+		bool avail = IsAvailable();
+		
 		//Get required components
 		if (SUCCEEDED(hr))
 		{

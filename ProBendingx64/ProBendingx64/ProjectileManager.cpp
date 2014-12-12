@@ -42,6 +42,8 @@ Projectile* const ProjectileManager::CreateProjectile(const ElementEnum::Element
 
 			//increment id
 			++NEXT_PROJECTILE_ID;
+
+			projectile->Start();
 			//return the projectile
 			return projectile;
 		}

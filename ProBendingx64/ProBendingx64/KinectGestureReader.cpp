@@ -3,7 +3,8 @@
 #include "KinectReader.h"
 #include "KinectGestureDatabase.h"
 #include "KinectBodyEventNotifier.h"
-
+#include <kinect.h>
+#include <kinect.VisualGestureBuilder.h>
 KinectGestureReader::KinectGestureReader(void)
 {
 	gestureReader = NULL;
@@ -179,92 +180,111 @@ IGesture* KinectGestureReader::GetGestureByName(std::wstring gestureName)
 
 bool KinectGestureReader::Capture()
 {
-	IVisualGestureBuilderFrame* frame;
-
-	//Get the frame
-	HRESULT hr = gestureReader->CalculateAndAcquireLatestFrame(&frame);
-
-	if(FAILED(hr))
+	if(gestureReader)
 	{
-		if(frame)
-			frame->Release();
-		return false;
-	}
+		IVisualGestureBuilderFrame* frame;
 
-	//Prepare Result holders
-	IGestureResult* result;
-	IContinuousGestureResult* continuousResult;
-	IDiscreteGestureResult* discreteResult;
-	KinectGestureResult gestureResult;
-
-	std::vector<KinectGestureResult> discreteResults = std::vector<KinectGestureResult>();
-	std::vector<KinectGestureResult> continuousResults = std::vector<KinectGestureResult>();
-
-	//Make sure results is initialized
-	std::map<std::wstring, IGesture*>::iterator start = gesturesInSource.begin();
-	std::map<std::wstring, IGesture*>::iterator end = gesturesInSource.end();
-	
-	for (start; start != end; ++start)
-	{
-		BOOLEAN gestureEnabled;
-
-		//Make sure the gesture is enabled
-		hr = gestureSource->GetIsEnabled(start->second, &gestureEnabled);
+		//Get the frame
+		HRESULT hr = gestureReader->CalculateAndAcquireLatestFrame(&frame);
 
 		if(FAILED(hr))
-			continue;
-
-		if(gestureEnabled)
 		{
-			//Get the results
-			hr = frame->get_GestureResult(start->second, &result);
+			if(frame)
+				frame->Release();
+			return false;
+		}
 		
-			if(FAILED(hr))
-			{
-				if(result)
-				{
-					result->Release();
-					result = NULL;
-				}
-				continue;
-			}
-		
-			//Extract the frame information
-			gestureResult.gestureName = start->first;
+		//Prepare Result holders
+		IContinuousGestureResult* continuousResult;
+		IDiscreteGestureResult* discreteResult;
+		KinectGestureResult gestureResult;
 
-			hr = start->second->get_GestureType(&gestureResult.gestureType);
+		std::vector<KinectGestureResult> discreteResults = std::vector<KinectGestureResult>();
+		std::vector<KinectGestureResult> continuousResults = std::vector<KinectGestureResult>();
 
-			if(FAILED(hr))
-				gestureResult.gestureType = GestureType_None;
+		//Make sure results is initialized
+		std::map<std::wstring, IGesture*>::iterator start = gesturesInSource.begin();
+		std::map<std::wstring, IGesture*>::iterator end = gesturesInSource.end();
 	
-			if(gestureResult.gestureType == GestureType_Continuous)
-			{
-				continuousResult = (IContinuousGestureResult*)result;
-				continuousResult->get_Progress(&gestureResult.continuousProgress);
-				//Add to the list of continuous results
-				continuousResults.push_back(gestureResult);
-			}
-			else if(gestureResult.gestureType == GestureType_Discrete)
-			{
-				discreteResult = (IDiscreteGestureResult*)result;
-				discreteResult->get_Confidence(&gestureResult.discreteConfidence);
-				discreteResult->get_Detected(&gestureResult.discreteDetected);
-				discreteResult->get_FirstFrameDetected(&gestureResult.discreteFirstFrameDetected);
-				//Add to the list of discrete results
-				discreteResults.push_back(gestureResult);
-			}
+		for (start; start != end; ++start)
+		{
+			BOOLEAN gestureEnabled;
 
-			if(result)
+			//Make sure the gesture is enabled
+			hr = gestureSource->GetIsEnabled(start->second, &gestureEnabled);
+
+			if(FAILED(hr))
+				continue;
+
+			if(gestureEnabled)
 			{
-				result->Release();
-				result = NULL;
+				//Extract the frame information
+				gestureResult.gestureName = start->first;
+
+				hr = start->second->get_GestureType(&gestureResult.gestureType);
+		
+				if(FAILED(hr))
+					gestureResult.gestureType = GestureType_None;
+
+
+				//Get the results		
+				if(gestureResult.gestureType == GestureType_Continuous)
+				{
+					hr = frame->get_ContinuousGestureResult(start->second, &continuousResult);
+
+					if(FAILED(hr))
+					{
+						if(continuousResult)
+						{
+							continuousResult->Release();
+							continuousResult = NULL;
+						}
+						continue;
+					}
+
+					if(continuousResult)
+					{
+						continuousResult->get_Progress(&gestureResult.continuousProgress);
+						//Add to the list of continuous results
+						continuousResults.push_back(gestureResult);
+
+						continuousResult->Release();
+						continuousResult = NULL;
+					}
+				}
+				else if(gestureResult.gestureType == GestureType_Discrete)
+				{
+					hr = frame->get_DiscreteGestureResult(start->second, &discreteResult);
+					
+					if(FAILED(hr))
+					{
+						if(discreteResult)
+						{
+							discreteResult->Release();
+							discreteResult = NULL;
+						}
+						continue;
+					}
+
+					if(discreteResult)
+					{
+						discreteResult->get_Confidence(&gestureResult.discreteConfidence);
+						discreteResult->get_Detected(&gestureResult.discreteDetected);
+						discreteResult->get_FirstFrameDetected(&gestureResult.discreteFirstFrameDetected);
+						//Add to the list of discrete results
+						discreteResults.push_back(gestureResult);
+						
+						discreteResult->Release();
+						discreteResult = NULL;
+					}
+				}
 			}
 		}
+
+		//Pass the gesture data to the Event Manager
+		KinectBodyEventNotifier::GetInstance()->InjectGestureFrameData(bodyOwner, &discreteResults, &continuousResults);
+	
+		return true;
 	}
-
-	//Pass the gesture data to the Event Manager
-	KinectBodyEventNotifier::GetInstance()->InjectGestureFrameData(bodyOwner, &discreteResults, &continuousResults);
-
-	return true;
 }
 

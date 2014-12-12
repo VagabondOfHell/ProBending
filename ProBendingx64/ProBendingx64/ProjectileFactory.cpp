@@ -50,14 +50,14 @@ Projectile* ProjectileFactory::CreateProjectile(IScene* const scene,const Elemen
 		if(abilityID == AbilityIDs::FIRE_JAB)
 		{
 			newProjectile = new Projectile(scene, nullptr);
-			ParticlePointEmitter* emitter = new ParticlePointEmitter(10.0f, physx::PxVec3(0.0f, 0.0f, 0.0f),
+			ParticlePointEmitter* emitter = new ParticlePointEmitter(100.0f, physx::PxVec3(0.0f, 0.0f, 0.0f),
 				physx::PxVec3(-0.50f, 1.0f, 0.0f).getNormalized(), physx::PxVec3(0.5f, 1.0f, 0.0f).getNormalized(),
 				20.0f, 40.0f);
 
-			ParticleSystemParams params = ParticleSystemParams(10.0f, 2.0f, scene->GetCudaContextManager(),
+			ParticleSystemParams params = ParticleSystemParams(100.0f, 2.0f, scene->GetCudaContextManager(),
 				physx::PxVec3(0.0f, 1.0f, 0.0f),1.0f, false);
 
-			ColourParticleSystem* colourParticles = new ColourParticleSystem(emitter, 100, 2.0f, physx::PxVec4(1.0f, 1.0f, 1.0f, 1.0f),
+			ColourParticleSystem* colourParticles = new ColourParticleSystem(emitter, 500, 2.0f, physx::PxVec4(1.0f, 0.0f, 0.0f, 1.0f),
 				physx::PxVec4(0.0f, 0.0f, 0.0f, 0.0f), physx::PxVec4(0.2f, 0.2f, 0.2f, 0.2f),params, true);
 
 			Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().getByName("ColorParticleShader");

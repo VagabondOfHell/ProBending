@@ -9,6 +9,9 @@
 #include "PxScene.h"
 #include "GUIManager.h"
 #include "InputNotifier.h"
+#include "InputManager.h"
+#include "KinectGestureReader.h"
+#include "KinectReader.h"
 
 GameScene::GameScene(void)
 	:IScene(NULL, NULL, "", "")
@@ -29,7 +32,7 @@ GameScene::~GameScene(void)
 	if(battleArena)
 		delete battleArena;
 
-
+	
 }
 
 void GameScene::Initialize()
@@ -57,6 +60,20 @@ void GameScene::Initialize()
 	mainOgreCamera->setFarClipDistance(10000);
 
 	InitializePhysics(physx::PxVec3(0.0f, -9.8f, 0.0f), true);
+
+	InputManager* inputManager = InputManager::GetInstance();
+
+inputManager->FillGestureReader(L"C:\\Users\\Adam\\Desktop\\Capstone\\GestureData\\ProbendingGestures.gbd");
+	KinectSpeechReader* speechReader = inputManager->GetSpeechReader();
+	if(speechReader)
+	{
+		//Load the grammar for this scene
+		speechReader->LoadGrammarFile("PrototypeSpeech.grxml");
+		//Set the confidence threshold
+		speechReader->SetConfidenceThreshold(0.6f);
+	}
+
+	
 }
 
 void GameScene::Start()

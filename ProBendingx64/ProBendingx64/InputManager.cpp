@@ -71,7 +71,7 @@ bool InputManager::InitializeKinect(const UINT32 windowWidth, const UINT32 windo
 	//Give the Kinect time to turn on
 	Sleep(1000);
 
-	bool result = kinectReader->OpenBodyReader();
+	 bool result = kinectReader->OpenBodyReader();
 
 	if(!result)
 		return false;
@@ -90,17 +90,18 @@ bool InputManager::InitializeKinect(const UINT32 windowWidth, const UINT32 windo
 
 	speechConnected = true;
 
-	gestureReader = new KinectGestureReader();
+	//Initialize the two singletons to make sure 
+	//they aren't modified from another thread
+	KinectAudioEventNotifier::GetInstance();
+	KinectBodyEventNotifier::GetInstance();
 
+	gestureReader = new KinectGestureReader();
 	result = gestureReader->Initialize(kinectReader);
 
 	if(!result)
 		return false;
 
-	//Initialize the two singletons to make sure 
-	//they aren't modified from another thread
-	KinectAudioEventNotifier::GetInstance();
-	KinectBodyEventNotifier::GetInstance();
+	return true;
 }
 
 bool InputManager::FillGestureReader(std::string databaseFileName)
@@ -110,21 +111,26 @@ bool InputManager::FillGestureReader(std::string databaseFileName)
 
 bool InputManager::FillGestureReader(std::wstring databaseFileName)
 {
-	bool result = KinectGestureDatabase::GetInstance()->OpenDatabase(databaseFileName);
+	if(gestureReader)
+	{
+		bool result = KinectGestureDatabase::GetInstance()->OpenDatabase(databaseFileName);
 	
-	if(!result)
-		return false;
+		if(!result)
+			return false;
 
-	///NEED TO TRY CHANGING FROM SEPARATE THREAD///
-	int gestures = KinectGestureDatabase::GetInstance()->FillSourceWithAllGestures(gestureReader);
+		///NEED TO TRY CHANGING FROM SEPARATE THREAD///
+		int gestures = KinectGestureDatabase::GetInstance()->FillSourceWithAllGestures(gestureReader);
 	
-	KinectGestureDatabase::GetInstance()->CloseDatabase();
+		KinectGestureDatabase::GetInstance()->CloseDatabase();
 	
-	KinectGestureDatabase::GetInstance()->DestroySingleton();
+		KinectGestureDatabase::GetInstance()->DestroySingleton();
 
-	if(gestures < 0)
+		if(gestures < 0)
+			return false;
+		return true;
+	}
+	else 
 		return false;
-	return true;
 }
 
 bool InputManager::RegisterListenerToNewBody(KinectBodyListener* listener)

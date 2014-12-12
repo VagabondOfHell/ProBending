@@ -213,7 +213,7 @@ void KinectGestureDatabase::CloseDatabase()
 
 int KinectGestureDatabase::FillSourceWithAllGestures(KinectGestureReader* reader)
 {
-	if(reader != NULL)
+	if(reader != NULL && reader->gestureSource != NULL)
 	{
 		std::map<std::wstring, KinectGesture>::const_iterator start = gesturesCollection.begin();
 		std::map<std::wstring, KinectGesture>::const_iterator end = gesturesCollection.end();

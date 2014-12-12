@@ -117,7 +117,7 @@ public:
 	}
 
 	///Returns a pointer to the Kinect Sensor
-	inline IKinectSensor* const KinectReader::GetKinectSensor()
+	inline IKinectSensor* KinectReader::GetKinectSensor()
 	{
 		return mSensor;
 	}

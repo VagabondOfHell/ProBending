@@ -18,7 +18,7 @@ private:
 	static int NUM_INSTANCES;
 
 protected:	
-	ParticleSystemBase* particleSystem; //The manipulator of the particles
+	
 
 	///<summary>Creates the scene node as a child to the game objects node</summary>
 	virtual void CreateSceneNode();
@@ -28,7 +28,7 @@ protected:
 
 public:
 	Ogre::SceneNode* sceneNode;//The scene node used to position the particle component
-	
+	ParticleSystemBase* particleSystem; //The manipulator of the particles
 	///<summary>Constructor of the particle component</summary>
 	///<param name="_owningObject">The object that owns the component</param>
 	///<param name="_particleSystem">The particle system that controls particle data</param>

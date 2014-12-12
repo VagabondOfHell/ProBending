@@ -267,16 +267,6 @@ void Game::InitializeKinect()
 
 	KinectSpeechReader* speechReader = inputManager->GetSpeechReader();
 
-	if(speechReader)
-	{
-		speechReader->LoadGrammarFile("SpeechBasics-D2D.grxml");
-	
-		speechReader->SetConfidenceThreshold(0.3f);
-
-		//speechController = SpeechController(inputManager->GetSpeechReader());
-		
-		//inputManager->RegisterAudioListener(&speechController);
-	}
 }
 
 void Game::CloseGame()
@@ -372,12 +362,6 @@ bool Game::Update(float gameTime)
 
 	InputManager* inputManager = InputManager::GetInstance();
 	inputManager->ProcessEvents();
-
-	if(!kinectController.IsListening())
-	{
-		if(inputManager->RegisterListenerToNewBody(&kinectController))			
-			inputManager->FillGestureReader(L"C:\\Users\\Adam\\Desktop\\Test2.gbd");
-	}
 
 	if(!sceneManager->Update(0.016f))
 		return false;
