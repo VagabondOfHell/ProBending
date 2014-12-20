@@ -53,6 +53,8 @@ public:
 		maxSpeed = maxParticleSpeed;
 	}
 
+	virtual ~AbstractParticleEmitter(){}
+
 	///<summary>Emission method called by a particle system</summary>
 	///<param name="gameTime">The game time that has passed </param>
 	///<param name="availableIndiceCount">The count of currently available indices </summary>

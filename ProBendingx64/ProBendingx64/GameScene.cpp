@@ -12,6 +12,7 @@
 #include "InputManager.h"
 #include "KinectGestureReader.h"
 #include "KinectReader.h"
+#include "CudaModuleManager.h"
 
 GameScene::GameScene(void)
 	:IScene(NULL, NULL, "", "")
@@ -32,7 +33,7 @@ GameScene::~GameScene(void)
 	if(battleArena)
 		delete battleArena;
 
-	
+	CudaModuleManager::GetSingleton()->DestroySingleton();
 }
 
 void GameScene::Initialize()
@@ -117,6 +118,20 @@ void GameScene::Close()
 
 bool GameScene::keyPressed( const OIS::KeyEvent &arg )
 {
+	if(arg.key == OIS::KC_W)
+	{
+		Ogre::Vector3 camPos = mainOgreCamera->getPosition();
+		camPos.x += 10;
+		mainOgreCamera->setPosition(camPos);
+	}
+
+	if(arg.key == OIS::KC_E)
+	{
+		Ogre::Vector3 camPos = mainOgreCamera->getPosition();
+		camPos.x -= 10;
+		mainOgreCamera->setPosition(camPos);
+	}
+
 	if(arg.key == OIS::KC_I)
 	{
 		Ogre::Vector3 camPos = mainOgreCamera->getPosition();

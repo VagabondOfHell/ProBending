@@ -5,13 +5,14 @@
 #include "OgreSceneManager.h"
 #include "OgreRenderWindow.h"
 #include "ParticlePointEmitter.h"
-#include "BasicParticleSystem.h"
 #include "ParticleComponent.h"
 #include "Projectile.h"
 #include "AbilityDescriptor.h"
 #include "Probender.h"
 #include "GUIManager.h"
 #include "PxScene.h"
+
+#include "ParticleSystemBase.h"
 
 FluidScene::FluidScene(void)
 	:IScene(NULL, NULL, "", "")
@@ -97,8 +98,8 @@ void FluidScene::Start()
 	psParams.cudaContext = cudaContextManager;
 	psParams.useGravity = false;
 
-	particleSystem = new BasicParticleSystem(particlePointEmitter, NUM_PARTICLES, 5.0f, psParams, false);
-	particleSystem2 = new BasicParticleSystem(particlePointEmitter, NUM_PARTICLES, 2.0f, psParams, false);
+	particleSystem = new ParticleSystemBase(particlePointEmitter, NUM_PARTICLES, 5.0f, psParams, false);
+	particleSystem2 = new ParticleSystemBase(particlePointEmitter, NUM_PARTICLES, 2.0f, psParams, false);
 	
 	particleComponent = new ParticleComponent(projectile, particleSystem, false);
 	projectile->AttachComponent(particleComponent);

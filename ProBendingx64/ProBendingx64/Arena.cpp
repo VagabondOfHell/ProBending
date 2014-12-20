@@ -65,10 +65,15 @@ void Arena::Start()
 	label = owningScene->GetGUIManager()->CreateGUIButton("TaharezLook/Button", "ElementDisplay", 
 		ElementEnum::EnumToString(contestants[0].GetInGameData().GetMainElement()), 
 		UVector2(UDim(0, 0), UDim(0, 0)), USize(UDim(0.1, 0.0), UDim(0.05, 0.0)));
+
+
+//	test.Initialize();
 }
 
 bool Arena::Update(const float gameTime)
 {
+	//test.Update(gameTime);
+
 	for (int i = 0; i < contestantCount; i++)
 	{
 		contestants[i].Update(gameTime);

@@ -189,7 +189,7 @@ public:
 	}
 	
 	///<summary>Maps the resource and gets the mapped pointer device from CUDA</summary>
-	///<param name = "index">The index to access</summary>
+	///<param name = "index">The index to access</param>
 	///<returns>A structure representing the mapped pointer and size of the pointer, 
 	///as well as the validity of the stucture. If structure is invalid, there was an error</returns>
 	inline MappedGPUData MapAndGetGPUDataPointer(unsigned int index)
@@ -217,6 +217,28 @@ public:
 #pragma endregion
 
 #pragma region NonGraphicsResources
+
+	///<summary>Helper method that wraps CUDA allocation in a static method. This data is not
+	///managed by the CudaGPUData class. Client is responsible for any memory</summary>
+	///<param name="retVal">Where to place the allocation results</param>
+	///<param name="dataSizeInBytes">The amount of data in bytes that should be allocated</param>
+	///<returns>The CUDA result</returns>
+	static inline CUresult AllocateGPUMemory(MappedGPUData& retVal, const size_t dataSizeInBytes)
+	{
+		//Allocate memory in the GPU
+		CUresult previousError = cuMemAlloc(&retVal.devicePointer, dataSizeInBytes);
+
+		if(previousError == CUDA_SUCCESS)
+		{
+			//device pointer is filled by cuMemAlloc. Apply the last values
+			retVal.bufferSize = dataSizeInBytes;
+			retVal.isValid = true;
+		}
+		else
+			retVal = MappedGPUData();
+
+		return previousError;
+	}
 
 	///<summary>Allocates memory on the GPU for the CPU to use. Does not check if it has been allocated already</summary>
 	///<param name="index">The index of the non-graphics resource to allocate</param>
@@ -268,10 +290,52 @@ public:
 		return cudaNonGraphicsResources[index].devicePointer;
 	}
 
-	///<summary>Copys data from the specifed Host data to the GPU device as specified by index</summary>
+	///<summary>Static helper method to copy host data to device</summary>
+	///<param name="allocatedData">Data that has been previously allocated on the GPU</param>
+	///<param name="srcData">The user data to copy</param>
+	///<param name="dataSizeInBytes">Size of the data to copy</param>
+	///<returns>Cuda error code or Invalid Handle if allocated data is not valid</returns>
+	static inline CUresult CopyHostToDevice(MappedGPUData& allocatedData, const void* srcData)
+	{
+		if(allocatedData.isValid)
+		{
+			//Try the copy action
+			CUresult previousError = cuMemcpyHtoDAsync_v2(allocatedData.devicePointer, 
+				srcData, allocatedData.bufferSize, 0);
+			return previousError;
+		}
+		else
+			return CUDA_ERROR_INVALID_HANDLE;
+	}
+
+	///<summary>Copys data from the specifed Host data to the GPU device as specified by index. Uses
+	///buffer size to determine how many bytes to copy over</summary>
 	///<param name="index">The index of the device to copy the data to</param>
 	///<param name="data">The data to be copied over</param>
-	///<param name="dataSizeInBytes>The size of the data in bytes to be copied over</param>
+	///<returns>True if successful, false if not. If false, check previous error</returns>
+	inline bool CopyHostToDevice(const unsigned int index, const void* srcData)
+	{
+		//Validate index
+		if(index >= nonGraphicsResourceCount)
+			return false;
+
+		if(cudaNonGraphicsResources[index].isValid)
+		{
+			//Try the copy action
+			//previousError = cuMemcpyHtoD_v2(cudaNonGraphicsResources[index].devicePointer, srcData, dataSizeInBytes);
+			previousError = cuMemcpyHtoDAsync_v2(cudaNonGraphicsResources[index].devicePointer, 
+				srcData, cudaNonGraphicsResources[index].bufferSize, 0);
+			return previousError == CUDA_SUCCESS;
+		}
+		else
+			return false;
+	}
+
+	///<summary>Copys data from the specifed Host data to the GPU device as specified by index, but
+	///allows specifying how much data to copy over</summary>
+	///<param name="index">The index of the device to copy the data to</param>
+	///<param name="data">The data to be copied over</param>
+	///<param name="dataSizeInBytes">The size of the data in bytes to be copied over</param>
 	///<returns>True if successful, false if not. If false, check previous error</returns>
 	inline bool CopyHostToDevice(const unsigned int index, const void* srcData, const size_t dataSizeInBytes)
 	{
@@ -311,7 +375,7 @@ public:
 	}
 
 	///<summary>Convenience function to perform allocation and copy in one method</summary>
-	///<param name="index">The index of the device pointer to allocate and copy data to</summary>
+	///<param name="index">The index of the device pointer to allocate and copy data to</param>
 	///<param name="allocationSize">The amount of data in bytes to allocate on the GPU</param>
 	///<param name="srcData">The source of the data to be copied over</param>
 	///<param name="dataSize">Size of the data to be copied over, in bytes</param>
@@ -326,6 +390,25 @@ public:
 			return CopyHostToDevice(index, srcData, dataSize);
 		else
 			return false;
+	}
+
+	///<summary>Static helper method to free allocated Device memory</summary>
+	///<param name="allocatedData">The previously allocated data</param>
+	///<returns>Cuda result, or Cuda_Invalid_Handle if allocated Data was invalid</returns>
+	static inline CUresult FreeGPUMemory(MappedGPUData& allocatedData)
+	{
+		//If we are capable of freeing the pointer
+		if(allocatedData.isValid)
+		{
+			CUresult prevError = cuMemFree(allocatedData.devicePointer) ;
+			
+			if(prevError == CUDA_SUCCESS)
+				allocatedData = MappedGPUData();//reset values
+			
+			return prevError;
+		}
+
+		return CUDA_ERROR_INVALID_HANDLE;
 	}
 
 	///<summary>Frees the allocated memory on the GPU as represented by the passed index</summary>
