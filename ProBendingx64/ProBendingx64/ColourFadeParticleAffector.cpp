@@ -73,7 +73,7 @@ void ColourFadeParticleAffector::Update(const float gameTime, const float percen
 
 void ColourFadeParticleAffector::UnlockBuffers()
 {
-	if(!onGPU)
+	if(vertexBuffer->isLocked())
 	{
 		vertexBuffer->unlock();
 		affectorAttributes.colours = NULL;

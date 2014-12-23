@@ -121,7 +121,7 @@ void ScaleParticleAffector::Update(const float gameTime, const float percentile,
 
 void ScaleParticleAffector::UnlockBuffers()
 {
-	if(!onGPU)
+	if(vertexBuffer->isLocked())
 	{
 		vertexBuffer->unlock();
 		affectorAttributes.scales = NULL;
@@ -156,5 +156,6 @@ void ScaleParticleAffector::UnmapCudaBuffers()
 
 	gpuData->UnmapResourceFromCuda(0);
 }
+
 #pragma endregion
 

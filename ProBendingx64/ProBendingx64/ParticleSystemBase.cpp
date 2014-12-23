@@ -163,14 +163,15 @@ void ParticleSystemBase::InitializeVertexBuffers()
 		Ogre::HardwareBuffer::HBU_DYNAMIC_WRITE_ONLY_DISCARDABLE,
 		false);
 
-	PxVec3* positions = static_cast<PxVec3*>(mVertexBufferPosition->lock(Ogre::HardwareBuffer::LockOptions::HBL_WRITE_ONLY));
+	float* positions = new float[maximumParticles];//(float*)(mVertexBufferPosition->lock(Ogre::HardwareBuffer::LockOptions::HBL_NORMAL));
 
 	for (unsigned int i = 0; i < maximumParticles; i++)
 	{
-		positions[i] = PxVec3(std::numeric_limits<float>::quiet_NaN());
+		positions[i] = std::numeric_limits<float>::quiet_NaN();// PxVec3(0);
 	}
-
-	mVertexBufferPosition->unlock();
+	mVertexBufferPosition->writeData(0, sizeof(float) * maximumParticles, positions, true);
+	//mVertexBufferPosition->unlock();
+	delete[] positions;
 
 	// bind positions to location 0
 	mRenderOp.vertexData->vertexBufferBinding->setBinding(nextVertexElement, mVertexBufferPosition);
@@ -214,7 +215,16 @@ void ParticleSystemBase::Update(float time)
 {
 	using namespace physx;
 	PxParticleReadData* rd;
+	
+	//We then call the update attributes for CPU readable data, even if the system utilizes the GPU
+	rd = pxParticleSystem->lockParticleReadData(PxDataAccessFlag::eREADABLE);
 
+	if(rd)
+	{
+		//Update the policy collect the indices to remove from the policy
+		UpdateParticleSystemCPU(time, rd);
+		rd->unlock();
+	}
 	//If we have the particle system using the GPU
 	if(onGPU)			
 		if(cudaContextManager)
@@ -234,18 +244,8 @@ void ParticleSystemBase::Update(float time)
 			//release the cuda context
 			cudaContextManager->releaseContext();
 		}
-		
-	//We then call the update attributes for CPU readable data, even if the system utilizes the GPU
-	rd = pxParticleSystem->lockParticleReadData(PxDataAccessFlag::eREADABLE);
-
-	if(rd)
-	{
-		//Update the policy collect the indices to remove from the policy
-		UpdateParticleSystemCPU(time, rd);
-		rd->unlock();
-	}
-
-	//If we should remove some, remove them
+	
+		//If we should remove some, remove them
 	if(indicesToRemove.size() > 0)
 	{
 		pxParticleSystem->releaseParticles(indicesToRemove.size(), PxStrideIterator<PxU32>(&indicesToRemove[0]));
@@ -253,9 +253,8 @@ void ParticleSystemBase::Update(float time)
 		for (int i = indicesToRemove.size() - 1; i >= 0; --i)
 		{
 			availableIndices.push_back(indicesToRemove[i]);
+			indicesToRemove.pop_back();
 		}
-
-		indicesToRemove.clear();
 	}
 
 	//Create the emission data and initialize number to 0
@@ -313,15 +312,17 @@ void ParticleSystemBase::UpdateParticleSystemCPU(const float time, const physx::
 			{
 				PxU32 index = (w << 5 | shdfnd::lowestSetBit(b));
 
+				++numParticles;
+
 				//Check particle validity
 				if(QueryParticleRemoval(index, readData))
 				{
 					//If lifetime is equal or below zero
 					indicesToRemove.push_back(index); //indicate removal
-					lifetimes[index] = 0.0f;//set lifetime to 0
-
+					lifetimes[index] = 0;//set lifetime to 0
+				
 					if(!onGPU)
-						positions[index] = PxVec3(std::numeric_limits<float>::quiet_NaN());
+						positions[index] = PxVec3(100);//std::numeric_limits<float>::quiet_NaN());
 
 					continue;
 				}
@@ -335,9 +336,8 @@ void ParticleSystemBase::UpdateParticleSystemCPU(const float time, const physx::
 						// copy particle positions over
 						const PxVec3& position = readData->positionBuffer[index];
 						positions[index] = position;
-
 					}
-
+					
 					float percentile = lifetimes[index] / initialLifetime;
 					for (AffectorMapIterator start = affectorMap.begin(); start != affectorMap.end(); ++start)
 					{
@@ -347,22 +347,26 @@ void ParticleSystemBase::UpdateParticleSystemCPU(const float time, const physx::
 
 					//Allow children to update their own particle data
 					UpdateParticle(index, readData);
-					++numParticles;
 				}
 			}//end of bitmap for loop (b)
 		}//end of particle range for loop
 
 		//If this system is on the CPU, unlock the vertex buffer
 		if(!onGPU)
+		{
 				mVertexBufferPosition->unlock();
+		}
 		else
+		{
 			mRenderOp.vertexData->vertexCount = numParticles;
+		}
 
 		for (AffectorMapIterator start = affectorMap.begin(); start != affectorMap.end(); ++start)
 		{
 			//Apply affectors if on CPU
 			start->second->UnlockBuffers();
 		}
+
 	}//end if valid range > 0
 }
 

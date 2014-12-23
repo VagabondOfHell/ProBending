@@ -3,7 +3,6 @@
 #include "ParticleAffectors.h"
 #include "ColourFadeParticleAffector.h"
 #include "CudaModuleManager.h"
-
 #if _DEBUG
 #include "OgreLogManager.h"
 #endif
@@ -83,10 +82,10 @@ ParticleKernel::ParticleKernelError ParticleKernel::InitializeGPUData(physx::PxC
 		if(!kernelFunction)
 			return FUNCTION_NOT_FOUND;
 	}
-
+	
 	gpuData = new CudaGPUData(contextManager, GraphicsResourcePointers::GraphicsResourcePointerCount, DevicePointers::DevicePointerCount);
 
-	bool gpuAllocationResult = true;// = gpuData->RegisterCudaGraphicsResource(GraphicsResourcePointers::Positions, positionBuffer);
+	bool gpuAllocationResult = gpuData->RegisterCudaGraphicsResource(GraphicsResourcePointers::Positions, positionBuffer);
 
 	if(gpuAllocationResult)
 		gpuAllocationResult = gpuData->AllocateGPUMemory(DevicePointers::ValidBitmap, sizeof(physx::PxU32) * (maxParticles + 31) >> 5);
@@ -145,7 +144,7 @@ bool ParticleKernel::LaunchKernel(physx::PxParticleReadData* particleData, float
 			&src_lifetimes,
 			&initialLifetime,
 			&src_affector_data.devicePointer,
-			&particleData->nbValidParticles
+			&particleData->validParticleRange
 		};
 
 		//Launch the kernel with 1 block of 512 threads. Each thread will complete (MaxParticles/512) worth of particles 
@@ -157,13 +156,13 @@ bool ParticleKernel::LaunchKernel(physx::PxParticleReadData* particleData, float
 			Ogre::LogManager::getSingleton().getDefaultLog()->
 			logMessage("Basic Particle System Cuda Kernel Launch failed", Ogre::LogMessageLevel::LML_CRITICAL);
 #endif
-
+		
 		//Unmap the graphics resource
 		gpuData->UnmapResourceFromCuda(GraphicsResourcePointers::Positions);
 		
 		UnmapAffectors();
-
 		return res == CUDA_SUCCESS;
+		
 	}
 
 	return false;
