@@ -4,6 +4,7 @@
 #include "OgreHardwareVertexBuffer.h"
 
 class CudaGPUData;
+class ParticleSystemBase;
 
 namespace physx
 {
@@ -14,24 +15,9 @@ class ParticleAffector
 {
 protected:
 	bool onGPU;
-	unsigned int maxParticlesAllowed;
-	unsigned int bindingIndex;//The index of the buffer this affector bound itself to
-
-	Ogre::HardwareVertexBufferSharedPtr vertexBuffer;//The GL vertex buffer to hold the data
-	CudaGPUData* gpuData;//Used as pointer so it can be NULL if not on GPU
-
-	///<summary>Initializes the vertex buffer data</summary>
-	///<param name="vertexData">The vertex data that holds the bindings and declarations</param>
-	///<param name="semantic">What to create the buffer as</param>
-	///<param name="type">The data the buffer will hold</param>
-	///<param name="source">The index to place the buffer in the vertex data at</param>
-	///<param name="extraIndex">The additional index for UV coordinates</param>
-	///<returns>True if successful, false if not. If false, invalid vertex data was passed most likely</summary>
-	virtual bool CreateVertexBuffers(Ogre::VertexData* vertexData, Ogre::VertexElementSemantic semantic, 
-		Ogre::VertexElementType type, const unsigned int source, const unsigned int extraIndex = 0);
 
 public:	
-	ParticleAffector(bool _onGPU = false):maxParticlesAllowed(0), onGPU(_onGPU){gpuData = NULL;};
+	ParticleAffector(bool _onGPU = false): onGPU(_onGPU){};
 
 	virtual ~ParticleAffector();
 
@@ -41,33 +27,27 @@ public:
 	///<param name="contextManager">Required if performing on the GPU</param>
 	///<param name="vertexData">The vertex data to add buffers to</param>
 	///<param name="maxParticles">The maximum allowed particles</param>
-	///<param name="source">The index the buffer should be bound to</param>
 	///<returns>True if successful, false if not. If false, invalid vertex data was most likely passed</returns>
-	virtual bool Initialize(physx::PxCudaContextManager* const contextManager, 
-		Ogre::VertexData* vertexData, const unsigned int maxParticles, const unsigned int source) = 0;
+	virtual bool Initialize(ParticleSystemBase* owningSystem) = 0;
 
-	virtual void LockBuffers() = 0;
+	virtual void PreUpdate(){}
 
 	///<summary>Used to update the specified particle index when ran on the CPU</summary>
 	///<param name="gameTime">The gametime since last frame</param>
 	///<param name="percentile">The percentage in decimal form through the effect (commonly lifetimes... so difference from initial lifetime to current)</param>
 	///<param name="particleIndex">The index of the particle to update</param>
-	virtual void Update(const float gameTime, const float percentile, const unsigned int particleIndex) = 0;
+	virtual void Update(const float gameTime, GPUResourcePointers& pointers, const float percentile, const unsigned int particleIndex) = 0;
 
-	virtual void UnlockBuffers() = 0;
-
-	virtual void MapCudaBuffers() = 0;
+	virtual void PostUpdate(){}
 
 	bool GetOnGPU()const{return onGPU;}
 
-	const unsigned int GetBindingIndex()const{return bindingIndex;}
+	virtual Ogre::VertexElementSemantic GetDesiredBuffer() = 0;
 
 	///<summary>Creates the proper GPU Parameter structure for the derived type.
 	///Also maps CUDA buffers if they are not already. Remember to call UnmapBuffers though.</summary>
 	///<returns>Derived structure representing the derived affectors necessary data</returns>
 	virtual GPUParticleAffectorParams* const GetGPUParamaters() = 0;
-
-	virtual void UnmapCudaBuffers() = 0;
 };
 
 class ScaleParticleAffector : public ParticleAffector
@@ -95,6 +75,9 @@ public:
 
 	virtual ParticleAffectorType::ParticleAffectorType GetAffectorType();
 
+	///<summary>Gets the semantic that represents the buffer that this affector wants to place its data in</summary>
+	///<returns>The Ogre Semantic of the OpenGL Buffer</returns>
+	virtual Ogre::VertexElementSemantic GetDesiredBuffer(){return Ogre::VES_POSITION;}
 
 	///<summary>Initializes the affector</summary>
 	///<param name="contextManager">Required if performing on the GPU</param>
@@ -102,22 +85,13 @@ public:
 	///<param name="maxParticles">The maximum allowed particles</param>
 	///<param name="source">The index the buffer should be bound to</param>
 	///<returns>True if successful, false if not. If false, invalid vertex data was most likely passed</returns>
-	virtual bool Initialize(physx::PxCudaContextManager* const contextManager, 
-		Ogre::VertexData* vertexData, const unsigned int maxParticles, const unsigned int source);
-
-	virtual void LockBuffers() ;
+	virtual bool Initialize(ParticleSystemBase* owningSystem);
 
 	///<summary>Used to update the specified particle index when ran on the CPU</summary>
 	///<param name="gameTime">The gametime since last frame</param>
 	///<param name="percentile">The percentage in decimal form through the effect (commonly lifetimes... so difference from initial lifetime to current)</param>
 	///<param name="particleIndex">The index of the particle to update</param>
-	virtual void Update(const float gameTime, const float percentile, const unsigned int particleIndex) ;
-
-	virtual void UnlockBuffers();
-
-	virtual void MapCudaBuffers();
+	virtual void Update(const float gameTime, GPUResourcePointers& pointers, const float percentile, const unsigned int particleIndex) ;
 
 	virtual GPUScaleAffectorParams* const GetGPUParamaters() ;
-
-	virtual void UnmapCudaBuffers();
 };

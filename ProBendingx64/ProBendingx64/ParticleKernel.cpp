@@ -2,6 +2,7 @@
 #include "CudaGPUData.h"
 #include "ParticleAffectors.h"
 #include "ColourFadeParticleAffector.h"
+#include "ParticleSystemBase.h"
 #include "CudaModuleManager.h"
 #if _DEBUG
 #include "OgreLogManager.h"
@@ -35,42 +36,11 @@ ParticleKernel::~ParticleKernel(void)
 	}
 }
 
-ParticleKernel::ParticleKernelError ParticleKernel::PopulateData(physx::PxCudaContextManager* contextManager, Ogre::HardwareVertexBufferSharedPtr positionBuffer, const unsigned int maxParticles, AffectorMap* affectors)
+ParticleKernel::ParticleKernelError ParticleKernel::PopulateData(ParticleSystemBase* particleSystem, AffectorMap* affectors)
 {
 	if(gpuData) //If the gpu data already exists, break out early
 		return SUCCESS;
 	
-	for (AffectorMap::iterator start = affectors->begin(); start != affectors->end(); ++start)
-	{
-		CUresult allocationResult = CUDA_SUCCESS;
-
-		switch (start->first)
-		{
-		case ParticleAffectorType::ColourToColour:
-			colourMappedData = new MappedGPUData();
-			allocationResult = CudaGPUData::AllocateGPUMemory(*colourMappedData, sizeof(GPUColourFaderAffectorParams));
-			if(allocationResult == CUDA_SUCCESS)//if memory allocated successfully, add this affector
-				colourFadeAffector = static_cast<ColourFadeParticleAffector*>(start->second);
-			break;
-
-		case ParticleAffectorType::Scale:
-			scaleMappedData = new MappedGPUData();
-			allocationResult = CudaGPUData::AllocateGPUMemory(*scaleMappedData, sizeof(GPUScaleAffectorParams));
-			if(allocationResult == CUDA_SUCCESS)//if memory allocated successfully, add this affector
-				scaleParticleAffector = static_cast<ScaleParticleAffector*>(start->second);
-			break;
-
-		default:
-			break;
-		}			
-	}
-
-	return InitializeGPUData(contextManager, positionBuffer, maxParticles);
-}
-
-ParticleKernel::ParticleKernelError ParticleKernel::InitializeGPUData(physx::PxCudaContextManager* contextManager, 
-								Ogre::HardwareVertexBufferSharedPtr positionBuffer, const unsigned int maxParticles)
-{
 	CudaModule* module = CudaModuleManager::GetSingleton()->LoadModule(KernelFilePath);
 
 	if(!module)
@@ -82,10 +52,13 @@ ParticleKernel::ParticleKernelError ParticleKernel::InitializeGPUData(physx::PxC
 		if(!kernelFunction)
 			return FUNCTION_NOT_FOUND;
 	}
-	
-	gpuData = new CudaGPUData(contextManager, GraphicsResourcePointers::GraphicsResourcePointerCount, DevicePointers::DevicePointerCount);
 
-	bool gpuAllocationResult = gpuData->RegisterCudaGraphicsResource(GraphicsResourcePointers::Positions, positionBuffer);
+	gpuData = new CudaGPUData(particleSystem->GetPhysXCudaManager(), 
+		GraphicsResourcePointers::GraphicsResourcePointerCount, DevicePointers::DevicePointerCount);
+
+	bool gpuAllocationResult = RegisterBufferResource(Positions, particleSystem->GetBuffer(Ogre::VES_POSITION));
+
+	size_t maxParticles = particleSystem->GetMaximumParticlesAllowed();
 
 	if(gpuAllocationResult)
 		gpuAllocationResult = gpuData->AllocateGPUMemory(DevicePointers::ValidBitmap, sizeof(physx::PxU32) * (maxParticles + 31) >> 5);
@@ -105,7 +78,128 @@ ParticleKernel::ParticleKernelError ParticleKernel::InitializeGPUData(physx::PxC
 		return ALLOCATION_ERROR;
 	}
 
+	for (AffectorMap::iterator start = affectors->begin(); start != affectors->end(); ++start)
+	{
+		PrepareAffectorData(particleSystem, start);
+	}
+
 	return SUCCESS;
+}
+
+void ParticleKernel::PrepareAffectorData(ParticleSystemBase* particleSystem, AffectorMap::iterator affector)
+{
+	CUresult allocationResult = CUDA_SUCCESS;
+
+	switch (affector->first)
+	{
+	case ParticleAffectorType::ColourToColour:
+		colourMappedData = new MappedGPUData();
+		allocationResult = CudaGPUData::AllocateGPUMemory(*colourMappedData, sizeof(GPUColourFaderAffectorParams));
+		if(allocationResult == CUDA_SUCCESS)//if memory allocated successfully, add this affector
+			colourFadeAffector = static_cast<ColourFadeParticleAffector*>(affector->second);
+		break;
+
+	case ParticleAffectorType::Scale:
+		scaleMappedData = new MappedGPUData();
+		allocationResult = CudaGPUData::AllocateGPUMemory(*scaleMappedData, sizeof(GPUScaleAffectorParams));
+		if(allocationResult == CUDA_SUCCESS)//if memory allocated successfully, add this affector
+			scaleParticleAffector = static_cast<ScaleParticleAffector*>(affector->second);
+		break;
+
+	default:
+		break;
+	}	
+
+	//Already registered to Positions, so make sure we don't do it again
+	if(affector->second->GetDesiredBuffer() != Ogre::VES_POSITION)
+		RegisterBufferResource(affector->second->GetDesiredBuffer(), particleSystem->CreateVertexBuffer(affector->second->GetDesiredBuffer()));
+}
+
+bool ParticleKernel::RegisterBufferResource(GraphicsResourcePointers resourceIndex, Ogre::HardwareVertexBufferSharedPtr bufferToRegister)
+{
+	//If count is the index, break out
+	if(resourceIndex == GraphicsResourcePointerCount || bufferToRegister.isNull())
+		return false;
+
+	return gpuData->RegisterCudaGraphicsResource(resourceIndex, bufferToRegister);
+}
+
+bool ParticleKernel::RegisterBufferResource(Ogre::VertexElementSemantic semantic, Ogre::HardwareVertexBufferSharedPtr bufferToRegister)
+{
+	GraphicsResourcePointers resourceIndex;
+
+	switch (semantic)
+	{
+	case Ogre::VES_POSITION:
+		resourceIndex = Positions;
+		break;
+	case Ogre::VES_BLEND_WEIGHTS:
+		resourceIndex = BlendWeights;
+		break;
+	case Ogre::VES_BLEND_INDICES:
+		resourceIndex = BlendIndices;
+		break;
+	case Ogre::VES_NORMAL:
+		resourceIndex = Normals;
+		break;
+	case Ogre::VES_DIFFUSE:
+		resourceIndex = PrimaryColour;
+		break;
+	case Ogre::VES_SPECULAR:
+		resourceIndex = SecondaryColour;
+		break;
+	case Ogre::VES_TEXTURE_COORDINATES:
+		resourceIndex = UV0;
+		break;
+	case Ogre::VES_BINORMAL:
+		resourceIndex = Binormal;
+		break;
+	case Ogre::VES_TANGENT:
+		resourceIndex = Tangent;
+		break;
+	default:
+		resourceIndex = GraphicsResourcePointerCount;
+		break;
+	}
+
+	return RegisterBufferResource(resourceIndex, bufferToRegister);
+}
+
+GPUResourcePointers ParticleKernel::GetOpenGLPointers()
+{
+	using namespace physx;
+
+	GPUResourcePointers pointers;
+
+	if (gpuData->GetIsRegistered(Positions))
+		pointers.positions = (PxVec4*)gpuData->MapAndGetGPUDataPointer(Positions).devicePointer;
+	
+	if (gpuData->GetIsRegistered(Normals))
+		pointers.normals = (PxVec3*)gpuData->MapAndGetGPUDataPointer(Normals).devicePointer;
+	
+	if (gpuData->GetIsRegistered(BlendIndices))
+		pointers.blendIndices = (PxVec4*)gpuData->MapAndGetGPUDataPointer(BlendIndices).devicePointer;
+
+	if (gpuData->GetIsRegistered(BlendWeights))
+		pointers.blendWeights = (PxVec4*)gpuData->MapAndGetGPUDataPointer(BlendWeights).devicePointer;
+
+	if (gpuData->GetIsRegistered(PrimaryColour))
+		pointers.primaryColour = (PxVec4*)gpuData->MapAndGetGPUDataPointer(PrimaryColour).devicePointer;
+
+	if (gpuData->GetIsRegistered(SecondaryColour))
+		pointers.secondaryColour = (PxVec4*)gpuData->MapAndGetGPUDataPointer(SecondaryColour).devicePointer;
+
+	if (gpuData->GetIsRegistered(Binormal))
+		pointers.binormals = (PxVec3*)gpuData->MapAndGetGPUDataPointer(Binormal).devicePointer;
+
+	if (gpuData->GetIsRegistered(Tangent))
+		pointers.tangent = (PxVec3*)gpuData->MapAndGetGPUDataPointer(Tangent).devicePointer;
+
+	if (gpuData->GetIsRegistered(UV0))
+		pointers.uv0 = (PxVec4*)gpuData->MapAndGetGPUDataPointer(UV0).devicePointer;
+
+	return pointers;
+
 }
 
 bool ParticleKernel::LaunchKernel(physx::PxParticleReadData* particleData, float* lifetimes, float initialLifetime, const unsigned int maxParticles)
@@ -127,18 +221,19 @@ bool ParticleKernel::LaunchKernel(physx::PxParticleReadData* particleData, float
 
 	CUdeviceptr src_pos_data = reinterpret_cast<CUdeviceptr>(&particleData->positionBuffer[0]);
 
-	MappedGPUData dest_pos_data = gpuData->MapAndGetGPUDataPointer(GraphicsResourcePointers::Positions);
+	GPUResourcePointers openGLData = GetOpenGLPointers();
+	
 	MappedGPUData src_bit_data = gpuData->GetNonGraphicsResource(DevicePointers::ValidBitmap);
 	MappedGPUData src_lifetimes = gpuData->GetNonGraphicsResource(DevicePointers::Lifetimes);
 
 	MappedGPUData src_affector_data = gpuData->GetNonGraphicsResource(DevicePointers::AffectorParameterCollection);
 
-	//Ensure we have valid data
-	if(dest_pos_data.isValid)
+	//Ensure we have valid data...properly implement this eventually
+	if(src_lifetimes.isValid)
 	{
 		//Construct the parameters for the Kernel
 		void* args[7] = {
-			&dest_pos_data.devicePointer,
+			&openGLData,
 			&src_pos_data,
 			&src_bit_data.devicePointer,
 			&src_lifetimes,
@@ -158,8 +253,10 @@ bool ParticleKernel::LaunchKernel(physx::PxParticleReadData* particleData, float
 #endif
 		
 		//Unmap the graphics resource
-		gpuData->UnmapResourceFromCuda(GraphicsResourcePointers::Positions);
-		
+		/*gpuData->UnmapResourceFromCuda(GraphicsResourcePointers::Positions);
+		gpuData->UnmapResourceFromCuda(GraphicsResourcePointers::PrimaryColour);*/
+		gpuData->UnmapAllResourcesFromCuda();
+
 		UnmapAffectors();
 		return res == CUDA_SUCCESS;
 		
@@ -171,11 +268,12 @@ bool ParticleKernel::LaunchKernel(physx::PxParticleReadData* particleData, float
 
 void ParticleKernel::UnmapAffectors()
 {
-	if(colourFadeAffector)
-		colourFadeAffector->UnmapCudaBuffers();
+	//Use this method to allow affectors a chance for clean up after kernel execution
+	/*if(colourFadeAffector)
+	colourFadeAffector->UnmapCudaBuffers();
 
 	if(scaleParticleAffector)
-		scaleParticleAffector->UnmapCudaBuffers();
+	scaleParticleAffector->UnmapCudaBuffers();*/
 }
 
 GPUParamsCollection ParticleKernel::GetAffectorDevices()

@@ -1,6 +1,35 @@
 #pragma once
 #include "ParticleAffectorEnum.h"
 #include "foundation/PxVec4.h"
+#include "foundation/PxVec3.h"
+
+struct GPUResourcePointers
+{
+	physx::PxVec4* positions;
+	physx::PxVec4* blendWeights;
+	physx::PxVec4* blendIndices;
+	physx::PxVec4* primaryColour;
+	physx::PxVec4* secondaryColour;
+	physx::PxVec4* uv0;
+
+	physx::PxVec3* normals;
+	physx::PxVec3* binormals;
+	physx::PxVec3* tangent;
+
+	GPUResourcePointers()
+	{
+		positions = NULL;
+		blendWeights = NULL;
+		blendIndices = NULL;
+		primaryColour = NULL;
+		secondaryColour = NULL;
+		uv0 = NULL;
+
+		normals = NULL;
+		binormals = NULL;
+		tangent = NULL;
+	}
+};
 
 struct GPUParticleAffectorParams
 {
@@ -13,24 +42,22 @@ struct GPUScaleAffectorParams:public GPUParticleAffectorParams
 	float minScale;
 	float maxScale;
 	float scaleDiff;
-	physx::PxVec4* scales;
 
-	GPUScaleAffectorParams(bool _enlarge = true, float _minScale = 0.0f, float _maxScale = 0.0f, physx::PxVec4* _scales = 0)
-		: enlarge(_enlarge), minScale(_minScale), maxScale(_maxScale), scaleDiff(maxScale - minScale), scales(_scales)
+	GPUScaleAffectorParams(bool _enlarge = true, float _minScale = 0.0f, float _maxScale = 0.0f)
+		: enlarge(_enlarge), minScale(_minScale), maxScale(_maxScale), scaleDiff(maxScale - minScale)
 	{
 	}
 };
 
 struct GPUColourFaderAffectorParams: public GPUParticleAffectorParams
 {
-	physx::PxVec4* colours;//used to hold the CUDevicePtr after H to D copy or to hold the Ogre Array after buffer lock
 	physx::PxVec4 startColour;
 	physx::PxVec4 endColour;
 	physx::PxVec4 colourDifference;
 
 	GPUColourFaderAffectorParams(physx::PxVec4 _startColour = physx::PxVec4(0.0f), 
-		physx::PxVec4 _endColour = physx::PxVec4(1.0f), physx::PxVec4* _colours = 0)
-		: startColour(_startColour), endColour(_endColour), colours(_colours)
+		physx::PxVec4 _endColour = physx::PxVec4(1.0f))
+		: startColour(_startColour), endColour(_endColour)
 	{
 		colourDifference = _startColour - _endColour;
 		colourDifference.x = physx::PxAbs(colourDifference.x);

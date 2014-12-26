@@ -2,7 +2,7 @@
 
 uniform mat4 worldViewProj;
 
-in vec3 vertex;
+in vec4 vertex;
 in vec4 colour;
 
 uniform vec3 camPos;
@@ -19,5 +19,5 @@ void main() {
 	
 		
 	//gl_PointSize = pixels_per_radian * point_diameter / distance( camera, pointcenter ); 
-	gl_PointSize = pixelsPerRadian * blendIndices.x / distance( camPos, vertex ); 
+	gl_PointSize = pixelsPerRadian * vertex.w / distance( camPos, vertex.xyz ); 
 }

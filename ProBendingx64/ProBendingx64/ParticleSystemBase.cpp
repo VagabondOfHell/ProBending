@@ -36,8 +36,7 @@ ParticleKernelMap::ParticleKernelMap()
 
 ParticleSystemBase::ParticleSystemBase(AbstractParticleEmitter* _emitter, size_t _maximumParticles, 
 		float _initialLifetime, ParticleSystemParams& paramsStruct,	bool _ownEmitter)
-		: emitter(_emitter), ownEmitter(_ownEmitter), cudaContextManager(paramsStruct.cudaContext), initialLifetime(_initialLifetime),
-		nextVertexElement(0)
+		: emitter(_emitter), ownEmitter(_ownEmitter), cudaContextManager(paramsStruct.cudaContext), initialLifetime(_initialLifetime)
 {
 	// our vertices are just points
 	mRenderOp.operationType = Ogre::RenderOperation::OT_POINT_LIST;
@@ -78,7 +77,7 @@ ParticleSystemBase::ParticleSystemBase(AbstractParticleEmitter* _emitter, size_t
 
 	//Set the gravity flag
 	pxParticleSystem->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, !paramsStruct.useGravity);
-
+	
 	//Set parameters
 	pxParticleSystem->setGridSize(paramsStruct.gridSize);
 	pxParticleSystem->setMaxMotionDistance(paramsStruct.maxMotionDistance);
@@ -89,7 +88,7 @@ ParticleSystemBase::ParticleSystemBase(AbstractParticleEmitter* _emitter, size_t
 	pxParticleSystem->setDamping(paramsStruct.damping);
 	pxParticleSystem->setDynamicFriction(paramsStruct.dynamicFriction);
 	pxParticleSystem->setExternalAcceleration(paramsStruct.externalAcceleration);
-		
+	
 	//Allocate enough space for all the indices
 	availableIndices.reserve(maximumParticles);
 
@@ -98,6 +97,8 @@ ParticleSystemBase::ParticleSystemBase(AbstractParticleEmitter* _emitter, size_t
 	{
 		availableIndices.push_back(i);
 	}
+
+	hostAffector = false;
 }
 
 
@@ -147,50 +148,117 @@ void ParticleSystemBase::SetParticleReadFlags(physx::PxParticleReadDataFlags new
 	readableData = newFlags;
 }
 
+Ogre::HardwareVertexBufferSharedPtr ParticleSystemBase::CreateVertexBuffer(Ogre::VertexElementSemantic semantic, unsigned short uvSource)
+{
+	Ogre::HardwareVertexBufferSharedPtr returnVal = GetBuffer(semantic);
+	physx::PxVec4* lockedData;
+
+	//If it already exists, return it
+	if(!returnVal.isNull())
+		return returnVal;
+
+	bool success = false;
+
+	switch (semantic)
+	{
+	case Ogre::VES_POSITION:
+	case Ogre::VES_BLEND_WEIGHTS:
+	case Ogre::VES_BLEND_INDICES:
+	case Ogre::VES_DIFFUSE:
+	case Ogre::VES_SPECULAR:
+		//Bind to the underlying semantic value
+		mRenderOp.vertexData->vertexDeclaration->addElement(semantic, 0, Ogre::VET_FLOAT4, semantic);
+
+		returnVal = Ogre::HardwareBufferManager::getSingleton().createVertexBuffer(
+			Ogre::VertexElement::getTypeSize(Ogre::VET_FLOAT4),
+			maximumParticles,
+			Ogre::HardwareBuffer::HBU_DYNAMIC_WRITE_ONLY_DISCARDABLE,
+			false);
+
+		success = true;
+
+		lockedData = (physx::PxVec4*)returnVal->lock(Ogre::HardwareBuffer::HBL_WRITE_ONLY);
+		for (int i = 0; i < maximumParticles; i++)
+		{
+			lockedData[i].x = 0.0f;
+			lockedData[i].y = 0.0f;
+			lockedData[i].z = 0.0f;
+			lockedData[i].w = 1.0f;
+		}
+		returnVal->unlock();
+		break;
+	
+	case Ogre::VES_BINORMAL:
+	case Ogre::VES_TANGENT:
+	case Ogre::VES_NORMAL:
+		//Bind to the underlying semantic value
+		mRenderOp.vertexData->vertexDeclaration->addElement(semantic, 0, Ogre::VET_FLOAT3, semantic);
+
+		returnVal = Ogre::HardwareBufferManager::getSingleton().createVertexBuffer(
+			Ogre::VertexElement::getTypeSize(Ogre::VET_FLOAT3),
+			maximumParticles,
+			Ogre::HardwareBuffer::HBU_DYNAMIC_WRITE_ONLY_DISCARDABLE,
+			false);
+
+		success = true;
+		break;
+	
+	case Ogre::VES_TEXTURE_COORDINATES:
+		//Bind to the underlying semantic value
+		mRenderOp.vertexData->vertexDeclaration->addElement(semantic, 0, Ogre::VET_FLOAT4, semantic, uvSource);
+
+		returnVal = Ogre::HardwareBufferManager::getSingleton().createVertexBuffer(
+			Ogre::VertexElement::getTypeSize(Ogre::VET_FLOAT4),
+			maximumParticles,
+			Ogre::HardwareBuffer::HBU_DYNAMIC_WRITE_ONLY_DISCARDABLE,
+			false);
+
+		success = true;
+		break;
+	
+
+	default:
+		break;
+	}
+
+	if(success)
+	{
+		BufferMapInsertResult result = bufferMap.insert(BufferMap::value_type(semantic, returnVal));
+
+		if(result.second = true)
+		{
+			//Set the binding to the semantic value
+			mRenderOp.vertexData->vertexBufferBinding->setBinding(semantic, returnVal);
+			return returnVal;
+		}
+	}
+
+	return Ogre::HardwareVertexBufferSharedPtr(NULL);
+}
+
 void ParticleSystemBase::InitializeVertexBuffers()
 {
 	using namespace physx;
 
-	size_t currOffset = 0;
-
-	mRenderOp.vertexData->vertexDeclaration->addElement(nextVertexElement, currOffset, Ogre::VET_FLOAT3, Ogre::VES_POSITION);
-	currOffset += Ogre::VertexElement::getTypeSize(Ogre::VET_FLOAT3);
-	
 	// allocate the vertex buffer
-	mVertexBufferPosition = Ogre::HardwareBufferManager::getSingleton().createVertexBuffer(
-		Ogre::VertexElement::getTypeSize(Ogre::VET_FLOAT3),
-		maximumParticles,
-		Ogre::HardwareBuffer::HBU_DYNAMIC_WRITE_ONLY_DISCARDABLE,
-		false);
-
-	float* positions = new float[maximumParticles];//(float*)(mVertexBufferPosition->lock(Ogre::HardwareBuffer::LockOptions::HBL_NORMAL));
-
+	mVertexBufferPosition = CreateVertexBuffer(Ogre::VES_POSITION);
+	
+	float* positions = (float*)(mVertexBufferPosition->lock(Ogre::HardwareBuffer::LockOptions::HBL_NORMAL));
 	for (unsigned int i = 0; i < maximumParticles; i++)
 	{
-		positions[i] = std::numeric_limits<float>::quiet_NaN();// PxVec3(0);
+		positions[i] = std::numeric_limits<float>::quiet_NaN();
 	}
-	mVertexBufferPosition->writeData(0, sizeof(float) * maximumParticles, positions, true);
-	//mVertexBufferPosition->unlock();
-	delete[] positions;
+	mVertexBufferPosition->unlock();
 
-	// bind positions to location 0
-	mRenderOp.vertexData->vertexBufferBinding->setBinding(nextVertexElement, mVertexBufferPosition);
-
-	++nextVertexElement;
 	//Set the vertex count to the maximum allowed particles in case we are running on the CPU
 	//Otherwise GPU update will override
+	//Eventually change this so CPU only tries to draw the number of valid particles, similar to GPU
 	mRenderOp.vertexData->vertexCount = maximumParticles;
 }
 
 void ParticleSystemBase::Initialize(physx::PxScene* scene)
 {
 	lifetimes = new float[maximumParticles];
-
-	//loop through, indicate available indices, and initialize all lifetimes to 0
-	for (int i = maximumParticles - 1; i >= 0; --i)
-	{
-		lifetimes[i] = 0.0f;
-	}
 	
 	//Reserve 5% of the max particles for removal
 	indicesToRemove.reserve(maximumParticles * 0.05f);
@@ -199,13 +267,6 @@ void ParticleSystemBase::Initialize(physx::PxScene* scene)
 	InitializeParticleSystemData();
 
 	InitializeVertexBuffers();
-
-	//If we have GPU info, allow the policy to initialize its GPU data
-	if(onGPU && cudaContextManager != NULL)
-		onGPU = AssignAffectorKernel(FindBestKernel());
-
-	//Find a shader for the combination of all current affectors
-	setMaterial(FindBestShader());
 
 	//Add it to the scene
 	scene->addActor(*pxParticleSystem);
@@ -290,6 +351,59 @@ void ParticleSystemBase::Update(float time)
 	}
 }
 
+GPUResourcePointers ParticleSystemBase::LockBuffersCPU()
+{
+	GPUResourcePointers pointers;
+
+	for (BufferMap::iterator start = bufferMap.begin(); start != bufferMap.end(); ++start)
+	{
+		switch (start->first)
+		{
+		case Ogre::VES_POSITION:
+			pointers.positions = (physx::PxVec4*)start->second->lock(Ogre::HardwareBuffer::HBL_WRITE_ONLY);
+			break;
+		case Ogre::VES_BLEND_WEIGHTS:
+			pointers.blendWeights = (physx::PxVec4*)start->second->lock(Ogre::HardwareBuffer::HBL_WRITE_ONLY);
+			break;
+		case Ogre::VES_BLEND_INDICES:
+			pointers.blendIndices = (physx::PxVec4*)start->second->lock(Ogre::HardwareBuffer::HBL_WRITE_ONLY);
+			break;
+		case Ogre::VES_DIFFUSE:
+			pointers.primaryColour = (physx::PxVec4*)start->second->lock(Ogre::HardwareBuffer::HBL_WRITE_ONLY);
+			break;
+		case Ogre::VES_SPECULAR:
+			pointers.secondaryColour = (physx::PxVec4*)start->second->lock(Ogre::HardwareBuffer::HBL_WRITE_ONLY);
+			break;
+		case Ogre::VES_TEXTURE_COORDINATES:
+			pointers.uv0 = (physx::PxVec4*)start->second->lock(Ogre::HardwareBuffer::HBL_WRITE_ONLY);
+			break;
+
+		case Ogre::VES_BINORMAL:
+			pointers.binormals = (physx::PxVec3*)start->second->lock(Ogre::HardwareBuffer::HBL_WRITE_ONLY);
+			break;
+		case Ogre::VES_TANGENT:
+			pointers.tangent = (physx::PxVec3*)start->second->lock(Ogre::HardwareBuffer::HBL_WRITE_ONLY);
+			break;
+		case Ogre::VES_NORMAL:
+			pointers.normals = (physx::PxVec3*)start->second->lock(Ogre::HardwareBuffer::HBL_WRITE_ONLY);
+			break;
+
+		default:
+			break;
+		}
+	}
+
+	return pointers;
+}
+
+void ParticleSystemBase::UnlockBuffersCPU()
+{
+	for (BufferMap::iterator start = bufferMap.begin(); start != bufferMap.end(); ++start)
+	{
+		start->second->unlock();
+	}
+}
+
 void ParticleSystemBase::UpdateParticleSystemCPU(const float time, const physx::PxParticleReadData* const readData)
 {
 	using namespace physx;
@@ -297,14 +411,21 @@ void ParticleSystemBase::UpdateParticleSystemCPU(const float time, const physx::
 	//Check if there is any updating to do
 	if (readData->validParticleRange > 0)
 	{
-		PxVec3* positions = NULL;
-
+		GPUResourcePointers lockedBufferData;
 		int numParticles(0);
 
-		//Lock Ogre GL Buffers if not using CUDA so we can update them
-		if(!onGPU)
-				positions = static_cast<PxVec3*>(mVertexBufferPosition->lock(Ogre::HardwareBuffer::LockOptions::HBL_WRITE_ONLY));
+		if(hostAffector)
+		{
+			lockedBufferData = LockBuffersCPU();
 
+			//Lock Ogre GL Buffers if not using CUDA so we can update them
+			for (AffectorMap::iterator start = affectorMap.begin(); start != affectorMap.end(); ++start)
+			{
+				//Apply affectors if on CPU
+				start->second->PreUpdate();
+			}
+		}
+		
 		for (PxU32 w = 0; w <= (readData->validParticleRange-1) >> 5; w++)
 		{
 			//For each bit of the bitmap
@@ -322,7 +443,8 @@ void ParticleSystemBase::UpdateParticleSystemCPU(const float time, const physx::
 					lifetimes[index] = 0;//set lifetime to 0
 				
 					if(!onGPU)
-						positions[index] = PxVec3(100);//std::numeric_limits<float>::quiet_NaN());
+						//Reset position. Not concerned of W component here because its a dead particle anyways
+						lockedBufferData.positions[index] = PxVec4(std::numeric_limits<float>::quiet_NaN());
 
 					continue;
 				}
@@ -335,16 +457,21 @@ void ParticleSystemBase::UpdateParticleSystemCPU(const float time, const physx::
 					{
 						// copy particle positions over
 						const PxVec3& position = readData->positionBuffer[index];
-						positions[index] = position;
+						lockedBufferData.positions[index].x = position.x;
+						lockedBufferData.positions[index].y = position.y;
+						lockedBufferData.positions[index].z = position.z;
 					}
 					
-					float percentile = lifetimes[index] / initialLifetime;
-					for (AffectorMapIterator start = affectorMap.begin(); start != affectorMap.end(); ++start)
+					if(hostAffector)
 					{
-						//Apply affectors if on CPU
-						start->second->Update(time, percentile, index);
+						float percentile = lifetimes[index] / initialLifetime;
+						for (AffectorMap::iterator start = affectorMap.begin(); start != affectorMap.end(); ++start)
+						{
+							//Apply affectors if on CPU
+							start->second->Update(time, lockedBufferData, percentile, index);								
+						}
 					}
-
+					
 					//Allow children to update their own particle data
 					UpdateParticle(index, readData);
 				}
@@ -352,19 +479,19 @@ void ParticleSystemBase::UpdateParticleSystemCPU(const float time, const physx::
 		}//end of particle range for loop
 
 		//If this system is on the CPU, unlock the vertex buffer
-		if(!onGPU)
+		if(hostAffector)
 		{
-				mVertexBufferPosition->unlock();
+			UnlockBuffersCPU();
+			for (AffectorMap::iterator start = affectorMap.begin(); start != affectorMap.end(); ++start)
+			{
+				//Apply affectors if on CPU
+				start->second->PostUpdate();								
+			}
 		}
-		else
+		
+		if(onGPU)
 		{
 			mRenderOp.vertexData->vertexCount = numParticles;
-		}
-
-		for (AffectorMapIterator start = affectorMap.begin(); start != affectorMap.end(); ++start)
-		{
-			//Apply affectors if on CPU
-			start->second->UnlockBuffers();
 		}
 
 	}//end if valid range > 0
@@ -390,7 +517,7 @@ void ParticleSystemBase::ParticlesCreated(const unsigned int createdCount, physx
 bool ParticleSystemBase::AddAffector(ParticleAffector* affectorToAdd)
 {
 	//Try to insert and return results (if it exists, it will return false, so no need to perform a find first)
-	AffectorMapInsertResult result = affectorMap.insert(AffectorMapValue(affectorToAdd->GetAffectorType(), affectorToAdd));//Try to insert
+	AffectorMapInsertResult result = affectorMap.insert(AffectorMap::value_type(affectorToAdd->GetAffectorType(), affectorToAdd));//Try to insert
 
 	//if successful
 	if(result.second)
@@ -399,10 +526,13 @@ bool ParticleSystemBase::AddAffector(ParticleAffector* affectorToAdd)
 		allTypesCombination |= result.first->first;
 		//if system and affector on GPU, update GPU flag
 		if(onGPU && affectorToAdd->GetOnGPU())
+		{
 			gpuTypeCombination |= result.first->first;
+		}
+		else
+			hostAffector = true;
 
-		affectorToAdd->Initialize(cudaContextManager, mRenderOp.vertexData, maximumParticles, nextVertexElement);
-		++nextVertexElement;
+		affectorToAdd->Initialize(this);
 	}
 	return result.second;
 }
@@ -422,7 +552,7 @@ bool ParticleSystemBase::RemoveAffector(ParticleAffectorType::ParticleAffectorTy
 
 ParticleAffector* ParticleSystemBase::RemoveAndGetAffector(ParticleAffectorType::ParticleAffectorType typeToRemove)
 {
-	AffectorMapIterator result = affectorMap.find(typeToRemove);
+	AffectorMap::iterator result = affectorMap.find(typeToRemove);
 
 	if(result != affectorMap.end())
 	{
@@ -433,10 +563,24 @@ ParticleAffector* ParticleSystemBase::RemoveAndGetAffector(ParticleAffectorType:
 		if(onGPU && result->second->GetOnGPU())
 			gpuTypeCombination &= result->first;
 
-		unsigned int source = result->second->GetBindingIndex();
+		Ogre::VertexElementSemantic semantic = result->second->GetDesiredBuffer();
+		bool anotherFound = false;
 
-		mRenderOp.vertexData->vertexBufferBinding->unsetBinding(source);
-		mRenderOp.vertexData->vertexDeclaration->removeElement(source);
+		//Check if any other affectors use the buffer the removed affector did
+		for (AffectorMap::iterator start = affectorMap.begin();start != affectorMap.end();++start)
+		{
+			if(start->second->GetDesiredBuffer() == semantic)
+			{
+				anotherFound = true;
+				break;
+			}
+		}
+
+		if(!anotherFound)//If no other affector is using the buffer, destroy it
+		{
+			mRenderOp.vertexData->vertexBufferBinding->unsetBinding(semantic);
+			mRenderOp.vertexData->vertexDeclaration->removeElement(semantic);
+		}
 
 		affectorMap.erase(result);//remove from map if found
 
@@ -448,21 +592,23 @@ ParticleAffector* ParticleSystemBase::RemoveAndGetAffector(ParticleAffectorType:
 
 bool ParticleSystemBase::AssignAffectorKernel(ParticleKernel* newKernel)
 {
-	if(cudaKernel)
+	if(onGPU)
 	{
-		delete cudaKernel;
-		cudaKernel = NULL;
-	}
-
-	cudaKernel = newKernel;
-
-	if(cudaKernel)
-	{
-		//Fill the kernel with the necessary data
-		if(cudaKernel->PopulateData(cudaContextManager, 
-			mVertexBufferPosition, maximumParticles, &affectorMap) == ParticleKernel::SUCCESS)
+		if(cudaKernel)
 		{
-			return true;
+			delete cudaKernel;
+			cudaKernel = NULL;
+		}
+
+		cudaKernel = newKernel;
+
+		if(cudaKernel)
+		{
+			//Fill the kernel with the necessary data
+			if(cudaKernel->PopulateData(this, &affectorMap) == ParticleKernel::SUCCESS)
+			{
+				return true;
+			}
 		}
 	}
 
@@ -523,4 +669,14 @@ ParticleKernel* ParticleSystemBase::FindBestKernel(ParticleAffectorType::Particl
 		return iter->second->Clone();
 
 	return NULL;
+}
+
+Ogre::HardwareVertexBufferSharedPtr ParticleSystemBase::GetBuffer(Ogre::VertexElementSemantic semantic)
+{
+	BufferMap::iterator iter = bufferMap.find(semantic);
+
+	if(iter != bufferMap.end())
+		return iter->second;
+	else
+		return Ogre::HardwareVertexBufferSharedPtr(NULL);
 }

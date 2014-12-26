@@ -1,6 +1,7 @@
 #pragma once
 #include "ParticleAffectorEnum.h"
 #include "AffectorParameters.h"
+#include "OgreHardwareVertexBuffer.h"
 #include <map>
 
 //forward declare
@@ -10,13 +11,10 @@ class ParticleAffector;
 class ScaleParticleAffector;
 class ColourFadeParticleAffector;
 
+class ParticleSystemBase;
+
 class CudaGPUData;
 struct MappedGPUData;
-
-namespace Ogre
-{
-	class HardwareVertexBufferSharedPtr;
-};
 
 namespace physx
 {
@@ -28,14 +26,15 @@ class ParticleKernel
 {
 public:
 	enum ParticleKernelError{SUCCESS, MODULE_NOT_FOUND, FUNCTION_NOT_FOUND, ALLOCATION_ERROR, REQUIRED_AFFECTORS_NOT_FOUND};
+	enum GraphicsResourcePointers{Positions, Normals, BlendIndices, BlendWeights, PrimaryColour, SecondaryColour,
+		UV0, UV1, UV2, UV3, UV4, UV5, Binormal, Tangent, GraphicsResourcePointerCount};
 
 protected:
 	static const std::string KernelFilePath;
 	static const std::string KernelFunctionName;
 
 	enum DevicePointers{ValidBitmap, Lifetimes, AffectorParameterCollection, DevicePointerCount};
-	enum GraphicsResourcePointers{Positions, GraphicsResourcePointerCount};
-	
+		
 	CUfunction kernelFunction;//the function to run
 
 	CudaGPUData* gpuData;//the cuda gpu data
@@ -48,10 +47,13 @@ protected:
 	ColourFadeParticleAffector* colourFadeAffector;
 	MappedGPUData* colourMappedData;
 
-	virtual ParticleKernelError InitializeGPUData(physx::PxCudaContextManager* contextManager, 
-		Ogre::HardwareVertexBufferSharedPtr positionBuffer, const unsigned int maxParticles);
+	virtual void PrepareAffectorData(ParticleSystemBase* particleSystem, AffectorMap::iterator affector);
 
 	virtual GPUParamsCollection GetAffectorDevices();
+
+	///<summary></summary>
+	///<returns></returns>
+	virtual GPUResourcePointers GetOpenGLPointers();
 
 	virtual void UnmapAffectors();
 
@@ -61,6 +63,10 @@ public:
 	ParticleKernel(void);
 	virtual ~ParticleKernel(void);
 
+	virtual bool RegisterBufferResource(Ogre::VertexElementSemantic semantic, Ogre::HardwareVertexBufferSharedPtr bufferToRegister);
+
+	virtual bool RegisterBufferResource(GraphicsResourcePointers resourceIndex, Ogre::HardwareVertexBufferSharedPtr bufferToRegister);
+
 	///<summary>Populates the kernel with the necessary affector data. Should only be called once upon
 	///kernel creation. Also initializes additional data</summary>
 	///<param name="contextManager">The physx Cuda context manager</param>
@@ -69,8 +75,7 @@ public:
 	///<param name="affectors">Pointer to the affectors that represent the data that the kernel should use.
 	///Only uses affectors that are indicated to run on the GPU. Does not claim ownership of memory</param>
 	///<returns>Kernel Error enum value. If this isn't successful, chances are that launch kernel will fail</returns>
-	virtual ParticleKernelError PopulateData(physx::PxCudaContextManager* contextManager, 
-		Ogre::HardwareVertexBufferSharedPtr positionBuffer, const unsigned int maxParticles, AffectorMap* affectors);
+	virtual ParticleKernelError PopulateData(ParticleSystemBase* particleSystem, AffectorMap* affectors);
 
 	///<summary>Launches the CUDA kernel represented by this class</summary>
 	///<param name="particleData">The particle data as provided by Physx</param>

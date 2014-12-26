@@ -3,6 +3,7 @@
 #include "particles\PxParticleSystem.h"
 #include "pxtask\PxCudaContextManager.h"
 #include "ParticleAffectorEnum.h"
+#include "AffectorParameters.h"
 #include <vector>
 #include <map>
 
@@ -58,6 +59,7 @@ struct ParticleSystemParams
 	}
 };
 
+//Static container for particle material list. Populates itself on construction
 struct ParticleMaterialMap
 {
 	typedef std::map<ParticleAffectorType::ParticleAffectorFlag, std::string> MaterialMap;
@@ -67,6 +69,7 @@ struct ParticleMaterialMap
 	ParticleMaterialMap();
 };
 
+//Static container for particle kernel list. Populates itself on construction
 struct ParticleKernelMap
 {
 	typedef std::map<ParticleAffectorType::ParticleAffectorFlag, std::shared_ptr<ParticleKernel>> KernelMap;
@@ -102,21 +105,25 @@ protected:
 	ParticleAffectorType::ParticleAffectorFlag gpuTypeCombination; //Flag of affectors on GPU
 	ParticleAffectorType::ParticleAffectorFlag allTypesCombination; //Flag of all affectors
 
-	unsigned int nextVertexElement;//The next vertex element source
-
 	///<summary>Sets the read data flags as specified by the newFlags argument</summary>
 	///<param name="newFlags">The new read data flags to use</param>
 	void SetParticleReadFlags(physx::PxParticleReadDataFlags newFlags);
 
 	typedef std::map<ParticleAffectorType::ParticleAffectorType, ParticleAffector*> AffectorMap;
-	typedef AffectorMap::iterator AffectorMapIterator;
-	typedef AffectorMap::value_type AffectorMapValue;
-	typedef std::pair<AffectorMapIterator, bool> AffectorMapInsertResult;
+	typedef std::pair<AffectorMap::iterator, bool> AffectorMapInsertResult;
 
 	AffectorMap affectorMap;//list of affectors organized by type
 
+	//Map of buffers organized by semantic, holding the buffer reference
+	typedef std::map<Ogre::VertexElementSemantic, Ogre::HardwareVertexBufferSharedPtr> BufferMap;
+	typedef std::pair<BufferMap::iterator, bool> BufferMapInsertResult;
+
+	BufferMap bufferMap;//list of buffers organized by semantic 
+
 	float initialLifetime;//Starting lifetime for particles
 	float* lifetimes;//array of lietimes for particles
+
+	bool hostAffector; //True if there is an affector on the CPU
 
 #pragma region Virtual Methods for Inherited System Customization
 
@@ -130,6 +137,10 @@ protected:
 	///<param name="createdCount>The amount of particles that were created</param>
 	///<param name="emittedIndices>The indices that were used this creation frame</param>
 	virtual void ParticlesCreated(const unsigned int createdCount, physx::PxStrideIterator<const physx::PxU32> emittedIndices);
+
+	virtual GPUResourcePointers LockBuffersCPU();
+
+	virtual void UnlockBuffersCPU();
 
 	///<summary>Called before updating to allow children to lock extra buffers, or other pre-update actions</summary>
 	virtual void PreUpdateCPU(){}
@@ -183,6 +194,17 @@ public:
 	///<returns>The physx Particle system</returns>
 	inline physx::PxParticleSystem* const GetPhysXParticleSystem()const{return pxParticleSystem;}
 
+	///<summary>Gets the cuda manager associated with this particle system</summary>
+	///<returns>The cuda context manager, or NULL if none set</returns>
+	inline physx::PxCudaContextManager* const GetPhysXCudaManager()const{return cudaContextManager;}
+
+	///<summary>Creates a vertex buffer for this system</summary>
+	///<param name="semantic">The semantic to create</param>
+	///<param name="uvSource">The uv index</param>
+	///<returns>The hardware vertex buffer that already exists, or the newly created one</returns>
+	virtual Ogre::HardwareVertexBufferSharedPtr CreateVertexBuffer
+		(Ogre::VertexElementSemantic semantic, unsigned short uvSource = 0);
+
 	///<summary>Initializes particle system and attaches to the specified scene</summary>
 	///<param name="scene">The physX scene to add the particle system to</param>
 	void Initialize(physx::PxScene* scene);
@@ -229,6 +251,10 @@ public:
 	///<param name="combination">The combination of Affector Types</param>
 	///<returns>The found Kernel, or NULL if none were found</returns>
 	static ParticleKernel* FindBestKernel(ParticleAffectorType::ParticleAffectorFlag combination);
+
+	///<summary>Gets the buffer associated with the specified semantic</summary>
+	///<returns>The shared pointer to the specified vertex buffer</returns>
+	virtual Ogre::HardwareVertexBufferSharedPtr GetBuffer(Ogre::VertexElementSemantic semantic);
 
 	virtual Ogre::Real getBoundingRadius(void) const
 	{
