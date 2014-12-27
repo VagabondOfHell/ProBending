@@ -96,14 +96,13 @@ void ParticleKernel::PrepareAffectorData(ParticleSystemBase* particleSystem, Aff
 		colourMappedData = new MappedGPUData();
 		allocationResult = CudaGPUData::AllocateGPUMemory(*colourMappedData, sizeof(GPUColourFaderAffectorParams));
 		if(allocationResult == CUDA_SUCCESS)//if memory allocated successfully, add this affector
-			colourFadeAffector = static_cast<ColourFadeParticleAffector*>(affector->second);
+			colourFadeAffector = std::dynamic_pointer_cast<ColourFadeParticleAffector>(affector->second);
 		break;
-
 	case ParticleAffectorType::Scale:
 		scaleMappedData = new MappedGPUData();
 		allocationResult = CudaGPUData::AllocateGPUMemory(*scaleMappedData, sizeof(GPUScaleAffectorParams));
 		if(allocationResult == CUDA_SUCCESS)//if memory allocated successfully, add this affector
-			scaleParticleAffector = static_cast<ScaleParticleAffector*>(affector->second);
+			scaleParticleAffector = std::dynamic_pointer_cast<ScaleParticleAffector>(affector->second);
 		break;
 
 	default:

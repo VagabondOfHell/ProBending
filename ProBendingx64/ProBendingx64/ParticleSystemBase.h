@@ -22,11 +22,11 @@ struct ParticleSystemParams
 	physx::PxReal damping;
 	physx::PxReal dynamicFriction;
 	physx::PxVec3 externalAcceleration;
-	bool perParticleRestOffset;
 	physx::PxReal restOffset;
 	bool useGravity;
 	physx::PxParticleBaseFlags baseFlags;
 	physx::PxCudaContextManager* cudaContext;
+	physx::PxFilterData filterData;
 
 	///<summary>Constructor used to set all values</summary>
 	///<param name="_gridSize">The size of the grid between 0 and 1000</param>
@@ -36,25 +36,25 @@ struct ParticleSystemParams
 	///<param name="_particleMass">The mass of each particle</param>
 	///<param name="_useGravity">True to have particles affected by gravity, false if not</param>
 	///<param name="_baseFlags">The flags to configure the system</param>
-	///<param name="_perParticleRestOffset">True to enable, false if not</param>
 	///<param name="_restOffset">The rest offset of the particles, if enabled </param>
 	///<param name="_staticFriction">The friction used for collisions. Must be non-negative</param>
 	///<param name="_dynamicFriction">The dynamic friction to use. Must be non-negative</param>
 	///<param name="_restitution">The bounciness of the collision, between 0.0f and 1.0f</param>
 	///<param name="_contactOffset">The distance that contacts are generated between particle and geometry</param>
 	///<param name="_damping">Damping for particles. Must be non-negative</param>
+	///<param name="_filterData">Any filter data to be used during the simulation</param>
 	ParticleSystemParams(physx::PxReal _gridSize = 1.0f, physx::PxReal _maxMotionDistance = 2.0f,
 		physx::PxCudaContextManager* _cudaContext = NULL, physx::PxVec3 _externalAcceleration = physx::PxVec3(0.0f), 
-		physx::PxReal _particleMass = 1.0f, bool _useGravity = true, 
-		physx::PxParticleBaseFlags _baseFlags = physx::PxParticleBaseFlag::eENABLED, bool _perParticleRestOffset = false,		
-		physx::PxReal _restOffset = 1.0f, physx::PxReal _staticFriction = 0.0f, physx::PxReal _dynamicFriction = 0.0f,
-		physx::PxReal _restitution = 1.0f, physx::PxReal _contactOffset = 0.0f, physx::PxReal _damping = 0.0f)
+		physx::PxReal _particleMass = 1.0f, bool _useGravity = true, physx::PxParticleBaseFlags _baseFlags = 
+		physx::PxParticleBaseFlag::eENABLED, physx::PxReal _restOffset = 1.0f, physx::PxReal _staticFriction = 0.0f, 
+		physx::PxReal _dynamicFriction = 0.0f, physx::PxReal _restitution = 1.0f, physx::PxReal _contactOffset = 0.0f, 
+		physx::PxReal _damping = 0.0f, physx::PxFilterData _filterData = physx::PxFilterData())
 		
 		:gridSize(_gridSize), maxMotionDistance(_maxMotionDistance), cudaContext(_cudaContext),
 		externalAcceleration(_externalAcceleration), 
-		useGravity(_useGravity), particleMass(_particleMass), baseFlags(_baseFlags), perParticleRestOffset(_perParticleRestOffset), 
-		restOffset(_restOffset), staticFriction(_staticFriction), dynamicFriction(_dynamicFriction), 
-		restitution(_restitution), contactOffset(_contactOffset), damping(_damping) 
+		useGravity(_useGravity), particleMass(_particleMass), baseFlags(_baseFlags), restOffset(_restOffset), 
+		staticFriction(_staticFriction), dynamicFriction(_dynamicFriction), 
+		restitution(_restitution), contactOffset(_contactOffset), damping(_damping), filterData(_filterData)
 	{
 	}
 };
@@ -85,7 +85,7 @@ protected:
 	static ParticleMaterialMap materialsMap;//Shared instance of a list of shaders
 	static ParticleKernelMap kernelsMap;//Shared instance of a list of kernels
 
-	AbstractParticleEmitter* emitter;//The emitter used to create particles
+	std::shared_ptr<AbstractParticleEmitter> emitter;//The emitter used to create particles
 
 	std::vector<physx::PxU32> availableIndices; //The available indices within the particle system
 	
@@ -109,7 +109,11 @@ protected:
 	///<param name="newFlags">The new read data flags to use</param>
 	void SetParticleReadFlags(physx::PxParticleReadDataFlags newFlags);
 
-	typedef std::map<ParticleAffectorType::ParticleAffectorType, ParticleAffector*> AffectorMap;
+	///<summary>Sets the base flags as specified by the newFlags argument. Does not handle the GPU flag</summary>
+	///<param name="newFlags">The new base flags to use</param>
+	void SetParticleBaseFlags(physx::PxParticleBaseFlags newFlags);
+
+	typedef std::map<ParticleAffectorType::ParticleAffectorType, std::shared_ptr<ParticleAffector>> AffectorMap;
 	typedef std::pair<AffectorMap::iterator, bool> AffectorMapInsertResult;
 
 	AffectorMap affectorMap;//list of affectors organized by type
@@ -175,10 +179,8 @@ protected:
 #pragma endregion
 
 public:
-	bool ownEmitter;
-
-	ParticleSystemBase(AbstractParticleEmitter* _emitter, size_t _maximumParticles, float _initialLifetime,
-		ParticleSystemParams& paramsStruct = ParticleSystemParams(), bool _ownEmitter = true);
+	ParticleSystemBase(std::shared_ptr<AbstractParticleEmitter> _emitter, size_t _maximumParticles, float _initialLifetime,
+		ParticleSystemParams& paramsStruct = ParticleSystemParams());
 
 	virtual ~ParticleSystemBase(void);
 
@@ -188,7 +190,7 @@ public:
 
 	///<summary>Gets the emitter used by the particle system</summary>
 	///<returns>Pointer to the abstract particle emitter</returns>
-	inline AbstractParticleEmitter* const GetEmitter()const{return emitter;}
+	inline std::shared_ptr<AbstractParticleEmitter> const GetEmitter()const{return emitter;}
 
 	///<summary>Gets the PhysX Particle System that this class wraps</summary>
 	///<returns>The physx Particle system</returns>
@@ -216,7 +218,7 @@ public:
 	///<summary>Adds an affector to the particle system. The system claims ownership of the pointer</summary>
 	///<param name="affectorToAdd">The affector to add</param>
 	///<returns>True if added, false if an identical type exists (uses Affector.GetType())</returns>
-	virtual bool AddAffector(ParticleAffector* affectorToAdd);
+	virtual bool AddAffector(std::shared_ptr<ParticleAffector> affectorToAdd);
 
 	///<summary>Remove and deletes the affector of the specified type</summary>
 	///<param name="typeToRemove">The type of affector to remove</param>
@@ -228,7 +230,7 @@ public:
 	///own affectors that are added to them</summary>
 	///<param name="typeToRemove">The type of affector to remove</param>
 	///<returns>The found affector, or NULL if none exist by that type in the list</returns>
-	virtual ParticleAffector* RemoveAndGetAffector(ParticleAffectorType::ParticleAffectorType typeToRemove);
+	virtual std::shared_ptr<ParticleAffector> RemoveAndGetAffector(ParticleAffectorType::ParticleAffectorType typeToRemove);
 
 	///<summary>Sets the kernel to the specified one</summary>
 	///<param name="newKernel">The new kernel to use</param>

@@ -39,12 +39,12 @@ protected:
 
 	CudaGPUData* gpuData;//the cuda gpu data
 
-	typedef std::map<ParticleAffectorType::ParticleAffectorType, ParticleAffector*> AffectorMap;
+	typedef std::map<ParticleAffectorType::ParticleAffectorType, std::shared_ptr<ParticleAffector>> AffectorMap;
 
-	ScaleParticleAffector* scaleParticleAffector;
+	std::shared_ptr<ScaleParticleAffector> scaleParticleAffector;
 	MappedGPUData* scaleMappedData;
 
-	ColourFadeParticleAffector* colourFadeAffector;
+	std::shared_ptr<ColourFadeParticleAffector> colourFadeAffector;
 	MappedGPUData* colourMappedData;
 
 	virtual void PrepareAffectorData(ParticleSystemBase* particleSystem, AffectorMap::iterator affector);

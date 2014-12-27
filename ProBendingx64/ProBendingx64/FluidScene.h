@@ -2,6 +2,7 @@
 #include "IScene.h"
 #include "GameObject.h"
 #include "InputObserver.h"
+#include <memory>
 
 class ParticlePointEmitter;
 class ParticleSystemBase;
@@ -24,7 +25,7 @@ private:
 	ParticleComponent* particleComponent;
 	ParticleComponent* particleComponent2;
 
-	ParticlePointEmitter* particlePointEmitter;
+	std::shared_ptr<ParticlePointEmitter> particlePointEmitter;
 
 	Projectile* projectile;
 

@@ -34,9 +34,9 @@ ParticleKernelMap::ParticleKernelMap()
 }
 
 
-ParticleSystemBase::ParticleSystemBase(AbstractParticleEmitter* _emitter, size_t _maximumParticles, 
-		float _initialLifetime, ParticleSystemParams& paramsStruct,	bool _ownEmitter)
-		: emitter(_emitter), ownEmitter(_ownEmitter), cudaContextManager(paramsStruct.cudaContext), initialLifetime(_initialLifetime)
+ParticleSystemBase::ParticleSystemBase(std::shared_ptr<AbstractParticleEmitter> _emitter, size_t _maximumParticles, 
+		float _initialLifetime, ParticleSystemParams& paramsStruct)
+		: emitter(_emitter), cudaContextManager(paramsStruct.cudaContext), initialLifetime(_initialLifetime)
 {
 	// our vertices are just points
 	mRenderOp.operationType = Ogre::RenderOperation::OT_POINT_LIST;
@@ -59,13 +59,13 @@ ParticleSystemBase::ParticleSystemBase(AbstractParticleEmitter* _emitter, size_t
 		onGPU = false;
 	else
 		onGPU = true;
-		
-	//Create the particle system on PhysX's end
-	pxParticleSystem = PxGetPhysics().createParticleSystem(maximumParticles, paramsStruct.perParticleRestOffset);
+	
+	//Create the particle system on PhysX's end. Ignores per particle rest offset arguments here because set base flags handles it
+	pxParticleSystem = PxGetPhysics().createParticleSystem(maximumParticles);
 		
 	//place the system on the GPU if it should be
 	pxParticleSystem->setParticleBaseFlag(physx::PxParticleBaseFlag::eGPU, onGPU);
-		
+	
 	//Check that PhysX didn't overwrite our GPU selection. If they did, reset our information
 	if(!(pxParticleSystem->getParticleBaseFlags() & physx::PxParticleBaseFlag::eGPU))
 	{
@@ -74,6 +74,8 @@ ParticleSystemBase::ParticleSystemBase(AbstractParticleEmitter* _emitter, size_t
 	}
 
 	cudaKernel = NULL;
+
+	SetParticleBaseFlags(paramsStruct.baseFlags);
 
 	//Set the gravity flag
 	pxParticleSystem->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, !paramsStruct.useGravity);
@@ -88,6 +90,8 @@ ParticleSystemBase::ParticleSystemBase(AbstractParticleEmitter* _emitter, size_t
 	pxParticleSystem->setDamping(paramsStruct.damping);
 	pxParticleSystem->setDynamicFriction(paramsStruct.dynamicFriction);
 	pxParticleSystem->setExternalAcceleration(paramsStruct.externalAcceleration);
+	pxParticleSystem->setRestOffset(paramsStruct.restOffset);
+	pxParticleSystem->setSimulationFilterData(paramsStruct.filterData);
 	
 	//Allocate enough space for all the indices
 	availableIndices.reserve(maximumParticles);
@@ -112,10 +116,6 @@ ParticleSystemBase::~ParticleSystemBase(void)
 		delete[] lifetimes;
 		lifetimes = NULL;
 	}
-
-	if(ownEmitter)
-		if(emitter)
-			delete emitter;
 }
 
 void ParticleSystemBase::SetParticleReadFlags(physx::PxParticleReadDataFlags newFlags)
@@ -146,6 +146,27 @@ void ParticleSystemBase::SetParticleReadFlags(physx::PxParticleReadDataFlags new
 
 	//Set the flags to the current data
 	readableData = newFlags;
+}
+
+void ParticleSystemBase::SetParticleBaseFlags(physx::PxParticleBaseFlags newFlags)
+{
+	pxParticleSystem->setParticleBaseFlag(physx::PxParticleBaseFlag::eCOLLISION_TWOWAY, 
+		newFlags & PxParticleBaseFlag::eCOLLISION_TWOWAY);
+
+	pxParticleSystem->setParticleBaseFlag(physx::PxParticleBaseFlag::eCOLLISION_WITH_DYNAMIC_ACTORS, 
+		newFlags & PxParticleBaseFlag::eCOLLISION_WITH_DYNAMIC_ACTORS);
+
+	pxParticleSystem->setParticleBaseFlag(physx::PxParticleBaseFlag::eENABLED, 
+		newFlags & PxParticleBaseFlag::eENABLED);
+
+	pxParticleSystem->setParticleBaseFlag(physx::PxParticleBaseFlag::ePER_PARTICLE_COLLISION_CACHE_HINT, 
+		newFlags & PxParticleBaseFlag::ePER_PARTICLE_COLLISION_CACHE_HINT);
+
+	pxParticleSystem->setParticleBaseFlag(physx::PxParticleBaseFlag::ePER_PARTICLE_REST_OFFSET, 
+		newFlags & PxParticleBaseFlag::ePER_PARTICLE_REST_OFFSET);
+
+	pxParticleSystem->setParticleBaseFlag(physx::PxParticleBaseFlag::ePROJECT_TO_PLANE, 
+		newFlags & PxParticleBaseFlag::ePROJECT_TO_PLANE);
 }
 
 Ogre::HardwareVertexBufferSharedPtr ParticleSystemBase::CreateVertexBuffer(Ogre::VertexElementSemantic semantic, unsigned short uvSource)
@@ -514,7 +535,7 @@ void ParticleSystemBase::ParticlesCreated(const unsigned int createdCount, physx
 	}
 }
 
-bool ParticleSystemBase::AddAffector(ParticleAffector* affectorToAdd)
+bool ParticleSystemBase::AddAffector(std::shared_ptr<ParticleAffector> affectorToAdd)
 {
 	//Try to insert and return results (if it exists, it will return false, so no need to perform a find first)
 	AffectorMapInsertResult result = affectorMap.insert(AffectorMap::value_type(affectorToAdd->GetAffectorType(), affectorToAdd));//Try to insert
@@ -530,7 +551,10 @@ bool ParticleSystemBase::AddAffector(ParticleAffector* affectorToAdd)
 			gpuTypeCombination |= result.first->first;
 		}
 		else
+		{
 			hostAffector = true;
+			affectorToAdd->onGPU = false;
+		}
 
 		affectorToAdd->Initialize(this);
 	}
@@ -539,18 +563,10 @@ bool ParticleSystemBase::AddAffector(ParticleAffector* affectorToAdd)
 
 bool ParticleSystemBase::RemoveAffector(ParticleAffectorType::ParticleAffectorType typeToRemove)
 {
-	ParticleAffector* affectorToDelete = RemoveAndGetAffector(typeToRemove);
-
-	if(affectorToDelete)//if found
-	{
-		delete affectorToDelete;//delete and return true
-		return true;
-	}
-
-	return false;
+	return RemoveAndGetAffector(typeToRemove).get() != NULL;
 }
 
-ParticleAffector* ParticleSystemBase::RemoveAndGetAffector(ParticleAffectorType::ParticleAffectorType typeToRemove)
+std::shared_ptr<ParticleAffector> ParticleSystemBase::RemoveAndGetAffector(ParticleAffectorType::ParticleAffectorType typeToRemove)
 {
 	AffectorMap::iterator result = affectorMap.find(typeToRemove);
 

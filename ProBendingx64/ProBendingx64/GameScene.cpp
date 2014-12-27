@@ -13,6 +13,7 @@
 #include "KinectGestureReader.h"
 #include "KinectReader.h"
 #include "CudaModuleManager.h"
+#include "CollisionFilterShaders.h"
 
 GameScene::GameScene(void)
 	:IScene(NULL, NULL, "", "")
@@ -34,6 +35,18 @@ GameScene::~GameScene(void)
 		delete battleArena;
 
 	CudaModuleManager::GetSingleton()->DestroySingleton();
+}
+
+physx::PxSceneDesc* GameScene::GetSceneDescription(physx::PxVec3& gravity, bool initializeCuda)
+{
+	//Get the default scene descriptor, because we are only changing one component of it
+	physx::PxSceneDesc* sceneDescriptor = GetDefaultSceneDescription(gravity, initializeCuda);
+
+	sceneDescriptor->filterShader = CollisionFilterShaders::GameSceneFilterShader;
+	//use the following to pass Constant data to the shader
+	//sceneDescriptor->filterShaderData;sceneDescriptor->filterShaderSize;
+
+	return sceneDescriptor;
 }
 
 void GameScene::Initialize()

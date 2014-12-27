@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include "foundation\PxVec3.h"
+#include "PxSceneDesc.h"
 
 namespace Ogre
 {
@@ -51,6 +52,19 @@ protected:
 		resourceGroupName = _resourceGroupName;
 	}
 
+	///<summary>Creates the cuda context</summary>
+	///<returns>True if successful, false if not</returns>
+	bool CreateCudaContext();
+
+	///<summary>Helper method for basic scene descriptors</summary>
+	///<returns>Returns a scene description object</returns>
+	physx::PxSceneDesc* GetDefaultSceneDescription(physx::PxVec3& gravity, bool initializeCuda);
+
+	///<summary>Childs opportunity to create custom scene descriptions</summary>
+	///<param name="gravity">The passed in gravity value</param>
+	///<param name="initializeCuda">True to use CUDA, false if not</param>
+	///<returns>Pointer to a scene description for PhysX to construct its scene</returns>
+	virtual physx::PxSceneDesc* GetSceneDescription(physx::PxVec3& gravity, bool initializeCuda);
 public:
 	IScene(SceneManager* _owningManager, Ogre::Root* root, std::string _sceneName, std::string _resourceGroupName);
 
@@ -62,7 +76,7 @@ public:
 	///customization in other scenes if necessary</summary>
 	///<param name="gravity">The gravity force acted on all objects in the physics scene</param>
 	///<param name="initializeCuda">True to initialize the CUDA component of physx, false if not</param>
-	virtual void InitializePhysics(physx::PxVec3& gravity = physx::PxVec3(0.0f, -9.8f, 0.0f), bool initializeCuda = false);
+	void InitializePhysics(physx::PxVec3& gravity = physx::PxVec3(0.0f, -9.8f, 0.0f), bool initializeCuda = false);
 
 	///<summary>Called by the scene manager when the scene is first started</summary>
 	virtual void Start() = 0;

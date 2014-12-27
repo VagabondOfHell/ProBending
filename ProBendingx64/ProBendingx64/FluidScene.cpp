@@ -30,9 +30,6 @@ FluidScene::~FluidScene(void)
 	InputNotifier::GetInstance()->RemoveObserver(guiManager);
 	InputNotifier::GetInstance()->RemoveObserver(this);
 
-	if(particlePointEmitter)
-		delete particlePointEmitter;
-
 	if(probender)
 		delete probender;
 
@@ -91,15 +88,15 @@ void FluidScene::Start()
 	params = redDefault->getTechnique(0)->getPass(0)->getVertexProgramParameters();
 	params->setNamedConstant("newcolor", Ogre::Vector4(1.0f, 0.0f, 0.0f, 0.50f));
 	
-	particlePointEmitter = new ParticlePointEmitter(100, physx::PxVec3(65.0f, 0.0f, 0.0f),
-		physx::PxVec3(-2, 1.0, 0).getNormalized(), physx::PxVec3(2, 1.0f, 1).getNormalized(), 20.0f, 40.0f);
+	particlePointEmitter = std::shared_ptr<ParticlePointEmitter>(new ParticlePointEmitter(100, physx::PxVec3(65.0f, 0.0f, 0.0f),
+		physx::PxVec3(-2, 1.0, 0).getNormalized(), physx::PxVec3(2, 1.0f, 1).getNormalized(), 20.0f, 40.0f));
 	
 	ParticleSystemParams psParams = ParticleSystemParams();
 	psParams.cudaContext = cudaContextManager;
 	psParams.useGravity = false;
 
-	particleSystem = new ParticleSystemBase(particlePointEmitter, NUM_PARTICLES, 5.0f, psParams, false);
-	particleSystem2 = new ParticleSystemBase(particlePointEmitter, NUM_PARTICLES, 2.0f, psParams, false);
+	particleSystem = new ParticleSystemBase(particlePointEmitter, NUM_PARTICLES, 5.0f, psParams);
+	particleSystem2 = new ParticleSystemBase(particlePointEmitter, NUM_PARTICLES, 2.0f, psParams);
 	
 	particleComponent = new ParticleComponent(projectile, particleSystem, false);
 	projectile->AttachComponent(particleComponent);

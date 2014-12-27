@@ -4,7 +4,6 @@
 #include "OgreHardwareVertexBuffer.h"
 
 class CudaGPUData;
-class ParticleSystemBase;
 
 namespace physx
 {
@@ -13,6 +12,7 @@ namespace physx
 
 class ParticleAffector
 {
+	friend class ParticleSystemBase;
 protected:
 	bool onGPU;
 
