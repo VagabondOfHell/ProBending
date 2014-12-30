@@ -29,6 +29,8 @@ public:
 	///<returns>Pointer to the Game Arena</returns>
 	inline Arena* const GetArena()const{return battleArena;}
 
+	virtual physx::PxSceneDesc* GetSceneDescription(physx::PxVec3& gravity, bool initializeCuda);
+
 	virtual void Initialize();
 
 	virtual void Start();
@@ -42,5 +44,7 @@ public:
 	virtual bool mouseMoved( const OIS::MouseEvent &arg ) {return true;}
 	virtual bool mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID id ) {return true;}
 	virtual bool mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id ){return true;}
+
+
 };
 

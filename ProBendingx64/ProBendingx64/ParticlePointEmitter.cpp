@@ -3,8 +3,10 @@
 using namespace physx;
 
 ParticlePointEmitter::ParticlePointEmitter(float _particlesPerSecond, physx::PxVec3 emitterPosition, 
-		physx::PxVec3 minEmissionDirection, physx::PxVec3 maxEmissionDirection, float minParticleSpeed, float maxParticleSpeed )
-		: AbstractParticleEmitter(emitterPosition, minEmissionDirection, maxEmissionDirection, minParticleSpeed, maxParticleSpeed)
+		physx::PxVec3 minEmissionDirection, physx::PxVec3 maxEmissionDirection, 
+		bool _loop, float _duration, float minParticleSpeed, float maxParticleSpeed )
+		: AbstractParticleEmitter(emitterPosition, minEmissionDirection, maxEmissionDirection, _loop,
+		_duration, minParticleSpeed, maxParticleSpeed)
 {
 	particlesPerSecond = _particlesPerSecond;
 	particlesToEmitThisFrame = 0.0f;
@@ -20,17 +22,23 @@ void ParticlePointEmitter::Emit(const float gameTime, const unsigned int availab
 {
 	unsigned int emissionCount(0);
 
-	//Check amount of particles available
-	if(availableIndiceCount > 0)
+	if(!loop)
+		timePassed += gameTime;
+	
+	if(loop || timePassed <= duration)
 	{
-		//Calculate the number of particles to emit this frame
-		particlesToEmitThisFrame += particlesPerSecond * gameTime;
-		emissionCount = PxFloor(particlesToEmitThisFrame);
-		particlesToEmitThisFrame -= emissionCount;
+		//Check amount of particles available
+		if(availableIndiceCount > 0)
+		{
+			//Calculate the number of particles to emit this frame
+			particlesToEmitThisFrame += particlesPerSecond * gameTime;
+			emissionCount = PxFloor(particlesToEmitThisFrame);
+			particlesToEmitThisFrame -= emissionCount;
 
-		//Gather available indices
-		if(availableIndiceCount < emissionCount)
-			emissionCount = availableIndiceCount;
+			//Gather available indices
+			if(availableIndiceCount < emissionCount)
+				emissionCount = availableIndiceCount;
+		}
 	}
 
 	//If we have creation data and indices can be used

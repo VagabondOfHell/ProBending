@@ -60,52 +60,73 @@ void IScene::Initialize()
 
 void IScene::InitializePhysics(physx::PxVec3& gravity, bool initializeCuda)
 {
+	physx::PxSceneDesc* descriptor = GetSceneDescription(gravity, initializeCuda);
+
+	//Create the scene
+	physicsWorld = PxGetPhysics().createScene(*descriptor);
+	//Indicate physx has been created and is therefore enabled
+	physxEnabled = true;
+
+	if(descriptor)
+		delete descriptor;
+}
+
+bool IScene::CreateCudaContext()
+{
+	Ogre::RenderWindow* window = (Ogre::RenderWindow*)Ogre::Root::getSingleton().getRenderSystem()->getRenderTarget("Probending");
+	HWND hg;
+	window->getCustomAttribute("WINDOW", &hg);
+
+	// create cuda context manager
+	physx::PxCudaContextManagerDesc cudaContextManagerDesc;
+	cudaContextManagerDesc.interopMode = physx::PxCudaInteropMode::OGL_INTEROP;
+	cudaContextManagerDesc.graphicsDevice = (void*)&hg;
+	cudaContextManagerDesc.ctx = NULL;
+	cudaContextManager = physx::PxCreateCudaContextManager(PxGetFoundation(), cudaContextManagerDesc, PxGetPhysics().getProfileZoneManager());
+
+	///Log the result with OGRE Log if in Debug mode
+#ifdef _DEBUG
+	std::string result;
+	if(cudaContextManager->contextIsValid())
+		result = "CUDA Context Valid";
+	else
+		result = "CUDA Context Not Valid";
+	Ogre::LogManager::getSingleton().logMessage(Ogre::LogMessageLevel::LML_NORMAL, result.c_str());
+#endif
+
+	return cudaContextManager->contextIsValid();
+}
+
+physx::PxSceneDesc* IScene::GetSceneDescription(physx::PxVec3& gravity, bool initializeCuda)
+{
+	return GetDefaultSceneDescription(gravity, initializeCuda);
+}
+
+physx::PxSceneDesc* IScene::GetDefaultSceneDescription(physx::PxVec3& gravity, bool initializeCuda)
+{
 	//Fill the scene description
-	physx::PxSceneDesc descriptor(PxGetPhysics().getTolerancesScale());	
-	descriptor.gravity = gravity;
-	if(!descriptor.cpuDispatcher)
+	physx::PxSceneDesc* descriptor = new physx::PxSceneDesc(PxGetPhysics().getTolerancesScale());	
+	descriptor->gravity = gravity;
+	if(!descriptor->cpuDispatcher)
 	{
 		mCpuDispatcher = physx::PxDefaultCpuDispatcherCreate(2);
-		descriptor.cpuDispatcher = mCpuDispatcher;
+		descriptor->cpuDispatcher = mCpuDispatcher;
 	}
 	if(initializeCuda)
 	{
-		if(!descriptor.gpuDispatcher)
+		if(!descriptor->gpuDispatcher)
 		{
-			Ogre::RenderWindow* window = (Ogre::RenderWindow*)Ogre::Root::getSingleton().getRenderSystem()->getRenderTarget("Probending");
-			HWND hg;
-			window->getCustomAttribute("WINDOW", &hg);
-
-			// create cuda context manager
-			physx::PxCudaContextManagerDesc cudaContextManagerDesc;
-			cudaContextManagerDesc.interopMode = physx::PxCudaInteropMode::OGL_INTEROP;
-			cudaContextManagerDesc.graphicsDevice = (void*)&hg;
-			cudaContextManagerDesc.ctx = NULL;
-			cudaContextManager = physx::PxCreateCudaContextManager(PxGetFoundation(), cudaContextManagerDesc, PxGetPhysics().getProfileZoneManager());
-
-			///Log the result with OGRE Log if in Debug mode
-			#ifdef _DEBUG
-			std::string result;
-			if(cudaContextManager->contextIsValid())
-				result = "CUDA Context Valid";
-			else
-				result = "CUDA Context Not Valid";
-			Ogre::LogManager::getSingleton().logMessage(Ogre::LogMessageLevel::LML_NORMAL, result.c_str());
-			#endif
-
+			CreateCudaContext();
 			//Assign the cuda context to the description
 			if(cudaContextManager)
-				descriptor.gpuDispatcher = cudaContextManager->getGpuDispatcher();
+				descriptor->gpuDispatcher = cudaContextManager->getGpuDispatcher();
 		}
 	}
 	//Set the filter shader
-	if(!descriptor.filterShader)
-		descriptor.filterShader  = physx::PxDefaultSimulationFilterShader;
-		
-	//Create the scene
-	physicsWorld = PxGetPhysics().createScene(descriptor);
-	//Indicate physx has been created and is therefore enabled
-	physxEnabled = true;
+	if(!descriptor->filterShader)
+		descriptor->filterShader  = physx::PxDefaultSimulationFilterShader;
+
+	return descriptor;
 }
 
 const std::string IScene::GetSceneName()const{return ogreSceneManager->getName();}

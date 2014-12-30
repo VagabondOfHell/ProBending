@@ -29,29 +29,35 @@ protected:
 	physx::PxVec3 minimumDirection;
 	physx::PxVec3 maximumDirection;
 	float minSpeed, maxSpeed;
+	float timePassed;
 
 public:
 	physx::PxVec3 position;
+	bool loop;
+	float duration;
 
 	///<summary>Constructor of the abstract class to fill common values</summary>
 	///<param name="emitterPosition">The position of the emitter</param>
 	///<param name="minEmissionDirection">The minimum values on the X, Y, Z dimensions for random velocity </param>
 	///<param name="maxEmissionDirection">The maximum values on the X, Y, Z dimensions for random velocity </param>
+	///<param name="_loop">True to loop indefinetely, false if not</param>
+	///<param name="_duration">How long the emitter should emit if not looping</param>
 	///<param name="minParticleSpeed">The minimum value for creating random particle speed </param>
 	///<param name="maxParticleSpeed">The maximum value for creating random particle speed </param>
 	AbstractParticleEmitter(physx::PxVec3 emitterPosition = physx::PxVec3(0.0f), 
 		physx::PxVec3 minEmissionDirection  = physx::PxVec3(0.0f), physx::PxVec3 maxEmissionDirection  = physx::PxVec3(0.0f),
-		float minParticleSpeed = 1.0f, float maxParticleSpeed = 2.0f)
+		bool _loop = true, float _duration = 1.0f, float minParticleSpeed = 1.0f, float maxParticleSpeed = 2.0f)
+		: position(emitterPosition), timePassed(0), duration(_duration), loop(_loop)
 	{
-		position = emitterPosition;
-		minimumDirection = minEmissionDirection;
-		maximumDirection = maxEmissionDirection;
+		SetDirections(minEmissionDirection, maxEmissionDirection);
 
-		ValidateMinAndMax(minimumDirection, maximumDirection);
+		if(duration < 0)
+			duration = -duration;
 
-		minSpeed = minParticleSpeed;
-		maxSpeed = maxParticleSpeed;
+		SetSpeeds(minParticleSpeed, maxParticleSpeed);
 	}
+
+	virtual ~AbstractParticleEmitter(){}
 
 	///<summary>Emission method called by a particle system</summary>
 	///<param name="gameTime">The game time that has passed </param>

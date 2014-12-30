@@ -12,6 +12,8 @@
 #include "InputManager.h"
 #include "KinectGestureReader.h"
 #include "KinectReader.h"
+#include "CudaModuleManager.h"
+#include "CollisionFilterShaders.h"
 
 GameScene::GameScene(void)
 	:IScene(NULL, NULL, "", "")
@@ -32,7 +34,19 @@ GameScene::~GameScene(void)
 	if(battleArena)
 		delete battleArena;
 
-	
+	CudaModuleManager::GetSingleton()->DestroySingleton();
+}
+
+physx::PxSceneDesc* GameScene::GetSceneDescription(physx::PxVec3& gravity, bool initializeCuda)
+{
+	//Get the default scene descriptor, because we are only changing one component of it
+	physx::PxSceneDesc* sceneDescriptor = GetDefaultSceneDescription(gravity, initializeCuda);
+
+	sceneDescriptor->filterShader = CollisionFilterShaders::GameSceneFilterShader;
+	//use the following to pass Constant data to the shader
+	//sceneDescriptor->filterShaderData;sceneDescriptor->filterShaderSize;
+
+	return sceneDescriptor;
 }
 
 void GameScene::Initialize()
@@ -117,6 +131,20 @@ void GameScene::Close()
 
 bool GameScene::keyPressed( const OIS::KeyEvent &arg )
 {
+	if(arg.key == OIS::KC_W)
+	{
+		Ogre::Vector3 camPos = mainOgreCamera->getPosition();
+		camPos.x += 10;
+		mainOgreCamera->setPosition(camPos);
+	}
+
+	if(arg.key == OIS::KC_E)
+	{
+		Ogre::Vector3 camPos = mainOgreCamera->getPosition();
+		camPos.x -= 10;
+		mainOgreCamera->setPosition(camPos);
+	}
+
 	if(arg.key == OIS::KC_I)
 	{
 		Ogre::Vector3 camPos = mainOgreCamera->getPosition();

@@ -1,0 +1,39 @@
+fragment_program ColourParticleShaderFragGLSL glsl
+{
+   source ColourParticleShader.frag
+}
+
+vertex_program ColorParticleShaderVertexGLSL glsl
+{
+   source ColourParticleShader.vert
+   
+}
+
+material ColorParticleShader
+{
+   technique
+   {
+      pass
+      {
+	  lighting off
+	  cull_hardware none
+	  cull_software none
+	  //depth_write off
+	 // scene_blend one one_minus_src_alpha
+	  point_size_attenuation on 0 0 0
+	 // point_size 0.01
+	  scene_blend alpha_blend
+	  //point_sprites on
+
+         vertex_program_ref ColorParticleShaderVertexGLSL
+         {
+		 param_named_auto worldViewProj worldviewproj_matrix
+		 param_named_auto camPos camera_position
+         }
+         
+        fragment_program_ref ColourParticleShaderFragGLSL
+         {
+         }
+	  }
+   }
+}
