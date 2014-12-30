@@ -5,6 +5,8 @@
 #include "AbilityPrototypeDatabase.h"
 #include "AbilityManager.h"
 #include "ProjectileManager.h"
+#include "XMLWriterTest.h"
+#include "XMLReaderTest.h"
 
 Arena::Arena(IScene* _owningScene, std::string _arenaName)
 {
@@ -66,14 +68,15 @@ void Arena::Start()
 		ElementEnum::EnumToString(contestants[0].GetInGameData().GetMainElement()), 
 		UVector2(UDim(0, 0), UDim(0, 0)), USize(UDim(0.1, 0.0), UDim(0.05, 0.0)));
 
+	/*XMLWriterTest test;
+	test.RunTest();*/
 
-//	test.Initialize();
+	XMLReaderTest test;
+	test.RunTest();
 }
 
 bool Arena::Update(const float gameTime)
 {
-	//test.Update(gameTime);
-
 	for (int i = 0; i < contestantCount; i++)
 	{
 		contestants[i].Update(gameTime);

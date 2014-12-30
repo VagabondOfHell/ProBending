@@ -36,6 +36,9 @@ private:
 	unsigned int nonGraphicsResourceCount; //Amount of non-graphics resources (shared between CPU and GPU)
 
 	CUgraphicsResource* cudaGraphicsResources; //The collection of cuda graphics resources
+	bool* graphicsRegisteredList;//Collection of bools to indicate if a resource has been registered
+	bool* graphicsMappedList;//Collection of bools to indicate if a resource has been mapped
+
 	MappedGPUData* cudaNonGraphicsResources; //The collection of non graphics resources
 
 	physx::PxCudaContextManager* cudaContext; //The GPU context to use
@@ -62,6 +65,13 @@ public:
 
 #pragma region GraphicsResources
 
+	inline bool GetIsRegistered(unsigned int index)
+	{
+		if(index < graphicsResourceCount)
+			return graphicsRegisteredList[index];
+		else
+			return false;
+	}
 	///<summary>Registers an OpenGL buffer to the corresponding Cuda Graphics resource as specified by index</summary>
 	///<param name="index">The index of the resource to register</param>
 	///<param name="ogreBuffer">The GL buffer as provided by Ogre</param>
@@ -79,13 +89,12 @@ public:
 
 	///<summary>Maps the Cuda Graphics Resource for buffer manipulation. All buffers must have been previously allocated
 	///or this method will fail</summary>
-	///<returns>True if successful, false if not. If false, check previous error</returns>
-	inline bool MapAllResourcesToCuda()
+	inline void MapAllResourcesToCuda()
 	{
-		//Map all resources
-		previousError = cuGraphicsMapResources(graphicsResourceCount, &cudaGraphicsResources[0], 0);
-
-		return previousError == CUDA_SUCCESS;
+		for (unsigned int i = 0; i < graphicsResourceCount; i++)
+		{
+			MapResourceToCuda(i);
+		}
 	}
 
 	///<summary>Maps a GL graphics resource to Cuda. Resource must have been previously allocated or 
@@ -94,12 +103,14 @@ public:
 	///<returns>True if successful, false if not. If false, check previous error</returns>
 	inline bool MapResourceToCuda(unsigned int index)
 	{
-		//Validate index
-		if(index >= graphicsResourceCount)
+		//Validate index and check if already mapped
+		if(index >= graphicsResourceCount || graphicsMappedList[index])
 			return false;
 
 		//Get status
 		previousError = cuGraphicsMapResources(1, &cudaGraphicsResources[index], 0);
+
+		graphicsMappedList[index] = (previousError == CUDA_SUCCESS);
 
 		//Return result
 		return previousError == CUDA_SUCCESS;
@@ -107,14 +118,12 @@ public:
 
 	///<summary>Unmaps all gl resources from Cuda to allow GL to use it. Resource must have been previously allocated
 	///or this method will fail</summary>
-	///<returns>True if successful, false if not. If false, check previous errors</returns>
-	inline bool UnmapAllResourcesFromCuda()
+	inline void UnmapAllResourcesFromCuda()
 	{
-		//Unmap and get status
-		previousError = cuGraphicsUnmapResources(graphicsResourceCount, &cudaGraphicsResources[0], 0);
-
-		//Return result
-		return previousError == CUDA_SUCCESS;
+		for (unsigned int i = 0; i < graphicsResourceCount; i++)
+		{
+			UnmapResourceFromCuda(i);
+		}
 	}
 
 	///<summary>Unmaps gl resource from Cuda to allow GL to use it. Resource must have been previously allocated
@@ -122,12 +131,14 @@ public:
 	///<returns>True if successful, false if not. If false, check previous errors</returns>
 	inline bool UnmapResourceFromCuda(unsigned int index)
 	{
-		//Validate index
-		if(index >= graphicsResourceCount)
+		//Validate index and make sure its already mapped
+		if(index >= graphicsResourceCount || !graphicsMappedList[index])
 			return false;
 
 		//Unmap the one resource
 		previousError = cuGraphicsUnmapResources(1, &cudaGraphicsResources[index], 0);
+
+		graphicsMappedList[index] = !(previousError == CUDA_SUCCESS);
 
 		return previousError == CUDA_SUCCESS;
 	}
@@ -145,8 +156,8 @@ public:
 	///as well as the validity of the stucture. If structure is invalid, there was an error</returns>
 	inline MappedGPUData GetGraphicsGPUDataPointer(unsigned int index)
 	{
-		//If we dont have valid index, return invalid data
-		if(index >= graphicsResourceCount)
+		//If we dont have valid index or its not mapped, return invalid data
+		if(index >= graphicsResourceCount || !graphicsMappedList[index])
 			return MappedGPUData(NULL, 0, false);
 
 		CUdeviceptr devPointer;
@@ -175,14 +186,11 @@ public:
 		for (unsigned int i = 0; i < graphicsResourceCount; i++)
 		{
 			//Get mapped pointers
-			CUdeviceptr devPointer;
-			size_t size;
+			MappedGPUData data = GetGraphicsGPUDataPointer(i);
 
-			//Map the current data
-			previousError = cuGraphicsResourceGetMappedPointer_v2(&devPointer, &size, cudaGraphicsResources[i]);
-
-			//Add to the vector
-			mappedData->push_back(MappedGPUData(devPointer, size, previousError == CUDA_SUCCESS));
+			if(data.isValid)
+				//Add to the vector
+				mappedData->push_back(data);
 		}
 
 		return mappedData;
@@ -207,11 +215,8 @@ public:
 	///Caller must delete the vector. Returns NULL if mapping failed</returns>
 	inline std::vector<MappedGPUData>* MapAndGetAllGPUDataPointers()
 	{
-		//If all mapping was successful
-		if(MapAllResourcesToCuda())
-			return GetAllGraphicsGPUDataPointers();
-		else
-			return NULL;
+		MapAllResourcesToCuda();
+		return GetAllGraphicsGPUDataPointers();
 	}
 
 #pragma endregion
@@ -246,8 +251,8 @@ public:
 	///<returns>True if successful, false if not. If false, check previous error</returns>
 	inline bool AllocateGPUMemory(const unsigned int index, const size_t dataSizeInBytes)
 	{
-		//Validate index
-		if(index >= nonGraphicsResourceCount)
+		//Validate index and make sure it hasn't already been allocated
+		if(index >= nonGraphicsResourceCount || cudaNonGraphicsResources[index].isValid)
 			return false;
 
 		//Allocate memory in the GPU

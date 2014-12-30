@@ -56,22 +56,22 @@ Projectile* ProjectileFactory::CreateProjectile(IScene* const scene,const Elemen
 		if(abilityID == AbilityIDs::FIRE_JAB)
 		{
 			newProjectile = new Projectile(scene, nullptr);
-			ParticlePointEmitter* emitter = new ParticlePointEmitter(150, physx::PxVec3(0.0f, 0.0f, 1.0f),
+			std::shared_ptr<ParticlePointEmitter> emitter = std::shared_ptr<ParticlePointEmitter>(new ParticlePointEmitter(5000, physx::PxVec3(0.0f, 0.0f, 0.0f),
 				physx::PxVec3(-1.0f, -1.0f, 0.0f).getNormalized(), physx::PxVec3(1.0f, 1.0f, 0.0f).getNormalized(),
-				10.0f, 10.0f);
+				false, 2.0f, 10.0f, 20.0f));
 
 			ParticleSystemParams params = ParticleSystemParams(40.0f, 2.0f, scene->GetCudaContextManager(),
 				physx::PxVec3(0.0f, 0.0f, 0.0f),1.0f, false);
 
-			ParticleSystemBase* particles = new ParticleSystemBase(emitter, 500, 2.0f,params, true);
+			ParticleSystemBase* particles = new ParticleSystemBase(emitter, 500, 2.0f,params);
 			
 			ParticleComponent* particleComponent = new ParticleComponent(newProjectile, particles, false);
 
 			newProjectile->AttachComponent(particleComponent);
-
-			particles->AddAffector(new ScaleParticleAffector(false, 0, 10, true));
-			particles->AddAffector(new ColourFadeParticleAffector(physx::PxVec4(1, 0.5, 0, 1.0f), 
-				physx::PxVec4(0, 0, 1.0, 0.20f), true));/**/
+			
+			particles->AddAffector(std::shared_ptr<ScaleParticleAffector>(new ScaleParticleAffector(false, 0, 10, true)));
+			particles->AddAffector(std::shared_ptr<ColourFadeParticleAffector>(new ColourFadeParticleAffector(physx::PxVec4(1, 0.5, 0, 1.0f), 
+				physx::PxVec4(0, 0, 1.0, 0.20f), true)));/**/
 			particles->AssignAffectorKernel(particles->FindBestKernel());
 			particles->setMaterial(particles->FindBestShader());
 			//Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().getByName("DefaultParticleShader");
