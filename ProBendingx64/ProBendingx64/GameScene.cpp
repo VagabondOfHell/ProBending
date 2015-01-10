@@ -57,27 +57,16 @@ void GameScene::Initialize()
 
 	ogreSceneManager->setAmbientLight(Ogre::ColourValue(1.0f, 1.0f, 1.0f, 1.0f));
 
-	mainOgreCamera = ogreSceneManager->createCamera("MainCamera");
-
-	owningManager->GetRenderWindow()->removeAllViewports();
-
-	Ogre::Viewport* viewport = owningManager->GetRenderWindow()->addViewport(mainOgreCamera);
-	viewport->setBackgroundColour(Ogre::ColourValue(0.0f, 0.0f, 0.0f));
+	CreateCameraAndViewport(Ogre::ColourValue(0.0f, 0.0f, 0.0f, 0.0f), Ogre::Vector3(0.0f, 0.0f, 40.5f));
 
 	InputNotifier::GetInstance()->AddObserver(this);
-
-	mainOgreCamera->setAspectRatio(Ogre::Real(viewport->getActualWidth()) / Ogre::Real(viewport->getActualHeight()));
-
-	mainOgreCamera->setPosition(0, 0, 40.50f);
-	mainOgreCamera->lookAt(0, 0, 0);
-	mainOgreCamera->setNearClipDistance(0.01);
-	mainOgreCamera->setFarClipDistance(10000);
 
 	InitializePhysics(physx::PxVec3(0.0f, -9.8f, 0.0f), true);
 
 	InputManager* inputManager = InputManager::GetInstance();
 
-inputManager->FillGestureReader(L"C:\\Users\\Adam\\Desktop\\Capstone\\GestureData\\ProbendingGestures.gbd");
+	inputManager->FillGestureReader(L"C:\\Users\\Adam\\Desktop\\Capstone\\GestureData\\ProbendingGestures.gbd");
+	
 	KinectSpeechReader* speechReader = inputManager->GetSpeechReader();
 	if(speechReader)
 	{

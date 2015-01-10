@@ -10,14 +10,9 @@
 Ogre::SceneNode* ParticleComponent::WORLD_PARTICLES_NODE = NULL;
 int ParticleComponent::NUM_INSTANCES = 0;
 
-ParticleComponent::ParticleComponent(GameObject* owningObject, ParticleSystemBase* _particleSystem, bool _useLocalSpace)
-	:Component(owningObject), particleSystem(_particleSystem), useLocalSpace(_useLocalSpace)
+ParticleComponent::ParticleComponent(ParticleSystemBase* _particleSystem, bool _useLocalSpace)
+	:Component(), particleSystem(_particleSystem), useLocalSpace(_useLocalSpace)
 {
-	if(WORLD_PARTICLES_NODE == NULL)
-	{
-		WORLD_PARTICLES_NODE = owningObject->GetOwningScene()->GetSceneRootNode()->createChildSceneNode("WORLD_PARTICLE_NODE");
-	}
-
 	++NUM_INSTANCES;
 }
 
@@ -37,6 +32,19 @@ ParticleComponent::~ParticleComponent(void)
 		owningGameObject->GetOwningScene()->GetOgreSceneManager()->destroySceneNode(WORLD_PARTICLES_NODE);
 		WORLD_PARTICLES_NODE = NULL;
 	}
+}
+
+void ParticleComponent::OnAttach()
+{
+	if(WORLD_PARTICLES_NODE == NULL)//Check if the static scene node has been initialized
+	{
+		WORLD_PARTICLES_NODE = owningGameObject->GetOwningScene()->
+			GetSceneRootNode()->createChildSceneNode("WORLD_PARTICLE_NODE");
+	}
+
+	CreateSceneNode();
+
+	particleSystem->Initialize(owningGameObject->GetOwningScene()->GetPhysXScene());
 }
 
 void ParticleComponent::CreateSceneNode()
@@ -71,8 +79,6 @@ void ParticleComponent::DestroySceneNode()
 
 void ParticleComponent::Start()
 {
-	CreateSceneNode();
-	particleSystem->Initialize(owningGameObject->GetOwningScene()->GetPhysXScene());
 }
 
 void ParticleComponent::Update(float gameTime)

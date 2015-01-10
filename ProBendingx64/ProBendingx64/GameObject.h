@@ -21,17 +21,16 @@ protected:
 	std::string name;
 
 	IScene* owningScene;
-	Ogre::Entity* entity;
 	
 	std::map<std::string, GameObject*> children;
 	std::multimap<Component::ComponentType, Component*> components; //Multimap of components based on type
 
-	Ogre::ManualObject* physxDebugDraw;
-	Ogre::SceneNode* debugNode;
+	bool started;
+
 public:
-	Ogre::SceneNode* gameObjectNode;
-	physx::PxRigidActor* rigidBody;
-	
+
+	Ogre::SceneNode* gameObjectNode;//The node representing the game object
+
 	GameObject(IScene* owningScene, std::string objectName = "");
 
 	virtual ~GameObject(void);
@@ -65,39 +64,65 @@ public:
 	///<returns>True if successful, false if not</returns>
 	bool DeleteChild(std::string name);
 
+#pragma region Transform Getter and Setters
+
+	Ogre::Vector3 GetLocalPosition()const;
+
+	Ogre::Vector3 GetWorldPosition()const;
+
+	void SetLocalPosition(const Ogre::Vector3& newPos);
+
+	void SetLocalPosition(const float x, const float y, const float z);
+
+	void SetWorldPosition(const Ogre::Vector3& newPos);
+
+	void SetWorldPosition(const float x, const float y, const float z);
+
+	Ogre::Quaternion GetLocalOrientation()const;
+
+	void SetLocalOrientation(const Ogre::Quaternion& newOrientation);
+
+	void SetLocalOrientation(const float w, const float x, const float y, const float z);
+
+	Ogre::Quaternion GetWorldOrientation()const;
+
+	void SetWorldOrientation(const Ogre::Quaternion& newOrientation);
+
+	void SetWorldOrientation(const float w, const float x, const float y, const float z);
+
+	void SetInheritOrientation(const bool val);
+
+	Ogre::Vector3 GetLocalScale()const;
+
+	void SetScale(const Ogre::Vector3& newScale);
+
+	void SetScale(const float x, const float y, const float z);
+
+	Ogre::Vector3 GetWorldScale()const;
+
+	///<summary>True to inherit scale from parents</summary>
+	///<param name="val">True to inherit, false to not</param>
+	void SetInheritScale(const bool val);
+
+#pragma endregion
+
 	///<summary>Attaches a new component to the GameObject and calls its Start method</summary>
 	///<param name="newComponent">The new component that will be attached</param>
 	void AttachComponent(Component* newComponent);
-	
-	///<summary>Loads a model for Ogre, providing a Try Catch to handle errors</summary>
-	///<param name="modelFileName">The name of the model with the extension to load from Ogre resources</param>
-	///<returns>True if loaded, false if failed</returns>
-	bool LoadModel(const Ogre::String& modelFileName);
-
-	///<summary>Creates a box from the ogre entity dimensions, with scaling</summary>
-	///<param name="boxGeometry">The out value to be filled</param>
-	///<returns>True if successful, false if not. Unsuccessful when entity has not been set</returns>
-	bool ConstructBoxFromEntity(physx::PxBoxGeometry& boxGeometry)const;
-
-	///<summary>Creates an outline of all physX shapes attached to the rigid body
-	///CURRENTLY ONLY SUPPORTS CUBES</summary>
-	void CreatePhysXDebug();
-
-	///<summary>Destroys and deletes the Debug component of the physx rigidbody</summary>
-	void DestroyPhysXDebug();
-
-	///<summary>Provides efficient type casting to a Dynamic Rigid Body</summary>
-	///<returns>The dynamic rigid body representation of the rigid body, or NULL if failed</returns>
-	physx::PxRigidDynamic* GetDynamicRigidBody()const;
-
-	///<summary>Provides efficient type casting to a Static Rigid Body</summary>
-	///<returns>The static rigid body representation of the rigid body, or NULL if failed</returns>
-	physx::PxRigidStatic* GetStaticRigidBody()const;
 
 	///<summary>Gets the name associated with the game object</summary>
 	inline std::string GetName()const {return name;}
 
 	///<summary>Gets the scene this object was created on</summary>
 	inline IScene* const GetOwningScene()const{return owningScene;}
-};
 
+	inline Component* GetComponent(Component::ComponentType typeToGet)
+	{
+		auto result = components.find(typeToGet);
+
+		if(result != components.end())
+			return result->second;
+		else
+			return NULL;
+	}
+};

@@ -7,22 +7,39 @@ class Component
 protected:
 	GameObject* owningGameObject;
 
+	///<summary>Event method for when the component has been attached to a game object</summary>
+	virtual void OnAttach(){}
+
 public:
 	enum ComponentType
 	{
 		AUDIO_COMPONENT,
-		PARTICLE_COMPONENT
+		MESH_RENDER_COMPONENT,
+		PARTICLE_COMPONENT,
+		RIGID_BODY_COMPONENT,
+		COLLIDER_COMPONENT
 	};
 
-	Component(GameObject* _owningGameObject)
+	Component()
 	{
-		owningGameObject = _owningGameObject;
+		owningGameObject = 0;
 	}
 
 	virtual ~Component()
 	{
 		
 	}
+
+	///<summary>Attaches the component to the specified game object</summary>
+	///<param name="gameObject">The game object to attach to. Does not NULL-check</param>
+	inline void AttachToObject(GameObject* gameObject)
+	{
+		owningGameObject = gameObject;
+
+		OnAttach();
+	}
+
+	
 
 	virtual void Start() = 0;
 

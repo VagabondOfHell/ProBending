@@ -51,6 +51,33 @@ IScene::~IScene()
 	owningManager->ogreRoot->destroySceneManager(ogreSceneManager);
 }
 
+void IScene::CreateCameraAndViewport(const Ogre::ColourValue& clearColour, const Ogre::Vector3& camPos 
+		/*= Ogre::Vector3(0.0f)*/, const Ogre::Vector3& lookAt /*= Ogre::Vector3(0.0f)*/, 
+		float nearClip /*= 0.1f*/, float farClip /*= 10000.0f*/)
+{
+	//Use the main ogre camera as an indicator if this has been called once already
+	if(mainOgreCamera)
+		return;
+
+	//Remove any viewports from before
+	owningManager->GetRenderWindow()->removeAllViewports();
+
+	//Create the camera with the name MainCamera
+	mainOgreCamera = ogreSceneManager->createCamera("MainCamera");
+	mainOgreCamera->setPosition(camPos);
+	mainOgreCamera->lookAt(lookAt);
+	mainOgreCamera->setNearClipDistance(nearClip);
+	mainOgreCamera->setFarClipDistance(farClip);
+
+	//Add a viewport for the specified camera
+	Ogre::Viewport* viewport = owningManager->GetRenderWindow()->addViewport(mainOgreCamera);
+
+	//Set the background colour
+	viewport->setBackgroundColour(clearColour);
+	mainOgreCamera->setAspectRatio(Ogre::Real(viewport->getActualWidth()) / 
+		Ogre::Real(viewport->getActualHeight()));
+}
+
 void IScene::Initialize()
 {
 	InitializeResources(resourceGroupName);

@@ -1,7 +1,9 @@
 #pragma once
+#define NOMINMAX
 #include <string>
 #include "foundation\PxVec3.h"
 #include "PxSceneDesc.h"
+#include "OgreVector3.h"
 
 namespace Ogre
 {
@@ -9,6 +11,7 @@ namespace Ogre
 	class Camera;
 	class Root;
 	class SceneNode;
+	class ColourValue;
 };
 
 namespace physx
@@ -69,6 +72,15 @@ public:
 	IScene(SceneManager* _owningManager, Ogre::Root* root, std::string _sceneName, std::string _resourceGroupName);
 
 	virtual ~IScene();	
+
+	///<summary>Handles creation of the viewport and the Camera</summary>
+	///<param name="clearColour">The colour to clear the viewport with</param>
+	///<param name="camPos">The start position of the camera</param>
+	///<param name="lookAt">Where the camera should look towards</param>
+	///<param name="nearClip">The near clipping plane</param>
+	///<param name="farClip">The far clipping plane</param>
+	virtual void CreateCameraAndViewport(const Ogre::ColourValue& clearColour, const Ogre::Vector3& camPos = Ogre::Vector3(0.0f), 
+		const Ogre::Vector3& lookAt = Ogre::Vector3(0.0f), float nearClip = 0.1f, float farClip = 10000.0f);
 
 	virtual void Initialize();
 

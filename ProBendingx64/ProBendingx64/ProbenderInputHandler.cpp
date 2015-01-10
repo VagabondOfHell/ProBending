@@ -5,6 +5,8 @@
 #include "Arena.h"
 #include "AbilityManager.h"
 #include "ProjectileManager.h"
+#include "RigidBodyComponent.h"
+
 #include "PxRigidDynamic.h"
 #include "foundation/PxVec2.h"
 
@@ -127,11 +129,16 @@ void ProbenderInputHandler::DiscreteGesturesAcquired(const std::vector<KinectGes
 			{
 				if(probender->rightHandAttack && created)
 				{
-					physx::PxRigidDynamic* dy = probender->rightHandAttack->GetDynamicRigidBody();
+					RigidBodyComponent* rigidBody = (RigidBodyComponent*)probender->rightHandAttack->GetComponent(Component::RIGID_BODY_COMPONENT);
+					
+					if(rigidBody)
+						rigidBody->ApplyImpulse(physx::PxVec3(0.0f, 0.0f, -2000.0f));
+					
+					/*physx::PxRigidDynamic* dy = probender->rightHandAttack->GetDynamicRigidBody();
 					if(dy)
 					{
 						dy->addForce(physx::PxVec3(0.0f, 0.0f, -2000.0f), physx::PxForceMode::eIMPULSE);
-					}
+					}*/
 
 					created = false;
 				}
@@ -212,11 +219,16 @@ bool ProbenderInputHandler::keyPressed( const OIS::KeyEvent &arg )
 	{
 		if(probender->rightHandAttack)
 		{
-			physx::PxRigidDynamic* dy = probender->rightHandAttack->GetDynamicRigidBody();
+			RigidBodyComponent* rigidBody = (RigidBodyComponent*)probender->rightHandAttack->GetComponent(Component::RIGID_BODY_COMPONENT);
+
+			if(rigidBody)
+				rigidBody->ApplyImpulse(physx::PxVec3(0.0f, 0.0f, -2000.0f));
+
+			/*physx::PxRigidDynamic* dy = probender->rightHandAttack->GetDynamicRigidBody();
 			if(dy)
 			{
 				dy->addForce(physx::PxVec3(0.0f, 0.0f, -2000.0f), physx::PxForceMode::eIMPULSE);
-			}
+			}*/
 		}
 	}
 	else if(arg.key == OIS::KC_SPACE)
@@ -275,13 +287,20 @@ bool ProbenderInputHandler::mouseMoved( const OIS::MouseEvent &arg )
 		PxVec3 dir = PxVec3(curr.x - prev.x, -(curr.y - prev.y), 0.0f).getNormalized();
 
 		printf("Direction: %f, %f, %f\n", dir.x, dir.y, dir.z);
-		physx::PxRigidDynamic* dyn = probender->rightHandAttack->GetDynamicRigidBody();
+
+		RigidBodyComponent* rigidBody = (RigidBodyComponent*)probender->rightHandAttack->GetComponent(Component::RIGID_BODY_COMPONENT);
+
+		if(rigidBody)
+			rigidBody->ApplyImpulse(dir * 250.0f);
+
+
+		/*physx::PxRigidDynamic* dyn = probender->rightHandAttack->GetDynamicRigidBody();
 		if(dyn)
 		{
 			dyn->addForce(dir * 250.0f, physx::PxForceMode::eIMPULSE);
 			physx::PxVec3 g = dyn->getGlobalPose().p;
 			printf("Pos: %f, %f, %f\n", g.x, g.y, g.z);
-		}
+		}*/
 	}
 	
 	prev = curr;

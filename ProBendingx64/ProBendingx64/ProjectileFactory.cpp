@@ -8,6 +8,8 @@
 #include "ParticlePointEmitter.h"
 #include "ParticleAffectors.h"
 #include "ColourFadeParticleAffector.h"
+#include "MeshRenderComponent.h"
+#include "RigidBodyComponent.h"
 
 #include "PxScene.h"
 #include "geometry/PxBoxGeometry.h"
@@ -36,19 +38,24 @@ Projectile* ProjectileFactory::CreateProjectile(IScene* const scene,const Elemen
 		if(abilityID == AbilityIDs::EARTH_BOULDER)
 		{
 			newProjectile = new Projectile(scene, nullptr);
-			newProjectile->LoadModel("Rock_01.mesh");
-			newProjectile->gameObjectNode->setScale(0.1f, 0.1f, 0.1f);
+			MeshRenderComponent* renderComponent = new MeshRenderComponent();
+			newProjectile->AttachComponent(renderComponent);
+
+			renderComponent->LoadModel("Rock_01.mesh");
+
+			newProjectile->SetScale(0.1f, 0.1f, 0.1f);
+
+			RigidBodyComponent* rigidBody = new RigidBodyComponent();
+			newProjectile->AttachComponent(rigidBody);
+
+			rigidBody->CreateRigidBody(RigidBodyComponent::DYNAMIC); //Create dynamic body at 0,0,0 with 0 rotation
+			
 			physx::PxBoxGeometry boxGeo;
-			if(newProjectile->ConstructBoxFromEntity(boxGeo))
+			if(renderComponent->ConstructBoxFromEntity(boxGeo))
 			{
-				physx::PxMaterial* mat = PxGetPhysics().createMaterial(0.5f, 0.5f, 0.5f);
-
-				physx::PxTransform tran = physx::PxTransform(physx::PxVec3(0.0f, 0.0f, 0.0f), physx::PxQuat::createIdentity());
-				newProjectile->rigidBody = physx::PxCreateDynamic(PxGetPhysics(), tran, boxGeo, *mat, 1.0f);
-
-				newProjectile->CreatePhysXDebug();
-				newProjectile->rigidBody->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, true);
-				scene->GetPhysXScene()->addActor(*newProjectile->rigidBody);
+				rigidBody->AttachShape(boxGeo); //Attach shape using default material values
+				rigidBody->CreateDebugDraw();
+				rigidBody->SetUseGravity(false);
 			}
 		}
 		break;
@@ -58,22 +65,31 @@ Projectile* ProjectileFactory::CreateProjectile(IScene* const scene,const Elemen
 			newProjectile = new Projectile(scene, nullptr);
 			std::shared_ptr<ParticlePointEmitter> emitter = std::shared_ptr<ParticlePointEmitter>(new ParticlePointEmitter(5000, physx::PxVec3(0.0f, 0.0f, 0.0f),
 				physx::PxVec3(-1.0f, -1.0f, 0.0f).getNormalized(), physx::PxVec3(1.0f, 1.0f, 0.0f).getNormalized(),
-				false, 2.0f, 10.0f, 20.0f));
+				true, 2.0f, 10.0f, 20.0f));
 
 			ParticleSystemParams params = ParticleSystemParams(40.0f, 2.0f, scene->GetCudaContextManager(),
 				physx::PxVec3(0.0f, 0.0f, 0.0f),1.0f, false);
 
 			ParticleSystemBase* particles = new ParticleSystemBase(emitter, 500, 2.0f,params);
 			
-			ParticleComponent* particleComponent = new ParticleComponent(newProjectile, particles, false);
+			ParticleComponent* particleComponent = new ParticleComponent(particles, false);
 
 			newProjectile->AttachComponent(particleComponent);
-			
+
 			particles->AddAffector(std::shared_ptr<ScaleParticleAffector>(new ScaleParticleAffector(false, 0, 10, true)));
 			particles->AddAffector(std::shared_ptr<ColourFadeParticleAffector>(new ColourFadeParticleAffector(physx::PxVec4(1, 0.5, 0, 1.0f), 
 				physx::PxVec4(0, 0, 1.0, 0.20f), true)));/**/
 			particles->AssignAffectorKernel(particles->FindBestKernel());
 			particles->setMaterial(particles->FindBestShader());
+
+			RigidBodyComponent* rigidBody = new RigidBodyComponent();
+			newProjectile->AttachComponent(rigidBody);
+			rigidBody->CreateRigidBody(RigidBodyComponent::DYNAMIC);
+			physx::PxBoxGeometry geo = physx::PxBoxGeometry(0.5f, 0.5f, 0.5f);
+			rigidBody->AttachShape(geo);
+			rigidBody->SetUseGravity(false);
+			rigidBody->CreateDebugDraw();
+
 			//Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().getByName("DefaultParticleShader");
 
 			//Ogre::Pass* pass = material->getTechnique(0)->getPass(0);
