@@ -122,23 +122,17 @@ bool GameScene::keyPressed( const OIS::KeyEvent &arg )
 {
 	if(arg.key == OIS::KC_W)
 	{
-		Ogre::Vector3 camPos = mainOgreCamera->getPosition();
-		camPos.x += 10;
-		mainOgreCamera->setPosition(camPos);
+		mainOgreCamera->moveRelative(Ogre::Vector3(10.0f, 0.0f, 0.0f));
 	}
 
 	if(arg.key == OIS::KC_E)
 	{
-		Ogre::Vector3 camPos = mainOgreCamera->getPosition();
-		camPos.x -= 10;
-		mainOgreCamera->setPosition(camPos);
+		mainOgreCamera->moveRelative(Ogre::Vector3(-10.0f, 0.0f, 0.0f));
 	}
 
 	if(arg.key == OIS::KC_I)
 	{
-		Ogre::Vector3 camPos = mainOgreCamera->getPosition();
-		camPos.z += 40;
-		mainOgreCamera->setPosition(camPos);
+		mainOgreCamera->moveRelative(Ogre::Vector3(0.0f, 0.0f, 40.0f));
 	}
 
 	if(arg.key == OIS::KC_P)
@@ -153,9 +147,7 @@ bool GameScene::keyPressed( const OIS::KeyEvent &arg )
 
 	if(arg.key == OIS::KC_J)
 	{
-		Ogre::Vector3 camPos = mainOgreCamera->getPosition();
-		camPos.z -= 40;
-		mainOgreCamera->setPosition(camPos);
+		mainOgreCamera->moveRelative(Ogre::Vector3(0.0f, 0.0f, -40.0f));
 	}
 
 	return true;

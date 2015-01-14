@@ -1,9 +1,14 @@
 #include "MeshRenderComponent.h"
+
 #include <stdexcept>
+
 #include "IScene.h"
+#include "GameObject.h"
+
 #include "OgreSceneManager.h"
 #include "OgreEntity.h"
-#include "GameObject.h"
+#include "OgreMesh.h"
+#include "OgreSubMesh.h"
 
 #include "geometry/PxBoxGeometry.h"
 
@@ -49,19 +54,39 @@ bool MeshRenderComponent::LoadModel(const Ogre::String& modelFileName)
 }
 
 
-bool MeshRenderComponent::ConstructBoxFromEntity(physx::PxBoxGeometry& boxGeometry)const
+Ogre::Vector3 MeshRenderComponent::GetHalfExtents()const
 {
 	if(entity)
-	{
 		//Get the half size of the entity bounding box and modify by scale factor
-		Ogre::Vector3 boxHalfSize = entity->getBoundingBox().getHalfSize() * owningGameObject->GetWorldScale();
-		//Generate physx geometry
-		boxGeometry = physx::PxBoxGeometry(physx::PxVec3(boxHalfSize.x, boxHalfSize.y, boxHalfSize.z));
-		//indicate success
-		return true;
-	}
+		return entity->getBoundingBox().getHalfSize() * owningGameObject->GetWorldScale();
 
-	return false;
+	return Ogre::Vector3(0.0f);
+}
+
+std::shared_ptr<MeshInfo> const MeshRenderComponent::GetMeshInfo() const
+{
+	std::shared_ptr<MeshInfo> retVal(new MeshInfo());
+	
+	HelperFunctions::GetMeshInformation(entity->getMesh().getPointer(), *retVal, owningGameObject->GetWorldPosition(), 
+		owningGameObject->GetWorldOrientation(), owningGameObject->GetWorldScale());
+	
+	return retVal;
+}
+
+void MeshRenderComponent::Enable()
+{
+	if(!enabled)
+		owningGameObject->gameObjectNode->attachObject(entity);
+
+	enabled = true;
+}
+
+void MeshRenderComponent::Disable()
+{
+	if(enabled)
+		owningGameObject->gameObjectNode->detachObject(entity);
+	
+	enabled = false;
 }
 
 void MeshRenderComponent::Start()
@@ -71,5 +96,6 @@ void MeshRenderComponent::Start()
 void MeshRenderComponent::Update(float gameTime)
 {
 }
+
 
 

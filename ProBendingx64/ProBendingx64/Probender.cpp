@@ -2,6 +2,8 @@
 #include "IScene.h"
 #include "InputNotifier.h"
 #include "NotImplementedException.h"
+#include "PhysXDataManager.h"
+
 #include "PxScene.h"
 #include "PxRigidDynamic.h"
 #include "ProbenderData.h"
@@ -33,7 +35,7 @@ void Probender::AttachToScene(IScene* scene)
 	inputHandler.SetProbenderToHandle(this);
 	
 	PxBoxGeometry box = PxBoxGeometry(1.0f, 1.0f, 1.0f);
-	PxMaterial* mat = PxGetPhysics().createMaterial(0.5f, 0.5f, 0.5f);
+	PxMaterial* mat = PhysXDataManager::GetSingletonPtr()->CreateMaterial(0.5f, 0.5f, 0.5f, "ProbenderMaterial");
 
 	physicsBody = PxCreateDynamic(PxGetPhysics(), PxTransform(PxVec3(),PxQuat::createIdentity()),box, *mat, 1.0f);
 

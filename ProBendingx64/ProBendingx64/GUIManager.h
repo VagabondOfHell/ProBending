@@ -26,6 +26,8 @@ public:
 	void InitializeGUI();	
 	void Update(float gameTime);
 
+	inline CEGUI::Window* GetRootWindow()const {return rootWindow;}
+
 	///<summary>Adds a scheme to the Scheme Manager for reference</summary>
 	///<param name="schemeFileName">The filename of the scheme to load, including the extension</param>
 	///<returns>True if successful, false if not</returns>
@@ -38,7 +40,7 @@ public:
 	///<param name="schemeFileName">The scheme file name to load from. This is for convenience, allowing layout and scheme
 	///to be loaded at the same time</param>
 	///<returns>True if successful, false if not</returns>
-	bool AddWindow(const CEGUI::String& layoutFileName, const CEGUI::String& windowName = "", const CEGUI::String& schemeFileName = "");
+	bool LoadLayout(const CEGUI::String& layoutFileName, const CEGUI::String& windowName = "", const CEGUI::String& schemeFileName = "");
 	
 
 	///<summary>Creates a push button as a child of the root window</summary>

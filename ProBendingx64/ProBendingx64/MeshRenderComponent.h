@@ -1,6 +1,11 @@
 #pragma once
 #include "Component.h"
 #include "OgreString.h"
+#include "OgreVector3.h"
+#include "OgreQuaternion.h"
+#include "MeshInfo.h"
+
+#include <memory>
 
 namespace Ogre
 {
@@ -13,11 +18,12 @@ namespace physx
 	class PxBoxGeometry;
 };
 
+typedef std::shared_ptr<MeshInfo> SharedMeshInfo;
+
 class MeshRenderComponent :
 	public Component
 {
-private:
-	
+protected:
 	Ogre::Entity* entity;
 
 public:
@@ -30,9 +36,18 @@ public:
 	bool LoadModel(const Ogre::String& modelFileName);
 
 	///<summary>Creates a box from the ogre entity dimensions, with scaling</summary>
-	///<param name="boxGeometry">The out value to be filled</param>
-	///<returns>True if successful, false if not. Unsuccessful when entity has not been set</returns>
-	bool ConstructBoxFromEntity(physx::PxBoxGeometry& boxGeometry)const;
+	///<returns>Gets the half size of the rectangle representing the entity</returns>
+	Ogre::Vector3 GetHalfExtents()const;
+
+	///<summary>Gets the vertices and indices of the mesh. Expensive method, call as few times as possible</summary>
+	///<returns>A shared pointer to the mesh info that was created</returns>
+	std::shared_ptr<MeshInfo> const GetMeshInfo()const;
+
+	///<summary>Enables the render component, resulting in the mesh being rendered</summary>
+	virtual void Enable();
+
+	///<summary>Disables the render component, resulting in the mesh not being rendered</summary>
+	virtual void Disable();
 
 	virtual void Start();
 

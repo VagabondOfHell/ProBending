@@ -1,5 +1,18 @@
 //#include "vld.h"
 #include "Game.h"
+#include "InputManager.h"
+#include "DotSceneLoader.h"
+//#include "TestScene.h"
+//#include "BlankScene.h"
+//#include "FluidScene.h"
+#include "GameScene.h"
+
+#define USE_PHYSX_COOKING
+
+#ifdef USE_PHYSX_COOKING
+
+#include "PhysXCookingWrapper.h"
+#endif // USE_PHYSX_COOKING
 
 #include <OgreConfigFile.h>
 #include <OgreException.h>
@@ -8,14 +21,6 @@
 #include <OgreViewport.h>
 #include <OgreSceneManager.h>
 #include <OgreRenderWindow.h>
-
-#include "InputManager.h"
-#include "DotSceneLoader.h"
-
-//#include "TestScene.h"
-//#include "BlankScene.h"
-//#include "FluidScene.h"
-#include "GameScene.h"
 
 SpeechController speechController = SpeechController(NULL);
 
@@ -122,6 +127,8 @@ void Game::InitializeRootResourcesAndPlugins()
 				archName, typeName, secName);
 		}
 	}
+
+	Ogre::ResourceGroupManager::getSingleton().initialiseResourceGroup("General");
 }
 
 void Game::CreateOgreWindow(const Ogre::String& windowTitle = "Ogre App")
@@ -173,19 +180,21 @@ void Game::InitializePhysX()
 	//Create the foundation of the physX SDK to check for SDK Version validity and create Allocation and Error callbacks
 	foundation = PxCreateFoundation(PX_PHYSICS_VERSION, gDefaultAllocatorCallback, gMyPhysXErrorReporter);
 	
-	bool recordMemoryAllocations;
-
 	//If in debug mode, activate the Profiling Manager
 #if _DEBUG
-	recordMemoryAllocations = true;
 	mProfileZoneManager = &physx::PxProfileZoneManager::createProfileZoneManager(foundation);		if(!mProfileZoneManager)		printf("PxProfileZoneManager::createProfileZoneManager failed!");
 
-	gPhysicsSDK = PxCreatePhysics(PX_PHYSICS_VERSION, *foundation, physx::PxTolerancesScale(), recordMemoryAllocations, NULL);
+	gPhysicsSDK = PxCreatePhysics(PX_PHYSICS_VERSION, *foundation, 
+		physx::PxTolerancesScale(), true, mProfileZoneManager);	
 #else
-	recordMemoryAllocations = false;
-	gPhysicsSDK = PxCreatePhysics(PX_PHYSICS_VERSION, *foundation, PxTolerancesScale());
+	gPhysicsSDK = PxCreatePhysics(PX_PHYSICS_VERSION, *foundation, PxTolerancesScale(), false, NULL);
 #endif
 	
+#ifdef USE_PHYSX_COOKING
+	physx::PxCookingParams pa = physx::PxCookingParams(gPhysicsSDK->getTolerancesScale());
+	PhysXCookingWrapper::CreateCooking(PX_PHYSICS_VERSION, *foundation, pa);
+#endif // USE_PHYSX_COOKING
+
 	PxInitExtensions(*gPhysicsSDK);
 }
 
@@ -282,14 +291,35 @@ void Game::CloseGame()
 
 	///Release Physx Systems
 	if(mProfileZoneManager)
+	{
 		mProfileZoneManager->release();
-	
-	if(mPvdConnection)
-		mPvdConnection->release();
+		mProfileZoneManager = NULL;
+	}
 
-	gPhysicsSDK->release();
+	if(mPvdConnection)
+	{
+		mPvdConnection->release();
+		mPvdConnection = NULL;
+	}
+
+#ifdef USE_PHYSX_COOKING
+	PhysXCookingWrapper::ShutdownCookingLibrary();//Checks for NULL before shutting down
+#endif
+
+	if(gPhysicsSDK)
+	{
+		gPhysicsSDK->release();
+		gPhysicsSDK = NULL;
+	}
+
 	PxCloseExtensions();
-	foundation->release();
+
+	if(foundation)
+	{
+		foundation->release();
+		foundation = NULL;
+	}
+	
 
 	::FreeConsole();
 }

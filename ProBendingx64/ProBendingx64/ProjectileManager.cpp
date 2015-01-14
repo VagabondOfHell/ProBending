@@ -2,7 +2,7 @@
 #include "ProjectileFactory.h"
 #include "Probender.h"
 #include "AbilityDescriptor.h"
-
+#include "RigidBodyComponent.h"
 ///When a projectile gets removed, check its ability data for the caster
 ///and check if the projectile is on one of the casters hands. If it is,
 ///set that hand to null before deleting the projectile
@@ -61,6 +61,8 @@ bool ProjectileManager::DestroyProjectile(Projectile* projectile)
 		projectile->attachedAbility->caster->RemoveProjectile(projectile);
 		//Delete it (change this to return to object pool
 		delete iter->second;
+
+		projectileMap.erase(iter);
 
 		return true;
 	}

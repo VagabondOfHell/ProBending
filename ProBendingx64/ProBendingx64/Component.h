@@ -7,6 +7,8 @@ class Component
 protected:
 	GameObject* owningGameObject;
 
+	bool enabled;
+
 	///<summary>Event method for when the component has been attached to a game object</summary>
 	virtual void OnAttach(){}
 
@@ -23,6 +25,7 @@ public:
 	Component()
 	{
 		owningGameObject = 0;
+		Enable();//Call the enable method, that way if its overridden by child, it enables correctly
 	}
 
 	virtual ~Component()
@@ -39,7 +42,15 @@ public:
 		OnAttach();
 	}
 
-	
+	///<summary>Enables the component</summary>
+	virtual void Enable(){enabled = true;}
+
+	///<summary>Disables the component</summary>
+	virtual void Disable(){enabled = false;}
+
+	///<summary>Checks if the component is currently enabled or not</summary>
+	///<returns>True if enabled, false if not</returns>
+	inline bool IsEnabled()const{return enabled;}
 
 	virtual void Start() = 0;
 

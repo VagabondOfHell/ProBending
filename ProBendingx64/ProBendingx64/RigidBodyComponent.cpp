@@ -1,16 +1,20 @@
 #include "RigidBodyComponent.h"
 #include "IScene.h"
 #include "GameObject.h"
+#include "PhysXDataManager.h"
 
 #include <stdexcept>
 #include "PxPhysics.h"
 #include "PxRigidStatic.h"
 #include "PxRigidDynamic.h"
 #include "PxScene.h"
+#include "PxMaterial.h"
+#include "geometry/PxConvexMesh.h"
 
 #ifdef _DEBUG
 #include "OgreSceneManager.h"
-#include "PhysXDebugDraw.h"
+#include "OgreEntity.h"
+#include "OgreManualObject.h"
 #endif
 
 using namespace physx;
@@ -32,13 +36,10 @@ RigidBodyComponent::~RigidBodyComponent(void)
 			bodyStorage.staticActor->release();
 
 #ifdef _DEBUG
-	if(physxDebugDraw)
+	if(physxDebugNode)
 	{
-		physxDebugNode->detachObject(physxDebugDraw);
 		Ogre::SceneManager* sceneManager = owningGameObject->GetOwningScene()->GetOgreSceneManager();
-		sceneManager->destroyManualObject(physxDebugDraw);
 		sceneManager->destroySceneNode(physxDebugNode);
-		physxDebugDraw = NULL;
 	}
 #endif
 }
@@ -91,32 +92,27 @@ bool RigidBodyComponent::AttachShape(PxShape& newShape)
 	return true;
 }
 
-bool RigidBodyComponent::AttachShape(PxGeometry& geometry, PxMaterial& material, PxTransform transform)
+bool RigidBodyComponent::CreateAndAttachNewShape(const ShapeDefinition& shapeDefinition)
 {
-	if(bodyType == NONE)
+	if(shapeDefinition.MaterialList.size() == 0)
 		return false;
 
-	PxShape* shape = PxGetPhysics().createShape(geometry, material);
+	physx::PxShape* shape = NULL;
+
+	if(bodyType == STATIC)
+		shape =	bodyStorage.staticActor->createShape(*shapeDefinition.ShapeGeometry.get(), 
+		&shapeDefinition.MaterialList[0], 
+			shapeDefinition.MaterialList.size(), shapeDefinition.ShapeFlags);
+
+	else if(bodyType == DYNAMIC)
+		shape = bodyStorage.dynamicActor->createShape(*shapeDefinition.ShapeGeometry.get(), 
+		&shapeDefinition.MaterialList[0],
+			shapeDefinition.MaterialList.size(), shapeDefinition.ShapeFlags);
 
 	if(shape)
-		shape->setLocalPose(transform);
+		shape->setLocalPose(shapeDefinition.Transform);
 
-	return AttachShape(*shape);
-}
-
-bool RigidBodyComponent::AttachShape(PxGeometry& geometry, PxReal staticFriction /*= 0.0f*/, 
-		PxReal dynamicFriction /*= 0.0f*/, PxReal restitution /*= 0.0f*/, 
-		PxVec3& position /*= PxVec3(0.0f)*/, PxQuat& orientation /*= PxQuat::createIdentity()*/)
-{
-	if(bodyType == NONE)
-		return false;
-
-	PxMaterial* material = PxGetPhysics().createMaterial(staticFriction, dynamicFriction, restitution);
-	
-	if(material == NULL)
-		return false;
-
-	return AttachShape(geometry, *material, PxTransform(position, orientation));
+	return shape != NULL;
 }
 
 void RigidBodyComponent::SetUseGravity(const bool val)
@@ -149,11 +145,27 @@ void RigidBodyComponent::ApplyForce(physx::PxVec3& force)
 		bodyStorage.dynamicActor->addForce(force, physx::PxForceMode::eFORCE);
 }
 
+void RigidBodyComponent::SetPosition(physx::PxVec3& position)
+{
+	if(bodyType == DYNAMIC)
+		bodyStorage.dynamicActor->setGlobalPose(physx::PxTransform(position, bodyStorage.dynamicActor->getGlobalPose().q));
+	else if(bodyType == STATIC)
+		bodyStorage.staticActor->setGlobalPose(physx::PxTransform(position, bodyStorage.staticActor->getGlobalPose().q));
+
+#if _DEBUG
+	if(physxDebugNode)
+		physxDebugNode->setPosition(position.x, position.y, position.z);
+#endif
+}
+
 
 #if _DEBUG
 
 void RigidBodyComponent::CreateDebugDraw()
 {
+	if(physxDebugNode)
+		return;
+
 	PxRigidActor* rigidBody = NULL;
 	
 	switch (bodyType)
@@ -169,7 +181,8 @@ void RigidBodyComponent::CreateDebugDraw()
 		break;
 	}
 
-	physxDebugDraw = owningGameObject->GetOwningScene()->GetOgreSceneManager()->createManualObject();
+	physxDebugNode = owningGameObject->GetOwningScene()->GetOgreSceneManager()->getRootSceneNode()->createChildSceneNode();
+	physxDebugNode->setInheritScale(false);
 
 	PxU32 numShapes = rigidBody->getNbShapes();
 
@@ -177,18 +190,73 @@ void RigidBodyComponent::CreateDebugDraw()
 
 	rigidBody->getShapes(shapes, numShapes);
 
-	PxBoxGeometry boxGeometry;
-		
+	Ogre::SceneManager* sceneManager = owningGameObject->GetOwningScene()->GetOgreSceneManager();
+
 	for (PxU32 i = 0; i < numShapes; i++)
 	{
 		switch (shapes[i]->getGeometryType())
 		{
 			case::PxGeometryType::eBOX:
-				shapes[i]->getBoxGeometry(boxGeometry);
+				{
+					PxBoxGeometry boxGeometry;
+					shapes[i]->getBoxGeometry(boxGeometry);
 
-			PhysXDebugDraw::DrawBoxGeometry(rigidBody->getGlobalPose().p + shapes[i]->getLocalPose().p, &boxGeometry, physxDebugDraw);
+					Ogre::Entity* entity = sceneManager->createEntity("Cube.mesh");
+					entity->setMaterialName("WireframeRender");
+
+					physxDebugNode->attachObject(entity);
+					
+					PxVec3 halfSize = boxGeometry.halfExtents;
+					physxDebugNode->scale(halfSize.x, halfSize.y, halfSize.z);
+				}
+				
 				break;
 
+			case::PxGeometryType::eSPHERE:
+				{
+					PxSphereGeometry sphereGeometry;
+					shapes[i]->getSphereGeometry(sphereGeometry);
+
+					Ogre::Entity* entity = sceneManager->createEntity("Sphere.mesh");
+					entity->setMaterialName("WireframeRender");
+
+					physxDebugNode->attachObject(entity);
+					physxDebugNode->scale(sphereGeometry.radius, sphereGeometry.radius, sphereGeometry.radius);
+				}
+				break;
+
+			case::PxGeometryType::eCONVEXMESH:
+				{
+					PxConvexMeshGeometry meshGeometry;
+					shapes[i]->getConvexMeshGeometry(meshGeometry);
+				
+					const physx::PxVec3* vertexBuffer = meshGeometry.convexMesh->getVertices();
+					const physx::PxU8* indexBuffer = meshGeometry.convexMesh->getIndexBuffer();
+									
+					Ogre::ManualObject* manObject = sceneManager->createManualObject();
+					manObject->begin("WireframeRender", Ogre::RenderOperation::OT_TRIANGLE_LIST);
+					
+					for (unsigned int i = 0; i < meshGeometry.convexMesh->getNbVertices(); i++)
+					{
+						manObject->position(vertexBuffer[i].x,vertexBuffer[i].y, vertexBuffer[i].z );
+					}
+
+					for (unsigned int i = 0; i < meshGeometry.convexMesh->getNbPolygons(); i++)
+					{
+						physx::PxHullPolygon poly;
+						if(meshGeometry.convexMesh->getPolygonData(i, poly))
+						{
+							manObject->quad(indexBuffer[poly.mIndexBase],
+								indexBuffer[poly.mIndexBase + 1], 
+								indexBuffer[poly.mIndexBase + 2], 
+								indexBuffer[poly.mIndexBase + 3]);
+						}
+					}
+
+					manObject->end();
+					
+					physxDebugNode->attachObject(manObject);
+				}
 			default:
 				break;
 		}
@@ -197,9 +265,9 @@ void RigidBodyComponent::CreateDebugDraw()
 	if(shapes)
 		delete shapes;
 
-	physxDebugNode = owningGameObject->GetOwningScene()->GetOgreSceneManager()->getRootSceneNode()->createChildSceneNode();
+	
 	// add ManualObject to the node so it will be visible
-	physxDebugNode->attachObject(physxDebugDraw);
+	//physxDebugNode->attachObject(physxDebugDraw);
 }
 
 
@@ -240,5 +308,3 @@ void RigidBodyComponent::Update(float gameTime)
 #endif
 	}
 }
-
-

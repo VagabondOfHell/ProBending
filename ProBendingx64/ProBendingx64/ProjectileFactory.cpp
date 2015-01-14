@@ -10,6 +10,7 @@
 #include "ColourFadeParticleAffector.h"
 #include "MeshRenderComponent.h"
 #include "RigidBodyComponent.h"
+#include "PhysXDataManager.h"
 
 #include "PxScene.h"
 #include "geometry/PxBoxGeometry.h"
@@ -18,14 +19,17 @@
 #include "PxRigidDynamic.h"
 #include "foundation/PxVec4.h"
 
+#include "OgreEntity.h"
 #include "OgreMaterialManager.h"
 #include "OgreTechnique.h"
 #include "OgrePass.h"
 #include "OgreSceneNode.h"
+#include "OgreMeshManager.h"
 
 Projectile* ProjectileFactory::CreateProjectile(IScene* const scene,const ElementEnum::Element element,const AbilityIDs::AbilityID abilityID)
 {
 	Projectile* newProjectile = NULL;
+	Projectile* newProjectile2 = NULL;
 
 	switch (element)
 	{
@@ -48,14 +52,30 @@ Projectile* ProjectileFactory::CreateProjectile(IScene* const scene,const Elemen
 			RigidBodyComponent* rigidBody = new RigidBodyComponent();
 			newProjectile->AttachComponent(rigidBody);
 
+			SharedMeshInfo info = renderComponent->GetMeshInfo();
+
 			rigidBody->CreateRigidBody(RigidBodyComponent::DYNAMIC); //Create dynamic body at 0,0,0 with 0 rotation
-			
-			physx::PxBoxGeometry boxGeo;
-			if(renderComponent->ConstructBoxFromEntity(boxGeo))
+			physx::PxVec3 entityHalfSize = HelperFunctions::OgreToPhysXVec3(renderComponent->GetHalfExtents());
+			//SharedBoxGeo geo = PhysXDataManager::GetSingletonPtr()->CreateBoxGeometry(entityHalfSize, "RockBox");
+			SharedConvexMeshGeo geo = PhysXDataManager::GetSingletonPtr()->CreateConvexMeshGeometry(info, "RockMesh");
+						
+			if(geo)
 			{
-				rigidBody->AttachShape(boxGeo); //Attach shape using default material values
-				rigidBody->CreateDebugDraw();
-				rigidBody->SetUseGravity(false);
+				ShapeDefinition shapeDef = ShapeDefinition();
+				shapeDef.SetGeometry(geo);
+				shapeDef.AddMaterial(0.5f, 0.5f, 0.5f, std::string("RockMaterial"));
+
+				physx::PxShape* shape = PhysXDataManager::GetSingletonPtr()->CreateShape(shapeDef, "RockShape");
+
+				if(shape)
+				{
+					rigidBody->AttachShape(*shape);
+					rigidBody->CreateDebugDraw();
+					rigidBody->SetUseGravity(false);
+				}
+				//rigidBody->CreateAndAttachNewShape(shapeDef);
+				
+				//renderComponent->Disable();
 			}
 		}
 		break;
@@ -85,10 +105,10 @@ Projectile* ProjectileFactory::CreateProjectile(IScene* const scene,const Elemen
 			RigidBodyComponent* rigidBody = new RigidBodyComponent();
 			newProjectile->AttachComponent(rigidBody);
 			rigidBody->CreateRigidBody(RigidBodyComponent::DYNAMIC);
-			physx::PxBoxGeometry geo = physx::PxBoxGeometry(0.5f, 0.5f, 0.5f);
+			/*physx::PxBoxGeometry geo = physx::PxBoxGeometry(0.5f, 0.5f, 0.5f);
 			rigidBody->AttachShape(geo);
 			rigidBody->SetUseGravity(false);
-			rigidBody->CreateDebugDraw();
+			rigidBody->CreateDebugDraw();*/
 
 			//Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().getByName("DefaultParticleShader");
 

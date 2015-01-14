@@ -222,13 +222,33 @@ bool ProbenderInputHandler::keyPressed( const OIS::KeyEvent &arg )
 			RigidBodyComponent* rigidBody = (RigidBodyComponent*)probender->rightHandAttack->GetComponent(Component::RIGID_BODY_COMPONENT);
 
 			if(rigidBody)
-				rigidBody->ApplyImpulse(physx::PxVec3(0.0f, 0.0f, -2000.0f));
+				rigidBody->ApplyForce(physx::PxVec3(0.0f, 0.0f, -1000.0f));
 
 			/*physx::PxRigidDynamic* dy = probender->rightHandAttack->GetDynamicRigidBody();
 			if(dy)
 			{
 				dy->addForce(physx::PxVec3(0.0f, 0.0f, -2000.0f), physx::PxForceMode::eIMPULSE);
 			}*/
+		}
+	}
+	else if(arg.key == OIS::KC_LEFT)
+	{
+		if(probender->rightHandAttack)
+		{
+			RigidBodyComponent* rigidBody = (RigidBodyComponent*)probender->rightHandAttack->GetComponent(Component::RIGID_BODY_COMPONENT);
+
+			if(rigidBody)
+				rigidBody->ApplyForce(physx::PxVec3(-100.0f, 0.0f, 0.0f));
+		}
+	}
+	else if(arg.key == OIS::KC_RIGHT)
+	{
+		if(probender->rightHandAttack)
+		{
+			RigidBodyComponent* rigidBody = (RigidBodyComponent*)probender->rightHandAttack->GetComponent(Component::RIGID_BODY_COMPONENT);
+
+			if(rigidBody)
+				rigidBody->ApplyForce(physx::PxVec3(100.0f, 0.0f, 0.0f));
 		}
 	}
 	else if(arg.key == OIS::KC_SPACE)
@@ -265,6 +285,11 @@ bool ProbenderInputHandler::keyPressed( const OIS::KeyEvent &arg )
 		}
 		
 	}
+	else if (arg.key == OIS::KC_BACK)
+	{
+		if(probender->rightHandAttack)
+			probender->GetOwningArena()->GetProjectileManager()->DestroyProjectile(probender->rightHandAttack);
+	}
 
 	return true;
 }
@@ -292,15 +317,6 @@ bool ProbenderInputHandler::mouseMoved( const OIS::MouseEvent &arg )
 
 		if(rigidBody)
 			rigidBody->ApplyImpulse(dir * 250.0f);
-
-
-		/*physx::PxRigidDynamic* dyn = probender->rightHandAttack->GetDynamicRigidBody();
-		if(dyn)
-		{
-			dyn->addForce(dir * 250.0f, physx::PxForceMode::eIMPULSE);
-			physx::PxVec3 g = dyn->getGlobalPose().p;
-			printf("Pos: %f, %f, %f\n", g.x, g.y, g.z);
-		}*/
 	}
 	
 	prev = curr;

@@ -1,5 +1,4 @@
 #include "GameObject.h"
-#include "PhysXDebugDraw.h"
 #include "OgreEntity.h"
 #include "OgreManualObject.h"
 #include "IScene.h"

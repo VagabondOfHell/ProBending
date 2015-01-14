@@ -11,6 +11,7 @@
 #include "extensions\PxDefaultSimulationFilterShader.h"
 #include "foundation\PxFoundation.h"
 #include "pxtask\PxCudaContextManager.h"
+#include "PhysXDataManager.h"
 
 IScene::IScene(SceneManager* _owningManager, Ogre::Root* root, std::string _sceneName, std::string _resourceGroupName)
 	: physicsWorld(NULL), physxSimulating(false), physxEnabled(false), cudaContextManager(NULL), guiManager(new GUIManager()), started(false),
@@ -34,6 +35,8 @@ IScene::~IScene()
 		delete mCpuDispatcher;
 		mCpuDispatcher = NULL;
 	}
+
+	PhysXDataManager::DestroySingleton();
 
 	if(physicsWorld)
 		physicsWorld->release();

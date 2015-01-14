@@ -72,7 +72,7 @@ void FluidScene::Start()
 	light->setType(Ogre::Light::LightTypes::LT_DIRECTIONAL);
 	light->setAttenuation(10000, 1.0, 1, 1);
 	projectile = new Projectile(this, SharedAbilityDescriptor(new AbilityDescriptor(probender)));
-	projectile->LoadModel("Rock_01.mesh");
+//	projectile->LoadModel("Rock_01.mesh");
 	Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().getByName("DefaultParticleShader");
 	Ogre::GpuProgramParametersSharedPtr params = material->getTechnique(0)->getPass(0)->getVertexProgramParameters();
 	Ogre::GpuProgramParametersSharedPtr fragParams = material->getTechnique(0)->getPass(0)->getFragmentProgramParameters();
@@ -89,7 +89,7 @@ void FluidScene::Start()
 	params->setNamedConstant("newcolor", Ogre::Vector4(1.0f, 0.0f, 0.0f, 0.50f));
 	
 	particlePointEmitter = std::shared_ptr<ParticlePointEmitter>(new ParticlePointEmitter(100, physx::PxVec3(65.0f, 0.0f, 0.0f),
-		physx::PxVec3(-2, 1.0, 0).getNormalized(), physx::PxVec3(2, 1.0f, 1).getNormalized(), 20.0f, 40.0f));
+		physx::PxVec3(-2, 1.0, 0).getNormalized(), physx::PxVec3(2, 1.0f, 1).getNormalized(), true, 20.0f, 40.0f));
 	
 	ParticleSystemParams psParams = ParticleSystemParams();
 	psParams.cudaContext = cudaContextManager;
@@ -98,12 +98,12 @@ void FluidScene::Start()
 	particleSystem = new ParticleSystemBase(particlePointEmitter, NUM_PARTICLES, 5.0f, psParams);
 	particleSystem2 = new ParticleSystemBase(particlePointEmitter, NUM_PARTICLES, 2.0f, psParams);
 	
-	particleComponent = new ParticleComponent(projectile, particleSystem, false);
+	particleComponent = new ParticleComponent(particleSystem, false);
 	projectile->AttachComponent(particleComponent);
-	projectile->gameObjectNode->setScale(0.3f, 0.3f, 0.3f);
+	//projectile->gameObjectNode->setScale(0.3f, 0.3f, 0.3f);
 
 	particlePointEmitter->position = physx::PxVec3(45.0f, 0.0f, 0.0f);
-	particleComponent2 = new ParticleComponent(projectile, particleSystem2, false);
+	particleComponent2 = new ParticleComponent(particleSystem2, false);
 	projectile->AttachComponent(particleComponent2);
 
 	particleSystem->setMaterial("TexturedParticleShader");
@@ -171,46 +171,46 @@ bool FluidScene::keyPressed( const OIS::KeyEvent &arg )
 		mainOgreCamera->setPosition(camPos);
 	}
 
-	if(arg.key == OIS::KC_W)
+	/*if(arg.key == OIS::KC_W)
 	{
-		projectile->gameObjectNode->translate(0.0f, 1.0f, 0.0f);
+	projectile->gameObjectNode->translate(0.0f, 1.0f, 0.0f);
 	}
 
 	if(arg.key == OIS::KC_S)
 	{
-		projectile->gameObjectNode->translate(0.0f, -1.0f, 0.0f);
+	projectile->gameObjectNode->translate(0.0f, -1.0f, 0.0f);
 	}
 
 	if(arg.key == OIS::KC_A)
 	{
-		projectile->gameObjectNode->translate(-3.0f, 0.0f, 0.0f);
+	projectile->gameObjectNode->translate(-3.0f, 0.0f, 0.0f);
 	}
 
 	if(arg.key == OIS::KC_D)
 	{
-		projectile->gameObjectNode->translate(3.0f, 0.0f, 0.0f);
+	projectile->gameObjectNode->translate(3.0f, 0.0f, 0.0f);
 	}
 
 	if(arg.key == OIS::KC_UP)
 	{
-		projectile->gameObjectNode->translate(0.0f, 1.0f, 0.0f);
+	projectile->gameObjectNode->translate(0.0f, 1.0f, 0.0f);
 	}
 
 	if(arg.key == OIS::KC_DOWN)
 	{
-		projectile->gameObjectNode->translate(0.0f, -1.0f, 0.0f);
+	projectile->gameObjectNode->translate(0.0f, -1.0f, 0.0f);
 	}
 
 	if(arg.key == OIS::KC_LEFT)
 	{
-		projectile->gameObjectNode->translate(-3.0f, 0.0f, 0.0f);
+	projectile->gameObjectNode->translate(-3.0f, 0.0f, 0.0f);
 	}
 
 	if(arg.key == OIS::KC_RIGHT)
 	{
-		projectile->gameObjectNode->translate(3.0f, 0.0f, 0.0f);
+	projectile->gameObjectNode->translate(3.0f, 0.0f, 0.0f);
 	}
-	
+	*/
 	if(arg.key == OIS::KC_SPACE)
 	{
 		particleComponent2->SetTransformationSpace(!particleComponent2->GetTransformationSpace());
