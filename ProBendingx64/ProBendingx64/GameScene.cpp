@@ -2,11 +2,6 @@
 #include "Arena.h"
 #include "ArenaBuilder.h"
 #include "SceneManager.h"
-#include "OgreSceneManager.h"
-#include "OgreRenderWindow.h"
-#include "OgreCamera.h"
-#include "OgreViewport.h"
-#include "PxScene.h"
 #include "GUIManager.h"
 #include "InputNotifier.h"
 #include "InputManager.h"
@@ -14,6 +9,19 @@
 #include "KinectReader.h"
 #include "CudaModuleManager.h"
 #include "CollisionFilterShaders.h"
+#include "PhysXSerializerWrapper.h"
+
+#include "OgreSceneManager.h"
+#include "OgreRenderWindow.h"
+#include "OgreCamera.h"
+#include "OgreViewport.h"
+
+#include "PxScene.h"
+#include "geometry/PxConvexMesh.h"
+#include "PxPhysics.h"
+
+bool save = false;
+bool load = false;
 
 GameScene::GameScene(void)
 	:IScene(NULL, NULL, "", "")
@@ -105,6 +113,68 @@ bool GameScene::Update(float gameTime)
 			physxSimulating = false;
 		}
 	
+	if(!physxSimulating && save)
+	{
+		if(PhysXSerializerWrapper::CreateSerializer())
+		{
+			if(PhysXSerializerWrapper::CreateCollection("Geometry"))
+			{
+				physx::PxConvexMesh** meshes = new physx::PxConvexMesh*[PxGetPhysics().getNbConvexMeshes()];
+				
+				physx::PxU32 meshesAdded = PxGetPhysics().getConvexMeshes(meshes, PxGetPhysics().getNbConvexMeshes());
+
+				if(meshesAdded > 0)
+				{
+					for (int i = 0; i < meshesAdded; i++)
+					{
+						PhysXSerializerWrapper::AddToCollection("Geometry", *meshes[i]);
+					}
+
+					PhysXSerializerWrapper::CompleteCollection("Geometry");
+					if(PhysXSerializerWrapper::SerializeToBinary("ConvexMeshes.spd", "Geometry"))
+						printf("XML Serialization successful\n");
+					else
+						printf("XML Serialization unsuccessful\n");
+
+					PhysXSerializerWrapper::DestroySerializer();
+				}
+			}
+		}
+
+		save = false;
+	}
+
+	if(!physxSimulating && load)
+	{
+		printf("Number Polygons %i\n",PxGetPhysics().getNbConvexMeshes());
+
+		if(PhysXSerializerWrapper::CreateSerializer())
+		{
+			if(PhysXSerializerWrapper::DeserializeFromBinary("ConvexMeshes.spd", "LoadedMeshes"))
+				printf("Deserialization successful\n");
+			else
+				printf("Deserialization unsuccessful\n");
+
+			if(PhysXSerializerWrapper::AddToScene(physicsWorld, "LoadedMeshes"))
+				printf("Added to scene");
+
+			physx::PxConvexMesh** convexMeshList = new physx::PxConvexMesh*[PxGetPhysics().getNbConvexMeshes()];
+			physx::PxU32 numAdded = PxGetPhysics().getConvexMeshes(
+				convexMeshList, PxGetPhysics().getNbConvexMeshes());
+
+			for (int i = 0; i < numAdded; i++)
+			{
+				printf("Number Polygons %i\n", convexMeshList[i]->getNbPolygons());
+			}
+
+			delete[] convexMeshList;
+
+			PhysXSerializerWrapper::DestroySerializer();
+		}
+
+		load = false;
+	}
+
 	return true;
 }
 
@@ -149,6 +219,12 @@ bool GameScene::keyPressed( const OIS::KeyEvent &arg )
 	{
 		mainOgreCamera->moveRelative(Ogre::Vector3(0.0f, 0.0f, -40.0f));
 	}
+
+	if(arg.key == OIS::KC_Z)
+		save = true;
+
+	if(arg.key == OIS::KC_L)
+		load = true;
 
 	return true;
 }

@@ -1,4 +1,4 @@
-//#include "vld.h"
+#include "vld.h"
 #include "Game.h"
 #include "InputManager.h"
 #include "DotSceneLoader.h"
@@ -6,6 +6,7 @@
 //#include "BlankScene.h"
 //#include "FluidScene.h"
 #include "GameScene.h"
+#include "PhysXSerializerWrapper.h"
 
 #define USE_PHYSX_COOKING
 
@@ -312,6 +313,8 @@ void Game::CloseGame()
 		gPhysicsSDK = NULL;
 	}
 
+	PhysXSerializerWrapper::CleanMemory();
+
 	PxCloseExtensions();
 
 	if(foundation)
@@ -371,7 +374,7 @@ void Game::Run()
 			rendering = false;
 
 		//Ogre::WindowEventUtilities::messagePump();
-		mRoot->renderOneFrame();
+		//mRoot->renderOneFrame();
 
 		currentTime = (float)gameTimer.getMilliseconds();
 		
