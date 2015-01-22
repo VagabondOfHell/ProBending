@@ -36,6 +36,8 @@ IScene::~IScene()
 		mCpuDispatcher = NULL;
 	}
 
+	gameObjectList.clear();
+
 	PhysXDataManager::DestroySingleton();
 
 	if(physicsWorld)

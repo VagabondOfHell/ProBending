@@ -23,7 +23,7 @@ class SceneSerializer
 private:
 	const unsigned long long StartID;
 
-	const std::string ActorCollection;
+	const std::string ActorCollection, PxDataCollection;
 	const std::string GameObjectNode, ObjectName;
 	const std::string Position, Rotation, X, Y, Z, W;
 	const std::string MeshRenderComponen, RigidBodyComponen, ParticleComponen;

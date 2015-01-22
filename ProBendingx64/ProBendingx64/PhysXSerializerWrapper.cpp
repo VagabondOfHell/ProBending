@@ -227,8 +227,9 @@ bool PhysXSerializerWrapper::SerializeToBinary(const std::string& fileName,
 
 		PxDefaultFileOutputStream outputStream = PxDefaultFileOutputStream(fileName.c_str());
 
-		return PxSerialization::serializeCollectionToBinary(outputStream, *result->second, 
-			*serializationRegistry, refCollection, false);
+		if(outputStream.isValid())
+			return PxSerialization::serializeCollectionToBinary(outputStream, *result->second, 
+				*serializationRegistry, refCollection, false);
 	}
 
 	return false;

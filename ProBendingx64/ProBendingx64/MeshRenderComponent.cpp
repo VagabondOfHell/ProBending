@@ -53,9 +53,9 @@ bool MeshRenderComponent::LoadModel(const Ogre::String& modelFileName)
 	return entity != NULL;
 }
 
-const std::string& MeshRenderComponent::GetEntityName()const
+const std::string& MeshRenderComponent::GetMeshName()const
 {
-	return entity->getName();
+	return entity->getMesh()->getName();
 }
 
 Ogre::Vector3 MeshRenderComponent::GetHalfExtents()const

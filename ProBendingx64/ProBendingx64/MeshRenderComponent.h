@@ -39,7 +39,7 @@ public:
 
 	///<summary>Gets the name of the entity used</summary>
 	///<returns>Name of the entity. Error if no entity</returns>
-	const std::string& GetEntityName()const;
+	const std::string& GetMeshName()const;
 
 	///<summary>Creates a box from the ogre entity dimensions, with scaling</summary>
 	///<returns>Gets the half size of the rectangle representing the entity</returns>

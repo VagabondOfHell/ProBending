@@ -102,12 +102,12 @@ bool RigidBodyComponent::CreateAndAttachNewShape(const ShapeDefinition& shapeDef
 	if(bodyType == STATIC)
 		shape =	bodyStorage.staticActor->createShape(*shapeDefinition.ShapeGeometry.get(), 
 		&shapeDefinition.MaterialList[0], 
-			shapeDefinition.MaterialList.size(), shapeDefinition.ShapeFlags);
+			(physx::PxU16)shapeDefinition.MaterialList.size(), shapeDefinition.ShapeFlags);
 
 	else if(bodyType == DYNAMIC)
 		shape = bodyStorage.dynamicActor->createShape(*shapeDefinition.ShapeGeometry.get(), 
 		&shapeDefinition.MaterialList[0],
-			shapeDefinition.MaterialList.size(), shapeDefinition.ShapeFlags);
+			(physx::PxU16)shapeDefinition.MaterialList.size(), shapeDefinition.ShapeFlags);
 
 	if(shape)
 		shape->setLocalPose(shapeDefinition.Transform);

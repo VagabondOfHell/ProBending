@@ -11,6 +11,7 @@
 #include "CollisionFilterShaders.h"
 #include "PhysXSerializerWrapper.h"
 #include "PhysXDataManager.h"
+#include "SceneSerializer.h"
 
 #include "OgreSceneManager.h"
 #include "OgreRenderWindow.h"
@@ -119,7 +120,9 @@ bool GameScene::Update(float gameTime)
 		PxDataManSerializeOptions options = 
 			PxDataManSerializeOptions(PxDataManSerializeOptions::ALL, "SerializeCollection", "MyResources\\DataManagerData");
 
-		if(PhysXDataManager::GetSingletonPtr()->SerializeData(options))
+		SceneSerializer serializer = SceneSerializer();
+
+		if(serializer.SerializeScene(this, "GameScene"))//if(PhysXDataManager::GetSingletonPtr()->SerializeData(options))
 			printf("Data Manager Serialize Data successful\n");
 		else
 			printf("Data Manager Serialize Data unsuccessful \n");

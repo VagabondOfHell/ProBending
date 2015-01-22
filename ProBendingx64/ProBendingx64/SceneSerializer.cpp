@@ -24,7 +24,8 @@
 typedef std::unordered_set<SharedGameObject> GameObjectList;
 
 SceneSerializer::SceneSerializer()
-	: StartID(1), ActorCollection("ActorCollection"), GameObjectNode("GameObjectNode"), ObjectName("ObjectName"),
+	: StartID(1), ActorCollection("ActorCollection"), PxDataCollection("PxDataCollection"),
+	GameObjectNode("GameObjectNode"), ObjectName("ObjectName"),
 	Position("Position"), X("X"), Y("Y"), Z("Z"), W("W"), Rotation("Rotation"),
 	MeshRenderComponen("MeshRenderComponent"), RigidBodyComponen("RigidBodyComponent"),
 	ParticleComponen("ParticleComponent"), EntityName("Entity"), RigidID("RigidID"),
@@ -35,6 +36,11 @@ SceneSerializer::SceneSerializer()
 	InitialLifetime("InitialLifetime"), ParticleAffectors("ParticleAffectors"), ScaleAffector("ScaleAffector"), 
 	ColourFaderAffector("ColourFadeAffector"), AlphaFadeAffector("AlphaFadeAffector"), Enlarge("Enlarge"), 
 	MinScale("MinScale"), MaxScale("MaxScale"), StartColour("StartColour"), EndColour("EndColour")
+{
+
+}
+
+SceneSerializer::~SceneSerializer()
 {
 
 }
@@ -83,15 +89,17 @@ bool SceneSerializer::AddVector4Attribute(XMLWriter& writer, Ogre::Vector4 vec)
 bool SceneSerializer::SerializeScene(const IScene* scene, const std::string& fileName)
 {
 	PxDataManSerializeOptions serialOptions = PxDataManSerializeOptions(PxDataManSerializeOptions::ALL,
-		"SerializationCollection", true, fileName);
+		PxDataCollection, true, fileName);
 
 	if(PhysXDataManager::GetSingletonPtr()->SerializeData(serialOptions))
 	{
 		XMLWriter writer;
+		std::string sceneName = scene->GetSceneName();
 
-		if(PhysXSerializerWrapper::CreateCollection(ActorCollection, true))
+		if(PhysXSerializerWrapper::CreateSerializer() &&
+			PhysXSerializerWrapper::CreateCollection(ActorCollection, true))
 		{
-			writer.CreateNode(scene->GetSceneName(), std::string(""), false);//Root node which is scene name
+			writer.CreateNode(sceneName, std::string(""), false);//Root node which is scene name
 
 			for (GameObjectList::iterator start = scene->gameObjectList.begin();
 				start != scene->gameObjectList.end(); ++start)
@@ -99,8 +107,14 @@ bool SceneSerializer::SerializeScene(const IScene* scene, const std::string& fil
 				SerializeGameObject(writer, *start);//still need to handle children
 			}
 
-			bool serialize = PhysXSerializerWrapper::SerializeToBinary(fileName + ".pbd", ActorCollection);
+			PhysXSerializerWrapper::CompleteCollection(ActorCollection, PxDataCollection);
+
+			bool serialize = PhysXSerializerWrapper::SerializeToBinary(fileName + "Actors.pbd", ActorCollection);
 			bool xml = writer.WriteFile(fileName + ".xml");
+
+			PhysXSerializerWrapper::ReleaseCollection(PxDataCollection);
+			PhysXSerializerWrapper::ReleaseCollection(ActorCollection);
+			PhysXSerializerWrapper::DestroySerializer();
 
 			return serialize && xml;
 		}		
@@ -149,6 +163,8 @@ void SceneSerializer::SerializeGameObject(XMLWriter& writer, const SharedGameObj
 			break;
 		}
 	}
+
+	writer.PopNode();
 }
 
 bool SceneSerializer::SerializeMeshRenderComponent(XMLWriter& writer, const MeshRenderComponent* renderer)
@@ -156,7 +172,7 @@ bool SceneSerializer::SerializeMeshRenderComponent(XMLWriter& writer, const Mesh
 	//create render component node, setting enabled as its value
 	if(writer.CreateNode(MeshRenderComponen, renderer->enabled, true))
 	{
-		writer.AddAttribute(EntityName, renderer->GetEntityName(), false, false);
+		writer.AddAttribute(EntityName, renderer->GetMeshName(), false, false);
 		writer.PopNode();
 		return true;
 	}

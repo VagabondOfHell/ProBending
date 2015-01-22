@@ -82,6 +82,8 @@ SharedProjectile ProjectileFactory::CreateProjectile(IScene* const scene,const E
 				
 				//renderComponent->Disable();
 			}
+
+			scene->AddGameObject(newProjectile);
 		}
 		break;
 	case ElementEnum::Fire:
@@ -113,6 +115,7 @@ SharedProjectile ProjectileFactory::CreateProjectile(IScene* const scene,const E
 			rigidBody->CreateRigidBody(RigidBodyComponent::DYNAMIC);
 			rigidBody->SetUseGravity(false);
 
+			scene->AddGameObject(newProjectile);
 			/*physx::PxBoxGeometry geo = physx::PxBoxGeometry(0.5f, 0.5f, 0.5f);
 			rigidBody->AttachShape(geo);
 			rigidBody->SetUseGravity(false);

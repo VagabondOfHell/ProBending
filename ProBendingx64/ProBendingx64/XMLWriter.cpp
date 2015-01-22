@@ -185,6 +185,7 @@ void XMLWriter::AppendNode(XMLNode nodeToAppend, XMLNode parentNode /*= NULL*/, 
 		//otherwise assign root
 		rootNode = nodeToAppend;
 		xmlDocument->append_node(rootNode);
+		push = true; //always add the root node to the stack
 	}
 
 	if(push)//check to see if it should be placed in the stack
