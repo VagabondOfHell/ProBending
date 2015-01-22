@@ -111,7 +111,7 @@ public:
 	///<param name="outVal">The integer to place the result in</param>
 	///<param name="attributeVal">True to get current attribute value, false to get current node value</param>
 	///<returns>True if successful, false if conversion issues. If false, it is not recommended to use the value</returns>
-	bool GetIntValue(int& outVal, bool attributeVal = false);
+	bool GetLongValue(long long& outVal, bool attributeVal = false);
 	
 	///<summary>Places the child on the stack if valid</summary>
 	///<returns>True if there was a child, false if not</returns>

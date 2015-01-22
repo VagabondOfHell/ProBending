@@ -159,7 +159,7 @@ physx::PxSceneDesc* IScene::GetDefaultSceneDescription(physx::PxVec3& gravity, b
 	return descriptor;
 }
 
-const std::string IScene::GetSceneName()const{return ogreSceneManager->getName();}
+std::string IScene::GetSceneName()const{return ogreSceneManager->getName();}
 
 Ogre::SceneNode* IScene::GetSceneRootNode()const{return ogreSceneManager->getRootSceneNode();}
 

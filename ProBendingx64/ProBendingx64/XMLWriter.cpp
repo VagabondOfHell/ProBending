@@ -113,7 +113,7 @@ const char* XMLWriter::AllocateString(const char* stringToAlloc)
 	return retVal;
 }
 
-bool XMLWriter::CreateNode(std::string& nodeName, std::string& nodeValue, bool push /*= true*/,
+bool XMLWriter::CreateNode(const std::string& nodeName, const std::string& nodeValue, bool push /*= true*/,
 						XMLNode parentNode /*= NULL*/, bool allocateName /*= false*/, bool allocateValue /*= false*/)
 {
 	using namespace rapidxml;
@@ -129,6 +129,13 @@ bool XMLWriter::CreateNode(std::string& nodeName, std::string& nodeValue, bool p
 		AppendNode(newNode, parentNode, push);
 
 	return newNode != NULL;
+}
+
+bool XMLWriter::CreateNode(const std::string& nodeName, const bool nodeValue, 
+		bool push /*= true*/, XMLNode parentNode /*= NULL*/, bool allocateName /*= false*/)
+{
+	return CreateNode(nodeName, nodeValue ? std::string("T") : std::string("F"),
+		push, parentNode, allocateName, true);
 }
 
 bool XMLWriter::CreateNode(const char* nodeName, const char* nodeValue, bool push /*= true*/,XMLNode parentNode /*= NULL*/)
@@ -158,7 +165,7 @@ bool XMLWriter::CreateNode(const char* nodeName, const float nodeValue, bool pus
 	return CreateNode(nodeName, std::to_string(nodeValue).c_str(), push, parentNode);
 }
 
-bool XMLWriter::CreateNode(const char* nodeName, const int nodeValue, bool push /*= true*/, XMLNode parentNode /*= NULL*/)
+bool XMLWriter::CreateNode(const char* nodeName, const __int64 nodeValue, bool push /*= true*/, XMLNode parentNode /*= NULL*/)
 {
 	return CreateNode(nodeName, std::to_string(nodeValue).c_str(), push, parentNode);
 }
@@ -169,9 +176,9 @@ void XMLWriter::AppendNode(XMLNode nodeToAppend, XMLNode parentNode /*= NULL*/, 
 	if(rootNode)
 	{
 		if(parentNode)
-			parentNode->append_node(nodeToAppend);
+			parentNode->append_node(nodeToAppend);//add to specified node
 		else
-			GetTop()->append_node(nodeToAppend);
+			GetTop()->append_node(nodeToAppend);//or add to node at top of the work stack
 	}
 	else
 	{
@@ -201,7 +208,8 @@ bool XMLWriter::AppendAttribute(XMLAttribute attToAppend, XMLNode nodeToAppendTo
 	return false;
 }
 
-bool XMLWriter::AddAttribute(std::string& attName, std::string& attValue, bool allocateName /*= false*/, bool allocateValue /*= false*/, XMLNode nodeToAddTo /*= NULL*/)
+bool XMLWriter::AddAttribute(const std::string& attName, const std::string& attValue, 
+		bool allocateName /*= false*/, bool allocateValue /*= false*/, XMLNode nodeToAddTo /*= NULL*/)
 {
 	using namespace rapidxml;
 
@@ -209,12 +217,38 @@ bool XMLWriter::AddAttribute(std::string& attName, std::string& attValue, bool a
 	const char* allocName = allocateName ? AllocateString(attName.c_str()) : attName.c_str();
 	const char* allocValue = allocateValue ? AllocateString(attValue.c_str()) : attValue.c_str();
 
-	XMLAttribute newAtt = CreateXMLAttribute(allocName, allocValue);
+	return AddAttribute(allocName, allocValue, nodeToAddTo);
+}
 
-	if(newAtt)//if it exists
-		return AppendAttribute(newAtt, nodeToAddTo);
-	
-	return false;
+bool XMLWriter::AddAttribute(const std::string& attName, const __int64 attVal, 
+			bool allocateName /*= false*/, XMLNode nodeToAddTo /*= NULL*/)
+{
+	using namespace rapidxml;
+
+	//Allocate the strings if necessary
+	const char* allocName = allocateName ? AllocateString(attName.c_str()) : attName.c_str();
+
+	return AddAttribute(allocName, std::to_string(attVal).c_str(), nodeToAddTo);
+}
+
+bool XMLWriter::AddAttribute(const std::string& attName, const float attVal, bool allocateName /*= false*/, XMLNode nodeToAddTo /*= NULL*/)
+{
+	using namespace rapidxml;
+
+	//Allocate the strings if necessary
+	const char* allocName = allocateName ? AllocateString(attName.c_str()) : attName.c_str();
+
+	return AddAttribute(allocName, std::to_string(attVal).c_str(), nodeToAddTo);
+}
+
+bool XMLWriter::AddAttribute(const std::string& attName, const bool attVal, bool allocateName /*= false*/, XMLNode nodeToAddTo /*= NULL*/)
+{
+	using namespace rapidxml;
+
+	//Allocate the strings if necessary
+	const char* allocName = allocateName ? AllocateString(attName.c_str()) : attName.c_str();
+
+	return AddAttribute(allocName,  attVal ? std::string("T") : std::string("F"), nodeToAddTo);
 }
 
 bool XMLWriter::AddAttribute(const char* attName, const char* attVal, XMLNode nodeToAddTo /*= NULL*/)
@@ -240,7 +274,7 @@ bool XMLWriter::AddAttribute(const char* attName, float attVal, XMLNode nodeToAd
 	return AddAttribute(attName, std::to_string(attVal).c_str(), nodeToAddTo);
 }
 
-bool XMLWriter::AddAttribute(const char* attName, int attVal, XMLNode nodeToAddTo /*= NULL*/)
+bool XMLWriter::AddAttribute(const char* attName, __int64 attVal, XMLNode nodeToAddTo /*= NULL*/)
 {
 	return AddAttribute(attName, std::to_string(attVal).c_str(), nodeToAddTo);
 }

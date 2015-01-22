@@ -81,6 +81,8 @@ struct ParticleKernelMap
 
 class ParticleSystemBase: public Ogre::SimpleRenderable
 {
+	friend class SceneSerializer;
+
 protected:
 	static ParticleMaterialMap materialsMap;//Shared instance of a list of shaders
 	static ParticleKernelMap kernelsMap;//Shared instance of a list of kernels

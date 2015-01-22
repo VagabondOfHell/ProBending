@@ -65,8 +65,18 @@ public:
 	///<param name="allocateName">True to have the writer allocate the name string (good for function-scoped variables)</param>
 	///<param name="allocateValue">True to have the writer allocate the value string (good for function-scoped variables)</param>
 	///<returns>True if successful, false if an error occured. Check last error if false</returns>
-	virtual bool CreateNode(std::string& nodeName, std::string& nodeValue, bool push = true,
-		XMLNode parentNode = NULL, bool allocateName = false, bool allocateValue = false);
+	virtual bool CreateNode(const std::string& nodeName, const std::string& nodeValue = std::string(""), 
+		bool push = true, XMLNode parentNode = NULL, bool allocateName = false, bool allocateValue = false);
+
+	///<summary>Creates a new XML Node and sets it as the node to be modified</summary>
+	///<param name="nodeName">The name to assign to the node. Does not check for empty string</param>
+	///<param name="nodeValue">The value to be assigned to the node</param>
+	///<param name="push">True to place at top of the stack for modifications (such as adding attributes or children)</param>
+	///<param name="parentNode">The node that this node should be attached to, if any</param>
+	///<param name="allocateName">True to have the writer allocate the name string (good for function-scoped variables)</param>
+	///<returns>True if successful, false if an error occured. Check last error if false</returns>
+	bool CreateNode(const std::string& nodeName, const bool nodeValue,
+		bool push = true, XMLNode parentNode = NULL, bool allocateName = false);
 
 	///<summary>Creates a new XML Node and sets it as the node to be modified. This automatically allocates
 	///the string in the writer</summary>
@@ -102,7 +112,7 @@ public:
 	///<param name="push">True to place at top of the stack for modifications (such as adding attributes or children)</param>
 	///<param name="parentNode">The parent node to add this node to, or NULL to add to root</param>
 	///<returns>True if successful, false if an error occured. Check last error if false</returns>
-	virtual bool CreateNode(const char* nodeName, const int nodeValue, bool push = true, XMLNode parentNode = NULL);
+	virtual bool CreateNode(const char* nodeName, const __int64 nodeValue, bool push = true, XMLNode parentNode = NULL);
 
 	///<summary>Gets the currently modified Node</summary>
 	///<returns>Pointer to the currently modified node, or NULL if none</returns>
@@ -116,8 +126,38 @@ public:
 	///<param name="allocateValue">True to have the writer allocate the value string (good for function-scoped variables)</param>
 	///<param name="nodeToAddTo">The node to add the attribute to, or NULL to add to the Top Node</param>
 	///<returns>True if successful, false if an error occured. Check last error if false</returns>
-	virtual bool AddAttribute(std::string& attName, std::string& attValue, 
+	virtual bool AddAttribute(const std::string& attName, const std::string& attValue, 
 		bool allocateName = false, bool allocateValue = false, XMLNode nodeToAddTo = NULL);
+
+	///<summary>Adds an attribute to the node at the top of the stack or to the specified node. This method should
+	///not be called if nodeToAddTo is NULL and there are no nodes in the stack</summary>
+	///<param name="attName">The name of the attribute</param>
+	///<param name="attValue">The value of the attribute</param>
+	///<param name="allocateName">True to have the writer allocate the name string (good for function-scoped variables)</param>
+	///<param name="nodeToAddTo">The node to add the attribute to, or NULL to add to the Top Node</param>
+	///<returns>True if successful, false if an error occured. Check last error if false</returns>
+	virtual bool AddAttribute(const std::string& attName, const __int64 attVal, 
+		bool allocateName = false, XMLNode nodeToAddTo = NULL);
+
+	///<summary>Adds an attribute to the node at the top of the stack or to the specified node. This method should
+	///not be called if nodeToAddTo is NULL and there are no nodes in the stack</summary>
+	///<param name="attName">The name of the attribute</param>
+	///<param name="attValue">The value of the attribute</param>
+	///<param name="allocateName">True to have the writer allocate the name string (good for function-scoped variables)</param>
+	///<param name="nodeToAddTo">The node to add the attribute to, or NULL to add to the Top Node</param>
+	///<returns>True if successful, false if an error occured. Check last error if false</returns>
+	virtual bool AddAttribute(const std::string& attName, const float attVal,
+		bool allocateName = false, XMLNode nodeToAddTo = NULL);
+
+	///<summary>Adds an attribute to the node at the top of the stack or to the specified node. This method should
+	///not be called if nodeToAddTo is NULL and there are no nodes in the stack</summary>
+	///<param name="attName">The name of the attribute</param>
+	///<param name="attValue">The value of the attribute</param>
+	///<param name="allocateName">True to have the writer allocate the name string (good for function-scoped variables)</param>
+	///<param name="nodeToAddTo">The node to add the attribute to, or NULL to add to the Top Node</param>
+	///<returns>True if successful, false if an error occured. Check last error if false</returns>
+	bool AddAttribute(const std::string& attName, const bool attVal,
+		bool allocateName = false, XMLNode nodeToAddTo = NULL);
 
 	///<summary>Adds an attribute to the top node, or the specified node, after allocating the strings with the writer</summary>
 	///<param name="attName">The attribute name</param>
@@ -151,7 +191,7 @@ public:
 	///<param name="push">True to place at top of the stack for modifications (such as adding attributes or children)</param>
 	///<param name="parentNode">The parent node to add this node to, or NULL to add to root</param>
 	///<returns>True if successful, false if an error occured. Check last error if false</returns>
-	virtual bool AddAttribute(const char* attName, int attVal, XMLNode nodeToAddTo = NULL);
+	virtual bool AddAttribute(const char* attName, __int64 attVal, XMLNode nodeToAddTo = NULL);
 
 	///<summary>Remove a node off the stack. Does not allow the removal of the root node after it's been created</summary>
 	virtual inline void PopNode()

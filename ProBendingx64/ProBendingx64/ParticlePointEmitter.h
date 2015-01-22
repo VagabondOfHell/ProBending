@@ -6,10 +6,7 @@
 class ParticlePointEmitter :
 	public AbstractParticleEmitter
 {
-private:
-	float particlesPerSecond; //Amount of particles to launch per second. Can be a fractional number to take longer than a second
-	float particlesToEmitThisFrame;//Number of particles to emit this frame
-
+protected:
 	std::vector<physx::PxVec3>forces;//The forces to apply to newly created particles
 
 	std::random_device rd;
@@ -27,12 +24,17 @@ public:
 		physx::PxVec3 minEmissionDirection = physx::PxVec3(0.0f), physx::PxVec3 maxEmissionDirection  = physx::PxVec3(0.0f),
 		bool _loop = true, float _duration = 1.0f, float minParticleSpeed = 1.0f, float maxParticleSpeed = 2.0f);
 
+	ParticlePointEmitter(const ParticlePointEmitter& emitter);
+
 	virtual ~ParticlePointEmitter(void);
 
+	virtual ParticleEmitterType GetEmitterType(){return AbstractParticleEmitter::POINT_EMITTER;}
+	
 	///<summary>Emission method called by a particle system</summary>
 	///<param name="gameTime">The game time that has passed </param>
 	///<param name="availableIndiceCount">The count of currently available indices </summary>
 	///<param name="creationData">The creation data to fill. This is given from the particle system</summary>
 	virtual void Emit(const float gameTime, const unsigned int availableIndiceCount, physx::PxParticleCreationData& creationData);
+
 };
 

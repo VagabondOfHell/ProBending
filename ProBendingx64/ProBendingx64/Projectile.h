@@ -1,8 +1,9 @@
 #pragma once
 #include "GameObject.h"
+#include "AbilityDescriptor.h"
+
 #include <memory>
 
-class AbilityDescriptor;
 class ParticleGameObject;
 
 namespace Ogre

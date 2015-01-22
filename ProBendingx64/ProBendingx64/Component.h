@@ -4,6 +4,8 @@ class GameObject;
 
 class Component
 {
+	friend class SceneSerializer;
+
 protected:
 	GameObject* owningGameObject;
 
@@ -18,8 +20,7 @@ public:
 		AUDIO_COMPONENT,
 		MESH_RENDER_COMPONENT,
 		PARTICLE_COMPONENT,
-		RIGID_BODY_COMPONENT,
-		COLLIDER_COMPONENT
+		RIGID_BODY_COMPONENT
 	};
 
 	Component()

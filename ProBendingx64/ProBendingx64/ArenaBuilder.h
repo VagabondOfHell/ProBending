@@ -5,7 +5,10 @@ class Arena;
 
 class ArenaBuilder
 {
+private:
+	static bool LoadArenaFromXML(Arena& arenaToFill, const std::string fileName);
+
 public:
-	static void LoadArena(Arena& arenaToFill, const std::string arenaName);
+	static bool LoadArena(Arena& arenaToFill, const std::string arenaName);
 };
 

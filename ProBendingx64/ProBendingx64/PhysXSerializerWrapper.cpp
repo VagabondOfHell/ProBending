@@ -6,6 +6,10 @@
 #include "PxScene.h"
 #include "extensions/PxCollectionExt.h"
 
+unsigned int PhysXSerializerWrapper::ReferenceCount = 0;
+
+physx::PxCollection* PhysXSerializerWrapper::workingCollection = NULL;
+
 PhysXSerializerWrapper::CollectionMap PhysXSerializerWrapper::collectionMap;
 std::vector<physx::PxU8*> PhysXSerializerWrapper::dynamicMemoryList;
 
@@ -18,19 +22,26 @@ bool PhysXSerializerWrapper::CreateSerializer()
 	if(!serializationRegistry)
 	{
 		serializationRegistry = PxSerialization::createSerializationRegistry(PxGetPhysics());
+		ReferenceCount = 1;
 		return serializationRegistry != NULL;
 	}
 
-	return false;
+	ReferenceCount++;
+	return true;
 }
 
 void PhysXSerializerWrapper::DestroySerializer()
 {
 	if(serializationRegistry)
 	{
-		ReleaseAllCollections();
-		serializationRegistry->release();
-		serializationRegistry = NULL;
+		if(ReferenceCount == 1)
+		{
+			ReleaseAllCollections();
+			serializationRegistry->release();
+			serializationRegistry = NULL;
+		}
+		
+		ReferenceCount--;
 	}
 }
 
@@ -57,6 +68,19 @@ physx::PxCollection* PhysXSerializerWrapper::CreateAndGetCollection(const std::s
 	return NULL;
 }
 
+bool PhysXSerializerWrapper::SetWorkingCollection(const std::string& collectionName)
+{
+	CollectionMap::iterator findResult = collectionMap.find(collectionName);
+
+	if(findResult != collectionMap.end())
+	{
+		workingCollection = findResult->second;
+		return true;
+	}
+
+	return false;
+}
+
 bool PhysXSerializerWrapper::AddToCollection(const std::string& collectionName, 
 		physx::PxBase& objectToAdd, physx::PxSerialObjectId objectID /*= PX_SERIAL_OBJECT_ID_INVALID*/)
 {
@@ -68,6 +92,18 @@ bool PhysXSerializerWrapper::AddToCollection(const std::string& collectionName,
 		return true;
 	}
 
+	return false;
+}
+
+bool PhysXSerializerWrapper::AddToWorkingCollection(physx::PxBase& objectToAdd, 
+		physx::PxSerialObjectId objectID /*= PX_SERIAL_OBJECT_ID_INVALID*/)
+{
+	if(workingCollection)
+	{
+		workingCollection->add(objectToAdd, objectID);
+		return true;
+	}
+	
 	return false;
 }
 
@@ -109,6 +145,70 @@ bool PhysXSerializerWrapper::CompleteCollection(const std::string& collectionToC
 	}
 
 	return false;
+}
+
+bool PhysXSerializerWrapper::CreateIDs(const std::string& collectionName, physx::PxSerialObjectId idToStartFrom)
+{
+	CollectionMap::iterator completeCollection = collectionMap.find(collectionName);
+
+	if(completeCollection != collectionMap.end())
+	{
+		PxSerialization::createSerialObjectIds(*completeCollection->second, idToStartFrom);
+		return true;
+	}
+
+	return false;
+}
+
+void PhysXSerializerWrapper::CreateIDs(physx::PxSerialObjectId idToStartFrom)
+{
+	for (CollectionMap::iterator start = collectionMap.begin(); start != collectionMap.end(); ++start)
+	{
+		PxSerialization::createSerialObjectIds(*start->second, idToStartFrom);
+	}
+}
+
+unsigned int PhysXSerializerWrapper::CreateIDs(const std::vector<physx::PxSerialObjectId>& idsToStartFrom)
+{
+	std::vector<physx::PxSerialObjectId>::const_iterator vectorStart = idsToStartFrom.begin();
+
+	unsigned int numberOfIDsAdded = 0;
+
+	//Loop through the vector and the map, and go to the shortest one
+	for (CollectionMap::iterator start = collectionMap.begin(); 
+		start != collectionMap.end() && vectorStart != idsToStartFrom.end(); 
+		++start, ++vectorStart, ++numberOfIDsAdded)
+	{
+		PxSerialization::createSerialObjectIds(*start->second, *vectorStart);
+	}
+
+	return numberOfIDsAdded;
+}
+
+physx::PxSerialObjectId PhysXSerializerWrapper::GetID
+	(const std::string& collectionName, const physx::PxBase& object)
+{
+	CollectionMap::iterator result = collectionMap.find(collectionName);
+
+	if(result != collectionMap.end())
+	{
+		return result->second->getId(object);
+	}
+	
+	return PX_SERIAL_OBJECT_ID_INVALID;
+}
+
+physx::PxBase* PhysXSerializerWrapper::FindByID(const std::string& collectionName, 
+		const physx::PxSerialObjectId idToFind)
+{
+	CollectionMap::iterator result = collectionMap.find(collectionName);
+
+	if(result != collectionMap.end())
+	{
+		return result->second->find(idToFind);
+	}
+
+	return NULL;
 }
 
 bool PhysXSerializerWrapper::SerializeToBinary(const std::string& fileName, 
@@ -165,7 +265,8 @@ bool PhysXSerializerWrapper::SerializeToXML(const std::string& fileName,
 	return false;
 }
 
-bool PhysXSerializerWrapper::DeserializeFromBinary(const std::string& fileName, const std::string& collectionToFill)
+bool PhysXSerializerWrapper::DeserializeFromBinary(const std::string& fileName, 
+		const std::string& collectionToFill, const std::string& externalRefsCollection /*= std::string("")*/)
 {
 	PxDefaultFileInputData openFile(fileName.c_str());
 
@@ -185,7 +286,6 @@ bool PhysXSerializerWrapper::DeserializeFromBinary(const std::string& fileName, 
 
 	if(result)
 	{
-		
 		physx::PxDefaultMemoryInputData inputDat(dat, len);
 			
 		PxU8* baseAddress;
@@ -193,20 +293,21 @@ bool PhysXSerializerWrapper::DeserializeFromBinary(const std::string& fileName, 
 		void* alignedBlock = NULL;
 		alignedBlock = CreateAlignedBlock(inputDat, baseAddress);
 
-		collectionFill = PxSerialization::createCollectionFromBinary(alignedBlock, *serializationRegistry);
+		CollectionMap::iterator refFindResult = collectionMap.find(externalRefsCollection);
+		physx::PxCollection* externalRef = NULL;
+
+		if(refFindResult != collectionMap.end())
+			externalRef = refFindResult->second;
+
+		collectionFill = PxSerialization::createCollectionFromBinary(alignedBlock, 
+			*serializationRegistry, externalRef);
 			
 		collectionMap.insert(CollectionMap::value_type(collectionToFill, collectionFill));
 		dynamicMemoryList.push_back(baseAddress);
-
-		delete[] dat;
-
-		return collectionFill != NULL;
 	}
-		
-	delete[] dat;
 	
-
-	return false;
+	delete[] dat;
+	return collectionFill != NULL;
 }
 
 bool PhysXSerializerWrapper::AddToScene(physx::PxScene* sceneToAddTo, const std::string& collectionToAdd)
@@ -216,12 +317,12 @@ bool PhysXSerializerWrapper::AddToScene(physx::PxScene* sceneToAddTo, const std:
 	if(findResult != collectionMap.end())
 	{
 		PxCollection* collection = findResult->second;
-		PxCollectionExt::releaseObjects(*collection);
+		
 		sceneToAddTo->addCollection(*findResult->second);
 		
 		return true;
 	}
-
+	
 	return false;
 }
 
@@ -232,6 +333,12 @@ bool PhysXSerializerWrapper::ReleaseCollection(const std::string& collectionName
 	if(findResult != collectionMap.end())
 	{
 		findResult->second->release();
+		
+		if(findResult->second == workingCollection)
+			ClearWorkingCollection();
+		
+		collectionMap.erase(findResult);
+
 		return true;
 	}
 
@@ -246,5 +353,7 @@ void PhysXSerializerWrapper::ReleaseAllCollections()
 		start->second->release();
 	}
 	
+	ClearWorkingCollection();
 	collectionMap.clear();
 }
+

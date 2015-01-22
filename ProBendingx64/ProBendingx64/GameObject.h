@@ -2,7 +2,11 @@
 #include "OgreVector3.h"
 #include "HelperFunctions.h"
 #include <map>
+#include <unordered_set>
+
 #include "Component.h"
+
+#include <memory>
 
 namespace physx
 {
@@ -13,16 +17,18 @@ namespace physx
 
 class IScene;
 
+typedef std::shared_ptr<GameObject> SharedGameObject;
+
 class GameObject
 {
-	static unsigned int InstanceCounter;
+	friend class SceneSerializer;
 
 protected:
 	std::string name;
 
 	IScene* owningScene;
 	
-	std::map<std::string, GameObject*> children;
+	std::unordered_set<SharedGameObject> children;
 	std::multimap<Component::ComponentType, Component*> components; //Multimap of components based on type
 
 	bool started;
@@ -42,27 +48,17 @@ public:
 	///<summary>Adds a new child to this game object and if successful calls Start</summary>
 	///<param name="newChild">The new child to be attached</param>
 	///<returns>True if successful, false if the name already exists</returns>
-	bool AddChild(GameObject* newChild);
+	bool AddChild(SharedGameObject newChild);
 
-	///<summary>Removes a child from this game object (DOES NOT DELETE)</summary>
+	///<summary>Removes a child from this game object</summary>
 	///<param name="childToRemove">The child game object to be removed</param>
 	///<returns>True if successful, false if not</returns>
-	bool RemoveChild(GameObject* childToRemove);
+	bool RemoveChild(SharedGameObject childToRemove);
 
-	///<summary>Removes a child from this game object by name (DOES NOT DELETE)</summary>
+	///<summary>Removes a child from this game object by name</summary>
 	///<param name="name">The name of the child to be removed</param>
-	///<returns>The game object that was removed</returns>
-	GameObject* RemoveChild(std::string name);
-
-	///<summary>Deletes a child from this game object </summary>
-	///<param name="childToDelete">The child to delete</param>
-	///<returns>True if successful, false if not</returns>
-	bool DeleteChild(GameObject* childToDelete);
-
-	///<summary>Deletes a child from this game object </summary>
-	///<param name="name">The name of the child to delete</param>
-	///<returns>True if successful, false if not</returns>
-	bool DeleteChild(std::string name);
+	///<returns>The first game object found that was removed, or NULL if not found</returns>
+	SharedGameObject RemoveChild(std::string name);
 
 #pragma region Transform Getter and Setters
 
@@ -111,7 +107,7 @@ public:
 	void AttachComponent(Component* newComponent);
 
 	///<summary>Gets the name associated with the game object</summary>
-	inline std::string GetName()const {return name;}
+	inline const std::string& GetName()const {return name;}
 
 	///<summary>Gets the scene this object was created on</summary>
 	inline IScene* const GetOwningScene()const{return owningScene;}

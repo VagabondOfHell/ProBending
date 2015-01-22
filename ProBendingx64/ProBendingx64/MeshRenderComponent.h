@@ -23,6 +23,8 @@ typedef std::shared_ptr<MeshInfo> SharedMeshInfo;
 class MeshRenderComponent :
 	public Component
 {
+	friend class SceneSerializer;
+
 protected:
 	Ogre::Entity* entity;
 
@@ -34,6 +36,10 @@ public:
 	///<param name="modelFileName">The name of the model with the extension to load from Ogre resources</param>
 	///<returns>True if loaded, false if failed</returns>
 	bool LoadModel(const Ogre::String& modelFileName);
+
+	///<summary>Gets the name of the entity used</summary>
+	///<returns>Name of the entity. Error if no entity</returns>
+	const std::string& GetEntityName()const;
 
 	///<summary>Creates a box from the ogre entity dimensions, with scaling</summary>
 	///<returns>Gets the half size of the rectangle representing the entity</returns>

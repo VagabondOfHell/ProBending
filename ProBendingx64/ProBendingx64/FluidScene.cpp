@@ -61,8 +61,8 @@ void FluidScene::Start()
 
 	mainOgreCamera->setPosition(0, 0, 40.50f);
 	mainOgreCamera->lookAt(0, 0, 0);
-	mainOgreCamera->setNearClipDistance(0.01);
-	mainOgreCamera->setFarClipDistance(10000);
+	mainOgreCamera->setNearClipDistance(0.01f);
+	mainOgreCamera->setFarClipDistance(10000.0f);
 		
 	InputNotifier::GetInstance()->AddObserver(guiManager);
 	InputNotifier::GetInstance()->AddObserver(this);
@@ -71,7 +71,7 @@ void FluidScene::Start()
 	Ogre::Light* light = ogreSceneManager->createLight();
 	light->setType(Ogre::Light::LightTypes::LT_DIRECTIONAL);
 	light->setAttenuation(10000, 1.0, 1, 1);
-	projectile = new Projectile(this, SharedAbilityDescriptor(new AbilityDescriptor(probender)));
+	projectile = new Projectile(this, std::make_shared<AbilityDescriptor>(AbilityDescriptor(probender)));
 //	projectile->LoadModel("Rock_01.mesh");
 	Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().getByName("DefaultParticleShader");
 	Ogre::GpuProgramParametersSharedPtr params = material->getTechnique(0)->getPass(0)->getVertexProgramParameters();

@@ -5,12 +5,15 @@ using namespace physx;
 ParticlePointEmitter::ParticlePointEmitter(float _particlesPerSecond, physx::PxVec3 emitterPosition, 
 		physx::PxVec3 minEmissionDirection, physx::PxVec3 maxEmissionDirection, 
 		bool _loop, float _duration, float minParticleSpeed, float maxParticleSpeed )
-		: AbstractParticleEmitter(emitterPosition, minEmissionDirection, maxEmissionDirection, _loop,
-		_duration, minParticleSpeed, maxParticleSpeed)
+		: AbstractParticleEmitter(emitterPosition, _particlesPerSecond, minEmissionDirection, 
+		maxEmissionDirection, _loop, _duration, minParticleSpeed, maxParticleSpeed)
 {
-	particlesPerSecond = _particlesPerSecond;
-	particlesToEmitThisFrame = 0.0f;
+	eng = std::mt19937_64(rd());
+}
 
+ParticlePointEmitter::ParticlePointEmitter(const ParticlePointEmitter& emitter)
+	: AbstractParticleEmitter(emitter)
+{
 	eng = std::mt19937_64(rd());
 }
 
@@ -32,7 +35,7 @@ void ParticlePointEmitter::Emit(const float gameTime, const unsigned int availab
 		{
 			//Calculate the number of particles to emit this frame
 			particlesToEmitThisFrame += particlesPerSecond * gameTime;
-			emissionCount = PxFloor(particlesToEmitThisFrame);
+			emissionCount = (unsigned int)PxFloor(particlesToEmitThisFrame);
 			particlesToEmitThisFrame -= emissionCount;
 
 			//Gather available indices

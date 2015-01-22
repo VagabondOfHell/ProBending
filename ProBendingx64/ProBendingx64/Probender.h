@@ -4,6 +4,8 @@
 #include "ProbenderStateManager.h"
 #include "ProbenderData.h"
 
+#include <memory>
+
 namespace physx
 {
 	class PxRigidDynamic;
@@ -12,6 +14,8 @@ namespace physx
 class IScene;
 class Projectile;
 class Arena;
+
+typedef std::shared_ptr<Projectile> SharedProjectile;
 
 class Probender
 {
@@ -30,8 +34,8 @@ private:
 
 	///Flight Game Object here
 
-	Projectile* leftHandAttack;//The projectile in the left hand
-	Projectile* rightHandAttack;//The projectile in the right hand
+	SharedProjectile leftHandAttack;//The projectile in the left hand
+	SharedProjectile rightHandAttack;//The projectile in the right hand
 
 	ProbenderStateManager stateManager;//The state manager for probenders
 
@@ -64,7 +68,7 @@ public:
 
 	///<summary>Checks if the passed projectile is currently on one of the hands, and if so, removes it</summary>
 	///<param name="projectileToRemove">The projectile to remove</param>
-	void RemoveProjectile(Projectile* projectileToRemove);
+	void RemoveProjectile(SharedProjectile projectileToRemove);
 
 	///<summary>Sets the input state of the probender</summary>
 	///<param name="newState">The new state to set to</param>

@@ -43,8 +43,6 @@ protected:
 #endif
 
 public:
-	enum CreationResult{FAILED_OR_WRONG_TYPE, CREATED, ADDED, EXISTED};
-
 	RigidBodyComponent();
 	virtual ~RigidBodyComponent(void);
 
@@ -83,7 +81,7 @@ public:
 
 	///<summary>Gets the type of body that this rigid body is</summary>
 	///<returns>static, dynamic, or NONE if not yet initialized</returns>
-	const RigidBodyType GetBodyType()const{return bodyType;}
+	const inline RigidBodyType GetBodyType()const{return bodyType;}
 
 	///<summary>Gets the rigid body as a Static Actor. Does not perform any checks</summary>
 	///<returns>Pointer to the dynamic body</returns>
@@ -106,13 +104,6 @@ public:
 	virtual inline ComponentType GetComponentType()
 	{
 		return Component::RIGID_BODY_COMPONENT;
-	}
-
-	///<summary>Gets the type of rigid body of this component</summary>
-	///<returns>Enum declaration of rigid body type</returns>
-	inline RigidBodyType GetRigidBodyType()
-	{
-		return bodyType;
 	}
 
 

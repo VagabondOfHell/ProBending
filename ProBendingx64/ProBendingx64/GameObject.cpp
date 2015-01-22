@@ -7,17 +7,9 @@
 #include "PxRigidDynamic.h"
 #include "PxRigidStatic.h"
 
-unsigned int GameObject::InstanceCounter = 0;
-
 GameObject::GameObject(IScene* _owningScene, std::string objectName)
 	:owningScene(_owningScene), name(objectName), started(false)
 {
-	if(name.empty())
-	{
-		name = "GameObject" + std::to_string(InstanceCounter);
-		++InstanceCounter;
-	}
-
 	gameObjectNode = owningScene->GetOgreSceneManager()->getRootSceneNode()->
 		createChildSceneNode();
 }
@@ -26,12 +18,13 @@ GameObject::GameObject(IScene* _owningScene, std::string objectName)
 GameObject::~GameObject(void)
 {
 	//loop through and destroy all children
-	auto childIterator = children.begin();
+	/*auto childIterator = children.begin();
 	while (childIterator != children.end())
 	{
-		delete childIterator->second;
+		childIterator->reset();
 		childIterator++;
-	}
+	}*/
+	children.clear();
 
 	//Delete all components attached to this object
 	auto componentIter = components.begin();
@@ -63,7 +56,7 @@ void GameObject::Start()
 	auto childIter = children.begin();
 	while (childIter != children.end())
 	{
-		childIter->second->Start();
+		childIter->get()->Start();
 		++childIter;
 	}
 
@@ -84,15 +77,15 @@ void GameObject::Update(float gameTime)
 	auto childIter = children.begin();
 	while (childIter != children.end())
 	{
-		childIter->second->Update(gameTime);
+		childIter->get()->Update(gameTime);
 		++childIter;
 	}
 }
 
-bool GameObject::AddChild(GameObject* newChild)
+bool GameObject::AddChild(SharedGameObject newChild)
 {
 	//Add the child
-	auto iter = children.insert(std::pair<std::string, GameObject*>(newChild->name, newChild));
+	auto iter = children.insert(newChild);
 
 	if(started && iter.second) //if game object start has already been called, call start now
 		newChild->Start();
@@ -101,46 +94,26 @@ bool GameObject::AddChild(GameObject* newChild)
 	return iter.second;
 }
 
-bool GameObject::RemoveChild(GameObject* childToRemove)
+bool GameObject::RemoveChild(SharedGameObject childToRemove)
 {
-	//The caller has the object already, so check if child was successfully removed instead
-	return RemoveChild(childToRemove->name) != NULL;
+	//Try to erase. 1 for success, 0 for failure
+	return children.erase(childToRemove) > 0;
 }
 
-GameObject* GameObject::RemoveChild(std::string name)
+SharedGameObject GameObject::RemoveChild(std::string name)
 {
-	auto childIterator = children.find(name);
+	//lambda comparison to find by name
+	auto childIterator = std::find_if(children.begin(), children.end(), 
+		[&name](const SharedGameObject object){return name == object->name;});
 
 	if(childIterator != children.end())
 	{
-		GameObject* objectRemoved = childIterator->second;
-
+		SharedGameObject objectRemoved = *childIterator;
 		children.erase(childIterator);
-		
 		return objectRemoved;
 	}
 
 	return NULL;
-}
-
-bool GameObject::DeleteChild(GameObject* childToRemove)
-{
-	return DeleteChild(childToRemove->name);
-}
-
-bool GameObject::DeleteChild(std::string name)
-{
-	auto childIterator = children.find(name);
-
-	if(childIterator != children.end())
-	{
-		GameObject* object = childIterator->second;
-		children.erase(childIterator);
-		delete object;
-		return true;
-	}
-
-	return false;
 }
 
 void GameObject::AttachComponent(Component* newComponent)

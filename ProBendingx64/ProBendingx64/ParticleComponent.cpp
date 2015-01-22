@@ -31,6 +31,7 @@ ParticleComponent::~ParticleComponent(void)
 		//Remove the node from the scene
 		owningGameObject->GetOwningScene()->GetOgreSceneManager()->destroySceneNode(WORLD_PARTICLES_NODE);
 		WORLD_PARTICLES_NODE = NULL;
+		NUM_INSTANCES = 0;
 	}
 }
 
@@ -83,12 +84,15 @@ void ParticleComponent::Start()
 
 void ParticleComponent::Update(float gameTime)
 {
-	if(useLocalSpace)
-		particleSystem->GetEmitter()->position = particleSystem->GetEmitter()->position = physx::PxVec3(0.0f);// HelperFunctions::OgreToPhysXVec3(sceneNode->getPosition());
-	else
-		particleSystem->GetEmitter()->position = HelperFunctions::OgreToPhysXVec3(sceneNode->_getDerivedPosition());
+	if(enabled)
+	{
+		if(useLocalSpace)
+			particleSystem->GetEmitter()->position = particleSystem->GetEmitter()->position = physx::PxVec3(0.0f);// HelperFunctions::OgreToPhysXVec3(sceneNode->getPosition());
+		else
+			particleSystem->GetEmitter()->position = HelperFunctions::OgreToPhysXVec3(sceneNode->_getDerivedPosition());
 	
-	particleSystem->Update(gameTime);
+		particleSystem->Update(gameTime);
+	}
 }
 
 void ParticleComponent::SetTransformationSpace(const bool _useLocalSpace)

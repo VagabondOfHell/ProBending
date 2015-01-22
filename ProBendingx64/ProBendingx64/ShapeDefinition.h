@@ -21,6 +21,7 @@ typedef std::shared_ptr<physx::PxGeometry> SharedGeo;
 typedef std::shared_ptr<physx::PxBoxGeometry> SharedBoxGeo;
 typedef std::shared_ptr<physx::PxSphereGeometry> SharedSphereGeo;
 typedef std::shared_ptr<physx::PxConvexMeshGeometry> SharedConvexMeshGeo;
+typedef std::shared_ptr<physx::PxHeightFieldGeometry> SharedHeightFieldGeo;
 typedef std::shared_ptr<physx::PxTriangleMeshGeometry> SharedTriangleMeshGeo;
 
 class ShapeDefinition
@@ -56,19 +57,29 @@ public:
 	///<param name="name">The name to search for. If no instance exists, it is not added</param>
 	void AddMaterial(const std::string& name);
 
-	///<summary>Creates a new material and adds it to the list of materials</summary>
-	///<param name="staticFriction">The static friction between 0.0f and 1.0f</param>
-	///<param name="dynamicFriction">The dynamic friction between 0.0f and 1.0f</param>
-	///<param name="restitution">The 'bounciness' of collision between 0.0f and 1.0f</param>
-	///<param name="name">The name to store the material under, or "" to not store</param>
-	void AddMaterial(const physx::PxReal staticFriction,
-		const physx::PxReal dynamicFriction, const physx::PxReal restitution, 
-		std::string& name = std::string(""));
+	///<summary>Sets the shapes Geometry to a box geometry</summary>
+	///<param name="halfExtents">The half size of the box</param>
+	void SetBoxGeometry(const physx::PxVec3& halfExtents);
 
-	///<summary>Sets the shapes Geometry</summary>
-	///<param name="name">The name to search for</param>
-	///<returns>True if geometry exists under the specified name, false if not</returns>
-	bool SetGeometry(const std::string& name);
+	///<summary>Sets the shapes Geometry to a box geometry</summary>
+	///<param name="x">Half width on x axis</param>
+	///<param name="y">Half height on y axis</param>
+	///<param name="z">Half depth on z axis</param>
+	void SetBoxGeometry(const physx::PxReal x, const physx::PxReal y, const physx::PxReal z);
+
+	///<summary>Sets the shapes Geometry to a sphere geometry</summary>
+	///<param name="radius">The radius of the sphere</param>
+	void SetSphereGeometry(const physx::PxReal radius);
+
+	///<summary>Sets the shapes Geometry to a Convex Mesh geometry</summary>
+	///<param name="meshName">The name of the mesh as stored in the PhysXDataManager</param>
+	///<returns>True if found and assigned, false if not</returns>
+	bool SetConvexMeshGeometry(const std::string& meshName);
+
+	///<summary>Sets the shapes Geometry to a Convex Mesh geometry</summary>
+	///<param name="convexMesh">The convex mesh to construct the geometry from</param>
+	///<returns>True if successful, false if not</returns>
+	bool SetConvexMeshGeometry(physx::PxConvexMesh* convexMesh);
 
 	///<summary>Sets the shapes Geometry</summary>
 	///<param name="geometry">The geometry to assign</param>

@@ -91,9 +91,9 @@ void XMLReaderTest::RunTest()
 	if(reader.GetBoolValue(boolVal, false))
 		boolVal ? printf("BoolVal is True\n") : printf("BoolVal is False\n");
 
-	int intVal = 0;
+	long long intVal = 0;
 
-	if(reader.GetIntValue(intVal, false))
+	if(reader.GetLongValue(intVal, false))
 		printf("Value as Int: %i\n", intVal);
 
 #pragma endregion 
@@ -168,7 +168,7 @@ void XMLReaderTest::RunTest()
 
 		intVal = 0;
 
-		if(reader.GetIntValue(intVal, true))
+		if(reader.GetLongValue(intVal, true))
 			printf("Value as Int: %i\n", intVal);
 	}while(reader.MoveToNextAttribute());
 	

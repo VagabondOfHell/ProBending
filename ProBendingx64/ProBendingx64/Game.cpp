@@ -1,4 +1,4 @@
-#include "vld.h"
+//#include "vld.h"
 #include "Game.h"
 #include "InputManager.h"
 #include "DotSceneLoader.h"
@@ -374,7 +374,7 @@ void Game::Run()
 			rendering = false;
 
 		//Ogre::WindowEventUtilities::messagePump();
-		//mRoot->renderOneFrame();
+		mRoot->renderOneFrame();
 
 		currentTime = (float)gameTimer.getMilliseconds();
 		

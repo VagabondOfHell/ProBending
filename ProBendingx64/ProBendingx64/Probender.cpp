@@ -90,10 +90,12 @@ void Probender::SetCurrentElement(const ElementEnum::Element elementToSet)
 	}
 }
 
-void Probender::RemoveProjectile(Projectile* projectileToRemove)
+void Probender::RemoveProjectile(SharedProjectile projectileToRemove)
 {
+	//Check both hands, in case its a two hand attack
 	if(leftHandAttack == projectileToRemove)
-		leftHandAttack = NULL;
-	else if(rightHandAttack == projectileToRemove)
-		rightHandAttack = NULL;
+		leftHandAttack.reset();
+	
+	if(rightHandAttack == projectileToRemove)
+		rightHandAttack.reset();
 }

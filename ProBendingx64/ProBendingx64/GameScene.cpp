@@ -10,6 +10,7 @@
 #include "CudaModuleManager.h"
 #include "CollisionFilterShaders.h"
 #include "PhysXSerializerWrapper.h"
+#include "PhysXDataManager.h"
 
 #include "OgreSceneManager.h"
 #include "OgreRenderWindow.h"
@@ -115,63 +116,27 @@ bool GameScene::Update(float gameTime)
 	
 	if(!physxSimulating && save)
 	{
-		if(PhysXSerializerWrapper::CreateSerializer())
-		{
-			if(PhysXSerializerWrapper::CreateCollection("Geometry"))
-			{
-				physx::PxConvexMesh** meshes = new physx::PxConvexMesh*[PxGetPhysics().getNbConvexMeshes()];
-				
-				physx::PxU32 meshesAdded = PxGetPhysics().getConvexMeshes(meshes, PxGetPhysics().getNbConvexMeshes());
+		PxDataManSerializeOptions options = 
+			PxDataManSerializeOptions(PxDataManSerializeOptions::ALL, "SerializeCollection", "MyResources\\DataManagerData");
 
-				if(meshesAdded > 0)
-				{
-					for (int i = 0; i < meshesAdded; i++)
-					{
-						PhysXSerializerWrapper::AddToCollection("Geometry", *meshes[i]);
-					}
-
-					PhysXSerializerWrapper::CompleteCollection("Geometry");
-					if(PhysXSerializerWrapper::SerializeToBinary("ConvexMeshes.spd", "Geometry"))
-						printf("XML Serialization successful\n");
-					else
-						printf("XML Serialization unsuccessful\n");
-
-					PhysXSerializerWrapper::DestroySerializer();
-				}
-			}
-		}
+		if(PhysXDataManager::GetSingletonPtr()->SerializeData(options))
+			printf("Data Manager Serialize Data successful\n");
+		else
+			printf("Data Manager Serialize Data unsuccessful \n");
 
 		save = false;
 	}
 
 	if(!physxSimulating && load)
 	{
-		printf("Number Polygons %i\n",PxGetPhysics().getNbConvexMeshes());
+		PxDataManSerializeOptions options = 
+			PxDataManSerializeOptions(PxDataManSerializeOptions::ALL, "SerializeCollection", "MyResources\\DataManagerData");
 
-		if(PhysXSerializerWrapper::CreateSerializer())
-		{
-			if(PhysXSerializerWrapper::DeserializeFromBinary("ConvexMeshes.spd", "LoadedMeshes"))
-				printf("Deserialization successful\n");
-			else
-				printf("Deserialization unsuccessful\n");
-
-			if(PhysXSerializerWrapper::AddToScene(physicsWorld, "LoadedMeshes"))
-				printf("Added to scene");
-
-			physx::PxConvexMesh** convexMeshList = new physx::PxConvexMesh*[PxGetPhysics().getNbConvexMeshes()];
-			physx::PxU32 numAdded = PxGetPhysics().getConvexMeshes(
-				convexMeshList, PxGetPhysics().getNbConvexMeshes());
-
-			for (int i = 0; i < numAdded; i++)
-			{
-				printf("Number Polygons %i\n", convexMeshList[i]->getNbPolygons());
-			}
-
-			delete[] convexMeshList;
-
-			PhysXSerializerWrapper::DestroySerializer();
-		}
-
+		if(PhysXDataManager::GetSingletonPtr()->DeserializeData(options))
+			printf("Data Manager Deserialize Data successful\n");
+		else
+			printf("Data Manager Deserialize Data unsuccessful \n");
+	
 		load = false;
 	}
 

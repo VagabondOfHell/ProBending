@@ -76,18 +76,18 @@ void BlankScene::Start()
 		InputNotifier::GetInstance()->AddObserver(guiManager);
 
 		guiManager->AddScheme("VanillaSkin.scheme");
-		guiManager->AddWindow("VanillaConsole.layout", "window1");
-		guiManager->AddWindow("EffectsDemo.layout");
+		guiManager->LoadLayout("VanillaConsole.layout", "window1");
+		guiManager->LoadLayout("EffectsDemo.layout");
 
 		guiManager->GetChildItem("EffectsDemoRoot/EffectsFrameWindow/MultiLineEditbox1");
 		
 		object = new GameObject(this);
 
-		object->LoadModel("Rock_01.mesh");
+		//object->LoadModel("Rock_01.mesh");
 
-		object->gameObjectNode->scale(0.5f, 0.5f, 0.5f);
+		//object->gameObjectNode->scale(0.5f, 0.5f, 0.5f);
 		
-		physx::PxReal density = 1.0f;
+	/*	physx::PxReal density = 1.0f;
 		physx::PxTransform transform(physx::PxVec3(0.0f), physx::PxQuat::createIdentity());
 		physx::PxBoxGeometry geometry;
 
@@ -96,11 +96,11 @@ void BlankScene::Start()
 		object->rigidBody = physx::PxCreateDynamic(PxGetPhysics(), transform, geometry, *PxGetPhysics().createMaterial(0.5,0.5,0.5), density);
 
 		object->GetDynamicRigidBody()->setAngularDamping(0.75);
-		object->GetDynamicRigidBody()->setLinearVelocity(physx::PxVec3(10.0f,0,0)); 
+		object->GetDynamicRigidBody()->setLinearVelocity(physx::PxVec3(10.0f,0,0)); */
 		
 		//physicsWorld->addActor(*object->rigidBody);
 		
-		object->CreatePhysXDebug();
+		//object->CreatePhysXDebug();
 
 		CEGUI::Window* window = (CEGUI::Window*)guiManager->GetChildItem("EffectsDemoRoot");
 		//window->hide();
@@ -125,7 +125,7 @@ bool BlankScene::ButtonClick(const CEGUI::EventArgs &e)
 bool BlankScene::Update(float gameTime)
 {
 	guiManager->Update(gameTime);
-	object->gameObjectNode->translate(Ogre::Vector3(0.0f, 0.0f, 0.0f));
+	//object->gameObjectNode->translate(Ogre::Vector3(0.0f, 0.0f, 0.0f));
 
 	physicsWorld->simulate(gameTime);
 

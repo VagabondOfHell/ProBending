@@ -33,14 +33,6 @@ void ShapeDefinition::AddMaterial(physx::PxMaterial* const material)
 		MaterialList.push_back(material);
 }
 
-void ShapeDefinition::AddMaterial(const physx::PxReal staticFriction, 
-								  const physx::PxReal dynamicFriction, const physx::PxReal restitution, 
-								  std::string& name /*= std::string("")*/)
-{
-	MaterialList.push_back(PhysXDataManager::GetSingletonPtr()->
-		CreateMaterial(staticFriction, dynamicFriction, restitution, name));
-}
-
 void ShapeDefinition::AddMaterial(const std::string& name)
 {
 	physx::PxMaterial* material = PhysXDataManager::GetSingletonPtr()->GetMaterial(name);
@@ -61,20 +53,44 @@ void ShapeDefinition::SetTriggerFlags(const bool isTrigger)
 	}
 }
 
-bool ShapeDefinition::SetGeometry(const std::string& name)
-{
-	SharedGeo geo = PhysXDataManager::GetSingletonPtr()->GetGeometry(name);
-
-	if(geo)
-		ShapeGeometry = geo;
-
-	return geo != NULL;
-}
-
 bool ShapeDefinition::SetGeometry(const SharedGeo& geometry)
 {
 	if(geometry != NULL)
 		ShapeGeometry = geometry;
 
 	return geometry != NULL;
+}
+
+void ShapeDefinition::SetBoxGeometry(const physx::PxVec3& halfExtents)
+{
+	ShapeGeometry = SharedGeo(new PxBoxGeometry(halfExtents));
+}
+
+void ShapeDefinition::SetBoxGeometry(const physx::PxReal x, const physx::PxReal y, const physx::PxReal z)
+{
+	ShapeGeometry = SharedGeo(new PxBoxGeometry(x, y, z));
+}
+
+void ShapeDefinition::SetSphereGeometry(const physx::PxReal radius)
+{
+	ShapeGeometry = SharedGeo(new PxSphereGeometry(radius));
+}
+
+bool ShapeDefinition::SetConvexMeshGeometry(const std::string& meshName)
+{
+	//find the mesh
+	SharedConvexMeshGeo geo = PhysXDataManager::GetSingletonPtr()->GetConvexMeshGeometry(meshName);
+
+	if(geo.get() != NULL)
+		ShapeGeometry = geo;
+
+	return geo.get() != NULL;
+}
+
+bool ShapeDefinition::SetConvexMeshGeometry(physx::PxConvexMesh* convexMesh)
+{
+	if(convexMesh)
+		ShapeGeometry = SharedConvexMeshGeo(new PxConvexMeshGeometry(convexMesh));
+
+	return convexMesh != NULL;
 }

@@ -116,7 +116,7 @@ void ProbenderInputHandler::DiscreteGesturesAcquired(const std::vector<KinectGes
 
 					if(ability->abilityType == AbilityDescriptor::Offensive)
 					{
-						Projectile* attack = probender->GetOwningArena()->
+						SharedProjectile attack = probender->GetOwningArena()->
 							GetProjectileManager()->CreateProjectile(ElementEnum::Fire, AbilityIDs::FIRE_JAB);
 
 						attack->AttachAbility(ability);
@@ -260,7 +260,7 @@ bool ProbenderInputHandler::keyPressed( const OIS::KeyEvent &arg )
 
 			if(ability->abilityType == AbilityDescriptor::Offensive)
 			{
-				Projectile* attack = probender->GetOwningArena()->
+				SharedProjectile attack = probender->GetOwningArena()->
 					GetProjectileManager()->CreateProjectile(ElementEnum::Fire, AbilityIDs::FIRE_JAB);
 
 				attack->AttachAbility(ability);
@@ -275,12 +275,14 @@ bool ProbenderInputHandler::keyPressed( const OIS::KeyEvent &arg )
 
 			if(ability->abilityType == AbilityDescriptor::Offensive)
 			{
-				Projectile* attack = probender->GetOwningArena()->
+				SharedProjectile attack = probender->GetOwningArena()->
 					GetProjectileManager()->CreateProjectile(ElementEnum::Earth, AbilityIDs::EARTH_BOULDER);
 
-				attack->AttachAbility(ability);
-
-				probender->rightHandAttack = attack;
+				if(attack)
+				{
+					attack->AttachAbility(ability);
+					probender->rightHandAttack = attack;
+				}
 			}
 		}
 		

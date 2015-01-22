@@ -211,7 +211,7 @@ bool XMLReader::GetBoolValue(bool& outVal, bool attributeVal)
 	return false;
 }
 
-bool XMLReader::GetIntValue(int& outVal, bool attributeVal)
+bool XMLReader::GetLongValue(long long& outVal, bool attributeVal)
 {
 	int val;
 

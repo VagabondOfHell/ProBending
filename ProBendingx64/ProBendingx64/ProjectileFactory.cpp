@@ -26,10 +26,9 @@
 #include "OgreSceneNode.h"
 #include "OgreMeshManager.h"
 
-Projectile* ProjectileFactory::CreateProjectile(IScene* const scene,const ElementEnum::Element element,const AbilityIDs::AbilityID abilityID)
+SharedProjectile ProjectileFactory::CreateProjectile(IScene* const scene,const ElementEnum::Element element,const AbilityIDs::AbilityID abilityID)
 {
-	Projectile* newProjectile = NULL;
-	Projectile* newProjectile2 = NULL;
+	SharedProjectile newProjectile = NULL;
 
 	switch (element)
 	{
@@ -41,7 +40,7 @@ Projectile* ProjectileFactory::CreateProjectile(IScene* const scene,const Elemen
 	case ElementEnum::Earth:
 		if(abilityID == AbilityIDs::EARTH_BOULDER)
 		{
-			newProjectile = new Projectile(scene, nullptr);
+			newProjectile = std::make_shared<Projectile>(scene, nullptr);
 			MeshRenderComponent* renderComponent = new MeshRenderComponent();
 			newProjectile->AttachComponent(renderComponent);
 
@@ -57,13 +56,19 @@ Projectile* ProjectileFactory::CreateProjectile(IScene* const scene,const Elemen
 			rigidBody->CreateRigidBody(RigidBodyComponent::DYNAMIC); //Create dynamic body at 0,0,0 with 0 rotation
 			physx::PxVec3 entityHalfSize = HelperFunctions::OgreToPhysXVec3(renderComponent->GetHalfExtents());
 			//SharedBoxGeo geo = PhysXDataManager::GetSingletonPtr()->CreateBoxGeometry(entityHalfSize, "RockBox");
-			SharedConvexMeshGeo geo = PhysXDataManager::GetSingletonPtr()->CreateConvexMeshGeometry(info, "RockMesh");
-						
-			if(geo)
+			
+			physx::PxConvexMesh* convexMesh = PhysXDataManager::GetSingletonPtr()->CookConvexMesh(info, "RockMesh");
+
+			if(!convexMesh)
+				convexMesh = PhysXDataManager::GetSingletonPtr()->GetConvexMesh("RockMesh");
+
+			if(convexMesh)
 			{
+				PhysXDataManager::GetSingletonPtr()->CreateMaterial(0.5f, 0.5f, 0.5f, "RockMaterial");
+
 				ShapeDefinition shapeDef = ShapeDefinition();
-				shapeDef.SetGeometry(geo);
-				shapeDef.AddMaterial(0.5f, 0.5f, 0.5f, std::string("RockMaterial"));
+				shapeDef.SetConvexMeshGeometry(convexMesh);
+				shapeDef.AddMaterial("RockMaterial");
 
 				physx::PxShape* shape = PhysXDataManager::GetSingletonPtr()->CreateShape(shapeDef, "RockShape");
 
@@ -82,8 +87,9 @@ Projectile* ProjectileFactory::CreateProjectile(IScene* const scene,const Elemen
 	case ElementEnum::Fire:
 		if(abilityID == AbilityIDs::FIRE_JAB)
 		{
-			newProjectile = new Projectile(scene, nullptr);
-			std::shared_ptr<ParticlePointEmitter> emitter = std::shared_ptr<ParticlePointEmitter>(new ParticlePointEmitter(5000, physx::PxVec3(0.0f, 0.0f, 0.0f),
+			newProjectile = std::make_shared<Projectile>(scene, nullptr);
+			std::shared_ptr<ParticlePointEmitter> emitter = std::make_shared<ParticlePointEmitter>
+				(ParticlePointEmitter(5000, physx::PxVec3(0.0f, 0.0f, 0.0f),
 				physx::PxVec3(-1.0f, -1.0f, 0.0f).getNormalized(), physx::PxVec3(1.0f, 1.0f, 0.0f).getNormalized(),
 				true, 2.0f, 10.0f, 20.0f));
 
@@ -96,8 +102,8 @@ Projectile* ProjectileFactory::CreateProjectile(IScene* const scene,const Elemen
 
 			newProjectile->AttachComponent(particleComponent);
 
-			particles->AddAffector(std::shared_ptr<ScaleParticleAffector>(new ScaleParticleAffector(false, 0, 10, true)));
-			particles->AddAffector(std::shared_ptr<ColourFadeParticleAffector>(new ColourFadeParticleAffector(physx::PxVec4(1, 0.5, 0, 1.0f), 
+			particles->AddAffector(std::make_shared<ScaleParticleAffector>(ScaleParticleAffector(false, 0, 10, true)));
+			particles->AddAffector(std::make_shared<ColourFadeParticleAffector>(ColourFadeParticleAffector(physx::PxVec4(1, 0.5, 0, 1.0f), 
 				physx::PxVec4(0, 0, 1.0, 0.20f), true)));/**/
 			particles->AssignAffectorKernel(particles->FindBestKernel());
 			particles->setMaterial(particles->FindBestShader());
@@ -105,6 +111,8 @@ Projectile* ProjectileFactory::CreateProjectile(IScene* const scene,const Elemen
 			RigidBodyComponent* rigidBody = new RigidBodyComponent();
 			newProjectile->AttachComponent(rigidBody);
 			rigidBody->CreateRigidBody(RigidBodyComponent::DYNAMIC);
+			rigidBody->SetUseGravity(false);
+
 			/*physx::PxBoxGeometry geo = physx::PxBoxGeometry(0.5f, 0.5f, 0.5f);
 			rigidBody->AttachShape(geo);
 			rigidBody->SetUseGravity(false);

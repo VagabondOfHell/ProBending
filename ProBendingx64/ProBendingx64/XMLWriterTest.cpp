@@ -82,8 +82,8 @@ void XMLWriterTest::RunTest()
 	writer.AddAttribute(attNameSpecNode, attValSpecNode, false, false, topNode);//Add string attribute to previously grabbed top node
 	writer.AddAttribute("AddToNodeAtt", "AddToNodeAttVal", topNode);//Add char attribute to previously grabbed top node
 	
-	writer.CreateNode("NodeValuesTesting", 75);
-	writer.AddAttribute("AttributeValueTesting", 25);
+	writer.CreateNode(std::string("NodeValuesTesting").c_str(), (long long)75);
+	writer.AddAttribute(std::string("AttributeValueTesting"), (long long)25);
 
 	writer.CreateNode("NodeBoolTest", true);
 	writer.AddAttribute("AttBoolTest", false);
