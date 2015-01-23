@@ -21,8 +21,9 @@ public:
 	///<param name="minParticleSpeed">The minimum value for creating random particle speed </param>
 	///<param name="maxParticleSpeed">The maximum value for creating random particle speed </param>
 	ParticlePointEmitter(float particlesPerSecond = 1.0f, physx::PxVec3 emitterPosition = physx::PxVec3(0.0f), 
-		physx::PxVec3 minEmissionDirection = physx::PxVec3(0.0f), physx::PxVec3 maxEmissionDirection  = physx::PxVec3(0.0f),
-		bool _loop = true, float _duration = 1.0f, float minParticleSpeed = 1.0f, float maxParticleSpeed = 2.0f);
+		physx::PxVec3 minEmissionDirection = physx::PxVec3(0.0f),
+		physx::PxVec3 maxEmissionDirection  = physx::PxVec3(0.0f), bool _loop = true, 
+		float _duration = 1.0f, float minParticleSpeed = 1.0f, float maxParticleSpeed = 2.0f);
 
 	ParticlePointEmitter(const ParticlePointEmitter& emitter);
 

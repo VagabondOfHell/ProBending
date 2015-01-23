@@ -3,7 +3,7 @@
 using namespace physx;
 
 ParticlePointEmitter::ParticlePointEmitter(float _particlesPerSecond, physx::PxVec3 emitterPosition, 
-		physx::PxVec3 minEmissionDirection, physx::PxVec3 maxEmissionDirection, 
+		 physx::PxVec3 minEmissionDirection, physx::PxVec3 maxEmissionDirection, 
 		bool _loop, float _duration, float minParticleSpeed, float maxParticleSpeed )
 		: AbstractParticleEmitter(emitterPosition, _particlesPerSecond, minEmissionDirection, 
 		maxEmissionDirection, _loop, _duration, minParticleSpeed, maxParticleSpeed)

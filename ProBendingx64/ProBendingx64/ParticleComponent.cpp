@@ -28,10 +28,13 @@ ParticleComponent::~ParticleComponent(void)
 	//If our static is the only reference
 	if(NUM_INSTANCES <= 0)
 	{
-		//Remove the node from the scene
-		owningGameObject->GetOwningScene()->GetOgreSceneManager()->destroySceneNode(WORLD_PARTICLES_NODE);
-		WORLD_PARTICLES_NODE = NULL;
-		NUM_INSTANCES = 0;
+		if(WORLD_PARTICLES_NODE)
+		{
+			//Remove the node from the scene
+			owningGameObject->GetOwningScene()->GetOgreSceneManager()->destroySceneNode(WORLD_PARTICLES_NODE);
+			WORLD_PARTICLES_NODE = NULL;
+			NUM_INSTANCES = 0;
+		}
 	}
 }
 
@@ -87,7 +90,7 @@ void ParticleComponent::Update(float gameTime)
 	if(enabled)
 	{
 		if(useLocalSpace)
-			particleSystem->GetEmitter()->position = particleSystem->GetEmitter()->position = physx::PxVec3(0.0f);// HelperFunctions::OgreToPhysXVec3(sceneNode->getPosition());
+			particleSystem->GetEmitter()->position = HelperFunctions::OgreToPhysXVec3(sceneNode->getPosition());
 		else
 			particleSystem->GetEmitter()->position = HelperFunctions::OgreToPhysXVec3(sceneNode->_getDerivedPosition());
 	
@@ -103,13 +106,13 @@ void ParticleComponent::SetTransformationSpace(const bool _useLocalSpace)
 	//If switching from world to local
 	if(_useLocalSpace)
 	{
-		owningGameObject->GetOwningScene()->GetSceneRootNode()->detachObject(particleSystem);
+		WORLD_PARTICLES_NODE->detachObject(particleSystem);
 		sceneNode->attachObject(particleSystem);
 	}
 	else
 	{
 		sceneNode->detachObject(particleSystem);
-		owningGameObject->GetOwningScene()->GetSceneRootNode()->attachObject(particleSystem);
+		WORLD_PARTICLES_NODE->attachObject(particleSystem);
 	}
 
 	useLocalSpace = _useLocalSpace;

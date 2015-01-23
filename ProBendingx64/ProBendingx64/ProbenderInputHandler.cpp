@@ -6,6 +6,7 @@
 #include "AbilityManager.h"
 #include "ProjectileManager.h"
 #include "RigidBodyComponent.h"
+#include "ParticleComponent.h"
 
 #include "PxRigidDynamic.h"
 #include "foundation/PxVec2.h"
@@ -291,6 +292,19 @@ bool ProbenderInputHandler::keyPressed( const OIS::KeyEvent &arg )
 	{
 		if(probender->rightHandAttack)
 			probender->GetOwningArena()->GetProjectileManager()->DestroyProjectile(probender->rightHandAttack);
+	}
+	else if(arg.key == OIS::KC_B)
+	{
+		if(probender->rightHandAttack)
+		{
+			ParticleComponent* parts = (ParticleComponent*)probender->rightHandAttack->
+				GetComponent(Component::PARTICLE_COMPONENT);
+
+			if(parts)
+			{
+				parts->SetTransformationSpace(!parts->GetTransformationSpace());
+			}
+		}
 	}
 
 	return true;

@@ -91,7 +91,7 @@ SharedProjectile ProjectileFactory::CreateProjectile(IScene* const scene,const E
 		{
 			newProjectile = std::make_shared<Projectile>(scene, nullptr);
 			std::shared_ptr<ParticlePointEmitter> emitter = std::make_shared<ParticlePointEmitter>
-				(ParticlePointEmitter(5000, physx::PxVec3(0.0f, 0.0f, 0.0f),
+				(ParticlePointEmitter(5000, physx::PxVec3(0.0f, 0.0f, 0.0f), 
 				physx::PxVec3(-1.0f, -1.0f, 0.0f).getNormalized(), physx::PxVec3(1.0f, 1.0f, 0.0f).getNormalized(),
 				true, 2.0f, 10.0f, 20.0f));
 
@@ -115,7 +115,50 @@ SharedProjectile ProjectileFactory::CreateProjectile(IScene* const scene,const E
 			rigidBody->CreateRigidBody(RigidBodyComponent::DYNAMIC);
 			rigidBody->SetUseGravity(false);
 
+			MeshRenderComponent* renderComponent = new MeshRenderComponent();
+			newProjectile->AttachComponent(renderComponent);
+
+			renderComponent->LoadModel("Rock_01.mesh");
+
+			newProjectile->SetScale(0.1f, 0.1f, 0.1f);
+
 			scene->AddGameObject(newProjectile);
+
+
+
+			SharedProjectile newProjectile2 = std::make_shared<Projectile>(scene, nullptr);
+			 emitter = std::make_shared<ParticlePointEmitter>
+				(ParticlePointEmitter(5000, physx::PxVec3(0.0f, 0.0f, 0.0f), 
+				physx::PxVec3(-1.0f, -1.0f, 0.0f).getNormalized(), physx::PxVec3(1.0f, 1.0f, 0.0f).getNormalized(),
+				true, 2.0f, 10.0f, 20.0f));
+
+			 params = ParticleSystemParams(40.0f, 2.0f, scene->GetCudaContextManager(),
+				physx::PxVec3(0.0f, 0.0f, 0.0f),1.0f, false);
+
+			 particles = new ParticleSystemBase(emitter, 500, 2.0f,params);
+
+			 particleComponent = new ParticleComponent(particles, false);
+
+			newProjectile2->AttachComponent(particleComponent);
+
+			particles->AddAffector(std::make_shared<ScaleParticleAffector>(ScaleParticleAffector(false, 0, 10, true)));
+			particles->AddAffector(std::make_shared<ColourFadeParticleAffector>(ColourFadeParticleAffector(physx::PxVec4(1, 0.5, 0, 1.0f), 
+				physx::PxVec4(0, 0, 1.0, 0.20f), true)));/**/
+			particles->AssignAffectorKernel(particles->FindBestKernel());
+			particles->setMaterial(particles->FindBestShader());
+
+			renderComponent = new MeshRenderComponent();
+			newProjectile2->AttachComponent(renderComponent);
+
+			renderComponent->LoadModel("Rock_01.mesh");
+
+			newProjectile2->SetScale(0.1f, 0.1f, 0.1f);
+			newProjectile2->SetInheritScale(false);
+
+			newProjectile->AddChild(newProjectile2);
+
+			newProjectile2->SetLocalPosition(95.0f, 0.0f, 0.0f);
+			//newProjectile2->SetWorldPosition(5.0f, 0.0f, 0.0f);
 			/*physx::PxBoxGeometry geo = physx::PxBoxGeometry(0.5f, 0.5f, 0.5f);
 			rigidBody->AttachShape(geo);
 			rigidBody->SetUseGravity(false);

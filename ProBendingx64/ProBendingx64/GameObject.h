@@ -82,6 +82,8 @@ public:
 
 	Ogre::Quaternion GetWorldOrientation()const;
 
+	bool GetInheritOrientation()const;
+
 	void SetWorldOrientation(const Ogre::Quaternion& newOrientation);
 
 	void SetWorldOrientation(const float w, const float x, const float y, const float z);
@@ -95,6 +97,8 @@ public:
 	void SetScale(const float x, const float y, const float z);
 
 	Ogre::Vector3 GetWorldScale()const;
+
+	bool GetInheritScale()const;
 
 	///<summary>True to inherit scale from parents</summary>
 	///<param name="val">True to inherit, false to not</param>

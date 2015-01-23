@@ -133,9 +133,12 @@ bool GameScene::Update(float gameTime)
 	if(!physxSimulating && load)
 	{
 		PxDataManSerializeOptions options = 
-			PxDataManSerializeOptions(PxDataManSerializeOptions::ALL, "SerializeCollection", "MyResources\\DataManagerData");
+			PxDataManSerializeOptions(PxDataManSerializeOptions::ALL, 
+				"SerializeCollection", "MyResources\\DataManagerData");
 
-		if(PhysXDataManager::GetSingletonPtr()->DeserializeData(options))
+		SceneSerializer serializer = SceneSerializer();
+
+		if(serializer.DeserializeScene(this, "GameScene"))
 			printf("Data Manager Deserialize Data successful\n");
 		else
 			printf("Data Manager Deserialize Data unsuccessful \n");

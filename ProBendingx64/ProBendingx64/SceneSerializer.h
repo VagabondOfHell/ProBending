@@ -25,14 +25,16 @@ private:
 
 	const std::string ActorCollection, PxDataCollection;
 	const std::string GameObjectNode, ObjectName;
-	const std::string Position, Rotation, X, Y, Z, W;
-	const std::string MeshRenderComponen, RigidBodyComponen, ParticleComponen;
+	const std::string Position, Rotation, Scale, X, Y, Z, W;
+	const std::string MeshRenderComponen, RigidBodyComponen, ParticleComponen, Enabled;
 	const std::string EntityName, RigidID, ParticleSpace;
 	const std::string PointEmitter, LineEmitter, MeshEmitter;
 	const std::string MinEmitDirection, MaxEmitDirection, PPS, MinEmitSpeed, MaxEmitSpeed, Duration;
 	const std::string ParticleActorID, MaxParticles, OnGPU, InitialLifetime;
 	const std::string ParticleAffectors, ScaleAffector, ColourFaderAffector, AlphaFadeAffector;
 	const std::string Enlarge, MinScale, MaxScale, StartColour, EndColour;
+
+#pragma region Serialization
 
 	bool AddVector3Attribute(XMLWriter& writer, const float x, const float y, const float z);
 
@@ -60,12 +62,16 @@ private:
 
 	bool SerializeAudioComponent(XMLWriter& writer);
 
+#pragma endregion
+
+	SharedGameObject DeserializedGameObject(XMLReader& reader, IScene* const scene);
+
 public:
 	SceneSerializer();
 	~SceneSerializer();
 
 	bool SerializeScene(const IScene* scene, const std::string& fileName);
 
-	bool DeserializeScene(const IScene* scene, const std::string& fileName);
+	bool DeserializeScene(IScene* scene, const std::string& fileName);
 };
 

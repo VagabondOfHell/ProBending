@@ -3,6 +3,7 @@
 #include "ProbenderInGameData.h"
 #include "ProbenderStateManager.h"
 #include "ProbenderData.h"
+#include "Projectile.h"
 
 #include <memory>
 
@@ -12,7 +13,6 @@ namespace physx
 };
 
 class IScene;
-class Projectile;
 class Arena;
 
 typedef std::shared_ptr<Projectile> SharedProjectile;

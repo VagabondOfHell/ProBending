@@ -86,9 +86,19 @@ bool GameObject::AddChild(SharedGameObject newChild)
 {
 	//Add the child
 	auto iter = children.insert(newChild);
+	
+	if(iter.second)
+	{
+		Ogre::SceneNode* parentNode = newChild->gameObjectNode->getParentSceneNode();
+		
+		if(parentNode)
+			parentNode->removeChild(newChild->gameObjectNode);
 
-	if(started && iter.second) //if game object start has already been called, call start now
-		newChild->Start();
+		gameObjectNode->addChild(newChild->gameObjectNode);
+
+		if(started)
+			newChild->Start();
+	}
 
 	//Return success
 	return iter.second;
@@ -97,7 +107,13 @@ bool GameObject::AddChild(SharedGameObject newChild)
 bool GameObject::RemoveChild(SharedGameObject childToRemove)
 {
 	//Try to erase. 1 for success, 0 for failure
-	return children.erase(childToRemove) > 0;
+	if(children.erase(childToRemove) > 0)
+	{
+		gameObjectNode->removeChild(childToRemove->gameObjectNode);
+		return true;
+	}
+
+	return false;
 }
 
 SharedGameObject GameObject::RemoveChild(std::string name)
@@ -109,6 +125,7 @@ SharedGameObject GameObject::RemoveChild(std::string name)
 	if(childIterator != children.end())
 	{
 		SharedGameObject objectRemoved = *childIterator;
+		gameObjectNode->removeChild(objectRemoved->gameObjectNode);
 		children.erase(childIterator);
 		return objectRemoved;
 	}
@@ -181,6 +198,11 @@ Ogre::Quaternion GameObject::GetWorldOrientation() const
 	return gameObjectNode->_getDerivedOrientation();
 }
 
+bool GameObject::GetInheritOrientation() const
+{
+	return gameObjectNode->getInheritOrientation();
+}
+
 void GameObject::SetWorldOrientation(const Ogre::Quaternion& newOrientation)
 {
 	gameObjectNode->_setDerivedOrientation(newOrientation);
@@ -216,9 +238,16 @@ Ogre::Vector3 GameObject::GetWorldScale() const
 	return gameObjectNode->_getDerivedScale();
 }
 
+bool GameObject::GetInheritScale() const
+{
+	return gameObjectNode->getInheritScale();
+}
+
 void GameObject::SetInheritScale(const bool val)
 {
 	gameObjectNode->setInheritScale(val);
 }
+
+
 
 #pragma endregion

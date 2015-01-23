@@ -63,7 +63,7 @@ bool XMLReader::OpenFile(std::string fileName)
 			}
 			//We only check for exception because rapid xml Parse Error inherits std::exception and
 			//we don't need special per-case error handling
-			catch(std::exception e)
+			catch(rapidxml::parse_error e)
 			{
 #ifdef _DEBUG
 				Ogre::LogManager::getSingletonPtr()->getDefaultLog()->logMessage(std::string("XML Reader Open File Error: ").append(e.what()), Ogre::LML_CRITICAL);
