@@ -1,0 +1,8 @@
+<PhysXDataManager>
+	<MaterialList/>
+	<ConvexMeshList/>
+	<TriangleMeshList/>
+	<HeightFieldList/>
+	<ShapeList/>
+</PhysXDataManager>
+

@@ -67,10 +67,10 @@ bool ProjectileManager::DestroyProjectile(SharedProjectile projectile)
 void ProjectileManager::Update(const float gameTime)
 {
 	//Loop through and update all projectiles
-	ProjectileMap::iterator iter = projectileMap.begin();
+	/*ProjectileMap::iterator iter = projectileMap.begin();
 	while (iter != projectileMap.end())
 	{
 		iter->second->Update(gameTime);
 		++iter;
-	}
+	}*/
 }

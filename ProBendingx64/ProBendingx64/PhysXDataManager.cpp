@@ -243,7 +243,7 @@ bool PhysXDataManager::DeserializeData(const PxDataManSerializeOptions& serializ
 			serializationOptions.CollectionName);
 	}
 
-	if(serializationOptions.PersistantCollection)
+	if(!serializationOptions.PersistantCollection)
 		PhysXSerializerWrapper::ReleaseCollection(serializationOptions.CollectionName);
 	PhysXSerializerWrapper::DestroySerializer();
 

@@ -137,6 +137,11 @@ public:
 			return NULL;
 	}
 
+	///<summary>Gets the highest ID used in the specified collection</summary>
+	///<param name="collectionName">The name of the collection to check</param>
+	///<returns>0 or greater if successful, -1 if collection not found</returns>
+	static int GetHighestIDInCollection(const std::string& collectionName);
+
 	///<summary>Checks if the name exists within the collection</summary>
 	///<param name="collectionName">Name of the collection to check for</param>
 	///<returns>True if exists, false if not</returns>

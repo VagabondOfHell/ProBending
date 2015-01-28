@@ -28,7 +28,10 @@ void ParticlePointEmitter::Emit(const float gameTime, const unsigned int availab
 	if(!loop)
 		timePassed += gameTime;
 	
-	if(loop || timePassed <= duration)
+	bool infiniteEmission = duration <= 0.0f;
+
+	if((loop && timePassed <= duration && !infiniteEmission) || (!loop && infiniteEmission)
+		|| (timePassed <= duration && !infiniteEmission))
 	{
 		//Check amount of particles available
 		if(availableIndiceCount > 0)

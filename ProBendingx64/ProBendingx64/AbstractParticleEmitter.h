@@ -27,7 +27,6 @@ private:
 	}
 
 protected:
-	
 	physx::PxVec3 minimumDirection;
 	physx::PxVec3 maximumDirection;
 	
@@ -52,11 +51,11 @@ public:
 	///<param name="_duration">How long the emitter should emit if not looping</param>
 	///<param name="minParticleSpeed">The minimum value for creating random particle speed </param>
 	///<param name="maxParticleSpeed">The maximum value for creating random particle speed </param>
-	AbstractParticleEmitter(physx::PxVec3 emitterPosition = physx::PxVec3(0.0f), float _particlesPerSecond = 1.0f,
+	AbstractParticleEmitter(physx::PxVec3 _position = physx::PxVec3(0.0f), float _particlesPerSecond = 1.0f,
 		physx::PxVec3 minEmissionDirection  = physx::PxVec3(0.0f), physx::PxVec3 maxEmissionDirection  = physx::PxVec3(0.0f),
 		bool _loop = true, float _duration = 1.0f, float minParticleSpeed = 1.0f, float maxParticleSpeed = 2.0f)
-		: position(emitterPosition), timePassed(0), duration(_duration), loop(_loop),
-		particlesToEmitThisFrame(0)
+		: particlesPerSecond(_particlesPerSecond), position(_position), timePassed(0), 
+		duration(_duration), loop(_loop), particlesToEmitThisFrame(0)
 	{
 		SetDirections(minEmissionDirection, maxEmissionDirection);
 

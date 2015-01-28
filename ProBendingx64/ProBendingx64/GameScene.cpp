@@ -112,6 +112,12 @@ bool GameScene::Update(float gameTime)
 
 			battleArena->Update(gameTime);
 
+			for (auto start = gameObjectList.begin();
+				start != gameObjectList.end(); ++start)
+			{
+				start->get()->Update(gameTime);
+			}
+
 			physxSimulating = false;
 		}
 	
@@ -122,7 +128,8 @@ bool GameScene::Update(float gameTime)
 
 		SceneSerializer serializer = SceneSerializer();
 
-		if(serializer.SerializeScene(this, "GameScene"))//if(PhysXDataManager::GetSingletonPtr()->SerializeData(options))
+		if(serializer.SerializeScene(this, "GameScene"))
+		//if(PhysXDataManager::GetSingletonPtr()->SerializeData(options))
 			printf("Data Manager Serialize Data successful\n");
 		else
 			printf("Data Manager Serialize Data unsuccessful \n");

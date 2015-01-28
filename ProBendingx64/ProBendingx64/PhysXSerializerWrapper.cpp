@@ -68,6 +68,37 @@ physx::PxCollection* PhysXSerializerWrapper::CreateAndGetCollection(const std::s
 	return NULL;
 }
 
+int PhysXSerializerWrapper::GetHighestIDInCollection(const std::string& collectionName)
+{
+	physx::PxCollection* collection = GetCollection(collectionName);
+
+	if(collection)
+	{
+		int numIDs = collection->getNbIds();
+
+		if(numIDs == 0)
+			return numIDs;
+
+		physx::PxSerialObjectId* ids = new physx::PxSerialObjectId[numIDs];
+
+		collection->getIds(ids, numIDs);
+
+		int highest = ids[0];
+
+		for (unsigned int i = 1; i < numIDs; i++)
+		{
+			if(ids[i] > highest)
+				highest = ids[i];
+		}
+
+		delete[] ids;
+
+		return highest;
+	}
+
+	return -1;
+}
+
 bool PhysXSerializerWrapper::SetWorkingCollection(const std::string& collectionName)
 {
 	CollectionMap::iterator findResult = collectionMap.find(collectionName);
@@ -223,7 +254,10 @@ bool PhysXSerializerWrapper::SerializeToBinary(const std::string& fileName,
 		CollectionMap::iterator refsResult = collectionMap.find(externalRefsCollection);
 
 		if(refsResult != collectionMap.end())
+		{
 			refCollection = refsResult->second;
+			PxSerialization::complete(*result->second, *serializationRegistry, refCollection);
+		}
 
 		PxDefaultFileOutputStream outputStream = PxDefaultFileOutputStream(fileName.c_str());
 

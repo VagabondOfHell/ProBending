@@ -181,6 +181,9 @@ protected:
 #pragma endregion
 
 public:
+	ParticleSystemBase(physx::PxParticleSystem* physxParticleSystem,
+		std::shared_ptr<AbstractParticleEmitter> _emitter, size_t _maximumParticles, float _initialLifetime);
+
 	ParticleSystemBase(std::shared_ptr<AbstractParticleEmitter> _emitter, size_t _maximumParticles, float _initialLifetime,
 		ParticleSystemParams& paramsStruct = ParticleSystemParams());
 
@@ -201,6 +204,8 @@ public:
 	///<summary>Gets the cuda manager associated with this particle system</summary>
 	///<returns>The cuda context manager, or NULL if none set</returns>
 	inline physx::PxCudaContextManager* const GetPhysXCudaManager()const{return cudaContextManager;}
+
+	inline void SetPhysXCudaManager(physx::PxCudaContextManager* manager){cudaContextManager = manager;}
 
 	///<summary>Creates a vertex buffer for this system</summary>
 	///<param name="semantic">The semantic to create</param>

@@ -36,10 +36,12 @@ class IScene
 	friend class SceneSerializer;
 
 private:
-	typedef std::unordered_set<SharedGameObject> GameObjectList;
-	GameObjectList gameObjectList;
+	
 
 protected:
+	typedef std::unordered_set<SharedGameObject> GameObjectList;
+	GameObjectList gameObjectList;
+	
 	SceneManager* owningManager;
 
 	std::string resourceGroupName;

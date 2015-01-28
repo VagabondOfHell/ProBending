@@ -38,6 +38,8 @@ ParticleSystemBase::ParticleSystemBase(std::shared_ptr<AbstractParticleEmitter> 
 		float _initialLifetime, ParticleSystemParams& paramsStruct)
 		: emitter(_emitter), cudaContextManager(paramsStruct.cudaContext), initialLifetime(_initialLifetime)
 {
+	maximumParticles = _maximumParticles;
+
 	// our vertices are just points
 	mRenderOp.operationType = Ogre::RenderOperation::OT_POINT_LIST;
 	mRenderOp.useIndexes = false;//EBO
@@ -49,8 +51,6 @@ ParticleSystemBase::ParticleSystemBase(std::shared_ptr<AbstractParticleEmitter> 
 	//set ogre simple renderable
 	mBox.setExtents(-1000, -1000, -1000, 1000, 1000, 1000);
 	
-	maximumParticles = _maximumParticles;
-
 	gpuTypeCombination = 0;
 	allTypesCombination = 0;
 
@@ -93,6 +93,44 @@ ParticleSystemBase::ParticleSystemBase(std::shared_ptr<AbstractParticleEmitter> 
 	pxParticleSystem->setRestOffset(paramsStruct.restOffset);
 	pxParticleSystem->setSimulationFilterData(paramsStruct.filterData);
 	
+	//Allocate enough space for all the indices
+	availableIndices.reserve(maximumParticles);
+
+	//Add the indices in descending order
+	for (int i = maximumParticles - 1; i >= 0; --i)
+	{
+		availableIndices.push_back(i);
+	}
+
+	hostAffector = false;
+}
+
+ParticleSystemBase::ParticleSystemBase(physx::PxParticleSystem* physxParticleSystem, 
+				std::shared_ptr<AbstractParticleEmitter> _emitter, size_t _maximumParticles, float _initialLifetime)
+		: emitter(_emitter), initialLifetime(_initialLifetime)
+{
+	maximumParticles = _maximumParticles;
+
+	// our vertices are just points
+	mRenderOp.operationType = Ogre::RenderOperation::OT_POINT_LIST;
+	mRenderOp.useIndexes = false;//EBO
+
+	mRenderOp.vertexData = new Ogre::VertexData();
+	mRenderOp.vertexData->vertexCount = maximumParticles;
+	mRenderOp.vertexData->vertexBufferBinding->unsetAllBindings();
+
+	//set ogre simple renderable
+	mBox.setExtents(-1000, -1000, -1000, 1000, 1000, 1000);
+
+	gpuTypeCombination = 0;
+	allTypesCombination = 0;
+
+	cudaKernel = NULL;
+
+	pxParticleSystem = physxParticleSystem;
+
+	readableData = pxParticleSystem->getParticleReadDataFlags();
+
 	//Allocate enough space for all the indices
 	availableIndices.reserve(maximumParticles);
 
@@ -511,10 +549,7 @@ void ParticleSystemBase::UpdateParticleSystemCPU(const float time, const physx::
 		}
 		
 		if(onGPU)
-		{
 			mRenderOp.vertexData->vertexCount = numParticles;
-		}
-
 	}//end if valid range > 0
 }
 
