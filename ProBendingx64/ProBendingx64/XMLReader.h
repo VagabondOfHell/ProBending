@@ -76,7 +76,7 @@ public:
 		if(nodeStack.size() > 2)//if there are more nodes then the root and its child, allow the pop
 		{
 			nodeStack.pop();
-			topNode = nodeStack.top();
+			SetTopNode(nodeStack.top());
 		}
 	}
 

@@ -33,13 +33,13 @@ void Probender::AttachToScene(IScene* scene)
 
 	//Set this probender to the input handle so it has reference
 	inputHandler.SetProbenderToHandle(this);
-	
+	/*
 	PxBoxGeometry box = PxBoxGeometry(1.0f, 1.0f, 1.0f);
 	PxMaterial* mat = PhysXDataManager::GetSingletonPtr()->CreateMaterial(0.5f, 0.5f, 0.5f, "ProbenderMaterial");
 
 	physicsBody = PxCreateDynamic(PxGetPhysics(), PxTransform(PxVec3(),PxQuat::createIdentity()),box, *mat, 1.0f);
 
-	scene->GetPhysXScene()->addActor(*physicsBody);
+	scene->GetPhysXScene()->addActor(*physicsBody);*/
 }
 
 void Probender::Update(float gameTime)

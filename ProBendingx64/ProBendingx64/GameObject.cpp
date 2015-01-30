@@ -6,12 +6,14 @@
 #include "PxRigidActor.h"
 #include "PxRigidDynamic.h"
 #include "PxRigidStatic.h"
+#include "RigidBodyComponent.h"
 
 GameObject::GameObject(IScene* _owningScene, std::string objectName)
 	:owningScene(_owningScene), name(objectName), started(false)
 {
 	gameObjectNode = owningScene->GetOgreSceneManager()->getRootSceneNode()->
 		createChildSceneNode();
+	rigidBody = NULL;
 }
 
 
@@ -139,6 +141,10 @@ void GameObject::AttachComponent(Component* newComponent)
 	{
 		components.insert(std::pair<Component::ComponentType, Component*>(
 			newComponent->GetComponentType(), newComponent));
+
+		if(newComponent->GetComponentType() == Component::RIGID_BODY_COMPONENT)
+			rigidBody = (RigidBodyComponent*)newComponent;
+
 		newComponent->AttachToObject(this);
 		
 		if(started)//if game object was already started, start component here
@@ -161,21 +167,31 @@ Ogre::Vector3 GameObject::GetWorldPosition() const
 void GameObject::SetLocalPosition(const Ogre::Vector3& newPos)
 {
 	gameObjectNode->setPosition(newPos);
+	Ogre::Vector3 wpos = gameObjectNode->_getDerivedPosition();
+	if(rigidBody)
+		rigidBody->SetPosition(physx::PxVec3(wpos.x, wpos.y, wpos.z));
 }
 
 void GameObject::SetLocalPosition(const float x, const float y, const float z)
 {
 	gameObjectNode->setPosition(x, y, z);
+	Ogre::Vector3 wpos = gameObjectNode->_getDerivedPosition();
+	if(rigidBody)
+		rigidBody->SetPosition(physx::PxVec3(wpos.x, wpos.y, wpos.z));
 }
 
 void GameObject::SetWorldPosition(const Ogre::Vector3& newPos)
 {
 	gameObjectNode->_setDerivedPosition(newPos);
+	if(rigidBody)
+		rigidBody->SetPosition(physx::PxVec3(newPos.x, newPos.y, newPos.z));/**/
 }
 
 void GameObject::SetWorldPosition(const float x, const float y, const float z)
 {
 	gameObjectNode->_setDerivedPosition(Ogre::Vector3(x, y, z));
+	if(rigidBody)
+		rigidBody->SetPosition(physx::PxVec3(x, y, z));/**/
 }
 
 Ogre::Quaternion GameObject::GetLocalOrientation() const

@@ -22,6 +22,7 @@ namespace physx
 class RigidBodyComponent :
 	public Component
 {
+	friend class SceneSerializer;
 public:
 	enum RigidBodyType{NONE, STATIC, DYNAMIC}; ///The types of possible rigid bodies
 
@@ -77,7 +78,11 @@ public:
 	///<param name="force">The amount of force to apply</param>
 	void ApplyForce(physx::PxVec3& force);
 
+	void SetVelocity(physx::PxVec3& newVel);
+
 	void SetPosition(physx::PxVec3& position);
+
+	void ClearForces();
 
 	///<summary>Gets the type of body that this rigid body is</summary>
 	///<returns>static, dynamic, or NONE if not yet initialized</returns>
@@ -93,6 +98,9 @@ public:
 
 #if _DEBUG
 	void CreateDebugDraw();
+
+	void PrintRigidData();
+
 #endif
 
 	virtual void Start();

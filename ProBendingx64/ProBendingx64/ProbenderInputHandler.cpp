@@ -224,12 +224,6 @@ bool ProbenderInputHandler::keyPressed( const OIS::KeyEvent &arg )
 
 			if(rigidBody)
 				rigidBody->ApplyForce(physx::PxVec3(0.0f, 0.0f, -1000.0f));
-
-			/*physx::PxRigidDynamic* dy = probender->rightHandAttack->GetDynamicRigidBody();
-			if(dy)
-			{
-				dy->addForce(physx::PxVec3(0.0f, 0.0f, -2000.0f), physx::PxForceMode::eIMPULSE);
-			}*/
 		}
 	}
 	else if(arg.key == OIS::KC_LEFT)
@@ -237,7 +231,7 @@ bool ProbenderInputHandler::keyPressed( const OIS::KeyEvent &arg )
 		if(probender->rightHandAttack)
 		{
 			RigidBodyComponent* rigidBody = (RigidBodyComponent*)probender->rightHandAttack->GetComponent(Component::RIGID_BODY_COMPONENT);
-
+			Ogre::Vector3 currPos = probender->rightHandAttack->GetWorldPosition();
 			if(rigidBody)
 				rigidBody->ApplyForce(physx::PxVec3(-100.0f, 0.0f, 0.0f));
 		}

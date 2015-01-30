@@ -37,9 +37,26 @@ public:
 	///<returns>True if loaded, false if failed</returns>
 	bool LoadModel(const Ogre::String& modelFileName);
 
+	///<summary>Creates it if it doesn't exist</summary>
+	///<param name="planeMeshName">The name to search for or create under</param>
+	///<param name="position">The position/normal of the plane</param>
+	///<param name="distance">The distance along the position</param>
+	///<param name="xSegments">Number of segments along the horizontal axis</param>
+	///<param name="ySegments">Number of segments along the vertical axis</param>
+	///<param name="uRepeat">Number of times to repeat the texture on the U axis</param>
+	///<param name="vRepeat">Number of times to repeat the texture on the V axis</param>
+	///<param name="upDir">Up direction of the plane</param>
+	///<returns>True if successful, false if not</returns>
+	bool static CreatePlane(const std::string& planeMeshName, const Ogre::Vector3& normal = Ogre::Vector3::UNIT_Y, 
+		const Ogre::Real distance = 0.0f, const int xSegments = 1, const int ySegments = 1, 
+		const Ogre::Real uRepeat = 1.0f, const Ogre::Real vRepeat = 1.0f, 
+		const Ogre::Vector3& upDir = Ogre::Vector3::UNIT_Z );
+
 	///<summary>Gets the name of the entity used</summary>
 	///<returns>Name of the entity. Error if no entity</returns>
 	const std::string& GetMeshName()const;
+
+	void SetMaterial(const std::string& matName);
 
 	///<summary>Creates a box from the ogre entity dimensions, with scaling</summary>
 	///<returns>Gets the half size of the rectangle representing the entity</returns>

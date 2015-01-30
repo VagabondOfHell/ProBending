@@ -26,13 +26,13 @@ class ColourFadeParticleAffector;
 class SceneSerializer
 {
 private:
-	unsigned long long StartID;
+	long long StartID;
 
 	const std::string ActorCollection, PxDataCollection;
 	const std::string GameObjectNode, ObjectName;
 	const std::string Position, Rotation, Scale, X, Y, Z, W;
 	const std::string MeshRenderComponen, RigidBodyComponen, ParticleComponen, Enabled;
-	const std::string EntityName, RigidID, ParticleSpace;
+	const std::string EntityName, SubentityMaterial, Subentity, SubentityID, RigidID, ParticleSpace;
 	const std::string Emitter, PointEmitter, LineEmitter, MeshEmitter;
 	const std::string MinEmitDirection, MaxEmitDirection, PPS, MinEmitSpeed, MaxEmitSpeed, Duration, EmitLoop;
 	const std::string ParticleActorID, MaxParticles, OnGPU, InitialLifetime;
@@ -106,8 +106,10 @@ public:
 	SceneSerializer();
 	~SceneSerializer();
 
-	bool SerializeScene(const IScene* scene, const std::string& fileName);
+	bool SerializeScene(const IScene* scene, std::string rootNodeName, const std::string& fileName, 
+		const std::string& refCollection = std::string(""));
 
-	bool DeserializeScene(IScene* scene, const std::string& fileName);
+	bool DeserializeScene(IScene* scene, const std::string& fileName,
+		const std::string& refCollection = std::string(""), bool flushDataMan = false, bool flushScene = false);
 };
 

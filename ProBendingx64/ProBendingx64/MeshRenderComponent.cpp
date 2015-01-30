@@ -6,6 +6,7 @@
 #include "GameObject.h"
 
 #include "OgreSceneManager.h"
+#include "OgreMeshManager.h"
 #include "OgreEntity.h"
 #include "OgreMesh.h"
 #include "OgreSubMesh.h"
@@ -53,6 +54,22 @@ bool MeshRenderComponent::LoadModel(const Ogre::String& modelFileName)
 	return entity != NULL;
 }
 
+bool MeshRenderComponent::CreatePlane(const std::string& planeMeshName, const Ogre::Vector3& normal, const Ogre::Real distance,
+					const int xSegments, const int ySegments, const Ogre::Real uRepeat, const Ogre::Real vRepeat,
+					const Ogre::Vector3& upDir)
+{
+	Ogre::MeshPtr plane = Ogre::MeshManager::getSingletonPtr()->getByName(planeMeshName);
+
+	if(plane.get() == NULL)
+		plane = Ogre::MeshManager::getSingletonPtr()->createPlane(planeMeshName, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, 
+			Ogre::Plane(normal, distance), 1.0f, 1.0f, xSegments, ySegments, true, 1, uRepeat, vRepeat, upDir);
+	
+	if(plane.get() != NULL)
+		return true;
+	
+	return false;
+}
+
 const std::string& MeshRenderComponent::GetMeshName()const
 {
 	return entity->getMesh()->getName();
@@ -65,6 +82,12 @@ Ogre::Vector3 MeshRenderComponent::GetHalfExtents()const
 		return entity->getBoundingBox().getHalfSize() * owningGameObject->GetWorldScale();
 
 	return Ogre::Vector3(0.0f);
+}
+
+void MeshRenderComponent::SetMaterial(const std::string& matName)
+{
+	if(entity)
+		entity->setMaterialName(matName);	
 }
 
 std::shared_ptr<MeshInfo> const MeshRenderComponent::GetMeshInfo() const

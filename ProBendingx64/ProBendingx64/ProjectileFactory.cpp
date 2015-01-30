@@ -42,8 +42,10 @@ SharedProjectile ProjectileFactory::CreateProjectile(IScene* const scene,const E
 		{
 			newProjectile = std::make_shared<Projectile>(scene, nullptr);
 			MeshRenderComponent* renderComponent = new MeshRenderComponent();
+		//	newProjectile->SetWorldPosition(-80, 0, 0);
+			
 			newProjectile->AttachComponent(renderComponent);
-
+			
 			renderComponent->LoadModel("Rock_01.mesh");
 
 			newProjectile->SetScale(0.1f, 0.1f, 0.1f);
@@ -53,7 +55,8 @@ SharedProjectile ProjectileFactory::CreateProjectile(IScene* const scene,const E
 
 			SharedMeshInfo info = renderComponent->GetMeshInfo();
 
-			rigidBody->CreateRigidBody(RigidBodyComponent::DYNAMIC); //Create dynamic body at 0,0,0 with 0 rotation
+			rigidBody->CreateRigidBody(RigidBodyComponent::DYNAMIC, physx::PxVec3(0, 0, 0)); //Create dynamic body at 0,0,0 with 0 rotation
+			//rigidBody->SetPosition(physx::PxVec3(0, 0, 0));
 			physx::PxVec3 entityHalfSize = HelperFunctions::OgreToPhysXVec3(renderComponent->GetHalfExtents());
 			//SharedBoxGeo geo = PhysXDataManager::GetSingletonPtr()->CreateBoxGeometry(entityHalfSize, "RockBox");
 			
@@ -67,7 +70,8 @@ SharedProjectile ProjectileFactory::CreateProjectile(IScene* const scene,const E
 				PhysXDataManager::GetSingletonPtr()->CreateMaterial(0.5f, 0.5f, 0.5f, "RockMaterial");
 
 				ShapeDefinition shapeDef = ShapeDefinition();
-				shapeDef.SetConvexMeshGeometry(convexMesh);
+				//shapeDef.SetConvexMeshGeometry(convexMesh);
+				shapeDef.SetBoxGeometry(entityHalfSize);
 				shapeDef.AddMaterial("RockMaterial");
 
 				physx::PxShape* shape = PhysXDataManager::GetSingletonPtr()->CreateShape(shapeDef, "RockShape");
@@ -82,7 +86,7 @@ SharedProjectile ProjectileFactory::CreateProjectile(IScene* const scene,const E
 				
 				//renderComponent->Disable();
 			}
-
+			newProjectile->SetWorldPosition(80, 0, 0);
 			scene->AddGameObject(newProjectile);
 		}
 		break;

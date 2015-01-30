@@ -1,10 +1,6 @@
 //#include "vld.h"
 #include "Game.h"
 #include "InputManager.h"
-#include "DotSceneLoader.h"
-//#include "TestScene.h"
-//#include "BlankScene.h"
-//#include "FluidScene.h"
 #include "GameScene.h"
 #include "PhysXSerializerWrapper.h"
 
@@ -355,7 +351,7 @@ void Game::Run()
 	player1Data.Attributes.MainElement = ElementEnum::Element::Fire;
 	contestantData.push_back(player1Data);
 
-	std::shared_ptr<GameScene> gameScene(new GameScene(sceneManager, mRoot, "Pro-bending Arena", contestantData));
+	std::shared_ptr<GameScene> gameScene(new GameScene(sceneManager, mRoot, "Probending Arena", contestantData));
 	sceneManager->FlagSceneSwitch(gameScene, true);
 
 	gameScene.reset();

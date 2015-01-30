@@ -18,6 +18,8 @@ protected:
 	std::string arenaName;//Name of this arena
 	std::string resourceGroupName;//Name of the resource group that this arena uses
 
+	bool loaded;//true if resources have already been loaded for this arena
+
 	IScene* owningScene;//The scene that owns the arena
 	AbilityManager* abilityManager;//The manager of all abilities in the scene
 	ProjectileManager* projectileManager;//The manager of the projectiles in the scene
@@ -53,6 +55,8 @@ public:
 	inline ProjectileManager* const GetProjectileManager()const{return projectileManager;}
 
 	virtual void Initialize(const std::vector<ProbenderData> contestantData);
+
+	virtual bool LoadResources();
 
 	virtual void Start();
 

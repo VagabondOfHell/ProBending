@@ -18,6 +18,7 @@ namespace physx
 class IScene;
 
 typedef std::shared_ptr<GameObject> SharedGameObject;
+class RigidBodyComponent;
 
 class GameObject
 {
@@ -30,6 +31,7 @@ protected:
 	
 	std::unordered_set<SharedGameObject> children;
 	std::multimap<Component::ComponentType, Component*> components; //Multimap of components based on type
+	RigidBodyComponent* rigidBody;
 
 	bool started;
 

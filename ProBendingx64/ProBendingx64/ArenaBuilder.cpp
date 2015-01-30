@@ -1,25 +1,31 @@
 #include "ArenaBuilder.h"
-#include "Arena.h"
-#include "XMLReader.h"
 
-bool ArenaBuilder::LoadArenaFromXML(Arena& arenaToFill, const std::string fileName)
+#include "IScene.h"
+#include "PhysXDataManager.h"
+#include "GameObject.h"
+#include "MeshRenderComponent.h"
+#include "RigidBodyComponent.h"
+
+#include "OgreMeshManager.h"
+#include "OgreSceneManager.h"
+#include "OgreEntity.h"
+
+void ArenaBuilder::GenerateProbendingArena(IScene* scene)
 {
-	XMLReader xmlReader;
+	MeshRenderComponent::CreatePlane("WaterPlane", Ogre::Vector3::UNIT_Y, 0.0f, 1, 1, 3.0f, 3.0f, Ogre::Vector3::UNIT_Z);
 
-	if(!xmlReader.OpenFile(fileName))
-		return false;
+	///Create the water plane
+	SharedGameObject waterObject = std::make_shared<GameObject>(scene, "WaterPlane");
+	MeshRenderComponent* waterMesh = new MeshRenderComponent();
+	waterObject->AttachComponent(waterMesh);
 
+	waterMesh->LoadModel("WaterPlane");
+	waterMesh->SetMaterial("Examples/Water1");
+	waterObject->SetWorldPosition(0.0f, -5.0f, 0.0f);
+	waterObject->SetScale(1000.0f, 1.0f, 1000.0f);
+	
+	waterObject->Start();
 
-
-	return true;
+	scene->AddGameObject(waterObject);
 }
 
-bool ArenaBuilder::LoadArena(Arena& arenaToFill, const std::string arenaName)
-{
-	std::string fileName = "";
-
-	if(arenaName == "ProbendingArena")
-		fileName = "ProbendingArena.xml";
-
-	return LoadArenaFromXML(arenaToFill, fileName);
-}

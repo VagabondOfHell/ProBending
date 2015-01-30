@@ -31,6 +31,8 @@ struct PxDataManSerializeOptions
 	std::string FileName;//Name of file without extension
 	bool PersistantCollection;//True to not release collection when finished
 
+	long long ShapeStartID, MaterialStartID, ConvexMeshStartID, TriMeshStartID, HeightFieldStartID;
+
 	///<summary>Constructor of the customizable serialization options</summary>
 	///<param name="dataSerializer">Options on what to serialize</param>
 	///<param name="collectionName">Name to assign to the collection to save</param>
@@ -38,9 +40,11 @@ struct PxDataManSerializeOptions
 	///<param name="fileName">The name to assign to the file, without extension</param>
 	PxDataManSerializeOptions(DataSerializers dataSerializer = ALL, 
 		const std::string& collectionName = "", bool persistantCollection = false,
-		const std::string& fileName = "")
+		const std::string& fileName = "", long long shapeStartID = 0, long long materialStartID = 0, 
+		long long convexMeshStartID = 0, long long triMeshStartID = 0, long long heightFieldStartID = 0)
 		: SerializerDataTypes(dataSerializer), CollectionName(collectionName), FileName(fileName),
-		PersistantCollection(persistantCollection)
+		PersistantCollection(persistantCollection), ShapeStartID(shapeStartID), MaterialStartID(materialStartID),
+		ConvexMeshStartID(convexMeshStartID), TriMeshStartID(triMeshStartID), HeightFieldStartID(heightFieldStartID)
 	{
 	}
 
@@ -140,6 +144,8 @@ public:
 		}
 	}
 
+	void ReleaseAll();
+
 	///<summary>Creates a new physics material</summary>
 	///<param name="staticFriction">The static friction applied when object is not moving,
 	///between 0.0f and 1.0f</param>
@@ -207,6 +213,16 @@ public:
 
 		return NULL;
 	}
+
+	inline size_t GetMaterialCount()const{return materialMap.size();}
+
+	inline size_t GetShapeCount()const{return shapeMap.size();}
+
+	inline size_t GetConvexMeshCount()const{return convexMeshMap.size();}
+
+	inline size_t GetTriangleMeshCount()const{return triangleMeshMap.size();}
+
+	inline size_t GetHeightFieldCount()const{return heightFieldMap.size();}
 
 	///<summary>Gathers the materials stored in this manager and places them in the specified collection</summary>
 	///<param name="collectionName">The name of the collection to retrieve or create</param>

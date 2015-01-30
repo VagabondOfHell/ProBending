@@ -12,6 +12,7 @@
 #include "RigidBodyComponent.h"
 #include "ParticleComponent.h"
 
+#include "PxScene.h"
 #include "PxRigidDynamic.h"
 #include "PxRigidStatic.h"
 
@@ -22,6 +23,8 @@
 #include "ParticleAffectorEnum.h"
 
 #include "OgreLogManager.h"
+#include "OgreEntity.h"
+#include "OgreSubEntity.h"
 
 typedef std::unordered_set<SharedGameObject> GameObjectList;
 
@@ -30,7 +33,8 @@ SceneSerializer::SceneSerializer()
 	GameObjectNode("GameObjectNode"), ObjectName("ObjectName"),
 	Position("Position"), X("X"), Y("Y"), Z("Z"), W("W"), Rotation("Rotation"), Scale("Scale"),
 	MeshRenderComponen("MeshRenderComponent"), RigidBodyComponen("RigidBodyComponent"),
-	ParticleComponen("ParticleComponent"), Enabled("Enabled"), EntityName("Entity"), RigidID("RigidID"),
+	ParticleComponen("ParticleComponent"), Enabled("Enabled"), EntityName("Entity"), 
+	SubentityMaterial("SubentityMaterial"), Subentity("Subentity"), SubentityID("SubentityID"), RigidID("RigidID"),
 	ParticleSpace("ParticleSpace"), Emitter("Emitter"), PointEmitter("PointEmitter"), LineEmitter("LineEmitter"), 
 	MeshEmitter("MeshEmitter"), MinEmitDirection("MinDirection"), MaxEmitDirection("MaxDirection"), 
 	PPS("ParticlesPerSecond"), MinEmitSpeed("MinSpeed"), MaxEmitSpeed("MaxSpeed"), Duration("Duration"),
@@ -91,20 +95,34 @@ bool SceneSerializer::AddVector4Attribute(XMLWriter& writer, Ogre::Vector4 vec)
 	return AddVector4Attribute(writer, vec.x, vec.y, vec.z, vec.w);
 }
 
-bool SceneSerializer::SerializeScene(const IScene* scene, const std::string& fileName)
+bool SceneSerializer::SerializeScene(const IScene* scene, std::string rootNodeName, const std::string& fileName,
+			const std::string& refCollection/* = std::string("")*/)
 {
-	PxDataManSerializeOptions serialOptions = PxDataManSerializeOptions(PxDataManSerializeOptions::ALL,
-		PxDataCollection, true, fileName);
+	//PxDataManSerializeOptions serialOptions = PxDataManSerializeOptions(PxDataManSerializeOptions::ALL,
+		//PxDataCollection, true, fileName);
+	StartID = PhysXSerializerWrapper::GetHighestIDInCollection(ActorCollection);
 
-	if(PhysXSerializerWrapper::CreateSerializer() && 
-		PhysXDataManager::GetSingletonPtr()->SerializeData(serialOptions))
+	if(StartID < 1)
+		StartID = 1;
+
+	long long otherCollectionID = PhysXSerializerWrapper::GetHighestIDInCollection(refCollection);
+
+	if(otherCollectionID < 1)
+		otherCollectionID = 1;
+
+	if(otherCollectionID > StartID)
+		StartID = otherCollectionID + 1;
+
+	if(PhysXSerializerWrapper::CreateSerializer() )//&& 
+		//PhysXDataManager::GetSingletonPtr()->SerializeData(serialOptions))
 	{
 		XMLWriter writer;
-		std::string sceneName = scene->GetSceneName();
-		sceneName.erase(std::remove_if(sceneName.begin(), sceneName.end(), isspace), sceneName.end());
+	
+		rootNodeName.erase(std::remove_if(rootNodeName.begin(), rootNodeName.end(), isspace), rootNodeName.end());
+
 		if(	PhysXSerializerWrapper::CreateCollection(ActorCollection, true))
 		{
-			writer.CreateNode(sceneName, std::string(""), false);//Root node which is scene name
+			writer.CreateNode(rootNodeName, std::string(""), false);//Root node which is scene name
 
 			for (GameObjectList::iterator start = scene->gameObjectList.begin();
 				start != scene->gameObjectList.end(); ++start)
@@ -112,8 +130,10 @@ bool SceneSerializer::SerializeScene(const IScene* scene, const std::string& fil
 				SerializeGameObject(writer, *start);
 			}
 
+			//PhysXSerializerWrapper::CompleteCollection(ActorCollection, refCollection);
+
 			bool serialize = PhysXSerializerWrapper::SerializeToBinary(fileName + "Actors.pbd",
-				ActorCollection, PxDataCollection);
+				ActorCollection, refCollection);
 
 			bool xml = writer.WriteFile(fileName + "Actors.xml");
 
@@ -130,9 +150,9 @@ bool SceneSerializer::SerializeScene(const IScene* scene, const std::string& fil
 
 void SceneSerializer::SerializeGameObject(XMLWriter& writer, const SharedGameObject gameObject)
 {
-	Ogre::Vector3 position = gameObject->GetLocalPosition();
-	Ogre::Vector3 scale = gameObject->GetLocalScale();
-	Ogre::Quaternion rotation = gameObject->GetLocalOrientation();
+	Ogre::Vector3 position = gameObject->GetWorldPosition();
+	Ogre::Vector3 scale = gameObject->GetWorldScale();
+	Ogre::Quaternion rotation = gameObject->GetWorldOrientation();
 	
 	writer.CreateNode(GameObjectNode, std::string(""), true); writer.AddAttribute(ObjectName, gameObject->GetName());
 		//game object Transform
@@ -189,6 +209,17 @@ bool SceneSerializer::SerializeMeshRenderComponent(XMLWriter& writer, const Mesh
 	{
 		writer.AddAttribute(Enabled, renderer->IsEnabled());
 		writer.AddAttribute(EntityName, renderer->GetMeshName(), false, false);
+
+		long long numSubmesh = renderer->entity->getNumSubEntities();
+
+		for (long long i = 0; i < numSubmesh; i++)
+		{
+			writer.CreateNode(Subentity);
+				writer.AddAttribute(SubentityID, i);
+				writer.AddAttribute(SubentityMaterial, renderer->entity->getSubEntity(i)->getMaterialName());
+			writer.PopNode();
+		}
+
 		writer.PopNode();
 		return true;
 	}
@@ -216,19 +247,10 @@ bool SceneSerializer::SerializeRigidBodyComponent(XMLWriter& writer, const Rigid
 
 		if(actor)
 		{
-			PhysXSerializerWrapper::AddToWorkingCollection(*actor);
-
-			int highestIDInPxObjects = PhysXSerializerWrapper::GetHighestIDInCollection(PxDataCollection);
-
-			if(highestIDInPxObjects < 1)
-				highestIDInPxObjects = 1;
-
-			PhysXSerializerWrapper::CreateIDs(highestIDInPxObjects + 1);
-
-			long long actorID = PhysXSerializerWrapper::GetID(ActorCollection, *actor);
-
-			if(actorID > PX_SERIAL_OBJECT_ID_INVALID)
-				writer.AddAttribute(RigidID, actorID);
+			PhysXSerializerWrapper::AddToWorkingCollection(*actor, StartID);
+					
+			writer.AddAttribute(RigidID, StartID);
+			StartID++;
 		}
 
 		writer.PopNode();
@@ -345,11 +367,12 @@ bool SceneSerializer::SerializeParticleAffectors(XMLWriter& writer, const Partic
 		{
 		case ParticleAffectorType::Scale:
 			{
-				if(writer.CreateNode(ScaleAffector, affectIter->second->GetOnGPU()))
+				if(writer.CreateNode(ScaleAffector))
 				{
 					GPUScaleAffectorParams* params = 
 						(GPUScaleAffectorParams*)affectIter->second->GetGPUParamaters();
 
+					writer.AddAttribute(OnGPU, affectIter->second->GetOnGPU());
 					writer.AddAttribute(Enlarge,params->enlarge);
 					writer.AddAttribute(MinScale, params->minScale);
 					writer.AddAttribute(MaxScale, params->maxScale);
@@ -363,11 +386,12 @@ bool SceneSerializer::SerializeParticleAffectors(XMLWriter& writer, const Partic
 			break;
 		case ParticleAffectorType::ColourToColour:
 			{
-				if(writer.CreateNode(ColourFaderAffector, affectIter->second->GetOnGPU()))
+				if(writer.CreateNode(ColourFaderAffector))
 				{
 					GPUColourFaderAffectorParams* params =
 						(GPUColourFaderAffectorParams*)affectIter->second->GetGPUParamaters();
 
+					writer.AddAttribute(OnGPU, affectIter->second->GetOnGPU());
 					//Add start colour
 					writer.CreateNode(StartColour);
 					AddVector4Attribute(writer, params->startColour);
@@ -527,28 +551,37 @@ bool SceneSerializer::DeserializeVector4(XMLReader& reader, float& outX, float& 
 	return result;
 }
 
-bool SceneSerializer::DeserializeScene(IScene* scene, const std::string& fileName)
+bool SceneSerializer::DeserializeScene(IScene* scene, const std::string& fileName, 
+			const std::string& refCollection/* = std::string("")*/, bool flushDataMan /*=false*/, bool flushScene/* = false*/)
 {
-	PxDataManSerializeOptions serialOptions = PxDataManSerializeOptions(PxDataManSerializeOptions::ALL,
-		PxDataCollection, true, fileName);
+	/*PxDataManSerializeOptions serialOptions = PxDataManSerializeOptions(PxDataManSerializeOptions::ALL,
+	PxDataCollection, true, fileName);*/
 
 	bool errorsDetected = false;
 
+	if(flushDataMan)
+		PhysXDataManager::GetSingletonPtr()->ReleaseAll();
+
+	if(flushScene)
+		scene->GetPhysXScene()->flushSimulation();
+
 	errorsDetected = !PhysXSerializerWrapper::CreateSerializer();
+	/*
+	if(!errorsDetected)
+	errorsDetected = !PhysXDataManager::GetSingletonPtr()->DeserializeData(serialOptions);
 
 	if(!errorsDetected)
-		errorsDetected = !PhysXDataManager::GetSingletonPtr()->DeserializeData(serialOptions);
-
-	if(!errorsDetected)
-		errorsDetected = !PhysXSerializerWrapper::AddToScene(scene->GetPhysXScene(), PxDataCollection);
+	errorsDetected = !PhysXSerializerWrapper::AddToScene(scene->GetPhysXScene(), PxDataCollection);*/
 
 	if(!errorsDetected)
 		errorsDetected = !PhysXSerializerWrapper::DeserializeFromBinary(fileName + "Actors.pbd", 
-			ActorCollection, PxDataCollection);
+			ActorCollection, refCollection);
 
-	if(!errorsDetected)
-		errorsDetected = !PhysXSerializerWrapper::AddToScene(scene->GetPhysXScene(), ActorCollection);
+	//PhysXSerializerWrapper::CompleteCollection(ActorCollection, refCollection);
 
+	//if(!errorsDetected)
+	//	errorsDetected = !PhysXSerializerWrapper::AddToScene(scene->GetPhysXScene(), ActorCollection);
+	
 	XMLReader reader = XMLReader();
 
 	errorsDetected = !reader.OpenFile(fileName + "Actors.xml");
@@ -575,13 +608,13 @@ bool SceneSerializer::DeserializeScene(IScene* scene, const std::string& fileNam
 			}
 		} while (reader.MoveToNextSiblingNode());
 	}
-
-	PhysXSerializerWrapper::ReleaseCollection(ActorCollection);
-	PhysXSerializerWrapper::ReleaseCollection(PxDataCollection);
+	
+	//PhysXSerializerWrapper::ReleaseCollection(ActorCollection);
 	PhysXSerializerWrapper::DestroySerializer();
 	
 	return !errorsDetected;
 }
+Ogre::Vector3 objectPosition;
 
 SharedGameObject SceneSerializer::DeserializedGameObject(XMLReader& reader, IScene* const scene)
 {
@@ -601,7 +634,7 @@ SharedGameObject SceneSerializer::DeserializedGameObject(XMLReader& reader, ISce
 
 		} while (reader.MoveToNextAttribute());
 	}
-	Ogre::Vector3 objectPosition = Ogre::Vector3(0.0f);
+	//Ogre::Vector3 objectPosition = Ogre::Vector3(0.0f);
 	Ogre::Quaternion objectRotation = Ogre::Quaternion::IDENTITY;
 	Ogre::Vector3 objectScale = Ogre::Vector3(1.0f);
 
@@ -613,14 +646,15 @@ SharedGameObject SceneSerializer::DeserializedGameObject(XMLReader& reader, ISce
 
 			if(currNode == Position)
 			{
-				if(DeserializeVector3(reader, objectPosition))
-					newObject->SetLocalPosition(objectPosition);
+				DeserializeVector3(reader, objectPosition);
+				/*if(DeserializeVector3(reader, objectPosition))
+				newObject->SetWorldPosition(objectPosition);*/
 			}
 			else if(currNode == Rotation)
 			{
 				if(DeserializeVector4(reader, objectRotation.x,
 					objectRotation.y, objectRotation.z, objectRotation.w))
-					newObject->SetLocalOrientation(objectRotation);
+					newObject->SetWorldOrientation(objectRotation);
 
 				bool inheritRot = true;
 
@@ -644,7 +678,8 @@ SharedGameObject SceneSerializer::DeserializedGameObject(XMLReader& reader, ISce
 						DeserializeMeshRenderComponent(reader, newObject);
 			else if(currNode == RigidBodyComponen)
 			{
-				DeserializeRigidBodyComponent(reader, newObject);
+				if(!DeserializeRigidBodyComponent(reader, newObject))
+					printf("Rigid Body Failed\n");
 			}
 			else if(currNode == ParticleComponen)
 			{
@@ -696,6 +731,31 @@ bool SceneSerializer::DeserializeMeshRenderComponent(XMLReader& reader, SharedGa
 			}
 		} while (reader.MoveToNextAttribute());
 
+		if(reader.MoveToChildNode())
+		{
+			do 
+			{
+				long long currentID = -1;
+				std::string currentMaterial = "";
+
+				do 
+				{
+					if (reader.GetCurrentAttributeName() == SubentityID)
+					{
+						if(!reader.GetLongValue(currentID, true))
+							currentID = -1;
+					}
+					else if(reader.GetCurrentAttributeName() == SubentityMaterial)
+						currentMaterial = reader.GetStringValue(true);
+
+					if(currentID != -1 && currentMaterial != "")
+						mesh->entity->getSubEntity(currentID)->setMaterialName(currentMaterial);
+
+				} while (reader.MoveToNextAttribute());
+
+			} while (reader.MoveToNextSiblingNode());
+		}
+
 		return modelLoaded;
 	}
 
@@ -737,6 +797,8 @@ bool SceneSerializer::DeserializeRigidBodyComponent(XMLReader& reader, SharedGam
 						{
 							rigid->bodyType = RigidBodyComponent::DYNAMIC;
 							rigid->bodyStorage.dynamicActor = (physx::PxRigidDynamic*)actor;
+							rigid->SetPosition(physx::PxVec3(objectPosition.x, objectPosition.y, objectPosition.z));
+							objectToAdd->GetOwningScene()->GetPhysXScene()->addActor(*rigid->bodyStorage.dynamicActor);
 							rigid->CreateDebugDraw();
 						}
 						else if(actorType == physx::PxConcreteType::eRIGID_STATIC)
@@ -744,6 +806,7 @@ bool SceneSerializer::DeserializeRigidBodyComponent(XMLReader& reader, SharedGam
 							rigid->bodyType = RigidBodyComponent::STATIC;
 							rigid->bodyStorage.staticActor = (physx::PxRigidStatic*)actor;
 							rigid->CreateDebugDraw();
+							rigid->SetPosition(physx::PxVec3(objectPosition.x, objectPosition.y, objectPosition.z));
 						}
 					}
 					else
@@ -753,7 +816,6 @@ bool SceneSerializer::DeserializeRigidBodyComponent(XMLReader& reader, SharedGam
 					success = false;
 			}
 		} while (reader.MoveToNextAttribute());
-
 
 		return success;
 	}
@@ -993,7 +1055,7 @@ bool SceneSerializer::DeserializeParticleAffectors(XMLReader& reader,
 bool SceneSerializer::DeserializeScaleAffector(XMLReader& reader, std::shared_ptr<ScaleParticleAffector> &affector)
 {
 	bool currResult = true;
-	bool enlarge, scaleSuccess = true;
+	bool enlarge, onGPU = false, scaleSuccess = true;
 	float minScale, maxScale;
 
 	std::string currAttName;
@@ -1001,7 +1063,9 @@ bool SceneSerializer::DeserializeScaleAffector(XMLReader& reader, std::shared_pt
 	do 
 	{
 		currAttName = reader.GetCurrentAttributeName();
-		if(currAttName == Enlarge)
+		if(currAttName == OnGPU)
+			currResult = reader.GetBoolValue(onGPU, true);
+		else if(currAttName == Enlarge)
 			currResult = reader.GetBoolValue(enlarge, true);
 		else if(currAttName == MinScale)
 			currResult = reader.GetFloatValue(minScale, true);
@@ -1013,7 +1077,7 @@ bool SceneSerializer::DeserializeScaleAffector(XMLReader& reader, std::shared_pt
 	} while (reader.MoveToNextAttribute());
 	
 	if(scaleSuccess)
-		affector = std::make_shared<ScaleParticleAffector>(enlarge, minScale, maxScale);
+		affector = std::make_shared<ScaleParticleAffector>(enlarge, minScale, maxScale, onGPU);
 
 	return scaleSuccess;
 }
@@ -1024,7 +1088,7 @@ bool SceneSerializer::DeserializeColourFadeAffector(XMLReader& reader, std::shar
 	{
 		std::string currNodeName;
 		physx::PxVec4 startColour, endColour;
-		bool success = true;
+		bool onGPU = false, success = true;
 
 		do 
 		{
@@ -1040,10 +1104,16 @@ bool SceneSerializer::DeserializeColourFadeAffector(XMLReader& reader, std::shar
 
 		} while (reader.MoveToNextSiblingNode());
 
-		if(success)
-			affector = std::make_shared<ColourFadeParticleAffector>(startColour, endColour);
-
 		reader.PopNode();
+
+		if(reader.NodeHasAttributes())
+		{
+			if(reader.GetCurrentAttributeName() == OnGPU)
+				success = reader.GetBoolValue(onGPU, true);
+		}
+
+		if(success)
+			affector = std::make_shared<ColourFadeParticleAffector>(startColour, endColour, onGPU);
 
 		return success;
 	}

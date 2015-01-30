@@ -1,6 +1,5 @@
 #include "GameScene.h"
 #include "Arena.h"
-#include "ArenaBuilder.h"
 #include "SceneManager.h"
 #include "GUIManager.h"
 #include "InputNotifier.h"
@@ -13,6 +12,11 @@
 #include "PhysXDataManager.h"
 #include "SceneSerializer.h"
 
+#include "ArenaBuilder.h"
+#include "RigidBodyComponent.h"
+#include "MeshRenderComponent.h"
+
+#include "OgreMeshManager.h"
 #include "OgreSceneManager.h"
 #include "OgreRenderWindow.h"
 #include "OgreCamera.h"
@@ -21,6 +25,7 @@
 #include "PxScene.h"
 #include "geometry/PxConvexMesh.h"
 #include "PxPhysics.h"
+#include "PxRigidDynamic.h"
 
 bool save = false;
 bool load = false;
@@ -67,12 +72,18 @@ void GameScene::Initialize()
 
 	ogreSceneManager->setAmbientLight(Ogre::ColourValue(1.0f, 1.0f, 1.0f, 1.0f));
 
-	CreateCameraAndViewport(Ogre::ColourValue(0.0f, 0.0f, 0.0f, 0.0f), Ogre::Vector3(0.0f, 0.0f, 40.5f));
+	CreateCameraAndViewport(Ogre::ColourValue(0.0f, 0.0f, 0.0f, 0.0f), Ogre::Vector3(0.0f, 10.0f, 0.5f));
 
 	InputNotifier::GetInstance()->AddObserver(this);
 
 	InitializePhysics(physx::PxVec3(0.0f, -9.8f, 0.0f), true);
 
+	//battleArena->LoadResources();
+
+	MeshRenderComponent::CreatePlane("BasicPlane");
+
+	ArenaBuilder::GenerateProbendingArena(this);
+	
 	InputManager* inputManager = InputManager::GetInstance();
 
 	inputManager->FillGestureReader(L"C:\\Users\\Adam\\Desktop\\Capstone\\GestureData\\ProbendingGestures.gbd");
@@ -111,7 +122,7 @@ bool GameScene::Update(float gameTime)
 			physicsWorld->fetchResults(true);
 
 			battleArena->Update(gameTime);
-
+			int i = 0;
 			for (auto start = gameObjectList.begin();
 				start != gameObjectList.end(); ++start)
 			{
@@ -121,19 +132,45 @@ bool GameScene::Update(float gameTime)
 			physxSimulating = false;
 		}
 	
+		printf("Cam Pos: %f, %f, %f\n", mainOgreCamera->getPosition().x, mainOgreCamera->getPosition().y,mainOgreCamera->getPosition().z);
 	if(!physxSimulating && save)
 	{
 		PxDataManSerializeOptions options = 
-			PxDataManSerializeOptions(PxDataManSerializeOptions::ALL, "SerializeCollection", "MyResources\\DataManagerData");
+			PxDataManSerializeOptions(PxDataManSerializeOptions::ALL, 
+			"SerializeCollection", true, "MyResources\\ProbendingArena\\ProbendingArena", 1, 20000, 40000, 50000, 60000);
+		PhysXSerializerWrapper::CreateSerializer();
 
-		SceneSerializer serializer = SceneSerializer();
+		Ogre::MeshPtr arenaMesh = Ogre::MeshManager::getSingletonPtr()->getByName("ProbendArenaSurface.mesh");
+		if(arenaMesh.getPointer() != NULL)
+		{
+			std::shared_ptr<MeshInfo> info;
+			HelperFunctions::GetMeshInformation(arenaMesh.get(), *info);
 
-		if(serializer.SerializeScene(this, "GameScene"))
-		//if(PhysXDataManager::GetSingletonPtr()->SerializeData(options))
-			printf("Data Manager Serialize Data successful\n");
-		else
-			printf("Data Manager Serialize Data unsuccessful \n");
+			physx::PxConvexMesh* convexMesh = PhysXDataManager::GetSingletonPtr()->CookConvexMesh(info, "ArenaSurfaceMesh");
+		}
+		
+		
+		printf("Material Count: %i\n", PhysXDataManager::GetSingletonPtr()->GetMaterialCount());
 
+		printf("Convex Mesh Count: %i\n", PhysXDataManager::GetSingletonPtr()->GetConvexMeshCount());
+
+		printf("Shape Count: %i \n", PhysXDataManager::GetSingletonPtr()->GetShapeCount());
+
+		if(PhysXDataManager::GetSingletonPtr()->SerializeData(options))
+		{
+			SceneSerializer serializer = SceneSerializer();
+
+			if(serializer.SerializeScene(this, "ProbendingArena", "MyResources\\ProbendingArena\\ProbendingArena", 
+				"SerializeCollection"))
+				printf("Data Manager Serialize Data successful\n");
+			else
+				printf("Data Manager Serialize Data unsuccessful \n");
+			
+		}
+		
+		
+
+		PhysXSerializerWrapper::DestroySerializer();
 		save = false;
 	}
 
@@ -141,16 +178,41 @@ bool GameScene::Update(float gameTime)
 	{
 		PxDataManSerializeOptions options = 
 			PxDataManSerializeOptions(PxDataManSerializeOptions::ALL, 
-				"SerializeCollection", "MyResources\\DataManagerData");
+				"SerializeCollection", true, "MyResources\\ProbendingArena\\ProbendingArena");
+		
+		PhysXSerializerWrapper::CreateSerializer();
 
-		SceneSerializer serializer = SceneSerializer();
+			SceneSerializer serializer = SceneSerializer();
 
-		if(serializer.DeserializeScene(this, "GameScene"))
-			printf("Data Manager Deserialize Data successful\n");
-		else
-			printf("Data Manager Deserialize Data unsuccessful \n");
+			bool errorsDetected = false;
+			
+			errorsDetected = !PhysXDataManager::GetSingletonPtr()->DeserializeData(options);
+			if(errorsDetected)
+				printf("ERRORS");
+
+			if(!errorsDetected)
+			errorsDetected = !PhysXSerializerWrapper::AddToScene(GetPhysXScene(), "SerializeCollection");/**/
+			
+			if(serializer.DeserializeScene(this, "MyResources\\ProbendingArena\\ProbendingArena", "SerializeCollection", false, false))
+				printf("Data Manager Deserialize Data successful\n");
+			else
+				printf("Data Manager Deserialize Data unsuccessful \n");
 	
-		load = false;
+			printf("Num Actors: %i\n", GetPhysXScene()->getNbActors(physx::PxActorTypeFlag::eRIGID_DYNAMIC));
+			printf("Num Game Objects: %i\n", gameObjectList.size());
+
+			for (auto start = gameObjectList.begin(); start != gameObjectList.end(); ++start)
+			{
+				RigidBodyComponent* rigid = (RigidBodyComponent*)start->get()->GetComponent(Component::RIGID_BODY_COMPONENT);
+
+				if(rigid)
+				{
+					rigid->PrintRigidData();
+				}
+			}
+
+			load = false;
+		PhysXSerializerWrapper::DestroySerializer();
 	}
 
 	return true;

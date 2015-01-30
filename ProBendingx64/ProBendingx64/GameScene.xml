@@ -1,8 +1,14 @@
 <PhysXDataManager>
-	<MaterialList/>
-	<ConvexMeshList/>
+	<MaterialList>
+		<MaterialListItem SerialID="1" StorageName="RockMaterial"/>
+	</MaterialList>
+	<ConvexMeshList>
+		<ConvexListItem SerialID="2" StorageName="RockMesh"/>
+	</ConvexMeshList>
 	<TriangleMeshList/>
 	<HeightFieldList/>
-	<ShapeList/>
+	<ShapeList>
+		<ShapeListItem SerialID="3" StorageName="RockShape"/>
+	</ShapeList>
 </PhysXDataManager>
 

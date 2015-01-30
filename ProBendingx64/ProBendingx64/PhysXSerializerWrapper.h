@@ -77,7 +77,12 @@ public:
 	{
 		for (auto start = dynamicMemoryList.begin(); start != dynamicMemoryList.end(); ++start)
 		{
-			delete[] *start;
+			if(*start)
+			{
+				delete[] *start;
+				*start = NULL;
+			}
+			
 		}
 
 		dynamicMemoryList.clear();
@@ -94,6 +99,22 @@ public:
 			return SetWorkingCollection(collection); //return result of assigning the collection
 
 		return collection != NULL; //return successful creation
+	}
+
+	static inline bool AddCollection(const std::string& collectionName, physx::PxCollection* collectionToAdd)
+	{
+		if(collectionName.empty())//Invalid name
+			return false;
+
+		CollectionMap::iterator hint = collectionMap.begin();
+
+		if(FindExistingWithHint(collectionName, hint ))//if collection exists with that name
+			return false;//indicate insertion failure
+
+		//insert and return true
+		collectionMap.insert(hint, CollectionMap::value_type(collectionName, collectionToAdd));
+		
+		return true;
 	}
 
 	///<summary>Sets the collection that should be currently worked on</summary>
@@ -140,7 +161,7 @@ public:
 	///<summary>Gets the highest ID used in the specified collection</summary>
 	///<param name="collectionName">The name of the collection to check</param>
 	///<returns>0 or greater if successful, -1 if collection not found</returns>
-	static int GetHighestIDInCollection(const std::string& collectionName);
+	static long long GetHighestIDInCollection(const std::string& collectionName);
 
 	///<summary>Checks if the name exists within the collection</summary>
 	///<param name="collectionName">Name of the collection to check for</param>

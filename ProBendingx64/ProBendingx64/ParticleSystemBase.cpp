@@ -643,26 +643,26 @@ std::shared_ptr<ParticleAffector> ParticleSystemBase::RemoveAndGetAffector(Parti
 
 bool ParticleSystemBase::AssignAffectorKernel(ParticleKernel* newKernel)
 {
-	if(onGPU)
+	if(!onGPU)
+		return false;
+
+	if(cudaKernel)
 	{
-		if(cudaKernel)
-		{
-			delete cudaKernel;
-			cudaKernel = NULL;
-		}
-
-		cudaKernel = newKernel;
-
-		if(cudaKernel)
-		{
-			//Fill the kernel with the necessary data
-			if(cudaKernel->PopulateData(this, &affectorMap) == ParticleKernel::SUCCESS)
-			{
-				return true;
-			}
-		}
+		delete cudaKernel;
+		cudaKernel = NULL;
 	}
 
+	cudaKernel = newKernel;
+
+	if(cudaKernel)
+	{
+		//Fill the kernel with the necessary data
+		if(cudaKernel->PopulateData(this, &affectorMap) == ParticleKernel::SUCCESS)
+		{
+			return true;
+		}
+	}
+	
 	return false;
 }
 

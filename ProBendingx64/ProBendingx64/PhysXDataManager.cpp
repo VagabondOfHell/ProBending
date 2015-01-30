@@ -25,6 +25,11 @@ PhysXDataManager::PhysXDataManager(void)
 
 PhysXDataManager::~PhysXDataManager(void)
 {
+	ReleaseAll();
+}
+
+void PhysXDataManager::ReleaseAll()
+{
 	for (auto start = materialMap.begin(); start != materialMap.end(); ++start)
 	{
 		start->second->release();
@@ -169,6 +174,10 @@ bool PhysXDataManager::SerializeData(const PxDataManSerializeOptions& serializat
 	if(serializationOptions.SerializerDataTypes & PxDataManSerializeOptions::NONE)//Check for valid options
 		return false;
 
+
+	if(!PhysXSerializerWrapper::CreateCollection(serializationOptions.CollectionName))
+		return false;
+
 	PxDataManSerializeOptions::DataSerializers options = serializationOptions.SerializerDataTypes;
 
 	bool materialsSerialized = false, shapesSerialized = false, convexSerialized = false,
@@ -188,16 +197,16 @@ bool PhysXDataManager::SerializeData(const PxDataManSerializeOptions& serializat
 
 	PhysXSerializerWrapper::CreateSerializer();//Add reference count or create
 
-	unsigned short startID = 1;
-		
-	//Create IDs for all objects starting at one
-	PhysXSerializerWrapper::CreateIDs(startID);
+	PhysXSerializerWrapper::CompleteCollection(serializationOptions.CollectionName);
+	PhysXSerializerWrapper::CreateIDs(serializationOptions.CollectionName, 1);
 
 	//Try to serialize to binary. If failed, clean up
 	if(!PhysXSerializerWrapper::SerializeToBinary(serializationOptions.FileName + ".pbd", 
 				serializationOptions.CollectionName))
 	{
-		PhysXSerializerWrapper::ReleaseCollection(serializationOptions.CollectionName);
+		if(!serializationOptions.PersistantCollection)
+			PhysXSerializerWrapper::ReleaseCollection(serializationOptions.CollectionName);
+
 		PhysXSerializerWrapper::DestroySerializer();
 		return false;
 	}
@@ -438,8 +447,8 @@ bool PhysXDataManager::LoadXML(const std::string& fileName, const std::string& c
 				}
 			}
 		}
-		else//If no more children, move up a level
-			reader.PopNode();
+
+		reader.PopNode();
 		
 	} while (reader.MoveToNextSiblingNode());
 

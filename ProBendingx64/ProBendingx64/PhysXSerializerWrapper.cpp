@@ -68,7 +68,7 @@ physx::PxCollection* PhysXSerializerWrapper::CreateAndGetCollection(const std::s
 	return NULL;
 }
 
-int PhysXSerializerWrapper::GetHighestIDInCollection(const std::string& collectionName)
+long long PhysXSerializerWrapper::GetHighestIDInCollection(const std::string& collectionName)
 {
 	physx::PxCollection* collection = GetCollection(collectionName);
 
@@ -83,7 +83,7 @@ int PhysXSerializerWrapper::GetHighestIDInCollection(const std::string& collecti
 
 		collection->getIds(ids, numIDs);
 
-		int highest = ids[0];
+		long long highest = ids[0];
 
 		for (unsigned int i = 1; i < numIDs; i++)
 		{
