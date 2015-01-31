@@ -94,3 +94,8 @@ bool ShapeDefinition::SetConvexMeshGeometry(physx::PxConvexMesh* convexMesh)
 
 	return convexMesh != NULL;
 }
+
+void ShapeDefinition::SetPlaneGeometry()
+{
+	ShapeGeometry = std::make_shared<physx::PxPlaneGeometry>(physx::PxPlaneGeometry());
+}

@@ -64,6 +64,8 @@ public:
 
 #pragma region Transform Getter and Setters
 
+	void SetWorldTransform(const Ogre::Vector3& pos, const Ogre::Quaternion& rot, const Ogre::Vector3& scale);
+
 	Ogre::Vector3 GetLocalPosition()const;
 
 	Ogre::Vector3 GetWorldPosition()const;
@@ -127,4 +129,6 @@ public:
 		else
 			return NULL;
 	}
+
+	SharedGameObject Clone();
 };

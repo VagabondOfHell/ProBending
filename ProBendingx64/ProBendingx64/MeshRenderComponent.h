@@ -47,10 +47,10 @@ public:
 	///<param name="vRepeat">Number of times to repeat the texture on the V axis</param>
 	///<param name="upDir">Up direction of the plane</param>
 	///<returns>True if successful, false if not</returns>
-	bool static CreatePlane(const std::string& planeMeshName, const Ogre::Vector3& normal = Ogre::Vector3::UNIT_Y, 
+	bool static CreatePlane(const std::string& planeMeshName, const Ogre::Vector3& normal = Ogre::Vector3::UNIT_X, 
 		const Ogre::Real distance = 0.0f, const int xSegments = 1, const int ySegments = 1, 
 		const Ogre::Real uRepeat = 1.0f, const Ogre::Real vRepeat = 1.0f, 
-		const Ogre::Vector3& upDir = Ogre::Vector3::UNIT_Z );
+		const Ogre::Vector3& upDir = Ogre::Vector3::UNIT_Y );
 
 	///<summary>Gets the name of the entity used</summary>
 	///<returns>Name of the entity. Error if no entity</returns>
@@ -83,5 +83,6 @@ public:
 		return Component::MESH_RENDER_COMPONENT;
 	}
 
+	MeshRenderComponent* Clone(GameObject* gameObject);
 };
 

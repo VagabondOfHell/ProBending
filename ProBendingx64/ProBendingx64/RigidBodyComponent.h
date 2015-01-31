@@ -82,6 +82,8 @@ public:
 
 	void SetPosition(physx::PxVec3& position);
 
+	void SetOrientation(physx::PxQuat& orientation);
+
 	void ClearForces();
 
 	///<summary>Gets the type of body that this rigid body is</summary>
@@ -114,6 +116,6 @@ public:
 		return Component::RIGID_BODY_COMPONENT;
 	}
 
-
+	RigidBodyComponent* Clone(GameObject* gameObject);
 };
 

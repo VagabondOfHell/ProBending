@@ -92,7 +92,7 @@ void MeshRenderComponent::SetMaterial(const std::string& matName)
 
 std::shared_ptr<MeshInfo> const MeshRenderComponent::GetMeshInfo() const
 {
-	std::shared_ptr<MeshInfo> retVal(new MeshInfo());
+	std::shared_ptr<MeshInfo> retVal = std::make_shared<MeshInfo>(MeshInfo());
 	
 	HelperFunctions::GetMeshInformation(entity->getMesh().getPointer(), *retVal, owningGameObject->GetWorldPosition(), 
 		owningGameObject->GetWorldOrientation(), owningGameObject->GetWorldScale());
@@ -122,6 +122,23 @@ void MeshRenderComponent::Start()
 
 void MeshRenderComponent::Update(float gameTime)
 {
+}
+
+MeshRenderComponent* MeshRenderComponent::Clone(GameObject* gameObject)
+{
+	MeshRenderComponent* clone = new MeshRenderComponent();
+	
+	clone->enabled = enabled;
+	clone->owningGameObject = gameObject;
+
+	if(entity)
+	{
+		Ogre::NameGenerator nameGenerator = Ogre::NameGenerator(entity->getName());
+		clone->LoadModel(GetMeshName());
+			//entity->clone(nameGenerator.generate());
+	}
+	
+	return clone;
 }
 
 

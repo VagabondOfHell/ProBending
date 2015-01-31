@@ -68,6 +68,9 @@ bool RigidBodyComponent::CreateRigidBody(RigidBodyType _bodyType, physx::PxVec3&
 
 	bodyType = _bodyType;
 
+	owningGameObject->SetWorldPosition(position.x, position.y, position.z);
+	owningGameObject->SetWorldOrientation(orientation.w, orientation.x, orientation.y, orientation.z);
+
 	return (bodyStorage.staticActor || bodyStorage.dynamicActor); //Check if one of the union has been initialized
 }
 
@@ -151,13 +154,18 @@ void RigidBodyComponent::SetPosition(physx::PxVec3& position)
 		bodyStorage.dynamicActor->setGlobalPose(physx::PxTransform(position, bodyStorage.dynamicActor->getGlobalPose().q));
 	else if(bodyType == STATIC)
 		bodyStorage.staticActor->setGlobalPose(physx::PxTransform(position, bodyStorage.staticActor->getGlobalPose().q));
-
-#if _DEBUG
-	if(physxDebugNode)
-		physxDebugNode->setPosition(position.x, position.y, position.z);
-#endif
 }
 
+void RigidBodyComponent::SetOrientation(physx::PxQuat& orientation)
+{
+
+	if(bodyType == DYNAMIC)
+		bodyStorage.dynamicActor->setGlobalPose(physx::PxTransform(bodyStorage.dynamicActor->getGlobalPose().p, 
+			orientation));
+	else if(bodyType == STATIC)
+		bodyStorage.staticActor->setGlobalPose(physx::PxTransform(bodyStorage.staticActor->getGlobalPose().p, 
+			orientation));
+}
 
 #if _DEBUG
 
@@ -225,6 +233,18 @@ void RigidBodyComponent::CreateDebugDraw()
 				}
 				break;
 
+			case::PxGeometryType::ePLANE:
+				{
+					PxPlaneGeometry planeGeometry;
+					shapes[i]->getPlaneGeometry(planeGeometry);
+					
+					Ogre::Entity* entity = sceneManager->createEntity("BasicPlane");
+					entity->setMaterialName("PlaneRender");
+
+					physxDebugNode->setScale(100.0f, 100.0f, 100.0f);
+					physxDebugNode->attachObject(entity);
+				}
+				break;
 			case::PxGeometryType::eCONVEXMESH:
 				{
 					PxConvexMeshGeometry meshGeometry;
@@ -450,4 +470,44 @@ void RigidBodyComponent::ClearForces()
 		bodyStorage.dynamicActor->clearForce(physx::PxForceMode::eACCELERATION);
 		bodyStorage.dynamicActor->clearForce(physx::PxForceMode::eVELOCITY_CHANGE);
 	}
+}
+
+RigidBodyComponent* RigidBodyComponent::Clone(GameObject* gameObject)
+{
+	RigidBodyComponent* clone = new RigidBodyComponent();
+
+	clone->enabled = enabled;
+	clone->owningGameObject = gameObject;
+
+	if(bodyType != NONE)
+	{
+		physx::PxRigidActor* actor = NULL;
+
+		if(bodyType == DYNAMIC)
+			actor = bodyStorage.dynamicActor;
+		else if(bodyType == STATIC)
+			actor = bodyStorage.staticActor;
+
+		if(actor)
+		{
+			physx::PxTransform currTrans = actor->getGlobalPose();
+
+			clone->CreateRigidBody(bodyType, currTrans.p, currTrans.q);
+
+			PxU32 numShapes = actor->getNbShapes();
+			PxShape** shapes = new physx::PxShape*[numShapes];
+			actor->getShapes(shapes, numShapes);
+			for (PxU32 i = 0; i < numShapes; i++)
+			{
+				clone->AttachShape(*shapes[i]);
+			}
+
+			delete[] shapes;
+
+			if(physxDebugNode)
+				clone->CreateDebugDraw();
+		}
+	}
+
+	return clone;
 }

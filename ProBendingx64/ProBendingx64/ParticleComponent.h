@@ -53,5 +53,8 @@ public:
 	///<summary>Gets the currently set Transformation space</summary>
 	///<returns>A boolean representing the transformation space. True for local space, false for world space</returns>
 	bool GetTransformationSpace()const{return useLocalSpace;}
+
+	ParticleComponent* Clone(GameObject* gameObject);
+
 };
 

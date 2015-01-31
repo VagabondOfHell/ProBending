@@ -154,6 +154,19 @@ void GameObject::AttachComponent(Component* newComponent)
 
 #pragma region Transform Getters and Setters
 
+void GameObject::SetWorldTransform(const Ogre::Vector3& pos, const Ogre::Quaternion& rot, const Ogre::Vector3& scale)
+{
+	gameObjectNode->_setDerivedPosition(pos);
+	gameObjectNode->_setDerivedOrientation(rot);
+	gameObjectNode->setScale(scale);
+
+	if(rigidBody)
+	{
+		rigidBody->SetOrientation(physx::PxQuat(rot.x, rot.y, rot.z, rot.w));
+		rigidBody->SetPosition(physx::PxVec3(pos.x, pos.y, pos.z));
+	}
+}
+
 Ogre::Vector3 GameObject::GetLocalPosition() const
 {
 	return gameObjectNode->getPosition();
@@ -202,11 +215,17 @@ Ogre::Quaternion GameObject::GetLocalOrientation() const
 void GameObject::SetLocalOrientation(const Ogre::Quaternion& newOrientation)
 {
 	gameObjectNode->setOrientation(newOrientation);
+	Ogre::Quaternion rot = gameObjectNode->_getDerivedOrientation();
+	if(rigidBody)
+		rigidBody->SetOrientation(physx::PxQuat(rot.x, rot.y, rot.z, rot.w));
 }
 
 void GameObject::SetLocalOrientation(const float w, const float x, const float y, const float z)
 {
 	gameObjectNode->setOrientation(w, x, y, z);
+	Ogre::Quaternion rot = gameObjectNode->_getDerivedOrientation();
+	if(rigidBody)
+		rigidBody->SetOrientation(physx::PxQuat(rot.x, rot.y, rot.z, rot.w));
 }
 
 Ogre::Quaternion GameObject::GetWorldOrientation() const
@@ -222,11 +241,15 @@ bool GameObject::GetInheritOrientation() const
 void GameObject::SetWorldOrientation(const Ogre::Quaternion& newOrientation)
 {
 	gameObjectNode->_setDerivedOrientation(newOrientation);
+	if(rigidBody)
+		rigidBody->SetOrientation(physx::PxQuat(newOrientation.x, newOrientation.y, newOrientation.z, newOrientation.w));
 }
 
 void GameObject::SetWorldOrientation(const float w, const float x, const float y, const float z)
 {
 	gameObjectNode->_setDerivedOrientation(Ogre::Quaternion(w, x, y, z));
+	if(rigidBody)
+		rigidBody->SetOrientation(physx::PxQuat(x, y, z, w));
 }
 
 void GameObject::SetInheritOrientation(const bool val)
@@ -264,6 +287,31 @@ void GameObject::SetInheritScale(const bool val)
 	gameObjectNode->setInheritScale(val);
 }
 
-
-
 #pragma endregion
+
+SharedGameObject GameObject::Clone()
+{
+	SharedGameObject clone = std::make_shared<GameObject>(owningScene);
+
+	clone->SetWorldTransform(gameObjectNode->_getDerivedPosition(), gameObjectNode->_getDerivedOrientation(), gameObjectNode->_getDerivedScale());
+	clone->SetInheritOrientation(GetInheritOrientation());
+	clone->SetInheritScale(GetInheritScale());
+
+	clone->owningScene = owningScene;
+
+	if(!name.empty())
+		clone->name = name + "(Clone)";
+
+	for (auto start = components.begin(); start != components.end(); ++start)
+	{
+		clone->AttachComponent(start->second->Clone(clone.get()));
+	}
+
+	for (auto start = children.begin(); start != children.end(); ++start)
+	{
+		clone->AddChild(start->get()->Clone());
+	}
+
+	return clone;
+}
+

@@ -80,6 +80,8 @@ void GameScene::Initialize()
 
 	//battleArena->LoadResources();
 
+	PhysXDataManager::GetSingletonPtr()->CreateMaterial(0.5f, 0.5f, 0.5f, "DefaultMaterial");
+
 	MeshRenderComponent::CreatePlane("BasicPlane");
 
 	ArenaBuilder::GenerateProbendingArena(this);
@@ -143,7 +145,7 @@ bool GameScene::Update(float gameTime)
 		Ogre::MeshPtr arenaMesh = Ogre::MeshManager::getSingletonPtr()->getByName("ProbendArenaSurface.mesh");
 		if(arenaMesh.getPointer() != NULL)
 		{
-			std::shared_ptr<MeshInfo> info;
+			std::shared_ptr<MeshInfo> info = std::make_shared<MeshInfo>();
 			HelperFunctions::GetMeshInformation(arenaMesh.get(), *info);
 
 			physx::PxConvexMesh* convexMesh = PhysXDataManager::GetSingletonPtr()->CookConvexMesh(info, "ArenaSurfaceMesh");
@@ -201,7 +203,7 @@ bool GameScene::Update(float gameTime)
 			printf("Num Actors: %i\n", GetPhysXScene()->getNbActors(physx::PxActorTypeFlag::eRIGID_DYNAMIC));
 			printf("Num Game Objects: %i\n", gameObjectList.size());
 
-			for (auto start = gameObjectList.begin(); start != gameObjectList.end(); ++start)
+			/*for (auto start = gameObjectList.begin(); start != gameObjectList.end(); ++start)
 			{
 				RigidBodyComponent* rigid = (RigidBodyComponent*)start->get()->GetComponent(Component::RIGID_BODY_COMPONENT);
 
@@ -209,7 +211,7 @@ bool GameScene::Update(float gameTime)
 				{
 					rigid->PrintRigidData();
 				}
-			}
+			}*/
 
 			load = false;
 		PhysXSerializerWrapper::DestroySerializer();
@@ -242,22 +244,53 @@ bool GameScene::keyPressed( const OIS::KeyEvent &arg )
 
 	if(arg.key == OIS::KC_I)
 	{
-		mainOgreCamera->moveRelative(Ogre::Vector3(0.0f, 0.0f, 40.0f));
+		mainOgreCamera->moveRelative(Ogre::Vector3(0.0f, 0.0f, 10.0f));
 	}
 
 	if(arg.key == OIS::KC_P)
 	{
-		mainOgreCamera->yaw(Ogre::Radian(Ogre::Degree(10)));
+		mainOgreCamera->rotate(Ogre::Vector3::UNIT_X, Ogre::Radian(Ogre::Degree(10)));
+		//mainOgreCamera->yaw(Ogre::Radian(Ogre::Degree(10)));
 	}
 
 	if(arg.key == OIS::KC_O)
 	{
-		mainOgreCamera->yaw(Ogre::Radian(Ogre::Degree(-10)));
+		mainOgreCamera->rotate(Ogre::Vector3::UNIT_X, Ogre::Radian(Ogre::Degree(-10)));
+		//mainOgreCamera->yaw(Ogre::Radian(Ogre::Degree(-10)));
 	}
+
+	if(arg.key == OIS::KC_NUMPAD4)
+	{
+		mainOgreCamera->rotate(Ogre::Vector3::UNIT_Y, Ogre::Radian(Ogre::Degree(10)));
+		//mainOgreCamera->pitch(Ogre::Radian(Ogre::Degree(10)));
+	}
+	if(arg.key == OIS::KC_NUMPAD6)
+	{
+		mainOgreCamera->rotate(Ogre::Vector3::UNIT_Y, Ogre::Radian(Ogre::Degree(-10)));
+		//mainOgreCamera->pitch(Ogre::Radian(Ogre::Degree(-10)));
+	}
+
+	if(arg.key == OIS::KC_NUMPAD8)
+	{
+		
+		mainOgreCamera->rotate(Ogre::Vector3::UNIT_Z, Ogre::Radian(Ogre::Degree(10)));
+		//mainOgreCamera->roll(Ogre::Radian(Ogre::Degree(10)));
+	}
+	if(arg.key == OIS::KC_NUMPAD0)
+	{
+		mainOgreCamera->rotate(Ogre::Vector3::UNIT_Z, Ogre::Radian(Ogre::Degree(-10)));
+		//mainOgreCamera->roll(Ogre::Radian(Ogre::Degree(-10)));
+	}
+
+	if(arg.key == OIS::KC_M)
+		mainOgreCamera->moveRelative(Ogre::Vector3(0.0f, -1.0f, 0.0f));
+
+	if(arg.key == OIS::KC_N)
+		mainOgreCamera->moveRelative(Ogre::Vector3(0.0f, 1.0f, 0.0f));
 
 	if(arg.key == OIS::KC_J)
 	{
-		mainOgreCamera->moveRelative(Ogre::Vector3(0.0f, 0.0f, -40.0f));
+		mainOgreCamera->moveRelative(Ogre::Vector3(0.0f, 0.0f, -10.0f));
 	}
 
 	if(arg.key == OIS::KC_Z)

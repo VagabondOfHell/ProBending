@@ -81,6 +81,10 @@ public:
 	///<returns>True if successful, false if not</returns>
 	bool SetConvexMeshGeometry(physx::PxConvexMesh* convexMesh);
 
+	///<summary>Sets the geometry to be that of a plane. Direction and position are determined by Shapes Pose,
+	///not by the geometry</summary>
+	void SetPlaneGeometry();
+
 	///<summary>Sets the shapes Geometry</summary>
 	///<param name="geometry">The geometry to assign</param>
 	///<returns>True if geometry is not NULL, false if not</returns>

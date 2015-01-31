@@ -7,6 +7,8 @@
 #include "IScene.h"
 #include "GameObject.h"
 
+#include "NotImplementedException.h"
+
 Ogre::SceneNode* ParticleComponent::WORLD_PARTICLES_NODE = NULL;
 int ParticleComponent::NUM_INSTANCES = 0;
 
@@ -116,4 +118,9 @@ void ParticleComponent::SetTransformationSpace(const bool _useLocalSpace)
 	}
 
 	useLocalSpace = _useLocalSpace;
+}
+
+ParticleComponent* ParticleComponent::Clone(GameObject* gameObject)
+{
+	throw NotImplementedException("Particle Component Clone Not Implemented");
 }

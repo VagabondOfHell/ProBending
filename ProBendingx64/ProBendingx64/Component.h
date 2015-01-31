@@ -67,4 +67,6 @@ public:
 	{
 		return owningGameObject;
 	}
+
+	virtual Component* Clone(GameObject* gameObject) = 0;
 };
