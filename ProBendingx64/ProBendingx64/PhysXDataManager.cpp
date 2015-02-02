@@ -19,6 +19,8 @@ using namespace physx;
 
 PhysXDataManager* PhysXDataManager::instance = NULL;
 
+const std::string PxDataManSerializeOptions::DEFAULT_FILE_PATH = "MyResources\\";
+
 PhysXDataManager::PhysXDataManager(void)
 {
 }
@@ -162,6 +164,17 @@ physx::PxShape* PhysXDataManager::CreateShape(const ShapeDefinition& shapeDefini
 	}
 
 	return shape;
+}
+
+physx::PxShape* PhysXDataManager::GetShape(const std::string& shapeName)
+{
+	ShapeMap::iterator result = shapeMap.find(shapeName);
+
+	if(result != shapeMap.end())
+		return result->second;
+	else
+		return NULL;
+		
 }
 
 bool PhysXDataManager::SerializeData(const PxDataManSerializeOptions& serializationOptions)
@@ -389,67 +402,70 @@ bool PhysXDataManager::LoadXML(const std::string& fileName, const std::string& c
 	{
 		if(reader.MoveToChildNode())//Go to child (____ListItem)
 		{
-			long long serialID = 0;
-			std::string storageName = "";
-
-			do //loop through attributes of current node
+			do 
 			{
-				if(reader.GetCurrentAttributeName() == SerialID)
-					if(!reader.GetLongValue(serialID, true))
-						serialID = 0;
+				long long serialID = 0;
+				std::string storageName = "";
 
-				if(reader.GetCurrentAttributeName() == StorageName)
-					storageName = reader.GetStringValue(true);
-
-			} while (reader.MoveToNextAttribute());
-
-			if(serialID != PX_SERIAL_OBJECT_ID_INVALID && !storageName.empty())
-			{
-				std::string currNodeName = reader.GetCurrentNodeName();
-
-				//Check the current node name and generate the appropriate item
-				if(currNodeName == MaterialListItem)
+				do //loop through attributes of current node
 				{
-					physx::PxMaterial* Material = (physx::PxMaterial*)PhysXSerializerWrapper::
-						FindByID(collectionName, serialID);
+					if(reader.GetCurrentAttributeName() == SerialID)
+						if(!reader.GetLongValue(serialID, true))
+							serialID = 0;
 
-					if(Material)
-						materialMap.insert(MaterialMap::value_type(storageName, Material));
-				}
-				else if (currNodeName == convexListItem)
-				{
-					physx::PxConvexMesh* Convex = (physx::PxConvexMesh*)PhysXSerializerWrapper::
-						FindByID(collectionName, serialID);
-					if(Convex)
-						convexMeshMap.insert(ConvexMeshMap::value_type(storageName, Convex));
-				}
-				else if (currNodeName == triangleListItem)
-				{
-					physx::PxTriangleMesh* TriMesh = (physx::PxTriangleMesh*)PhysXSerializerWrapper::
-						FindByID(collectionName, serialID);
-					if(TriMesh)
-						triangleMeshMap.insert(TriangleMeshMap::value_type(storageName, TriMesh));
-				}
-				else if (currNodeName == heightFieldListItem)
-				{
-					physx::PxHeightField* heightField = (physx::PxHeightField*)PhysXSerializerWrapper::
-						FindByID(collectionName, serialID);
-					if(heightField)
-						heightFieldMap.insert(HeightFieldMap::value_type(storageName, heightField));
-				}
-				else if(currNodeName == ShapeListItem)
-				{
-					physx::PxShape* shape = (physx::PxShape*)PhysXSerializerWrapper::
-						FindByID(collectionName, serialID);
+					if(reader.GetCurrentAttributeName() == StorageName)
+						storageName = reader.GetStringValue(true);
 
-					if(shape)
-						shapeMap.insert(ShapeMap::value_type(storageName, shape));
+				} while (reader.MoveToNextAttribute());
+
+				if(serialID != PX_SERIAL_OBJECT_ID_INVALID && !storageName.empty())
+				{
+					std::string currNodeName = reader.GetCurrentNodeName();
+
+					//Check the current node name and generate the appropriate item
+					if(currNodeName == MaterialListItem)
+					{
+						physx::PxMaterial* Material = (physx::PxMaterial*)PhysXSerializerWrapper::
+							FindByID(collectionName, serialID);
+
+						if(Material)
+							materialMap.insert(MaterialMap::value_type(storageName, Material));
+					}
+					else if (currNodeName == convexListItem)
+					{
+						physx::PxConvexMesh* Convex = (physx::PxConvexMesh*)PhysXSerializerWrapper::
+							FindByID(collectionName, serialID);
+						if(Convex)
+							convexMeshMap.insert(ConvexMeshMap::value_type(storageName, Convex));
+					}
+					else if (currNodeName == triangleListItem)
+					{
+						physx::PxTriangleMesh* TriMesh = (physx::PxTriangleMesh*)PhysXSerializerWrapper::
+							FindByID(collectionName, serialID);
+						if(TriMesh)
+							triangleMeshMap.insert(TriangleMeshMap::value_type(storageName, TriMesh));
+					}
+					else if (currNodeName == heightFieldListItem)
+					{
+						physx::PxHeightField* heightField = (physx::PxHeightField*)PhysXSerializerWrapper::
+							FindByID(collectionName, serialID);
+						if(heightField)
+							heightFieldMap.insert(HeightFieldMap::value_type(storageName, heightField));
+					}
+					else if(currNodeName == ShapeListItem)
+					{
+						physx::PxShape* shape = (physx::PxShape*)PhysXSerializerWrapper::
+							FindByID(collectionName, serialID);
+
+						if(shape)
+							shapeMap.insert(ShapeMap::value_type(storageName, shape));
+					}
 				}
-			}
+			}while (reader.MoveToNextSiblingNode());
+
+			reader.PopNode();
 		}
 
-		reader.PopNode();
-		
 	} while (reader.MoveToNextSiblingNode());
 
 	return true;
@@ -583,4 +599,32 @@ void PhysXDataManager::GatherShapes(const std::string& collectionName,
 
 	PhysXSerializerWrapper::CompleteCollection(collectionName, exceptForCollectionName);
 	PhysXSerializerWrapper::ClearWorkingCollection();
+}
+
+bool PhysXDataManager::FindMaterialName(physx::PxMaterial* materialToFind, std::string& outVal)
+{
+	for (auto start = materialMap.begin(); start != materialMap.end(); ++start)
+	{
+		if(start->second == materialToFind)
+		{
+			outVal = start->first;
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool PhysXDataManager::FindShapeName(physx::PxShape* shapeToFind, std::string& outVal)
+{
+	for (auto start = shapeMap.begin(); start != shapeMap.end(); ++start)
+	{
+		if(start->second == shapeToFind)
+		{
+			outVal = start->first;
+			return true;
+		}
+	}
+
+	return false;
 }

@@ -7,6 +7,7 @@
 #include "ProjectileManager.h"
 #include "PhysXDataManager.h"
 #include "PhysXSerializerWrapper.h"
+#include "SceneSerializer.h"
 #include "XMLReader.h"
 
 Arena::Arena(IScene* _owningScene, std::string _arenaName)
@@ -58,6 +59,33 @@ void Arena::Initialize(const std::vector<ProbenderData> contestantData)
 
 }
 
+bool Arena::SavePhysXData(const std::string& fileName, const std::string& collectionName)
+{
+	bool success = false;
+
+	PhysXSerializerWrapper::CreateSerializer();
+
+	PxDataManSerializeOptions pxDataManOptions = PxDataManSerializeOptions(PxDataManSerializeOptions::ALL,
+		collectionName, true, fileName);
+
+	std::string displayMessage = "PhysX Data for " + arenaName;
+	if(PhysXDataManager::GetSingletonPtr()->SerializeData(pxDataManOptions))
+	{
+		displayMessage += " Serialization successful\n";
+		printf(displayMessage.c_str());
+		success = true;
+	}
+	else
+	{
+		displayMessage += " Serialization unsuccessful\n";
+		printf(displayMessage.c_str());
+	}
+
+	PhysXSerializerWrapper::DestroySerializer();
+	return success;
+
+}
+
 bool Arena::LoadResources()
 {
 	if(loaded)
@@ -77,6 +105,35 @@ bool Arena::LoadResources()
 	PhysXSerializerWrapper::DestroySerializer();
 
 	return loaded;
+}
+
+bool Arena::LoadPhysXData(const std::string& fileName, const std::string& collectionName)
+{
+	bool success = false;
+
+	PhysXSerializerWrapper::CreateSerializer();
+	
+	PxDataManSerializeOptions pxDataManOptions = PxDataManSerializeOptions(PxDataManSerializeOptions::ALL,
+		collectionName, true, fileName);
+
+	std::string displayMessage = "PhysX Data for " + arenaName;
+		
+	if(PhysXDataManager::GetSingletonPtr()->DeserializeData(pxDataManOptions))
+	{
+		displayMessage += " Deserialized successfully\n";
+		printf(displayMessage.c_str());
+
+		success = PhysXSerializerWrapper::AddToScene(owningScene->GetPhysXScene(), collectionName);
+	}
+	else
+	{
+		displayMessage += " Deserialized unsuccessfully\n";
+		printf(displayMessage.c_str());
+	}
+			
+	PhysXSerializerWrapper::DestroySerializer();
+
+	return success;
 }
 
 void Arena::Start()
@@ -110,4 +167,70 @@ bool Arena::Update(const float gameTime)
 	abilityManager->Update(gameTime);
 
 	return true;
+}
+
+bool Arena::SerializeArena()
+{
+	bool success = false;
+
+	PhysXSerializerWrapper::CreateSerializer();
+	
+	std::string arenaFileName =PxDataManSerializeOptions::DEFAULT_FILE_PATH + arenaName + "\\" + arenaName;
+	arenaFileName.erase(std::remove_if(arenaFileName.begin(), arenaFileName.end(), isspace), arenaFileName.end());
+
+	if(SavePhysXData(arenaFileName, "ArenaCollection"))
+	{
+		std::string displayMessage = "XML Scene Serialization for " + arenaName;
+
+		SceneSerializer sceneSerializer = SceneSerializer();
+		if(sceneSerializer.SerializeScene(owningScene, arenaName, arenaFileName))
+		{
+			displayMessage += " successful\n";
+			printf(displayMessage.c_str());
+
+			success = true;
+		}
+		else
+		{
+			displayMessage += " unsuccessful\n";
+			printf(displayMessage.c_str());
+		}
+
+	}
+
+	PhysXSerializerWrapper::DestroySerializer();
+
+	return success;
+}
+
+bool Arena::DeserializeArena()
+{
+	bool success = false;
+
+	PhysXSerializerWrapper::CreateSerializer();
+
+	std::string arenaFileName =PxDataManSerializeOptions::DEFAULT_FILE_PATH + arenaName + "\\" + arenaName;
+	arenaFileName.erase(std::remove_if(arenaFileName.begin(), arenaFileName.end(), isspace), arenaFileName.end());
+
+	if(LoadPhysXData(arenaFileName, "ArenaCollection"))
+	{
+		std::string displayMessage = "XML Scene Deserialization for " + arenaName;
+
+		SceneSerializer sceneSerializer = SceneSerializer();
+		if(sceneSerializer.DeserializeScene(owningScene, arenaFileName, "ArenaCollection"))
+		{
+			displayMessage += " successful\n";
+			printf(displayMessage.c_str());
+
+			success = true;
+		}
+		else
+		{
+			displayMessage += " unsuccessful\n";
+			printf(displayMessage.c_str());
+		}
+	}
+
+	PhysXSerializerWrapper::DestroySerializer();
+	return success;
 }

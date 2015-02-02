@@ -1,8 +1,21 @@
 <PhysXDataManager>
-	<MaterialList/>
-	<ConvexMeshList/>
+	<MaterialList>
+		<MaterialListItem SerialID="1" StorageName="050505"/>
+		<MaterialListItem SerialID="2" StorageName="101000"/>
+	</MaterialList>
+	<ConvexMeshList>
+		<ConvexListItem SerialID="3" StorageName="ArenaSurfaceMesh"/>
+	</ConvexMeshList>
 	<TriangleMeshList/>
 	<HeightFieldList/>
-	<ShapeList/>
+	<ShapeList>
+		<ShapeListItem SerialID="4" StorageName="ArenaLowerPlatformShape"/>
+		<ShapeListItem SerialID="5" StorageName="ArenaPillarShape"/>
+		<ShapeListItem SerialID="6" StorageName="ArenaSurfaceShape"/>
+		<ShapeListItem SerialID="7" StorageName="ArenaWallShapeLarge"/>
+		<ShapeListItem SerialID="8" StorageName="ArenaWallShapeMedium"/>
+		<ShapeListItem SerialID="9" StorageName="ArenaWallShapeSmall"/>
+		<ShapeListItem SerialID="10" StorageName="BasicPlane"/>
+	</ShapeList>
 </PhysXDataManager>
 

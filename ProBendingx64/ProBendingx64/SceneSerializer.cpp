@@ -29,12 +29,13 @@
 typedef std::unordered_set<SharedGameObject> GameObjectList;
 
 SceneSerializer::SceneSerializer()
-	: StartID(1), ActorCollection("ActorCollection"), PxDataCollection("PxDataCollection"),
+	: StartID(1), ActorCollection("ActorCollection"),
 	GameObjectNode("GameObjectNode"), ObjectName("ObjectName"),
 	Position("Position"), X("X"), Y("Y"), Z("Z"), W("W"), Rotation("Rotation"), Scale("Scale"),
 	MeshRenderComponen("MeshRenderComponent"), RigidBodyComponen("RigidBodyComponent"),
 	ParticleComponen("ParticleComponent"), Enabled("Enabled"), EntityName("Entity"), 
-	SubentityMaterial("SubentityMaterial"), Subentity("Subentity"), SubentityID("SubentityID"), RigidID("RigidID"),
+	SubentityMaterial("SubentityMaterial"), Subentity("Subentity"), SubentityID("SubentityID"),
+	RigidShape("RigidShape"), ShapeName("ShapeName"), DynamicBodyType("DynamicBodyType"),
 	ParticleSpace("ParticleSpace"), Emitter("Emitter"), PointEmitter("PointEmitter"), LineEmitter("LineEmitter"), 
 	MeshEmitter("MeshEmitter"), MinEmitDirection("MinDirection"), MaxEmitDirection("MaxDirection"), 
 	PPS("ParticlesPerSecond"), MinEmitSpeed("MinSpeed"), MaxEmitSpeed("MaxSpeed"), Duration("Duration"),
@@ -102,6 +103,8 @@ bool SceneSerializer::SerializeScene(const IScene* scene, std::string rootNodeNa
 		//PxDataCollection, true, fileName);
 	StartID = PhysXSerializerWrapper::GetHighestIDInCollection(ActorCollection);
 
+	pxDataRefCollection = refCollection;
+
 	if(StartID < 1)
 		StartID = 1;
 
@@ -137,7 +140,6 @@ bool SceneSerializer::SerializeScene(const IScene* scene, std::string rootNodeNa
 
 			bool xml = writer.WriteFile(fileName + "Actors.xml");
 
-			PhysXSerializerWrapper::ReleaseCollection(PxDataCollection);
 			PhysXSerializerWrapper::ReleaseCollection(ActorCollection);
 			PhysXSerializerWrapper::DestroySerializer();
 
@@ -229,36 +231,54 @@ bool SceneSerializer::SerializeMeshRenderComponent(XMLWriter& writer, const Mesh
 
 bool SceneSerializer::SerializeRigidBodyComponent(XMLWriter& writer, const RigidBodyComponent* rigidBody)
 {
+	using namespace physx;
+
 	RigidBodyComponent::RigidBodyType rigidType = rigidBody->GetBodyType();
 
 	if(rigidType == RigidBodyComponent::NONE)
 		return false;
 
+	//if rigid body node created
 	if(writer.CreateNode(RigidBodyComponen))
 	{
-		physx::PxActor* actor = NULL;
-
+		//write enabled state
 		writer.AddAttribute(Enabled, rigidBody->IsEnabled());
+		writer.AddAttribute(DynamicBodyType, rigidBody->GetBodyType() == RigidBodyComponent::DYNAMIC);
 
+		physx::PxRigidActor* actor = NULL;
 		if(rigidBody->GetBodyType() == RigidBodyComponent::DYNAMIC)
 			actor = rigidBody->GetDynamicActor();
 		else if(rigidBody->GetBodyType() == RigidBodyComponent::STATIC)
 			actor = rigidBody->GetStaticActor();
 
-		if(actor)
+		//if no actor, pop off the rigid body component
+		if(!actor)
+			writer.PopNode();
+
+		std::string shapeName = "";
+		PxU32 numShapes = actor->getNbShapes();
+		PxShape** shapes = new physx::PxShape*[numShapes];
+		actor->getShapes(shapes, numShapes);
+
+		//loop through the shapes
+		for (PxU32 i = 0; i < numShapes; i++)
 		{
-			PhysXSerializerWrapper::AddToWorkingCollection(*actor, StartID);
-					
-			writer.AddAttribute(RigidID, StartID);
-			StartID++;
+			//if the shape can't be found, move next iteration
+			if(!PhysXDataManager::GetSingletonPtr()->FindShapeName(shapes[i], shapeName))
+				continue;
+			
+			//Create the shape node and store its reference
+			writer.CreateNode(RigidShape);
+			writer.AddAttribute(ShapeName, shapeName);
+			writer.PopNode();
 		}
 
-		writer.PopNode();
-
-		return true;
+		delete[] shapes;
 	}
+		
+	writer.PopNode();
 
-	return false;
+	return true;
 }
 
 bool SceneSerializer::SerializeParticleComponent(XMLWriter& writer, const ParticleComponent* particles)
@@ -614,7 +634,6 @@ bool SceneSerializer::DeserializeScene(IScene* scene, const std::string& fileNam
 	
 	return !errorsDetected;
 }
-Ogre::Vector3 objectPosition;
 
 SharedGameObject SceneSerializer::DeserializedGameObject(XMLReader& reader, IScene* const scene)
 {
@@ -634,7 +653,8 @@ SharedGameObject SceneSerializer::DeserializedGameObject(XMLReader& reader, ISce
 
 		} while (reader.MoveToNextAttribute());
 	}
-	//Ogre::Vector3 objectPosition = Ogre::Vector3(0.0f);
+
+	Ogre::Vector3 objectPosition = Ogre::Vector3(0.0f);
 	Ogre::Quaternion objectRotation = Ogre::Quaternion::IDENTITY;
 	Ogre::Vector3 objectScale = Ogre::Vector3(1.0f);
 
@@ -647,14 +667,13 @@ SharedGameObject SceneSerializer::DeserializedGameObject(XMLReader& reader, ISce
 			if(currNode == Position)
 			{
 				DeserializeVector3(reader, objectPosition);
-				/*if(DeserializeVector3(reader, objectPosition))
-				newObject->SetWorldPosition(objectPosition);*/
 			}
 			else if(currNode == Rotation)
 			{
-				if(DeserializeVector4(reader, objectRotation.x,
+				if(!DeserializeVector4(reader, objectRotation.x,
 					objectRotation.y, objectRotation.z, objectRotation.w))
-					newObject->SetWorldOrientation(objectRotation);
+					printf("Rot Fail\n");
+					//newObject->SetWorldOrientation(objectRotation);
 
 				bool inheritRot = true;
 
@@ -663,8 +682,8 @@ SharedGameObject SceneSerializer::DeserializedGameObject(XMLReader& reader, ISce
 			}
 			else if(currNode == Scale)
 			{
-				if(DeserializeVector3(reader, objectScale))
-					newObject->SetScale(objectScale);
+				DeserializeVector3(reader, objectScale);
+					//newObject->SetScale(objectScale);
 
 				bool inheritScale = true;
 
@@ -691,10 +710,13 @@ SharedGameObject SceneSerializer::DeserializedGameObject(XMLReader& reader, ISce
 				if(childObject)
 					newObject->AddChild(childObject);
 			}
+			
 		} while (reader.MoveToNextSiblingNode());
 	}
 
 	reader.PopNode();
+
+	newObject->SetWorldTransform(objectPosition, objectRotation, objectScale);
 
 	return newObject;
 }
@@ -756,6 +778,8 @@ bool SceneSerializer::DeserializeMeshRenderComponent(XMLReader& reader, SharedGa
 			} while (reader.MoveToNextSiblingNode());
 		}
 
+		reader.PopNode();
+
 		return modelLoaded;
 	}
 
@@ -771,7 +795,7 @@ bool SceneSerializer::DeserializeRigidBodyComponent(XMLReader& reader, SharedGam
 		objectToAdd->AttachComponent(rigid);
 
 		bool success = true;
-
+		bool rigidCreated = false;
 		do 
 		{
 			currName = reader.GetCurrentAttributeName();
@@ -784,39 +808,48 @@ bool SceneSerializer::DeserializeRigidBodyComponent(XMLReader& reader, SharedGam
 				else
 					success = false;
 			}
-			else if(currName == RigidID)
+
+			if(currName == DynamicBodyType)
 			{
-				long long actorID = 0;
-				if(reader.GetLongValue(actorID, true))
+				bool dynamic = false;
+				if(reader.GetBoolValue(dynamic, true))
 				{
-					physx::PxBase* actor = PhysXSerializerWrapper::FindByID(ActorCollection, actorID);
-					if(actor)
-					{
-						physx::PxType actorType = actor->getConcreteType();
-						if(actorType == physx::PxConcreteType::eRIGID_DYNAMIC)
-						{
-							rigid->bodyType = RigidBodyComponent::DYNAMIC;
-							rigid->bodyStorage.dynamicActor = (physx::PxRigidDynamic*)actor;
-							rigid->SetPosition(physx::PxVec3(objectPosition.x, objectPosition.y, objectPosition.z));
-							objectToAdd->GetOwningScene()->GetPhysXScene()->addActor(*rigid->bodyStorage.dynamicActor);
-							rigid->CreateDebugDraw();
-						}
-						else if(actorType == physx::PxConcreteType::eRIGID_STATIC)
-						{
-							rigid->bodyType = RigidBodyComponent::STATIC;
-							rigid->bodyStorage.staticActor = (physx::PxRigidStatic*)actor;
-							rigid->CreateDebugDraw();
-							rigid->SetPosition(physx::PxVec3(objectPosition.x, objectPosition.y, objectPosition.z));
-						}
-					}
+					if(dynamic)
+						rigid->CreateRigidBody(RigidBodyComponent::DYNAMIC);
 					else
-						success = false;
+						rigid->CreateRigidBody(RigidBodyComponent::STATIC);
+					rigidCreated = true;
 				}
 				else
 					success = false;
 			}
 		} while (reader.MoveToNextAttribute());
 
+		//if rigid body wasn't created, don't try to add shapes
+		if(!rigidCreated)
+			return success;
+
+		//try to move to the child shapes, otherwise continue on
+		if(!reader.MoveToChildNode())
+			return success;
+
+		do 
+		{
+			currName = reader.GetCurrentAttributeName();
+
+			if(currName == ShapeName)
+			{
+				std::string shapeName = reader.GetStringValue(true);
+
+				if(!rigid->AttachShape(shapeName))
+					success = false;
+			}
+
+		} while (reader.MoveToNextSiblingNode());
+
+		//pop off shapes node
+		reader.PopNode();
+		//rigid->CreateDebugDraw();
 		return success;
 	}
 

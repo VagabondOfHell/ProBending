@@ -14,6 +14,8 @@
 
 struct PxDataManSerializeOptions
 {
+	static const std::string DEFAULT_FILE_PATH;
+
 	enum DataSerializers{
 		NONE = 0, 
 		MATERIALS = 1,  
@@ -224,6 +226,8 @@ public:
 
 	inline size_t GetHeightFieldCount()const{return heightFieldMap.size();}
 
+	physx::PxShape* GetShape(const std::string& shapeName);
+
 	///<summary>Gathers the materials stored in this manager and places them in the specified collection</summary>
 	///<param name="collectionName">The name of the collection to retrieve or create</param>
 	void GatherMaterials(const std::string& collectionName);
@@ -251,6 +255,10 @@ public:
 		exceptForCollectionName = std::string(""), bool includeMaterials = false,
 		bool includeConvexMesh = false, bool includeTriangleMesh = false, bool includeHeightField = false);
 	
+	bool FindMaterialName(physx::PxMaterial* materialToFind, std::string& outVal);
+
+	bool FindShapeName(physx::PxShape* shapeToFind, std::string& outVal);
+
 	///<summary>Saves the data held by this manager</summary>
 	///<param name="serializationOptions">The options for customizing serialization</param>
 	///<returns>True if successful, false if not. If shapes in this manager were created

@@ -48,7 +48,7 @@ SharedProjectile ProjectileFactory::CreateProjectile(IScene* const scene,const E
 			
 			renderComponent->LoadModel("Rock_01.mesh");
 
-			newProjectile->SetScale(0.1f, 0.1f, 0.1f);
+			newProjectile->SetScale(0.001f, 0.001f, 0.001f);
 
 			RigidBodyComponent* rigidBody = new RigidBodyComponent();
 			newProjectile->AttachComponent(rigidBody);
@@ -67,11 +67,12 @@ SharedProjectile ProjectileFactory::CreateProjectile(IScene* const scene,const E
 
 			if(convexMesh)
 			{
-				PhysXDataManager::GetSingletonPtr()->CreateMaterial(0.5f, 0.5f, 0.5f, "RockMaterial");
+				PhysXDataManager::GetSingletonPtr()->CreateMaterial(1.0f, 1.0f, 0.0f, "RockMaterial");
 
 				ShapeDefinition shapeDef = ShapeDefinition();
 				//shapeDef.SetConvexMeshGeometry(convexMesh);
-				shapeDef.SetBoxGeometry(entityHalfSize);
+				//shapeDef.SetBoxGeometry(entityHalfSize);
+				shapeDef.SetSphereGeometry(entityHalfSize.magnitude());
 				shapeDef.AddMaterial("RockMaterial");
 
 				physx::PxShape* shape = PhysXDataManager::GetSingletonPtr()->CreateShape(shapeDef, "RockShape");
@@ -79,14 +80,15 @@ SharedProjectile ProjectileFactory::CreateProjectile(IScene* const scene,const E
 				if(shape)
 				{
 					rigidBody->AttachShape(*shape);
+					rigidBody->GetDynamicActor()->setRigidBodyFlag(physx::PxRigidBodyFlag::eENABLE_CCD, true);
 					rigidBody->CreateDebugDraw();
-					rigidBody->SetUseGravity(false);
+					//rigidBody->SetUseGravity(false);
 				}
 				//rigidBody->CreateAndAttachNewShape(shapeDef);
 				
 				//renderComponent->Disable();
 			}
-			newProjectile->SetWorldPosition(80, 0, 0);
+			newProjectile->SetWorldPosition(0, 40, 0);
 			scene->AddGameObject(newProjectile);
 		}
 		break;

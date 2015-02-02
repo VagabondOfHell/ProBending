@@ -8,6 +8,9 @@
 #include "RigidBodyComponent.h"
 #include "ParticleComponent.h"
 
+#include "IScene.h"
+#include "OgreCamera.h"
+
 #include "PxRigidDynamic.h"
 #include "foundation/PxVec2.h"
 
@@ -276,6 +279,13 @@ bool ProbenderInputHandler::keyPressed( const OIS::KeyEvent &arg )
 				if(attack)
 				{
 					attack->AttachAbility(ability);
+					attack->SetWorldPosition(probender->owningArena->GetOwningScene()->GetCamera()->getPosition());
+
+					Ogre::Vector3 camDir = probender->owningArena->GetOwningScene()->GetCamera()->getDirection();
+
+					((RigidBodyComponent*)attack->GetComponent(Component::RIGID_BODY_COMPONENT))->ApplyImpulse(
+						physx::PxVec3(camDir.x, camDir.y, camDir.z) * 20.0f);
+
 					probender->rightHandAttack = attack;
 				}
 			}

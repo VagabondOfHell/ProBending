@@ -29,6 +29,7 @@
 
 bool save = false;
 bool load = false;
+bool savePhysX = false;
 
 GameScene::GameScene(void)
 	:IScene(NULL, NULL, "", "")
@@ -78,14 +79,30 @@ void GameScene::Initialize()
 
 	InitializePhysics(physx::PxVec3(0.0f, -9.8f, 0.0f), true);
 
-	//battleArena->LoadResources();
-
-	PhysXDataManager::GetSingletonPtr()->CreateMaterial(0.5f, 0.5f, 0.5f, "DefaultMaterial");
-
 	MeshRenderComponent::CreatePlane("BasicPlane");
 
-	ArenaBuilder::GenerateProbendingArena(this);
+	//battleArena->LoadResources();
+
+	//PhysXDataManager::GetSingletonPtr()->CreateMaterial(0.5f, 0.5f, 0.5f, "DefaultMaterial");
+
+	//MeshRenderComponent::CreatePlane("BasicPlane");
+
+	printf("Material Count: %i\n", PhysXDataManager::GetSingletonPtr()->GetMaterialCount());
+
+	printf("Convex Mesh Count: %i\n", PhysXDataManager::GetSingletonPtr()->GetConvexMeshCount());
+
+	printf("Shape Count: %i \n", PhysXDataManager::GetSingletonPtr()->GetShapeCount());
+
+	ArenaBuilder::CreateProbendingPhysXData(this);
+	//ArenaBuilder::GenerateProbendingArena(this);
 	
+	
+	printf("Material Count: %i\n", PhysXDataManager::GetSingletonPtr()->GetMaterialCount());
+
+	printf("Convex Mesh Count: %i\n", PhysXDataManager::GetSingletonPtr()->GetConvexMeshCount());
+
+	printf("Shape Count: %i \n", PhysXDataManager::GetSingletonPtr()->GetShapeCount());
+
 	InputManager* inputManager = InputManager::GetInstance();
 
 	inputManager->FillGestureReader(L"C:\\Users\\Adam\\Desktop\\Capstone\\GestureData\\ProbendingGestures.gbd");
@@ -133,30 +150,26 @@ bool GameScene::Update(float gameTime)
 
 			physxSimulating = false;
 		}
-	
-		printf("Cam Pos: %f, %f, %f\n", mainOgreCamera->getPosition().x, mainOgreCamera->getPosition().y,mainOgreCamera->getPosition().z);
+
+	if(!physxSimulating && savePhysX)
+	{
+		PhysXSerializerWrapper::CreateSerializer();
+		std::string arenaFileName =PxDataManSerializeOptions::DEFAULT_FILE_PATH + battleArena->GetArenaName() + "\\" + battleArena->GetArenaName();
+		arenaFileName.erase(std::remove_if(arenaFileName.begin(), arenaFileName.end(), isspace), arenaFileName.end());
+
+		battleArena->SavePhysXData(arenaFileName, "ArenaCollection");
+
+		PhysXSerializerWrapper::DestroySerializer();
+		savePhysX = false;
+	}
+		//printf("Shape Count: %i \n", PhysXDataManager::GetSingletonPtr()->GetShapeCount());
+		//printf("Cam Pos: %f, %f, %f\n", mainOgreCamera->getPosition().x, mainOgreCamera->getPosition().y,mainOgreCamera->getPosition().z);
 	if(!physxSimulating && save)
 	{
-		PxDataManSerializeOptions options = 
+		/*PxDataManSerializeOptions options = 
 			PxDataManSerializeOptions(PxDataManSerializeOptions::ALL, 
 			"SerializeCollection", true, "MyResources\\ProbendingArena\\ProbendingArena", 1, 20000, 40000, 50000, 60000);
 		PhysXSerializerWrapper::CreateSerializer();
-
-		Ogre::MeshPtr arenaMesh = Ogre::MeshManager::getSingletonPtr()->getByName("ProbendArenaSurface.mesh");
-		if(arenaMesh.getPointer() != NULL)
-		{
-			std::shared_ptr<MeshInfo> info = std::make_shared<MeshInfo>();
-			HelperFunctions::GetMeshInformation(arenaMesh.get(), *info);
-
-			physx::PxConvexMesh* convexMesh = PhysXDataManager::GetSingletonPtr()->CookConvexMesh(info, "ArenaSurfaceMesh");
-		}
-		
-		
-		printf("Material Count: %i\n", PhysXDataManager::GetSingletonPtr()->GetMaterialCount());
-
-		printf("Convex Mesh Count: %i\n", PhysXDataManager::GetSingletonPtr()->GetConvexMeshCount());
-
-		printf("Shape Count: %i \n", PhysXDataManager::GetSingletonPtr()->GetShapeCount());
 
 		if(PhysXDataManager::GetSingletonPtr()->SerializeData(options))
 		{
@@ -169,8 +182,11 @@ bool GameScene::Update(float gameTime)
 				printf("Data Manager Serialize Data unsuccessful \n");
 			
 		}
-		
-		
+		else
+			printf("Data Manager Serialize Data unsuccessful \n");*/
+		PhysXSerializerWrapper::CreateSerializer();
+
+		battleArena->SerializeArena();
 
 		PhysXSerializerWrapper::DestroySerializer();
 		save = false;
@@ -178,43 +194,18 @@ bool GameScene::Update(float gameTime)
 
 	if(!physxSimulating && load)
 	{
-		PxDataManSerializeOptions options = 
-			PxDataManSerializeOptions(PxDataManSerializeOptions::ALL, 
-				"SerializeCollection", true, "MyResources\\ProbendingArena\\ProbendingArena");
-		
 		PhysXSerializerWrapper::CreateSerializer();
+		gameObjectList.clear();
+		PhysXDataManager::GetSingletonPtr()->ReleaseAll();
 
-			SceneSerializer serializer = SceneSerializer();
-
-			bool errorsDetected = false;
-			
-			errorsDetected = !PhysXDataManager::GetSingletonPtr()->DeserializeData(options);
-			if(errorsDetected)
-				printf("ERRORS");
-
-			if(!errorsDetected)
-			errorsDetected = !PhysXSerializerWrapper::AddToScene(GetPhysXScene(), "SerializeCollection");/**/
-			
-			if(serializer.DeserializeScene(this, "MyResources\\ProbendingArena\\ProbendingArena", "SerializeCollection", false, false))
-				printf("Data Manager Deserialize Data successful\n");
-			else
-				printf("Data Manager Deserialize Data unsuccessful \n");
+		battleArena->DeserializeArena();
 	
 			printf("Num Actors: %i\n", GetPhysXScene()->getNbActors(physx::PxActorTypeFlag::eRIGID_DYNAMIC));
 			printf("Num Game Objects: %i\n", gameObjectList.size());
 
-			/*for (auto start = gameObjectList.begin(); start != gameObjectList.end(); ++start)
-			{
-				RigidBodyComponent* rigid = (RigidBodyComponent*)start->get()->GetComponent(Component::RIGID_BODY_COMPONENT);
-
-				if(rigid)
-				{
-					rigid->PrintRigidData();
-				}
-			}*/
-
-			load = false;
 		PhysXSerializerWrapper::DestroySerializer();
+
+		load = false;
 	}
 
 	return true;
@@ -234,51 +225,51 @@ bool GameScene::keyPressed( const OIS::KeyEvent &arg )
 {
 	if(arg.key == OIS::KC_W)
 	{
-		mainOgreCamera->moveRelative(Ogre::Vector3(10.0f, 0.0f, 0.0f));
+		mainOgreCamera->moveRelative(Ogre::Vector3(1.0f, 0.0f, 0.0f));
 	}
 
 	if(arg.key == OIS::KC_E)
 	{
-		mainOgreCamera->moveRelative(Ogre::Vector3(-10.0f, 0.0f, 0.0f));
+		mainOgreCamera->moveRelative(Ogre::Vector3(-1.0f, 0.0f, 0.0f));
 	}
 
 	if(arg.key == OIS::KC_I)
 	{
-		mainOgreCamera->moveRelative(Ogre::Vector3(0.0f, 0.0f, 10.0f));
+		mainOgreCamera->moveRelative(Ogre::Vector3(0.0f, 0.0f, 1.0f));
 	}
 
-	if(arg.key == OIS::KC_P)
+	if(arg.key == OIS::KC_NUMPAD8)
 	{
-		mainOgreCamera->rotate(Ogre::Vector3::UNIT_X, Ogre::Radian(Ogre::Degree(10)));
+		mainOgreCamera->rotate(Ogre::Vector3::UNIT_X, Ogre::Radian(Ogre::Degree(1)));
 		//mainOgreCamera->yaw(Ogre::Radian(Ogre::Degree(10)));
 	}
 
-	if(arg.key == OIS::KC_O)
+	if(arg.key == OIS::KC_NUMPAD2)
 	{
-		mainOgreCamera->rotate(Ogre::Vector3::UNIT_X, Ogre::Radian(Ogre::Degree(-10)));
+		mainOgreCamera->rotate(Ogre::Vector3::UNIT_X, Ogre::Radian(Ogre::Degree(-1)));
 		//mainOgreCamera->yaw(Ogre::Radian(Ogre::Degree(-10)));
 	}
 
 	if(arg.key == OIS::KC_NUMPAD4)
 	{
-		mainOgreCamera->rotate(Ogre::Vector3::UNIT_Y, Ogre::Radian(Ogre::Degree(10)));
+		mainOgreCamera->rotate(Ogre::Vector3::UNIT_Y, Ogre::Radian(Ogre::Degree(1)));
 		//mainOgreCamera->pitch(Ogre::Radian(Ogre::Degree(10)));
 	}
 	if(arg.key == OIS::KC_NUMPAD6)
 	{
-		mainOgreCamera->rotate(Ogre::Vector3::UNIT_Y, Ogre::Radian(Ogre::Degree(-10)));
+		mainOgreCamera->rotate(Ogre::Vector3::UNIT_Y, Ogre::Radian(Ogre::Degree(-1)));
 		//mainOgreCamera->pitch(Ogre::Radian(Ogre::Degree(-10)));
 	}
 
-	if(arg.key == OIS::KC_NUMPAD8)
+	if(arg.key == OIS::KC_NUMPAD7)
 	{
 		
-		mainOgreCamera->rotate(Ogre::Vector3::UNIT_Z, Ogre::Radian(Ogre::Degree(10)));
+		mainOgreCamera->rotate(Ogre::Vector3::UNIT_Z, Ogre::Radian(Ogre::Degree(1)));
 		//mainOgreCamera->roll(Ogre::Radian(Ogre::Degree(10)));
 	}
-	if(arg.key == OIS::KC_NUMPAD0)
+	if(arg.key == OIS::KC_NUMPAD9)
 	{
-		mainOgreCamera->rotate(Ogre::Vector3::UNIT_Z, Ogre::Radian(Ogre::Degree(-10)));
+		mainOgreCamera->rotate(Ogre::Vector3::UNIT_Z, Ogre::Radian(Ogre::Degree(-1)));
 		//mainOgreCamera->roll(Ogre::Radian(Ogre::Degree(-10)));
 	}
 
@@ -290,14 +281,17 @@ bool GameScene::keyPressed( const OIS::KeyEvent &arg )
 
 	if(arg.key == OIS::KC_J)
 	{
-		mainOgreCamera->moveRelative(Ogre::Vector3(0.0f, 0.0f, -10.0f));
+		mainOgreCamera->moveRelative(Ogre::Vector3(0.0f, 0.0f, -1.0f));
 	}
 
-	if(arg.key == OIS::KC_Z)
+	if(arg.key == OIS::KC_F11)
 		save = true;
 
-	if(arg.key == OIS::KC_L)
+	if(arg.key == OIS::KC_F2)
 		load = true;
+
+	if(arg.key == OIS::KC_F9)
+		savePhysX = true;
 
 	return true;
 }

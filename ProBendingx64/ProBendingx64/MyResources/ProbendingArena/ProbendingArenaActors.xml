@@ -1,11 +1,246 @@
 <ProbendingArena>
 	<GameObjectNode ObjectName="WaterPlane">
 		<Position X="0.000000" Y="-5.000000" Z="0.000000"/>
-		<Rotation X="0.000000" Y="0.000000" Z="0.000000" W="1.000000">T</Rotation>
-		<Scale X="1000.000000" Y="1.000000" Z="1000.000000">T</Scale>
-		<MeshRenderComponent Enabled="T" Entity="WaterPlane">
+		<Rotation X="0.000000" Y="0.000000" Z="0.707107" W="0.707107">T</Rotation>
+		<Scale X="50.000000" Y="50.000000" Z="50.000000">T</Scale>
+		<MeshRenderComponent Enabled="T" Entity="BasicPlane">
 			<Subentity SubentityID="0" SubentityMaterial="Examples/Water1"/>
 		</MeshRenderComponent>
+		<RigidBodyComponent Enabled="T" DynamicBodyType="F">
+			<RigidShape ShapeName="BasicPlane"/>
+		</RigidBodyComponent>
+	</GameObjectNode>
+	<GameObjectNode ObjectName="ProbendArenaSurface">
+		<Position X="0.000000" Y="0.000000" Z="0.000000"/>
+		<Rotation X="0.000000" Y="0.000000" Z="0.000000" W="1.000000">T</Rotation>
+		<Scale X="1.000000" Y="1.000000" Z="1.000000">T</Scale>
+		<MeshRenderComponent Enabled="T" Entity="ProbendArenaSurface.mesh">
+			<Subentity SubentityID="0" SubentityMaterial="ProbendArenaSurfaceMat"/>
+		</MeshRenderComponent>
+		<RigidBodyComponent Enabled="T" DynamicBodyType="F">
+			<RigidShape ShapeName="ArenaSurfaceShape"/>
+		</RigidBodyComponent>
+	</GameObjectNode>
+	<GameObjectNode ObjectName="ProbendPillarRL(Clone)">
+		<Position X="0.000000" Y="-2.850000" Z="4.300000"/>
+		<Rotation X="-0.700909" Y="0.000000" Z="0.713250" W="0.000000">T</Rotation>
+		<Scale X="1.000000" Y="1.000000" Z="1.000000">T</Scale>
+		<MeshRenderComponent Enabled="T" Entity="ProbendPillar.mesh">
+			<Subentity SubentityID="0" SubentityMaterial="ProbendPillarMat"/>
+		</MeshRenderComponent>
+		<RigidBodyComponent Enabled="T" DynamicBodyType="F">
+			<RigidShape ShapeName="ArenaPillarShape"/>
+		</RigidBodyComponent>
+	</GameObjectNode>
+	<GameObjectNode ObjectName="ProbendPillarRL">
+		<Position X="5.900000" Y="-2.850000" Z="2.150000"/>
+		<Rotation X="-0.254602" Y="0.000000" Z="0.967046" W="0.000000">T</Rotation>
+		<Scale X="1.000000" Y="1.000000" Z="1.000000">T</Scale>
+		<MeshRenderComponent Enabled="T" Entity="ProbendPillar.mesh">
+			<Subentity SubentityID="0" SubentityMaterial="ProbendPillarMat"/>
+		</MeshRenderComponent>
+		<RigidBodyComponent Enabled="T" DynamicBodyType="F">
+			<RigidShape ShapeName="ArenaPillarShape"/>
+		</RigidBodyComponent>
+	</GameObjectNode>
+	<GameObjectNode ObjectName="ProbendPillarRL(Clone)">
+		<Position X="5.900000" Y="-2.850000" Z="-2.150000"/>
+		<Rotation X="0.258539" Y="0.000000" Z="0.966001" W="0.000000">T</Rotation>
+		<Scale X="1.000000" Y="1.000000" Z="1.000000">T</Scale>
+		<MeshRenderComponent Enabled="T" Entity="ProbendPillar.mesh">
+			<Subentity SubentityID="0" SubentityMaterial="ProbendPillarMat"/>
+		</MeshRenderComponent>
+		<RigidBodyComponent Enabled="T" DynamicBodyType="F">
+			<RigidShape ShapeName="ArenaPillarShape"/>
+		</RigidBodyComponent>
+	</GameObjectNode>
+	<GameObjectNode ObjectName="RedBottomWall">
+		<Position X="18.50" Y="0.000000" Z="0.0000"/>
+		<Rotation X="0.000000" Y="1" Z="0.000000" W="0">T</Rotation>
+		<Scale X="10.000000" Y="10.000000" Z="8.5000">T</Scale>
+		<MeshRenderComponent Enabled="T" Entity="BasicPlane">
+			<Subentity SubentityID="0" SubentityMaterial="StadiumWall"/>
+		</MeshRenderComponent>
+		<RigidBodyComponent Enabled="T" DynamicBodyType="F">
+			<RigidShape ShapeName="ArenaWallShapeMedium"/>
+		</RigidBodyComponent>
+	</GameObjectNode>
+	<GameObjectNode ObjectName="LeftCenterWall">
+		<Position X="0.000000" Y="0.000000" Z="15.000000"/>
+		<Rotation X="0.000000" Y="0.707107" Z="0.000000" W="0.707107">T</Rotation>
+		<Scale X="10.000000" Y="10.000000" Z="19.00000">T</Scale>
+		<MeshRenderComponent Enabled="T" Entity="BasicPlane">
+			<Subentity SubentityID="0" SubentityMaterial="StadiumWall"/>
+		</MeshRenderComponent>
+		<RigidBodyComponent Enabled="T" DynamicBodyType="F">
+			<RigidShape ShapeName="ArenaWallShapeLarge"/>
+		</RigidBodyComponent>
+	</GameObjectNode>
+	
+	<GameObjectNode ObjectName="RightCenterWall">
+		<Position X="0.000000" Y="0.000000" Z="-15.000000"/>
+		<Rotation X="0.000000" Y="-0.707107" Z="0.000000" W="0.707107">T</Rotation>
+		<Scale X="10.000000" Y="10.000000" Z="19.00000">T</Scale>
+		<MeshRenderComponent Enabled="T" Entity="BasicPlane">
+			<Subentity SubentityID="0" SubentityMaterial="StadiumWall"/>
+		</MeshRenderComponent>
+		<RigidBodyComponent Enabled="T" DynamicBodyType="F">
+			<RigidShape ShapeName="ArenaWallShapeLarge"/>
+		</RigidBodyComponent>
+	</GameObjectNode>
+	<GameObjectNode ObjectName="Wall">
+		<Position X="12.0000" Y="0.000000" Z="12.500"/>
+		<Rotation X="0" Y="0.911762" Z="0" W="0.410719">T</Rotation>
+		<Scale X="10.000000" Y="10.000000" Z="7.500000">T</Scale>
+		<MeshRenderComponent Enabled="T" Entity="BasicPlane">
+			<Subentity SubentityID="0" SubentityMaterial="StadiumWall"/>
+		</MeshRenderComponent>
+		<RigidBodyComponent Enabled="T" DynamicBodyType="F">
+			<RigidShape ShapeName="ArenaWallShapeMedium"/>
+		</RigidBodyComponent>
+	</GameObjectNode>
+	<GameObjectNode ObjectName="RedBottomLeftWall">
+		<Position X="16.500" Y="0.000000" Z="7.0"/>
+		<Rotation X="0" Y="0.70785" Z="0" W="0.19509">T</Rotation>
+		<Scale X="10.000000" Y="10.000000" Z="7.500000">T</Scale>
+		<MeshRenderComponent Enabled="T" Entity="BasicPlane">
+			<Subentity SubentityID="0" SubentityMaterial="StadiumWall"/>
+		</MeshRenderComponent>
+		<RigidBodyComponent Enabled="T" DynamicBodyType="F">
+			<RigidShape ShapeName="ArenaWallShapeMedium"/>
+		</RigidBodyComponent>
+	</GameObjectNode>
+	<GameObjectNode ObjectName="RedBottomRightWall">
+		<Position X="16.500" Y="0.000000" Z="-7.0"/>
+		<Rotation X="0" Y="-0.70785" Z="0" W="0.19509">T</Rotation>
+		<Scale X="10.000000" Y="10.000000" Z="7.500000">T</Scale>
+		<MeshRenderComponent Enabled="T" Entity="BasicPlane">
+			<Subentity SubentityID="0" SubentityMaterial="StadiumWall"/>
+		</MeshRenderComponent>
+		<RigidBodyComponent Enabled="T" DynamicBodyType="F">
+			<RigidShape ShapeName="ArenaWallShapeMedium"/>
+		</RigidBodyComponent>
+	</GameObjectNode>
+	<GameObjectNode ObjectName="RedBottomRightWall">
+		<Position X="12.0000" Y="0.000000" Z="-12.500"/>
+		<Rotation X="0" Y="-0.911762" Z="0" W="0.410719">T</Rotation>
+		<Scale X="10.000000" Y="10.000000" Z="7.500000">T</Scale>
+		<MeshRenderComponent Enabled="T" Entity="BasicPlane">
+			<Subentity SubentityID="0" SubentityMaterial="StadiumWall"/>
+		</MeshRenderComponent>
+		<RigidBodyComponent Enabled="T" DynamicBodyType="F">
+			<RigidShape ShapeName="ArenaWallShapeMedium"/>
+		</RigidBodyComponent>
+	</GameObjectNode>
+	<GameObjectNode ObjectName="BlueBottomRightWall">
+		<Position X="-12.0000" Y="0.000000" Z="12.500"/>
+		<Rotation X="0" Y="0.410719" Z="0" W="0.911762">T</Rotation>
+		<Scale X="10.000000" Y="10.000000" Z="7.500000">T</Scale>
+		<MeshRenderComponent Enabled="T" Entity="BasicPlane">
+			<Subentity SubentityID="0" SubentityMaterial="StadiumWall"/>
+		</MeshRenderComponent>
+		<RigidBodyComponent Enabled="T" DynamicBodyType="F">
+			<RigidShape ShapeName="ArenaWallShapeMedium"/>
+		</RigidBodyComponent>
+	</GameObjectNode>
+	<GameObjectNode ObjectName="BlueBottomLeftWall">
+		<Position X="-12.0000" Y="0.000000" Z="-12.500"/>
+		<Rotation X="0" Y="0.410719" Z="0" W="-0.911762">T</Rotation>
+		<Scale X="10.000000" Y="10.000000" Z="7.500000">T</Scale>
+		<MeshRenderComponent Enabled="T" Entity="BasicPlane">
+			<Subentity SubentityID="0" SubentityMaterial="StadiumWall"/>
+		</MeshRenderComponent>
+		<RigidBodyComponent Enabled="T" DynamicBodyType="F">
+			<RigidShape ShapeName="ArenaWallShapeMedium"/>
+		</RigidBodyComponent>
+	</GameObjectNode>
+	<GameObjectNode ObjectName="BlueBottomLeftWall">
+		<Position X="-16.500" Y="0.000000" Z="-7.0"/>
+		<Rotation X="0" Y="0.19509" Z="0" W="-0.70785">T</Rotation>
+		<Scale X="10.000000" Y="10.000000" Z="7.500000">T</Scale>
+		<MeshRenderComponent Enabled="T" Entity="BasicPlane">
+			<Subentity SubentityID="0" SubentityMaterial="StadiumWall"/>
+		</MeshRenderComponent>
+		<RigidBodyComponent Enabled="T" DynamicBodyType="F">
+			<RigidShape ShapeName="ArenaWallShapeMedium"/>
+		</RigidBodyComponent>
+	</GameObjectNode>
+	<GameObjectNode ObjectName="BlueBottomRightWall">
+		<Position X="-16.500" Y="0.000000" Z="7.0"/>
+		<Rotation X="0" Y="0.19509" Z="0" W="0.70785">T</Rotation>
+		<Scale X="10.000000" Y="10.000000" Z="7.500000">T</Scale>
+		<MeshRenderComponent Enabled="T" Entity="BasicPlane">
+			<Subentity SubentityID="0" SubentityMaterial="StadiumWall"/>
+		</MeshRenderComponent>
+		<RigidBodyComponent Enabled="T" DynamicBodyType="F">
+			<RigidShape ShapeName="ArenaWallShapeMedium"/>
+		</RigidBodyComponent>
+	</GameObjectNode>
+	<GameObjectNode ObjectName="BlueBottomWall">
+		<Position X="-18.50" Y="0.000000" Z="0.0000"/>
+		<Rotation X="0.000000" Y="0" Z="0.000000" W="1">T</Rotation>
+		<Scale X="10.000000" Y="10.000000" Z="8.5000">T</Scale>
+		<MeshRenderComponent Enabled="T" Entity="BasicPlane">
+			<Subentity SubentityID="0" SubentityMaterial="StadiumWall"/>
+		</MeshRenderComponent>
+		<RigidBodyComponent Enabled="T" DynamicBodyType="F">
+			<RigidShape ShapeName="ArenaWallShapeMedium"/>
+		</RigidBodyComponent>
+	</GameObjectNode>
+	<GameObjectNode ObjectName="ProbendPillarRL(Clone)">
+		<Position X="0.000000" Y="-2.850000" Z="-4.300000"/>
+		<Rotation X="-0.700909" Y="0.000000" Z="0.713250" W="0.000000">T</Rotation>
+		<Scale X="1.000000" Y="1.000000" Z="1.000000">T</Scale>
+		<MeshRenderComponent Enabled="T" Entity="ProbendPillar.mesh">
+			<Subentity SubentityID="0" SubentityMaterial="ProbendPillarMat"/>
+		</MeshRenderComponent>
+		<RigidBodyComponent Enabled="T" DynamicBodyType="F">
+			<RigidShape ShapeName="ArenaPillarShape"/>
+		</RigidBodyComponent>
+	</GameObjectNode>
+	<GameObjectNode ObjectName="ProbendPillarRL(Clone)">
+		<Position X="-5.900000" Y="-2.850000" Z="-2.150000"/>
+		<Rotation X="-0.258819" Y="0.000000" Z="0.965926" W="0.000000">T</Rotation>
+		<Scale X="1.000000" Y="1.000000" Z="1.000000">T</Scale>
+		<MeshRenderComponent Enabled="T" Entity="ProbendPillar.mesh">
+			<Subentity SubentityID="0" SubentityMaterial="ProbendPillarMat"/>
+		</MeshRenderComponent>
+		<RigidBodyComponent Enabled="T" DynamicBodyType="F">
+			<RigidShape ShapeName="ArenaPillarShape"/>
+		</RigidBodyComponent>
+	</GameObjectNode>
+	<GameObjectNode ObjectName="ProbendPillarRL(Clone)">
+		<Position X="-5.900000" Y="-2.850000" Z="2.150000"/>
+		<Rotation X="0.258819" Y="0.000000" Z="0.965926" W="0.000000">T</Rotation>
+		<Scale X="1.000000" Y="1.000000" Z="1.000000">T</Scale>
+		<MeshRenderComponent Enabled="T" Entity="ProbendPillar.mesh">
+			<Subentity SubentityID="0" SubentityMaterial="ProbendPillarMat"/>
+		</MeshRenderComponent>
+		<RigidBodyComponent Enabled="T" DynamicBodyType="F">
+			<RigidShape ShapeName="ArenaPillarShape"/>
+		</RigidBodyComponent>
+	</GameObjectNode>
+	<GameObjectNode ObjectName="1st Floor">
+		<Position X="0.00000" Y="-2.50000" Z="0.0000"/>
+		<Rotation X="0.0" Y="0.000000" Z="0.0" W="1.000000">T</Rotation>
+		<Scale X="0.850000" Y="1.000000" Z="0.830000">T</Scale>
+		<MeshRenderComponent Enabled="T" Entity="ProbendLowerPlatform.mesh">
+			<Subentity SubentityID="0" SubentityMaterial="ProbendLowerPlatformMat"/>
+		</MeshRenderComponent>
+		<RigidBodyComponent Enabled="T" DynamicBodyType="F">
+			<RigidShape ShapeName="ArenaLowerPlatformShape"/>
+		</RigidBodyComponent>
+	</GameObjectNode>
+	<GameObjectNode ObjectName="2nd Floor">
+		<Position X="0.00000" Y="-5.0000" Z="0.0000"/>
+		<Rotation X="0.0" Y="0.000000" Z="0.0" W="1.000000">T</Rotation>
+		<Scale X="0.850000" Y="1.000000" Z="0.830000">T</Scale>
+		<MeshRenderComponent Enabled="T" Entity="ProbendLowerPlatform.mesh">
+			<Subentity SubentityID="0" SubentityMaterial="ProbendLowerPlatformMat"/>
+		</MeshRenderComponent>
+		<RigidBodyComponent Enabled="T" DynamicBodyType="F">
+			<RigidShape ShapeName="ArenaLowerPlatformShape"/>
+		</RigidBodyComponent>
 	</GameObjectNode>
 </ProbendingArena>
 

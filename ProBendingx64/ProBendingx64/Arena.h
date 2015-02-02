@@ -38,6 +38,8 @@ public:
 
 	virtual ~Arena(void);
 
+	inline IScene* GetOwningScene()const{return owningScene;}
+
 	///<summary>Gets the name associated with the arena</summary>
 	///<returns>The name of the arena</returns>
 	inline std::string GetArenaName()const {return arenaName;}
@@ -56,11 +58,19 @@ public:
 
 	virtual void Initialize(const std::vector<ProbenderData> contestantData);
 
+	virtual bool SavePhysXData(const std::string& fileName, const std::string& collectionName);
+
 	virtual bool LoadResources();
+
+	virtual bool LoadPhysXData(const std::string& fileName, const std::string& collectionName);
 
 	virtual void Start();
 
 	virtual bool Update(const float gameTime);
+
+	virtual bool SerializeArena();
+
+	virtual bool DeserializeArena();
 
 };
 

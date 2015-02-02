@@ -63,7 +63,7 @@ bool ShapeDefinition::SetGeometry(const SharedGeo& geometry)
 
 void ShapeDefinition::SetBoxGeometry(const physx::PxVec3& halfExtents)
 {
-	ShapeGeometry = SharedGeo(new PxBoxGeometry(halfExtents));
+	ShapeGeometry = std::make_shared<PxBoxGeometry>(halfExtents);
 }
 
 void ShapeDefinition::SetBoxGeometry(const physx::PxReal x, const physx::PxReal y, const physx::PxReal z)

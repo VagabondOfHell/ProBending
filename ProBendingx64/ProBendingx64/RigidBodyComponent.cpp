@@ -49,6 +49,8 @@ bool RigidBodyComponent::CreateRigidBody(RigidBodyType _bodyType, physx::PxVec3&
 {	
 	if(bodyType != NONE)
 		return false;
+	
+	orientation.normalize();
 
 	//Create appropriate shape
 	switch (_bodyType)
@@ -95,25 +97,32 @@ bool RigidBodyComponent::AttachShape(PxShape& newShape)
 	return true;
 }
 
-bool RigidBodyComponent::CreateAndAttachNewShape(const ShapeDefinition& shapeDefinition)
+bool RigidBodyComponent::AttachShape(const std::string& shapeName)
+{
+	physx::PxShape* shape = PhysXDataManager::GetSingletonPtr()->GetShape(shapeName);
+	
+	if(shape)
+		return AttachShape(*shape);
+
+	return false;
+}
+
+bool RigidBodyComponent::CreateAndAttachNewShape(const ShapeDefinition& shapeDefinition, const std::string& shapeName)
 {
 	if(shapeDefinition.MaterialList.size() == 0)
 		return false;
 
-	physx::PxShape* shape = NULL;
-
-	if(bodyType == STATIC)
-		shape =	bodyStorage.staticActor->createShape(*shapeDefinition.ShapeGeometry.get(), 
-		&shapeDefinition.MaterialList[0], 
-			(physx::PxU16)shapeDefinition.MaterialList.size(), shapeDefinition.ShapeFlags);
-
-	else if(bodyType == DYNAMIC)
-		shape = bodyStorage.dynamicActor->createShape(*shapeDefinition.ShapeGeometry.get(), 
-		&shapeDefinition.MaterialList[0],
-			(physx::PxU16)shapeDefinition.MaterialList.size(), shapeDefinition.ShapeFlags);
+	physx::PxShape* shape = PhysXDataManager::GetSingletonPtr()->CreateShape(shapeDefinition, shapeName);
 
 	if(shape)
+	{
+		if(bodyType == STATIC)
+			bodyStorage.staticActor->attachShape(*shape);
+		else if(bodyType == DYNAMIC)
+			bodyStorage.dynamicActor->attachShape(*shape);
+
 		shape->setLocalPose(shapeDefinition.Transform);
+	}
 
 	return shape != NULL;
 }
@@ -158,7 +167,7 @@ void RigidBodyComponent::SetPosition(physx::PxVec3& position)
 
 void RigidBodyComponent::SetOrientation(physx::PxQuat& orientation)
 {
-
+	orientation.normalize();
 	if(bodyType == DYNAMIC)
 		bodyStorage.dynamicActor->setGlobalPose(physx::PxTransform(bodyStorage.dynamicActor->getGlobalPose().p, 
 			orientation));
@@ -241,7 +250,7 @@ void RigidBodyComponent::CreateDebugDraw()
 					Ogre::Entity* entity = sceneManager->createEntity("BasicPlane");
 					entity->setMaterialName("PlaneRender");
 
-					physxDebugNode->setScale(100.0f, 100.0f, 100.0f);
+					physxDebugNode->setScale(owningGameObject->GetWorldScale());
 					physxDebugNode->attachObject(entity);
 				}
 				break;

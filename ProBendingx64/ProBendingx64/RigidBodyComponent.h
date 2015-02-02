@@ -59,12 +59,17 @@ public:
 	///<summary>Create and attach a new shape to this rigid body</summary>
 	///<param name="shapeDefinition">The geometry representing the shape</param>
 	///<returns>True if successful, false if Shape definition is not correctly filled out</returns>
-	bool CreateAndAttachNewShape(const ShapeDefinition& shapeDefinition);
+	bool CreateAndAttachNewShape(const ShapeDefinition& shapeDefinition, const std::string& nameOfShape);
 
 	///<summary>Attaches a previously created shape to the rigid actor</summary>
 	///<param name="newShape">The new shape to add</param>
 	///<returns>True if successful, false if not. False if no rigid body has been created yet</returns>
 	bool AttachShape(physx::PxShape& newShape);
+
+	///<summary>Attaches a shape stored in the PhysX Data Manager under the specified name</summary>
+	///<param name="shapeName">Name of the shape to attach </param>
+	///<returns>True if exists and attached, false if not found</returns>
+	bool AttachShape(const std::string& shapeName);
 
 	///<summary>Sets whether the component is affected by gravity or not</summary>
 	///<param name="val">True to be affected by gravity, false if not</param>

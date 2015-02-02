@@ -28,11 +28,14 @@ class SceneSerializer
 private:
 	long long StartID;
 
-	const std::string ActorCollection, PxDataCollection;
+	std::string pxDataRefCollection;
+
+	const std::string ActorCollection;
 	const std::string GameObjectNode, ObjectName;
 	const std::string Position, Rotation, Scale, X, Y, Z, W;
 	const std::string MeshRenderComponen, RigidBodyComponen, ParticleComponen, Enabled;
-	const std::string EntityName, SubentityMaterial, Subentity, SubentityID, RigidID, ParticleSpace;
+	const std::string EntityName, SubentityMaterial, Subentity, SubentityID, ParticleSpace;
+	const std::string RigidShape, DynamicBodyType, ShapeName;
 	const std::string Emitter, PointEmitter, LineEmitter, MeshEmitter;
 	const std::string MinEmitDirection, MaxEmitDirection, PPS, MinEmitSpeed, MaxEmitSpeed, Duration, EmitLoop;
 	const std::string ParticleActorID, MaxParticles, OnGPU, InitialLifetime;
