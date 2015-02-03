@@ -5,6 +5,8 @@
 #include "OgreQuaternion.h"
 #include "MeshInfo.h"
 
+#include "OgreHardwareVertexBuffer.h"
+
 #include <memory>
 
 namespace Ogre
@@ -65,6 +67,15 @@ public:
 	///<summary>Gets the vertices and indices of the mesh. Expensive method, call as few times as possible</summary>
 	///<returns>A shared pointer to the mesh info that was created</returns>
 	std::shared_ptr<MeshInfo> const GetMeshInfo()const;
+
+	///<summary>Modifies the data of the mesh of the given semantic</summary>
+	///<param name="newData">The vector containing the new data</param>
+	///<param name="startPos">The starting position of the buffer to begin modifications from</param>
+	///<param name="semantic">The semantic of the data to be modified</param>
+	///<param name="submeshSource">The submesh source if vertex data isn't shared. If there is shared data
+	///it uses that</param>
+	void UpdateMesh(const std::vector<Ogre::Vector3>& newData, unsigned int startPos, 
+		Ogre::VertexElementSemantic semantic,  unsigned int submeshSource = 0);
 
 	///<summary>Enables the render component, resulting in the mesh being rendered</summary>
 	virtual void Enable();

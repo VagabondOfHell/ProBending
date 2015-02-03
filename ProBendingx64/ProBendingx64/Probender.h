@@ -17,7 +17,7 @@ class Arena;
 
 typedef std::shared_ptr<Projectile> SharedProjectile;
 
-class Probender
+class Probender : public GameObject
 {
 	friend class ProbenderInputHandler;
 
@@ -29,8 +29,6 @@ private:
 	ProbenderInGameData characterData;//The characters game stats
 
 	ProbenderInputHandler inputHandler;//The component handling input
-
-	physx::PxRigidDynamic* physicsBody;//The PhysX rigid body around the character
 
 	///Flight Game Object here
 
@@ -50,11 +48,15 @@ public:
 	Probender(const unsigned short _contestantID, Arena* _owningArena);
 	~Probender(void);
 
-	void AttachToScene(IScene* scene);
+	///<summary>At the moment this is used to differentiate between standard Game Objects and Projectiles and Probenders</summary>
+	///<returns>True if serializable, false if not</returns>
+	virtual inline bool IsSerializable()const{return false;}
 
 	///<summary>Takes the menu created data of the probender and converts it to usable in-game data</summary>
 	///<param name="data">The menu data to convert</param>
 	void CreateInGameData(const ProbenderData& data);
+
+	void Start();
 
 	void Update(float gameTime);
 	
@@ -85,5 +87,7 @@ public:
 	///<summary>Sets the element that the probender has currently equipped</summary>
 	///<param name="elementToSet">The element to set to</param>
 	virtual void SetCurrentElement(const ElementEnum::Element elementToSet);
+
+	static void CreateContestantMeshes(Ogre::SceneManager* sceneMan, bool red, bool blue);
 };
 

@@ -1,6 +1,38 @@
 #pragma once
 #include <string>
 
+namespace RenderableJointType
+{
+	enum RenderableJointType{
+		Head,
+		Neck,
+		SpineShoulder,
+		SpineMid,
+		SpineBase,
+		ShoulderRight,
+		ElbowRight,
+		WristRight,
+		HandRight,
+		HandTipRight,
+		ShoulderLeft,
+		ElbowLeft,
+		WristLeft,
+		HandLeft,
+		ThumbRight,
+		HandTipLeft,
+		ThumbLeft,
+		HipLeft,
+		KneeLeft,
+		AnkleLeft,
+		FootLeft,
+		HipRight,
+		KneeRight,
+		AnkleRight,
+		FootRight,
+		Count
+	};
+};
+
 namespace ElementEnum
 {
 	enum Element{InvalidElement, Air, Earth, Fire, Water, Toxin, Sonic, Astral, 

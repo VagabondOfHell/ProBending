@@ -7,6 +7,7 @@
 #include "ProjectileManager.h"
 #include "RigidBodyComponent.h"
 #include "ParticleComponent.h"
+#include "MeshRenderComponent.h"
 
 #include "IScene.h"
 #include "OgreCamera.h"
@@ -283,14 +284,29 @@ bool ProbenderInputHandler::keyPressed( const OIS::KeyEvent &arg )
 
 					Ogre::Vector3 camDir = probender->owningArena->GetOwningScene()->GetCamera()->getDirection();
 
-					((RigidBodyComponent*)attack->GetComponent(Component::RIGID_BODY_COMPONENT))->ApplyImpulse(
-						physx::PxVec3(camDir.x, camDir.y, camDir.z) * 20.0f);
+					/*((RigidBodyComponent*)attack->GetComponent(Component::RIGID_BODY_COMPONENT))->ApplyImpulse(
+						physx::PxVec3(camDir.x, camDir.y, camDir.z) * 20.0f);*/
 
 					probender->rightHandAttack = attack;
 				}
 			}
 		}
 		
+	}
+	else if(arg.key == OIS::KC_G)
+	{
+		if(probender->rightHandAttack)
+		{
+std::vector<Ogre::Vector3> bodyPoints = std::vector<Ogre::Vector3>();
+
+		bodyPoints.push_back(Ogre::Vector3(10.0f, 0.0f, 0.0f));
+		bodyPoints.push_back(Ogre::Vector3(0.0f, 10.0f, 0.0f));
+		((MeshRenderComponent*)probender->rightHandAttack->GetComponent(Component::MESH_RENDER_COMPONENT))->
+			UpdateMesh(bodyPoints, 0, Ogre::VES_POSITION);
+		}
+		
+
+		//((MeshRenderComponent*)probender->GetComponent(Component::MESH_RENDER_COMPONENT))->UpdateMesh(bodyPoints, 0, Ogre::VES_POSITION);
 	}
 	else if (arg.key == OIS::KC_BACK)
 	{

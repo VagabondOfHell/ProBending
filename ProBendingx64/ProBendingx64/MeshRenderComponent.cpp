@@ -141,5 +141,50 @@ MeshRenderComponent* MeshRenderComponent::Clone(GameObject* gameObject)
 	return clone;
 }
 
+void MeshRenderComponent::UpdateMesh(const std::vector<Ogre::Vector3>& newData, 
+			unsigned int startPos, Ogre::VertexElementSemantic semantic, unsigned int submeshSource)
+{
+	if(!entity)
+		return;
+
+	if(newData.size() == 0)
+		return;
+
+	Ogre::MeshPtr mesh = entity->getMesh();
+	Ogre::SubMesh* submesh = mesh->getSubMesh(submeshSource);
+	
+	Ogre::VertexData* vertex_data = submesh->useSharedVertices ? mesh->sharedVertexData : submesh->vertexData;
+
+	const Ogre::VertexElement* posElem =
+		vertex_data->vertexDeclaration->findElementBySemantic(semantic);
+
+	//if the element wasn't found, return
+	if(!posElem)
+		return;
+
+	Ogre::HardwareVertexBufferSharedPtr vbuf =
+		vertex_data->vertexBufferBinding->getBuffer(posElem->getSource());
+
+	size_t vertexCount = vbuf->getNumVertices();
+
+	//if starting position isn't valid, return
+	if(startPos >= vertexCount)
+		return;
+
+	Ogre::Vector3* positionData = (Ogre::Vector3*)vbuf->lock(Ogre::HardwareBuffer::HBL_WRITE_ONLY);
+
+	unsigned int newDataIndex = 0;
+
+	for (unsigned int i = startPos; i < vertexCount; i++, newDataIndex++)
+	{
+		if(newDataIndex < newData.size())
+			positionData[i] = newData[newDataIndex];
+		else
+			break;
+	}
+
+	vbuf->unlock();
+}
+
 
 

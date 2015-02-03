@@ -47,6 +47,12 @@ public:
 
 	virtual void Update(float gameTime);
 
+	///<summary>At the moment this is used to differentiate between standard Game Objects and Projectiles and Probenders
+	///Eventually may move the serialization into Game Objects, but at the moment this is easier, since Projectiles
+	///and Probenders don't need serialization</summary>
+	///<returns>True if serializable, false if not</returns>
+	virtual inline bool IsSerializable()const{return true;}
+
 	///<summary>Adds a new child to this game object and if successful calls Start</summary>
 	///<param name="newChild">The new child to be attached</param>
 	///<returns>True if successful, false if the name already exists</returns>

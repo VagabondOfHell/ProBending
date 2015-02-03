@@ -73,19 +73,13 @@ void GameScene::Initialize()
 
 	ogreSceneManager->setAmbientLight(Ogre::ColourValue(1.0f, 1.0f, 1.0f, 1.0f));
 
-	CreateCameraAndViewport(Ogre::ColourValue(0.0f, 0.0f, 0.0f, 0.0f), Ogre::Vector3(0.0f, 10.0f, 0.5f));
+	CreateCameraAndViewport(Ogre::ColourValue(0.0f, 0.0f, 0.0f, 0.0f), Ogre::Vector3(0.0f, 10.0f, 0.0f));
 
 	InputNotifier::GetInstance()->AddObserver(this);
 
 	InitializePhysics(physx::PxVec3(0.0f, -9.8f, 0.0f), true);
 
 	MeshRenderComponent::CreatePlane("BasicPlane");
-
-	//battleArena->LoadResources();
-
-	//PhysXDataManager::GetSingletonPtr()->CreateMaterial(0.5f, 0.5f, 0.5f, "DefaultMaterial");
-
-	//MeshRenderComponent::CreatePlane("BasicPlane");
 
 	printf("Material Count: %i\n", PhysXDataManager::GetSingletonPtr()->GetMaterialCount());
 
@@ -162,28 +156,8 @@ bool GameScene::Update(float gameTime)
 		PhysXSerializerWrapper::DestroySerializer();
 		savePhysX = false;
 	}
-		//printf("Shape Count: %i \n", PhysXDataManager::GetSingletonPtr()->GetShapeCount());
-		//printf("Cam Pos: %f, %f, %f\n", mainOgreCamera->getPosition().x, mainOgreCamera->getPosition().y,mainOgreCamera->getPosition().z);
 	if(!physxSimulating && save)
 	{
-		/*PxDataManSerializeOptions options = 
-			PxDataManSerializeOptions(PxDataManSerializeOptions::ALL, 
-			"SerializeCollection", true, "MyResources\\ProbendingArena\\ProbendingArena", 1, 20000, 40000, 50000, 60000);
-		PhysXSerializerWrapper::CreateSerializer();
-
-		if(PhysXDataManager::GetSingletonPtr()->SerializeData(options))
-		{
-			SceneSerializer serializer = SceneSerializer();
-
-			if(serializer.SerializeScene(this, "ProbendingArena", "MyResources\\ProbendingArena\\ProbendingArena", 
-				"SerializeCollection"))
-				printf("Data Manager Serialize Data successful\n");
-			else
-				printf("Data Manager Serialize Data unsuccessful \n");
-			
-		}
-		else
-			printf("Data Manager Serialize Data unsuccessful \n");*/
 		PhysXSerializerWrapper::CreateSerializer();
 
 		battleArena->SerializeArena();
@@ -204,6 +178,8 @@ bool GameScene::Update(float gameTime)
 			printf("Num Game Objects: %i\n", gameObjectList.size());
 
 		PhysXSerializerWrapper::DestroySerializer();
+
+		FindAllByName("ProbendPillarRL(Clone)");
 
 		load = false;
 	}
