@@ -199,7 +199,7 @@ void KinectBodyEventNotifier::ProcessEvents()
 		{
 			char changedData = ChangedData::None;
 
-			if(frameData.CurrentData.BodyTrackingID != frameData.PreviousData.BodyTrackingID)
+			if(frameData.CurrentData.BodyTrackingID == 0 && frameData.CurrentData.BodyTrackingID != frameData.PreviousData.BodyTrackingID)
 				changedData |= ChangedData::TrackingIDLost;
 
 			//Check what data has been changed to fire an appropriate event for it
@@ -229,7 +229,6 @@ void KinectBodyEventNotifier::ProcessEvents()
 				//Notify each listener of the events that occured
 			for (unsigned int i = 0; i < bodyListeners[bodyID].size(); i++)
 			{
-				
 				if(changedData & ChangedData::TrackingIDLost)
 					bodyListeners[bodyID][i]->BodyLost(frameData.CurrentData, frameData.PreviousData);
 				
@@ -267,6 +266,8 @@ void KinectBodyEventNotifier::ProcessEvents()
 					listenersToRemove[bodyID].erase(listenersToRemove[bodyID].begin() + i);
 				}
 			}
+			
+
 		}
 	}
 		

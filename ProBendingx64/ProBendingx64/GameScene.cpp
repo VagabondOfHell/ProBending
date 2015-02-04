@@ -73,7 +73,7 @@ void GameScene::Initialize()
 
 	ogreSceneManager->setAmbientLight(Ogre::ColourValue(1.0f, 1.0f, 1.0f, 1.0f));
 
-	CreateCameraAndViewport(Ogre::ColourValue(0.0f, 0.0f, 0.0f, 0.0f), Ogre::Vector3(0.0f, 10.0f, 0.0f));
+	CreateCameraAndViewport(Ogre::ColourValue(0.0f, 0.0f, 0.0f, 0.0f), Ogre::Vector3(-10.0f, 1.0f, 0.0f));
 
 	InputNotifier::GetInstance()->AddObserver(this);
 
@@ -87,9 +87,10 @@ void GameScene::Initialize()
 
 	printf("Shape Count: %i \n", PhysXDataManager::GetSingletonPtr()->GetShapeCount());
 
-	ArenaBuilder::CreateProbendingPhysXData(this);
+	//ArenaBuilder::CreateProbendingPhysXData(this);
 	//ArenaBuilder::GenerateProbendingArena(this);
 	
+	battleArena->DeserializeArena();
 	
 	printf("Material Count: %i\n", PhysXDataManager::GetSingletonPtr()->GetMaterialCount());
 

@@ -148,7 +148,10 @@ bool InputManager::RegisterListenerToNewBody(KinectBodyListener* listener)
 				GetFirstValidUnlistenedBodyIndex();
 
 			if( RegisterListenerToBody(bodyID, listener))
+			{
 				listener->GetBody()->AttachGestureReader(gestureReader);
+				return true;
+			}
 		}
 	}
 

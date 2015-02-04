@@ -58,7 +58,6 @@ protected:
 
 	virtual void BodyClipChanged(const CompleteData& currentData, const CompleteData& previousData){}
 	
-	virtual void LeanChanged(const CompleteData& currentData, const CompleteData& previousData){}
 	virtual void LeanTrackingStateChanged(const CompleteData& currentData, const CompleteData& previousData){}
 	
 	virtual void HandTrackingStateChanged(const Hand hand, const CompleteData& currentData, const CompleteData& previousData){}

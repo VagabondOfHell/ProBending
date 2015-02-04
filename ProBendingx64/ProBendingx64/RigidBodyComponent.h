@@ -83,6 +83,8 @@ public:
 	///<param name="force">The amount of force to apply</param>
 	void ApplyForce(physx::PxVec3& force);
 
+	void SetKinematic(const bool kinematicOn);
+
 	void SetVelocity(physx::PxVec3& newVel);
 
 	void SetPosition(physx::PxVec3& position);

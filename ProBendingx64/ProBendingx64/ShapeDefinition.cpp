@@ -87,10 +87,11 @@ bool ShapeDefinition::SetConvexMeshGeometry(const std::string& meshName)
 	return geo.get() != NULL;
 }
 
-bool ShapeDefinition::SetConvexMeshGeometry(physx::PxConvexMesh* convexMesh)
+bool ShapeDefinition::SetConvexMeshGeometry(physx::PxConvexMesh* convexMesh, 
+		physx::PxVec3& scale /*= physx::PxVec3(1.0f)*/, physx::PxQuat& rot/* = physx::PxQuat(physx::PxIdentity)*/)
 {
 	if(convexMesh)
-		ShapeGeometry = SharedConvexMeshGeo(new PxConvexMeshGeometry(convexMesh));
+		ShapeGeometry = SharedConvexMeshGeo(new PxConvexMeshGeometry(convexMesh, physx::PxMeshScale(scale, rot)));
 
 	return convexMesh != NULL;
 }

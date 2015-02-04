@@ -5,6 +5,7 @@
 #include "PhysXDataManager.h"
 #include "Arena.h"
 #include "MeshRenderComponent.h"
+#include "RigidBodyComponent.h"
 
 #include "PxScene.h"
 #include "PxRigidDynamic.h"
@@ -25,9 +26,9 @@ Probender::Probender()
 {
 }
 
-Probender::Probender(const unsigned short _contestantID, Arena* _owningArena)
+Probender::Probender(const unsigned short _contestantID, const ContestantColour _colour, Arena* _owningArena)
 	: GameObject(_owningArena->GetOwningScene(), "Probender" + _contestantID), contestantID(_contestantID), owningArena(_owningArena), 
-		leftHandAttack(NULL), rightHandAttack(NULL), currentTarget(NULL)
+		leftHandAttack(NULL), rightHandAttack(NULL), currentTarget(NULL), colour(_colour)
 {
 	
 }
@@ -41,18 +42,31 @@ void Probender::Start()
 	SetInputState(Probender::Listen);
 	inputHandler.SetProbenderToHandle(this);
 
-	//MeshRenderComponent* renderComponent = new MeshRenderComponent();
-	//AttachComponent(renderComponent);
-	//
-	//std::string entityToLoad = "RedProbender";
+	MeshRenderComponent* renderComponent = new MeshRenderComponent();
+	AttachComponent(renderComponent);
+	
+	std::string entityToLoad = GetMeshAndMaterialName();
 
-	//if(contestantID == 1)
-	//	entityToLoad = "BlueProbender";
+	//Try loading required model
+	renderComponent->LoadModel(entityToLoad);
+	renderComponent->SetMaterial(entityToLoad);
+	
+	meshRenderComponent = renderComponent;
 
-	////Try loading required model
-	//renderComponent->LoadModel(entityToLoad);
+	RigidBodyComponent* rigid = new RigidBodyComponent();
+	AttachComponent(rigid);
 
-	//renderComponent->SetMaterial("RedProbender");
+	rigid->CreateRigidBody(RigidBodyComponent::DYNAMIC);
+
+	ShapeDefinition shapeDef = ShapeDefinition();
+	shapeDef.SetBoxGeometry(physx::PxVec3(0.250f, 0.60f, 0.050f));
+	shapeDef.AddMaterial("101000");
+	PhysXDataManager::GetSingletonPtr()->CreateShape(shapeDef, "ProbenderShape");
+	rigid->AttachShape("ProbenderShape");
+	rigid->SetKinematic(true);
+
+	rigid->CreateDebugDraw();
+	
 	GameObject::Start();
 }
 
@@ -116,22 +130,17 @@ void Probender::RemoveProjectile(SharedProjectile projectileToRemove)
 		rightHandAttack.reset();
 }
 
-void Probender::CreateContestantMeshes(Ogre::SceneManager* sceneMan, bool red, bool blue)
+void Probender::CreateContestantMeshes(Ogre::SceneManager* sceneMan, bool red,
+			bool blue, bool green, bool yellow, bool purple, bool orange)
 {
 	Ogre::ManualObject* manObject = sceneMan->createManualObject();
 
 	manObject->begin("RedProbender", Ogre::RenderOperation::OT_LINE_LIST);
 
-	manObject->position(0, 10, 0);
-	manObject->position(0, 8, 0);
-	manObject->position(0, 6, 0);
-	manObject->position(0, 4, 0);
-	manObject->position(0, 2, 0);
-
-
-	for (int i = 5; i < RenderableJointType::Count; i++)
+	//Set all to 0, because ProbenderInput will update them based on Kinect Data
+	for (int i = 0; i < RenderableJointType::Count; i++)
 	{
-		manObject->position(i, 0.0f, 0.0f);
+		manObject->position(0.0f, 0.0f, 0.0f);
 	}
 
 	manObject->index(RenderableJointType::FootLeft); manObject->index(RenderableJointType::AnkleLeft);
@@ -171,6 +180,17 @@ void Probender::CreateContestantMeshes(Ogre::SceneManager* sceneMan, bool red, b
 	if(blue)
 		manObject->convertToMesh("BlueProbender");
 
+	if(green)
+		manObject->convertToMesh("GreenProbender");
+
+	if(yellow)
+		manObject->convertToMesh("YellowProbender");
+
+	if(orange)
+		manObject->convertToMesh("OrangeProbender");
+
+	if(purple)
+		manObject->convertToMesh("PurpleProbender");
 	//Ogre::MeshPtr contestantMesh = Ogre::MeshManager::getSingletonPtr()->createManual("RedProbender", "General");
 
 	///// Create one submesh
@@ -296,4 +316,37 @@ void Probender::CreateContestantMeshes(Ogre::SceneManager* sceneMan, bool red, b
 	///// Notify -Mesh object that it has been loaded
 	//contestantMesh->load();
 
+}
+
+std::string Probender::GetMeshAndMaterialName()
+{
+	switch (colour)
+	{
+	case BLUE:
+		return "BlueProbender";
+		break;
+
+	case GREEN:
+		return "GreenProbender";
+		break;
+
+	case ORANGE:
+		return "OrangeProbender";
+		break;
+
+	case PURPLE:
+		return "PurpleProbender";
+		break;
+
+	case RED:
+		return "RedProbender";
+		break;
+
+	case YELLOW:
+		return "YellowProbender";
+		break;
+	default:
+		return "";
+		break;
+	}
 }

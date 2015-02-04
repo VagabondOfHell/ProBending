@@ -130,7 +130,8 @@ bool SceneSerializer::SerializeScene(const IScene* scene, std::string rootNodeNa
 			for (GameObjectList::iterator start = scene->gameObjectList.begin();
 				start != scene->gameObjectList.end(); ++start)
 			{
-				SerializeGameObject(writer, *start);
+				if(start->get()->IsSerializable())//if serializable, serialize
+					SerializeGameObject(writer, *start);
 			}
 
 			//PhysXSerializerWrapper::CompleteCollection(ActorCollection, refCollection);
@@ -849,7 +850,7 @@ bool SceneSerializer::DeserializeRigidBodyComponent(XMLReader& reader, SharedGam
 
 		//pop off shapes node
 		reader.PopNode();
-		//rigid->CreateDebugDraw();
+		rigid->CreateDebugDraw();
 		return success;
 	}
 

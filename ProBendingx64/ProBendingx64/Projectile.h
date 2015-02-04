@@ -32,6 +32,10 @@ public:
 	Projectile(IScene* owningScene, SharedAbilityDescriptor _attachedAbility);
 	virtual ~Projectile(void);
 
+	///<summary>At the moment this is used to differentiate between standard Game Objects and Projectiles and Probenders</summary>
+	///<returns>True if serializable, false if not</returns>
+	virtual inline bool IsSerializable()const{return false;}
+
 	virtual void Start();
 
 	virtual void Update(float gameTime);

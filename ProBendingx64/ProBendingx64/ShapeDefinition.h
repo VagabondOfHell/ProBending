@@ -79,7 +79,8 @@ public:
 	///<summary>Sets the shapes Geometry to a Convex Mesh geometry</summary>
 	///<param name="convexMesh">The convex mesh to construct the geometry from</param>
 	///<returns>True if successful, false if not</returns>
-	bool SetConvexMeshGeometry(physx::PxConvexMesh* convexMesh);
+	bool SetConvexMeshGeometry(physx::PxConvexMesh* convexMesh, 
+		physx::PxVec3& scale = physx::PxVec3(1.0f), physx::PxQuat& rot = physx::PxQuat(physx::PxIdentity));
 
 	///<summary>Sets the geometry to be that of a plane. Direction and position are determined by Shapes Pose,
 	///not by the geometry</summary>

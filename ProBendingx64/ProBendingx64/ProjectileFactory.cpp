@@ -47,8 +47,8 @@ SharedProjectile ProjectileFactory::CreateProjectile(IScene* const scene,const E
 			newProjectile->AttachComponent(renderComponent);
 			
 			renderComponent->LoadModel("Rock_01.mesh");
-
-			newProjectile->SetScale(0.001f, 0.001f, 0.001f);
+			//renderComponent->SetMaterial("RedProbender");
+			newProjectile->SetScale(0.01f, 0.01f, 0.01f);
 
 			RigidBodyComponent* rigidBody = new RigidBodyComponent();
 			newProjectile->AttachComponent(rigidBody);
@@ -74,7 +74,7 @@ SharedProjectile ProjectileFactory::CreateProjectile(IScene* const scene,const E
 				//shapeDef.SetBoxGeometry(entityHalfSize);
 				shapeDef.SetSphereGeometry(entityHalfSize.magnitude());
 				shapeDef.AddMaterial("RockMaterial");
-
+				
 				physx::PxShape* shape = PhysXDataManager::GetSingletonPtr()->CreateShape(shapeDef, "RockShape");
 
 				if(shape)

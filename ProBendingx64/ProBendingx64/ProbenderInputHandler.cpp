@@ -69,15 +69,19 @@ void ProbenderInputHandler::Update(const float gameTime)
 		InputManager* inputManager = InputManager::GetInstance();
 
 		if(inputManager->RegisterListenerToNewBody(this))
-			printf("Registered!");
+			printf("Registered!\n");
 	}
 }
 
 #pragma region Kinect Input
 
-void ProbenderInputHandler::LeanChanged(const CompleteData& currentData, const CompleteData& previousData)
+void ProbenderInputHandler::BodyAcquired()
 {
+}
 
+void ProbenderInputHandler::BodyLost(const CompleteData& currentData, const CompleteData& previousData)
+{
+	InputManager::GetInstance()->UnregisterBodyListener(this);
 }
 
 void ProbenderInputHandler::LeanTrackingStateChanged(const CompleteData& currentData, const CompleteData& previousData)
@@ -98,7 +102,24 @@ void ProbenderInputHandler::HandConfidenceChanged(const Hand hand, const Complet
 
 void ProbenderInputHandler::BodyFrameAcquired(const CompleteData& currentData, const CompleteData& previousData)
 {
+	std::vector<Ogre::Vector3> meshData = std::vector<Ogre::Vector3>();
+	meshData.reserve(JointType::JointType_Count);
 
+	CameraSpacePoint spineBasePoint = currentData.JointData[JointType_SpineBase].Position;
+	Ogre::Vector3 spineBasePosition = Ogre::Vector3(spineBasePoint.X, spineBasePoint.Y, 1.0f);
+
+	for (int i = 0; i < RenderableJointType::Count; i++)
+	{
+		CameraSpacePoint point = currentData.JointData[i].Position;
+		meshData.push_back(Ogre::Vector3(point.X, point.Y, 1.0f) - spineBasePosition);
+	}
+
+	probender->meshRenderComponent->UpdateMesh(meshData, 0, Ogre::VES_POSITION);
+	if(currentData.LeanAmount.X >= 0.8f)
+		probender->rigidBody->ApplyImpulse(physx::PxVec3(20.0f, 0.0f, 0.0f));
+
+	if(!IsListening())
+		printf("Data Recieved while not listening!\n");
 }
 bool created = false;
 
@@ -113,7 +134,7 @@ void ProbenderInputHandler::DiscreteGesturesAcquired(const std::vector<KinectGes
 			{
 				//printf("Grounded\n");
 			}
-			else if(discreteGestureResults[i].gestureName == L"Fire_Blast_Begin")
+			else if(discreteGestureResults[i].gestureName == L"Fire_Blast_Begin" && discreteGestureResults[i].discreteConfidence >= 0.7f)
 				if(!created && probender->GetCurrentElement() == ElementEnum::Fire)
 				{
 					AbilityManager::SharedAbilityDescriptor ability =
@@ -284,8 +305,8 @@ bool ProbenderInputHandler::keyPressed( const OIS::KeyEvent &arg )
 
 					Ogre::Vector3 camDir = probender->owningArena->GetOwningScene()->GetCamera()->getDirection();
 
-					/*((RigidBodyComponent*)attack->GetComponent(Component::RIGID_BODY_COMPONENT))->ApplyImpulse(
-						physx::PxVec3(camDir.x, camDir.y, camDir.z) * 20.0f);*/
+					((RigidBodyComponent*)attack->GetComponent(Component::RIGID_BODY_COMPONENT))->ApplyImpulse(
+						physx::PxVec3(camDir.x, camDir.y, camDir.z) * 20.0f);
 
 					probender->rightHandAttack = attack;
 				}
@@ -370,5 +391,6 @@ bool ProbenderInputHandler::mouseReleased( const OIS::MouseEvent &arg, OIS::Mous
 {
 	return true;
 }
+
 
 #pragma endregion

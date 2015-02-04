@@ -12,6 +12,7 @@ namespace physx
 	class PxRigidDynamic;
 };
 
+class MeshRenderComponent;
 class IScene;
 class Arena;
 
@@ -20,10 +21,12 @@ typedef std::shared_ptr<Projectile> SharedProjectile;
 class Probender : public GameObject
 {
 	friend class ProbenderInputHandler;
+public:
+	enum ContestantColour{INVALID, RED, BLUE, GREEN, YELLOW, PURPLE, ORANGE};
 
 private:
 	unsigned short contestantID;//The ID the contestant is stored in the arena with
-
+	ContestantColour colour;
 	ElementEnum::Element currentElement;//The current element used
 
 	ProbenderInGameData characterData;//The characters game stats
@@ -41,11 +44,15 @@ private:
 
 	Arena* owningArena;//The arena the contestant is part of
 
+	MeshRenderComponent* meshRenderComponent;
+
+	std::string GetMeshAndMaterialName();
+
 public:
 	enum InputState{Listen, Pause, Stop};
 
 	Probender();
-	Probender(const unsigned short _contestantID, Arena* _owningArena);
+	Probender(const unsigned short _contestantID, const ContestantColour colour, Arena* _owningArena);
 	~Probender(void);
 
 	///<summary>At the moment this is used to differentiate between standard Game Objects and Projectiles and Probenders</summary>
@@ -88,6 +95,15 @@ public:
 	///<param name="elementToSet">The element to set to</param>
 	virtual void SetCurrentElement(const ElementEnum::Element elementToSet);
 
-	static void CreateContestantMeshes(Ogre::SceneManager* sceneMan, bool red, bool blue);
+	///<summary>Creates the mesh for the specified colours</summary>
+	///<param name="sceneMan">The Ogre Scene Manager used to create the Manual Object with</param>
+	///<param name="red">True to create Red contestant, false if not</param>
+	///<param name="blue">True to create Blue contestant, false if not</param>
+	///<param name="green">True to create Green contestant, false if not</param>
+	///<param name="yellow">True to create Yellow contestant, false if not</param>
+	///<param name="purple">True to create Purple contestant, false if not</param>
+	///<param name="orange">True to create Orange contestant, false if not</param>
+	static void CreateContestantMeshes(Ogre::SceneManager* sceneMan, bool red, bool blue, 
+		bool green, bool yellow, bool purple, bool orange);
 };
 

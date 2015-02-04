@@ -90,7 +90,6 @@ protected:
 
 #pragma region Kinect Input
 
-	virtual void LeanChanged(const CompleteData& currentData, const CompleteData& previousData);
 	virtual void LeanTrackingStateChanged(const CompleteData& currentData, const CompleteData& previousData);
 	
 	virtual void HandTrackingStateChanged(const Hand hand, const CompleteData& currentData, const CompleteData& previousData);
@@ -113,6 +112,10 @@ protected:
 	virtual bool mouseMoved( const OIS::MouseEvent &arg );
 	virtual bool mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID id );
 	virtual bool mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id );
+
+	virtual void BodyAcquired();
+
+	virtual void BodyLost(const CompleteData& currentData, const CompleteData& previousData);
 
 #pragma endregion
 };

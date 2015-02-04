@@ -520,3 +520,9 @@ RigidBodyComponent* RigidBodyComponent::Clone(GameObject* gameObject)
 
 	return clone;
 }
+
+void RigidBodyComponent::SetKinematic(const bool kinematicOn)
+{
+	if(bodyType == DYNAMIC)
+		bodyStorage.dynamicActor->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, kinematicOn);
+}
