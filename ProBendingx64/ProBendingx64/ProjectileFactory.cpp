@@ -40,7 +40,7 @@ SharedProjectile ProjectileFactory::CreateProjectile(IScene* const scene,const E
 	case ElementEnum::Earth:
 		if(abilityID == AbilityIDs::EARTH_BOULDER)
 		{
-			newProjectile = std::make_shared<Projectile>(scene, nullptr);
+			newProjectile = std::make_shared<Projectile>(scene, "EarthBoulder", nullptr);
 			MeshRenderComponent* renderComponent = new MeshRenderComponent();
 		//	newProjectile->SetWorldPosition(-80, 0, 0);
 			
@@ -95,7 +95,7 @@ SharedProjectile ProjectileFactory::CreateProjectile(IScene* const scene,const E
 	case ElementEnum::Fire:
 		if(abilityID == AbilityIDs::FIRE_JAB)
 		{
-			newProjectile = std::make_shared<Projectile>(scene, nullptr);
+			newProjectile = std::make_shared<Projectile>(scene, "Fire Jab", nullptr);
 			std::shared_ptr<ParticlePointEmitter> emitter = std::make_shared<ParticlePointEmitter>
 				(ParticlePointEmitter(50, physx::PxVec3(0.0f, 0.0f, 0.0f), 
 				physx::PxVec3(-1.0f, -1.0f, 0.0f).getNormalized(), physx::PxVec3(1.0f, 1.0f, 0.0f).getNormalized(),

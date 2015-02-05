@@ -145,7 +145,7 @@ void ArenaBuilder::CreateProbendingPhysXData(IScene* scene)
 
 	SharedGameObject temp = std::make_shared<GameObject>(scene);
 	//Water PhysX Data
-	ShapeDefinition waterShapeDef = ShapeDefinition(false);
+	ShapeDefinition waterShapeDef = ShapeDefinition(true);
 	waterShapeDef.SetPlaneGeometry();
 	waterShapeDef.AddMaterial("050505");
 	dataMan->CreateShape(waterShapeDef, "BasicPlane");
@@ -156,7 +156,8 @@ void ArenaBuilder::CreateProbendingPhysXData(IScene* scene)
 	arenaSurfaceMesh->LoadModel("ProbendArenaSurface.mesh");
 	std::shared_ptr<MeshInfo> arenaSurfaceMeshInfo = arenaSurfaceMesh->GetMeshInfo();
 	ShapeDefinition arenaSurfaceShapeDef = ShapeDefinition(false);
-	arenaSurfaceShapeDef.SetConvexMeshGeometry(dataMan->CookConvexMesh(arenaSurfaceMeshInfo, "ArenaSurfaceMesh"));
+	arenaSurfaceShapeDef.SetConvexMeshGeometry(dataMan->CookConvexMesh(arenaSurfaceMeshInfo, "ArenaSurfaceMesh"),
+		physx::PxVec3(2.0f, 1.0f, 2.0f));
 	arenaSurfaceShapeDef.AddMaterial("101000");
 	dataMan->CreateShape(arenaSurfaceShapeDef, "ArenaSurfaceShape");
 
@@ -175,7 +176,7 @@ void ArenaBuilder::CreateProbendingPhysXData(IScene* scene)
 	arenaWallMesh->LoadModel("BasicPlane");
 	Ogre::Vector3 originalPlaneSize = arenaWallMesh->GetHalfExtents();
 
-	temp->SetScale(1.0f, 10.0f, 7.5f);
+	temp->SetScale(1.0f, 10.0f, 12.5f);
 	Ogre::Vector3 planeSize = arenaWallMesh->GetHalfExtents();
 	ShapeDefinition arenaWallShapeDef = ShapeDefinition();
 	arenaWallShapeDef.SetBoxGeometry(physx::PxVec3(0.2f, planeSize.y, planeSize.z));
@@ -189,7 +190,7 @@ void ArenaBuilder::CreateProbendingPhysXData(IScene* scene)
 	arenaWallShapeDef.AddMaterial("101000");
 	dataMan->CreateShape(arenaWallShapeDef, "ArenaWallShapeLarge");
 
-	temp->SetScale(1.0f, 10.0f, 5.0f);
+	temp->SetScale(1.0f, 10.0f, 10.0f);
 	planeSize = arenaWallMesh->GetHalfExtents();
 	arenaWallShapeDef = ShapeDefinition();
 	arenaWallShapeDef.SetBoxGeometry(physx::PxVec3(0.2f, planeSize.y, planeSize.z));
@@ -198,7 +199,7 @@ void ArenaBuilder::CreateProbendingPhysXData(IScene* scene)
 
 	MeshRenderComponent* lowerPlatformMesh = new MeshRenderComponent();
 	temp->AttachComponent(lowerPlatformMesh);
-	temp->SetScale(1.0f, 1.0f, 0.5f);
+	temp->SetScale(2.0f, 1.0f, 1.0f);
 	lowerPlatformMesh->LoadModel("ProbendLowerPlatform.mesh");	
 	ShapeDefinition lowerPlatformShape = ShapeDefinition();
 	lowerPlatformShape.SetBoxGeometry(HelperFunctions::OgreToPhysXVec3(lowerPlatformMesh->GetHalfExtents()));

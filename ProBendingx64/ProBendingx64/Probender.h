@@ -21,12 +21,13 @@ typedef std::shared_ptr<Projectile> SharedProjectile;
 class Probender : public GameObject
 {
 	friend class ProbenderInputHandler;
-public:
-	enum ContestantColour{INVALID, RED, BLUE, GREEN, YELLOW, PURPLE, ORANGE};
 
 private:
 	unsigned short contestantID;//The ID the contestant is stored in the arena with
-	ContestantColour colour;
+	
+	TeamData::ContestantColour playerColour;
+	TeamData::Team currentTeam;
+
 	ElementEnum::Element currentElement;//The current element used
 
 	ProbenderInGameData characterData;//The characters game stats
@@ -49,15 +50,23 @@ private:
 	std::string GetMeshAndMaterialName();
 
 public:
+	TeamData::Zones CurrentZone;
+	
 	enum InputState{Listen, Pause, Stop};
 
 	Probender();
-	Probender(const unsigned short _contestantID, const ContestantColour colour, Arena* _owningArena);
+	Probender(const unsigned short _contestantID, Arena* _owningArena);
 	~Probender(void);
 
 	///<summary>At the moment this is used to differentiate between standard Game Objects and Projectiles and Probenders</summary>
 	///<returns>True if serializable, false if not</returns>
 	virtual inline bool IsSerializable()const{return false;}
+
+	inline TeamData::Team GetTeam()const{return currentTeam;}
+
+	inline TeamData::ContestantColour GetColour()const {return playerColour;}
+
+	inline TeamData::Zones GetCurrentZone()const{return CurrentZone;}
 
 	///<summary>Takes the menu created data of the probender and converts it to usable in-game data</summary>
 	///<param name="data">The menu data to convert</param>
@@ -83,6 +92,8 @@ public:
 	///<param name="newState">The new state to set to</param>
 	void SetInputState(const InputState newState);
 
+	void SetKeyboardConfiguration(const ConfigurationLayout& newKeyLayout){inputHandler.keysLayout = newKeyLayout;}
+
 	///<summary>Gets the arena that the probender is currently participating in</summary>
 	///<returns>Pointer to the arena </returns>
 	inline Arena*const GetOwningArena()const{return owningArena;}
@@ -105,5 +116,8 @@ public:
 	///<param name="orange">True to create Orange contestant, false if not</param>
 	static void CreateContestantMeshes(Ogre::SceneManager* sceneMan, bool red, bool blue, 
 		bool green, bool yellow, bool purple, bool orange);
+
+	virtual void OnCollisionEnter(const CollisionReport& collision);
+
 };
 

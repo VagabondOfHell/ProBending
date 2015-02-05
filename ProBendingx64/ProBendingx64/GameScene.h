@@ -3,6 +3,7 @@
 #include "ProbenderData.h"
 #include <vector>
 #include "InputObserver.h"
+#include "CollisionReporter.h"
 
 class Arena;
 
@@ -10,6 +11,7 @@ class GameScene:public IScene, public InputObserver
 {
 protected:
 	Arena* battleArena;
+	CollisionReporter collisionReporter;
 
 public:
 

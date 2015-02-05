@@ -2,9 +2,10 @@
 #include <map>
 #include <vector>
 #include "CEGUI/widgets/PushButton.h"
+#include "GameObject.h"
 
 class IScene;
-class GameObject;
+//class GameObject;
 class Probender;
 struct ProbenderData;
 class AbilityManager;
@@ -26,12 +27,12 @@ protected:
 
 	unsigned short contestantCount;//Number of Probenders in the arena
 
-	std::map<std::string, GameObject*> staticArenaObjects;//Map of arena objects that don't move
-	std::map<std::string, GameObject*> dynamicArenaObjects;//Map of arena objects that can move
-
-	Probender* contestants;//Array of Probenders
+	std::vector<std::shared_ptr<Probender>> contestants;//Array of Probenders
 
 	CEGUI::PushButton* label;//For prototype demo
+
+	virtual void PlaceContestants();
+
 
 public:
 	Arena(IScene* _owningScene, std::string _arenaName);
@@ -55,13 +56,11 @@ public:
 	///<summary>Gets the projectile manager of the scene</summary>
 	///<returns>A pointer to the projectile manager, or NULL if not initialized yet</returns>
 	inline ProjectileManager* const GetProjectileManager()const{return projectileManager;}
-
+	
 	virtual void Initialize(const std::vector<ProbenderData> contestantData);
-
+	
 	virtual bool SavePhysXData(const std::string& fileName, const std::string& collectionName);
-
-	virtual bool LoadResources();
-
+	
 	virtual bool LoadPhysXData(const std::string& fileName, const std::string& collectionName);
 
 	virtual void Start();

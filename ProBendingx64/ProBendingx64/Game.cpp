@@ -349,7 +349,18 @@ void Game::Run()
 	std::vector<ProbenderData> contestantData;
 	ProbenderData player1Data = ProbenderData();
 	player1Data.Attributes.MainElement = ElementEnum::Element::Fire;
+	player1Data.TeamDatas.StartTeam = TeamData::BLUE_TEAM;
+	player1Data.TeamDatas.StartZone = TeamData::BLUE_ZONE_1;
+	player1Data.TeamDatas.PlayerColour = TeamData::RED;
+
+	ProbenderData player2Data = ProbenderData();
+	player2Data.Attributes.MainElement = ElementEnum::Element::Fire;
+	player2Data.TeamDatas.StartTeam = TeamData::RED_TEAM;
+	player2Data.TeamDatas.StartZone = TeamData::RED_ZONE_1;
+	player2Data.TeamDatas.PlayerColour = TeamData::BLUE;
+
 	contestantData.push_back(player1Data);
+	contestantData.push_back(player2Data);
 
 	std::shared_ptr<GameScene> gameScene(new GameScene(sceneManager, mRoot, "Probending Arena", contestantData));
 	sceneManager->FlagSceneSwitch(gameScene, true);

@@ -61,6 +61,9 @@ physx::PxSceneDesc* GameScene::GetSceneDescription(physx::PxVec3& gravity, bool 
 	sceneDescriptor->filterShader = CollisionFilterShaders::GameSceneFilterShader;
 	//use the following to pass Constant data to the shader
 	//sceneDescriptor->filterShaderData;sceneDescriptor->filterShaderSize;
+	collisionReporter = CollisionReporter();
+
+	sceneDescriptor->simulationEventCallback = &collisionReporter;
 
 	return sceneDescriptor;
 }
@@ -87,7 +90,7 @@ void GameScene::Initialize()
 
 	printf("Shape Count: %i \n", PhysXDataManager::GetSingletonPtr()->GetShapeCount());
 
-	//ArenaBuilder::CreateProbendingPhysXData(this);
+	ArenaBuilder::CreateProbendingPhysXData(this);
 	//ArenaBuilder::GenerateProbendingArena(this);
 	
 	battleArena->DeserializeArena();

@@ -16,15 +16,11 @@ Arena::Arena(IScene* _owningScene, std::string _arenaName)
 	owningScene = _owningScene;
 	resourceGroupName = arenaName + "Resources";
 	resourceGroupName.erase(std::remove_if(resourceGroupName.begin(), resourceGroupName.end(), isspace), resourceGroupName.end());
+	Probender::CreateContestantMeshes(owningScene->GetOgreSceneManager(), true, true, true, true, true, true);
 }
 
 Arena::~Arena(void)
 {
-	if(contestants)
-	{
-		delete[] contestants;
-	}
-
 	if(projectileManager)
 		delete projectileManager;
 
@@ -35,15 +31,15 @@ Arena::~Arena(void)
 void Arena::Initialize(const std::vector<ProbenderData> contestantData)
 {
 	contestantCount = (unsigned short)contestantData.size();
-	contestants = new Probender[contestantCount];
+	contestants.reserve(contestantData.size());
 	
 	ElementFlags::ElementFlag elementsToLoad = 0; 
 
 	//Loop and initialize each character
 	for (int i = 0; i < contestantCount; i++)
 	{
-		contestants[i] = Probender(i, this);
-		contestants[i].CreateInGameData(contestantData[i]);
+		contestants.push_back(std::make_shared<Probender>(i, this));
+		contestants[i]->CreateInGameData(contestantData[i]);
 
 		elementsToLoad |= ElementFlags::EnumToFlags(contestantData[i].Attributes.MainElement);
 	}
@@ -86,27 +82,6 @@ bool Arena::SavePhysXData(const std::string& fileName, const std::string& collec
 
 }
 
-bool Arena::LoadResources()
-{
-	if(loaded)
-		return true;
-
-	///   MyResouces\\arenaName\\arenaName.xml/.pbd
-	std::string filePath = "MyResources\\" + arenaName + "\\" + arenaName;
-	filePath.erase(std::remove_if(filePath.begin(), filePath.end(), isspace), filePath.end());
-
-	PhysXSerializerWrapper::CreateSerializer();
-
-	PxDataManSerializeOptions deserialOptions = PxDataManSerializeOptions(PxDataManSerializeOptions::ALL, arenaName, false, filePath);
-
-	if(PhysXDataManager::GetSingletonPtr()->DeserializeData(deserialOptions))
-		loaded = true;
-
-	PhysXSerializerWrapper::DestroySerializer();
-
-	return loaded;
-}
-
 bool Arena::LoadPhysXData(const std::string& fileName, const std::string& collectionName)
 {
 	bool success = false;
@@ -138,27 +113,124 @@ bool Arena::LoadPhysXData(const std::string& fileName, const std::string& collec
 
 void Arena::Start()
 {
-	for (int i = 0; i < contestantCount; ++i)
-	{
-		contestants[i].AttachToScene(owningScene);
-		contestants[i].SetInputState(Probender::Listen);
-	}
+	PlaceContestants();
 
 	using namespace CEGUI;
 
 	label = owningScene->GetGUIManager()->CreateGUIButton("TaharezLook/Button", "ElementDisplay", 
-		ElementEnum::EnumToString(contestants[0].GetInGameData().GetMainElement()), 
+		ElementEnum::EnumToString(contestants[0]->GetInGameData().GetMainElement()), 
 		UVector2(UDim(0.0f, 0.0f), UDim(0.0f, 0.0f)), USize(UDim(0.1f, 0.0f), UDim(0.05f, 0.0f)));
+}
+
+void Arena::PlaceContestants()
+{
+	//Find the start positions for each colours zone
+	SharedGameObject rz1Obj = owningScene->FindByName("RedZone1SP");
+	SharedGameObject rz2Obj = owningScene->FindByName("RedZone2SP");
+	SharedGameObject rz3Obj = owningScene->FindByName("RedZone3SP");
+	SharedGameObject bz1Obj = owningScene->FindByName("BlueZone1SP");
+	SharedGameObject bz2Obj = owningScene->FindByName("BlueZone2SP");
+	SharedGameObject bz3Obj = owningScene->FindByName("BlueZone3SP");
+
+	Ogre::Vector3 rightShift(0.0f, 0.0f, 1.0f);
+	Ogre::Vector3 leftShift(0.0f, 0.0f, -1.0f);
+
+	//Count of how many contestants are placed within each zone
+	int rz1, rz2, rz3;
+	int bz1, bz2, bz3;
+	rz1 = rz2 = rz3 = bz1 = bz2 = bz3 = 0;
+
+	for (int i = 0; i < contestantCount; ++i)
+	{
+		contestants[i]->Start();
+
+		//For debugging purposes
+		if(i ==1)
+			contestants[i]->SetKeyboardConfiguration(ConfigurationLayout(OIS::KC_Q));
+		//End debugging purposes
+
+		TeamData::Zones currZone = contestants[i]->GetCurrentZone();
+		TeamData::Team currTeam = contestants[i]->GetTeam();
+
+		//if invalid zone, set to first zone of corresponding team
+		if(currZone == TeamData::INVALID_ZONE)
+			currZone = currTeam == TeamData::BLUE_TEAM ? TeamData::BLUE_ZONE_1 : TeamData::RED_ZONE_1;
+
+		//Position game characters in accordance to starting zone. Shift left or right of the zones' start position
+		//based on the number of characters already assigned to that zone (allows customization of handicaps later on)
+		switch (currZone)
+		{
+		case TeamData::RED_ZONE_1:
+			if(rz1 == 0)
+				contestants[i]->SetWorldPosition(rz1Obj->GetWorldPosition());
+			else if(rz1 == 1)
+				contestants[i]->SetWorldPosition(rz1Obj->GetWorldPosition() + leftShift);
+			else if(rz1 == 2)
+				contestants[i]->SetWorldPosition(rz1Obj->GetWorldPosition() + rightShift);
+			++rz1;
+			break;
+		case TeamData::RED_ZONE_2:
+			if(rz2 == 0)
+				contestants[i]->SetWorldPosition(rz2Obj->GetWorldPosition());
+			else if(rz2 == 1)
+				contestants[i]->SetWorldPosition(rz2Obj->GetWorldPosition() + leftShift);
+			else if(rz2 == 2)
+				contestants[i]->SetWorldPosition(rz2Obj->GetWorldPosition() + rightShift);
+			++rz2;
+			break;
+		case TeamData::RED_ZONE_3:
+			if(rz3 == 0)
+				contestants[i]->SetWorldPosition(rz3Obj->GetWorldPosition());
+			else if(rz3 == 1)
+				contestants[i]->SetWorldPosition(rz3Obj->GetWorldPosition() + leftShift);
+			else if(rz3 == 2)
+				contestants[i]->SetWorldPosition(rz3Obj->GetWorldPosition() + rightShift);
+			++rz3;
+			break;
+		case TeamData::BLUE_ZONE_1:
+			if(bz1 == 0)
+				contestants[i]->SetWorldPosition(bz1Obj->GetWorldPosition());
+			else if(bz1 == 1)
+				contestants[i]->SetWorldPosition(bz1Obj->GetWorldPosition() + leftShift);
+			else if(bz1 == 2)
+				contestants[i]->SetWorldPosition(bz1Obj->GetWorldPosition() + rightShift);
+			++bz1;
+			break;
+		case TeamData::BLUE_ZONE_2:
+			if(bz2 == 0)
+				contestants[i]->SetWorldPosition(bz2Obj->GetWorldPosition());
+			else if(bz2 == 1)
+				contestants[i]->SetWorldPosition(bz2Obj->GetWorldPosition() + leftShift);
+			else if(bz2 == 2)
+				contestants[i]->SetWorldPosition(bz2Obj->GetWorldPosition() + rightShift);
+			++bz2;
+			break;
+		case TeamData::BLUE_ZONE_3:
+			if(bz3 == 0)
+				contestants[i]->SetWorldPosition(bz3Obj->GetWorldPosition());
+			else if(bz3 == 1)
+				contestants[i]->SetWorldPosition(bz3Obj->GetWorldPosition() + leftShift);
+			else if(bz3 == 2)
+				contestants[i]->SetWorldPosition(bz3Obj->GetWorldPosition() + rightShift);
+			++bz3;
+			break;
+		}
+
+		contestants[i]->SetWorldOrientation(Ogre::Quaternion(Ogre::Radian(Ogre::Degree(-90.0f)), Ogre::Vector3::UNIT_Y));
+		
+		owningScene->AddGameObject(contestants[i]);
+	}
+
 }
 
 bool Arena::Update(const float gameTime)
 {
 	for (int i = 0; i < contestantCount; i++)
 	{
-		contestants[i].Update(gameTime);
+		contestants[i]->Update(gameTime);
 	}
 
-	label->setText(ElementEnum::EnumToString(contestants[0].GetCurrentElement()));
+	label->setText(ElementEnum::EnumToString(contestants[0]->GetCurrentElement()));
 
 	//Update the projectile manager
 	projectileManager->Update(gameTime);

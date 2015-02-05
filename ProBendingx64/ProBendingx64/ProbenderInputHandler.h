@@ -6,6 +6,19 @@
 
 class Probender;
 
+struct ConfigurationLayout
+{
+	typedef unsigned int KeyboardKey;
+
+	KeyboardKey AttackButton;
+
+	ConfigurationLayout(KeyboardKey attackButton = OIS::KC_SPACE)
+		:AttackButton(attackButton)
+	{
+
+	}
+};
+
 class ProbenderInputHandler :
 	public KinectBodyListener, public InputObserver, public KinectAudioListener
 {
@@ -17,9 +30,13 @@ private:
 	ProbenderStances currentStance;
 
 public:
+	ConfigurationLayout keysLayout;
+
 	bool ManageStance; //True to allow the input handler to set Stances based on foot position. False to require input on stances
 
-	ProbenderInputHandler(Probender* _probenderToHandle = NULL, bool manageStance = true);
+	ProbenderInputHandler(Probender* _probenderToHandle = NULL, bool manageStance = true,
+		ConfigurationLayout keyLayout = ConfigurationLayout());
+
 	virtual ~ProbenderInputHandler(void);
 
 	void SetProbenderToHandle(Probender* _probenderToHandle);

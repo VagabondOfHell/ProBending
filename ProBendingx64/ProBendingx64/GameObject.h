@@ -6,6 +6,9 @@
 
 #include "Component.h"
 
+#include "PxSimulationEventCallback.h"
+
+#include <vector>
 #include <memory>
 
 namespace physx
@@ -19,6 +22,15 @@ class IScene;
 
 typedef std::shared_ptr<GameObject> SharedGameObject;
 class RigidBodyComponent;
+
+
+struct CollisionReport
+{
+	GameObject* Collider;
+
+	std::vector<physx::PxContactPairPoint> ContactPoints;
+
+};
 
 class GameObject
 {
@@ -34,7 +46,7 @@ protected:
 	RigidBodyComponent* rigidBody;
 
 	bool started;
-
+	
 public:
 
 	Ogre::SceneNode* gameObjectNode;//The node representing the game object
@@ -137,4 +149,14 @@ public:
 	}
 
 	SharedGameObject Clone();
+
+	virtual void OnCollisionEnter(const CollisionReport& collision){}
+
+	virtual void OnCollisionStay(const CollisionReport& collision){}
+
+	virtual void OnCollisionLeave(const CollisionReport& collision){}
+
+	virtual void OnTriggerEnter(GameObject* trigger, GameObject* other){}
+	
+	virtual void OnTriggerLeave(GameObject* trigger, GameObject* other){}
 };

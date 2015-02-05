@@ -22,13 +22,15 @@
 #include "OgreHardwareBufferManager.h"
 
 Probender::Probender()
-	: GameObject(NULL), leftHandAttack(NULL), rightHandAttack(NULL), currentTarget(NULL)
+	: GameObject(NULL), leftHandAttack(NULL), rightHandAttack(NULL), currentTarget(NULL), 
+		CurrentZone(TeamData::INVALID_ZONE), currentTeam(TeamData::INVALID_TEAM)
 {
 }
 
-Probender::Probender(const unsigned short _contestantID, const ContestantColour _colour, Arena* _owningArena)
+Probender::Probender(const unsigned short _contestantID, Arena* _owningArena)
 	: GameObject(_owningArena->GetOwningScene(), "Probender" + _contestantID), contestantID(_contestantID), owningArena(_owningArena), 
-		leftHandAttack(NULL), rightHandAttack(NULL), currentTarget(NULL), colour(_colour)
+		leftHandAttack(NULL), rightHandAttack(NULL), currentTarget(NULL), playerColour(TeamData::INVALID_COLOUR), 
+		CurrentZone(TeamData::INVALID_ZONE), currentTeam(TeamData::Team::INVALID_TEAM)
 {
 	
 }
@@ -85,6 +87,10 @@ void Probender::AcquireNewTarget(bool toRight)
 
 void Probender::CreateInGameData(const ProbenderData& data)
 {
+	currentTeam = data.TeamDatas.StartTeam;
+	CurrentZone = data.TeamDatas.StartZone;
+	playerColour = data.TeamDatas.PlayerColour;
+
 	characterData.ElementAbilities.Element = data.Attributes.MainElement;
 	characterData.SubelementAbilities.Element = data.Attributes.SubElement;
 
@@ -320,33 +326,40 @@ void Probender::CreateContestantMeshes(Ogre::SceneManager* sceneMan, bool red,
 
 std::string Probender::GetMeshAndMaterialName()
 {
-	switch (colour)
+	switch (playerColour)
 	{
-	case BLUE:
+	case TeamData::BLUE:
 		return "BlueProbender";
 		break;
 
-	case GREEN:
+	case TeamData::GREEN:
 		return "GreenProbender";
 		break;
 
-	case ORANGE:
+	case TeamData::ORANGE:
 		return "OrangeProbender";
 		break;
 
-	case PURPLE:
+	case TeamData::PURPLE:
 		return "PurpleProbender";
 		break;
 
-	case RED:
+	case TeamData::RED:
 		return "RedProbender";
 		break;
 
-	case YELLOW:
+	case TeamData::YELLOW:
 		return "YellowProbender";
 		break;
 	default:
 		return "";
 		break;
 	}
+}
+
+void Probender::OnCollisionEnter(const CollisionReport& collision)
+{
+	std::string message = "Collision Entered with: " + collision.Collider->GetName() + "\n";
+
+	printf(message.c_str());
 }

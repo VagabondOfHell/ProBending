@@ -95,6 +95,23 @@ struct EquipmentData
 	
 };
 
+struct TeamData
+{
+	enum Team{INVALID_TEAM, RED_TEAM, BLUE_TEAM};
+	enum Zones{INVALID_ZONE, RED_ZONE_1, RED_ZONE_2, RED_ZONE_3, BLUE_ZONE_1, BLUE_ZONE_2, BLUE_ZONE_3};
+	enum ContestantColour{INVALID_COLOUR, RED, BLUE, GREEN, YELLOW, PURPLE, ORANGE};
+
+	Team StartTeam;
+	Zones StartZone;
+	ContestantColour PlayerColour;
+
+	TeamData(Team _team = INVALID_TEAM, Zones _zone = INVALID_ZONE, ContestantColour _colour = INVALID_COLOUR)
+		:StartTeam(_team), StartZone(_zone), PlayerColour(_colour)
+	{
+
+	}
+};
+
 struct ProbenderData
 {
 	CharacterAttributes Attributes;
@@ -102,13 +119,14 @@ struct ProbenderData
 	GeneralSkills Skills;
 	AbilityPoints Abilities;
 	EquipmentData Equipment;
+	TeamData TeamDatas;
 
 	ProbenderData(CharacterAttributes attributes = CharacterAttributes(), 
 		StatusEffectModifiers statusModifiers = StatusEffectModifiers(),
 		GeneralSkills generalSkills = GeneralSkills(), AbilityPoints abilityPoints = AbilityPoints(),
-		EquipmentData equipment = EquipmentData())
+		EquipmentData equipment = EquipmentData(), TeamData _teamData = TeamData())
 		: Attributes(attributes), StatusModifiers(statusModifiers), Skills(generalSkills), Abilities(abilityPoints),
-		Equipment(equipment)
+		Equipment(equipment), TeamDatas(_teamData)
 	{	}
 	
 };

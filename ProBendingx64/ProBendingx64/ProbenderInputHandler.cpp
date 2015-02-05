@@ -15,7 +15,9 @@
 #include "PxRigidDynamic.h"
 #include "foundation/PxVec2.h"
 
-ProbenderInputHandler::ProbenderInputHandler(Probender* _probenderToHandle, bool manageStance)
+ProbenderInputHandler::ProbenderInputHandler(Probender* _probenderToHandle, bool manageStance, 
+					ConfigurationLayout keyLayout/* = ConfigurationLayout()*/)
+					:keysLayout(keyLayout)
 {
 	probender = _probenderToHandle;
 	ManageStance = manageStance;
@@ -271,7 +273,7 @@ bool ProbenderInputHandler::keyPressed( const OIS::KeyEvent &arg )
 				rigidBody->ApplyForce(physx::PxVec3(100.0f, 0.0f, 0.0f));
 		}
 	}
-	else if(arg.key == OIS::KC_SPACE)
+	else if(arg.key == keysLayout.AttackButton)
 	{
 		if(probender->GetCurrentElement() == ElementEnum::Fire)
 		{
