@@ -252,6 +252,20 @@ bool ProbenderInputHandler::keyPressed( const OIS::KeyEvent &arg )
 			if(rigidBody)
 				rigidBody->ApplyForce(physx::PxVec3(0.0f, 0.0f, -1000.0f));
 		}
+		else
+		{
+			Ogre::Vector3 newPos = probender->GetWorldPosition();
+			newPos.x += 1;
+			probender->rigidBody->SetPosition(HelperFunctions::OgreToPhysXVec3(newPos));
+			printf("New Position: %f, %f, %f\n", newPos.x, newPos.y, newPos.z);
+		}
+	}
+	else if(arg.key == OIS::KC_DOWN)
+	{
+		Ogre::Vector3 newPos = probender->GetWorldPosition();
+		newPos.x -= 1;
+		probender->rigidBody->SetPosition(HelperFunctions::OgreToPhysXVec3(newPos));
+		printf("New Position: %f, %f, %f\n", newPos.x, newPos.y, newPos.z);
 	}
 	else if(arg.key == OIS::KC_LEFT)
 	{
@@ -261,6 +275,13 @@ bool ProbenderInputHandler::keyPressed( const OIS::KeyEvent &arg )
 			Ogre::Vector3 currPos = probender->rightHandAttack->GetWorldPosition();
 			if(rigidBody)
 				rigidBody->ApplyForce(physx::PxVec3(-100.0f, 0.0f, 0.0f));
+		}
+		else
+		{
+			Ogre::Vector3 newPos = probender->GetWorldPosition();
+			newPos.z -= 1;
+			probender->rigidBody->SetPosition(HelperFunctions::OgreToPhysXVec3(newPos));
+			printf("New Position: %f, %f, %f\n", newPos.x, newPos.y, newPos.z);
 		}
 	}
 	else if(arg.key == OIS::KC_RIGHT)
@@ -272,6 +293,17 @@ bool ProbenderInputHandler::keyPressed( const OIS::KeyEvent &arg )
 			if(rigidBody)
 				rigidBody->ApplyForce(physx::PxVec3(100.0f, 0.0f, 0.0f));
 		}
+		else
+		{
+			Ogre::Vector3 newPos = probender->GetWorldPosition();
+			newPos.z += 1;
+			probender->rigidBody->SetPosition(HelperFunctions::OgreToPhysXVec3(newPos));
+			printf("New Position: %f, %f, %f\n", newPos.x, newPos.y, newPos.z);
+		}
+	}
+	else if(arg.key == keysLayout.JumpButton)
+	{
+		probender->Jump();
 	}
 	else if(arg.key == keysLayout.AttackButton)
 	{

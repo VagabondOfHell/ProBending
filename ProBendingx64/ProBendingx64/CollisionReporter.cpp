@@ -32,6 +32,10 @@ void CollisionReporter::onSleep(PxActor** actors, PxU32 count)
 
 void CollisionReporter::onContact(const PxContactPairHeader& pairHeader, const PxContactPair* pairs, PxU32 nbPairs)
 {
+
+	/*const PxU32 bufferSize = 64;
+	PxContactPairPoint contacts[bufferSize];*/
+
 	for(PxU32 i=0; i < nbPairs; i++)
 	{
 		const PxContactPair& cp = pairs[i];
@@ -46,15 +50,12 @@ void CollisionReporter::onContact(const PxContactPairHeader& pairHeader, const P
 			otherActor = static_cast<GameObject*>(pairHeader.actors[1]->userData);
 
 		CollisionReport report;
-
-		if(cp.contactCount > 0)
+		/*PxU32 nbContacts = pairs[i].extractContacts(contacts, bufferSize);
+		for(PxU32 j=0; j < nbContacts; j++)
 		{
-			report.ContactPoints.resize(cp.contactCount);
-			physx::PxU32 numWritten = cp.extractContacts(&report.ContactPoints[0], cp.contactCount);
-			if(numWritten < report.ContactPoints.size())
-				report.ContactPoints.resize(numWritten);
+			report.ContactPoints.push_back(contacts[j]);
 		}
-
+*/
 		if(cp.events & PxPairFlag::eNOTIFY_TOUCH_FOUND)
 		{
 			if(thisActor)

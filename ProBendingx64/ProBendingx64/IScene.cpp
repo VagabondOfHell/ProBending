@@ -190,3 +190,24 @@ void IScene::DestroyResources(const std::string& _resourceGroupName)
 	if(!_resourceGroupName.empty())
 		Ogre::ResourceGroupManager::getSingleton().destroyResourceGroup(_resourceGroupName);
 }
+
+std::vector<SharedGameObject> IScene::FindAllByName(const std::string& nameToFind)
+{
+	std::vector<SharedGameObject> results = std::vector<SharedGameObject>();
+	//lambda that grabs the name of the game object and compares its identical
+	std::copy_if(gameObjectList.begin(), gameObjectList.end(),  back_inserter(results), 
+		[nameToFind](SharedGameObject lhs) { return lhs->GetName() == nameToFind; });
+
+	return results;
+}
+
+SharedGameObject IScene::FindByName(const std::string& nameToFind)
+{
+	auto result = std::find_if(gameObjectList.begin(), gameObjectList.end(), 
+		[nameToFind](SharedGameObject lhs){return lhs->GetName() == nameToFind;});
+
+	if(result != gameObjectList.end())
+		return *result;
+	else
+		return NULL;
+}

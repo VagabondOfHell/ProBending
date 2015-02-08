@@ -25,8 +25,10 @@ class Probender : public GameObject
 private:
 	unsigned short contestantID;//The ID the contestant is stored in the arena with
 	
+	static const physx::PxVec3 HALF_EXTENTS;
+
 	TeamData::ContestantColour playerColour;
-	TeamData::Team currentTeam;
+	ArenaData::Team currentTeam;
 
 	ElementEnum::Element currentElement;//The current element used
 
@@ -38,19 +40,22 @@ private:
 
 	SharedProjectile leftHandAttack;//The projectile in the left hand
 	SharedProjectile rightHandAttack;//The projectile in the right hand
-
-	ProbenderStateManager stateManager;//The state manager for probenders
-
+	
 	Probender* currentTarget;//The probender currently targeted by this player
 
 	Arena* owningArena;//The arena the contestant is part of
 
 	MeshRenderComponent* meshRenderComponent;
 
+	Ogre::Vector3 jumpOrigin;
+
 	std::string GetMeshAndMaterialName();
 
+	void HandleJump();
+
 public:
-	TeamData::Zones CurrentZone;
+	ArenaData::Zones CurrentZone;
+	ProbenderStateManager stateManager;//The state manager for probenders
 	
 	enum InputState{Listen, Pause, Stop};
 
@@ -62,11 +67,11 @@ public:
 	///<returns>True if serializable, false if not</returns>
 	virtual inline bool IsSerializable()const{return false;}
 
-	inline TeamData::Team GetTeam()const{return currentTeam;}
+	inline ArenaData::Team GetTeam()const{return currentTeam;}
 
 	inline TeamData::ContestantColour GetColour()const {return playerColour;}
 
-	inline TeamData::Zones GetCurrentZone()const{return CurrentZone;}
+	inline ArenaData::Zones GetCurrentZone()const{return CurrentZone;}
 
 	///<summary>Takes the menu created data of the probender and converts it to usable in-game data</summary>
 	///<param name="data">The menu data to convert</param>
@@ -117,7 +122,17 @@ public:
 	static void CreateContestantMeshes(Ogre::SceneManager* sceneMan, bool red, bool blue, 
 		bool green, bool yellow, bool purple, bool orange);
 
+	void StateExitted(StateFlags::PossibleStates exittedState);
+
+	void StateEntered(StateFlags::PossibleStates enteredState);
+
+	void Jump();
+	
+	void HandleFall();
+
 	virtual void OnCollisionEnter(const CollisionReport& collision);
+
+	virtual void OnCollisionLeave(const CollisionReport& collision);
 
 };
 

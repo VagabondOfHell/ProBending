@@ -1,4 +1,5 @@
 #pragma once
+#include "ArenaData.h"
 #include "PassiveAbility.h"
 #include "StatusEffectModifiers.h"
 #include <array>
@@ -97,15 +98,14 @@ struct EquipmentData
 
 struct TeamData
 {
-	enum Team{INVALID_TEAM, RED_TEAM, BLUE_TEAM};
-	enum Zones{INVALID_ZONE, RED_ZONE_1, RED_ZONE_2, RED_ZONE_3, BLUE_ZONE_1, BLUE_ZONE_2, BLUE_ZONE_3};
 	enum ContestantColour{INVALID_COLOUR, RED, BLUE, GREEN, YELLOW, PURPLE, ORANGE};
 
-	Team StartTeam;
-	Zones StartZone;
+	ArenaData::Team StartTeam;
+	ArenaData::Zones StartZone;
 	ContestantColour PlayerColour;
 
-	TeamData(Team _team = INVALID_TEAM, Zones _zone = INVALID_ZONE, ContestantColour _colour = INVALID_COLOUR)
+	TeamData(ArenaData::Team _team = ArenaData::INVALID_TEAM, 
+		ArenaData::Zones _zone = ArenaData::INVALID_ZONE, ContestantColour _colour = INVALID_COLOUR)
 		:StartTeam(_team), StartZone(_zone), PlayerColour(_colour)
 	{
 

@@ -11,9 +11,10 @@ struct ConfigurationLayout
 	typedef unsigned int KeyboardKey;
 
 	KeyboardKey AttackButton;
+	KeyboardKey JumpButton;
 
-	ConfigurationLayout(KeyboardKey attackButton = OIS::KC_SPACE)
-		:AttackButton(attackButton)
+	ConfigurationLayout(KeyboardKey attackButton = OIS::KC_SPACE, KeyboardKey jumpButton = OIS::KC_J)
+		:AttackButton(attackButton), JumpButton(jumpButton)
 	{
 
 	}
@@ -28,7 +29,7 @@ public:
 private:
 	Probender* probender;
 	ProbenderStances currentStance;
-
+	
 public:
 	ConfigurationLayout keysLayout;
 

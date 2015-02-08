@@ -158,6 +158,16 @@ public:
 	///<returns>String representing the name of the scene, or empty string if none assigned</returns>
 	std::string GetSceneName()const;
 	
+	///<summary>Finds all game objects by the specified name and returns it in a vector</summary>
+	///<param name="nameToFind">The name to find</param>
+	///<returns>Vector representing game objects of the specified name. Size of 0 if not found</returns>
+	std::vector<SharedGameObject> FindAllByName(const std::string& nameToFind);
+
+	///<summary>Finds the first instance of the specified name</summary>
+	///<param name="nameToFind">Name of the object to find</param>
+	///<returns>The object, or NULL if not found</returns>
+	SharedGameObject FindByName(const std::string& nameToFind);
+
 	///<summary>Checks if this scene is utilizing physx for physics</summary>
 	///<returns>True if physx has been initialized, false if not</returns>
 	inline const bool IsUsingPhysX()const{return physxEnabled;}

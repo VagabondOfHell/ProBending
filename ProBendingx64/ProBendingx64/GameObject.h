@@ -38,7 +38,7 @@ class GameObject
 
 protected:
 	std::string name;
-
+	
 	IScene* owningScene;
 	
 	std::unordered_set<SharedGameObject> children;
@@ -48,6 +48,7 @@ protected:
 	bool started;
 	
 public:
+	std::string tag;
 
 	Ogre::SceneNode* gameObjectNode;//The node representing the game object
 

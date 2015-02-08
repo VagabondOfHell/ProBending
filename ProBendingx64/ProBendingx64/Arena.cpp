@@ -146,21 +146,21 @@ void Arena::PlaceContestants()
 
 		//For debugging purposes
 		if(i ==1)
-			contestants[i]->SetKeyboardConfiguration(ConfigurationLayout(OIS::KC_Q));
+			contestants[i]->SetKeyboardConfiguration(ConfigurationLayout(OIS::KC_Q, OIS::KC_TAB));
 		//End debugging purposes
 
-		TeamData::Zones currZone = contestants[i]->GetCurrentZone();
-		TeamData::Team currTeam = contestants[i]->GetTeam();
+		ArenaData::Zones currZone = contestants[i]->GetCurrentZone();
+		ArenaData::Team currTeam = contestants[i]->GetTeam();
 
 		//if invalid zone, set to first zone of corresponding team
-		if(currZone == TeamData::INVALID_ZONE)
-			currZone = currTeam == TeamData::BLUE_TEAM ? TeamData::BLUE_ZONE_1 : TeamData::RED_ZONE_1;
+		if(currZone == ArenaData::INVALID_ZONE)
+			currZone = currTeam == ArenaData::BLUE_TEAM ? ArenaData::BLUE_ZONE_1 : ArenaData::RED_ZONE_1;
 
 		//Position game characters in accordance to starting zone. Shift left or right of the zones' start position
 		//based on the number of characters already assigned to that zone (allows customization of handicaps later on)
 		switch (currZone)
 		{
-		case TeamData::RED_ZONE_1:
+		case ArenaData::RED_ZONE_1:
 			if(rz1 == 0)
 				contestants[i]->SetWorldPosition(rz1Obj->GetWorldPosition());
 			else if(rz1 == 1)
@@ -169,7 +169,7 @@ void Arena::PlaceContestants()
 				contestants[i]->SetWorldPosition(rz1Obj->GetWorldPosition() + rightShift);
 			++rz1;
 			break;
-		case TeamData::RED_ZONE_2:
+		case ArenaData::RED_ZONE_2:
 			if(rz2 == 0)
 				contestants[i]->SetWorldPosition(rz2Obj->GetWorldPosition());
 			else if(rz2 == 1)
@@ -178,7 +178,7 @@ void Arena::PlaceContestants()
 				contestants[i]->SetWorldPosition(rz2Obj->GetWorldPosition() + rightShift);
 			++rz2;
 			break;
-		case TeamData::RED_ZONE_3:
+		case ArenaData::RED_ZONE_3:
 			if(rz3 == 0)
 				contestants[i]->SetWorldPosition(rz3Obj->GetWorldPosition());
 			else if(rz3 == 1)
@@ -187,7 +187,7 @@ void Arena::PlaceContestants()
 				contestants[i]->SetWorldPosition(rz3Obj->GetWorldPosition() + rightShift);
 			++rz3;
 			break;
-		case TeamData::BLUE_ZONE_1:
+		case ArenaData::BLUE_ZONE_1:
 			if(bz1 == 0)
 				contestants[i]->SetWorldPosition(bz1Obj->GetWorldPosition());
 			else if(bz1 == 1)
@@ -196,7 +196,7 @@ void Arena::PlaceContestants()
 				contestants[i]->SetWorldPosition(bz1Obj->GetWorldPosition() + rightShift);
 			++bz1;
 			break;
-		case TeamData::BLUE_ZONE_2:
+		case ArenaData::BLUE_ZONE_2:
 			if(bz2 == 0)
 				contestants[i]->SetWorldPosition(bz2Obj->GetWorldPosition());
 			else if(bz2 == 1)
@@ -205,7 +205,7 @@ void Arena::PlaceContestants()
 				contestants[i]->SetWorldPosition(bz2Obj->GetWorldPosition() + rightShift);
 			++bz2;
 			break;
-		case TeamData::BLUE_ZONE_3:
+		case ArenaData::BLUE_ZONE_3:
 			if(bz3 == 0)
 				contestants[i]->SetWorldPosition(bz3Obj->GetWorldPosition());
 			else if(bz3 == 1)
@@ -225,6 +225,7 @@ void Arena::PlaceContestants()
 
 bool Arena::Update(const float gameTime)
 {
+
 	for (int i = 0; i < contestantCount; i++)
 	{
 		contestants[i]->Update(gameTime);
@@ -306,3 +307,4 @@ bool Arena::DeserializeArena()
 	PhysXSerializerWrapper::DestroySerializer();
 	return success;
 }
+

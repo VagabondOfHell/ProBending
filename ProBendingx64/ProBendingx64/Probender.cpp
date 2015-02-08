@@ -6,6 +6,7 @@
 #include "Arena.h"
 #include "MeshRenderComponent.h"
 #include "RigidBodyComponent.h"
+#include "TagsAndLayersManager.h"
 
 #include "PxScene.h"
 #include "PxRigidDynamic.h"
@@ -21,18 +22,20 @@
 #include "OgreMeshManager.h"
 #include "OgreHardwareBufferManager.h"
 
+const physx::PxVec3 Probender::HALF_EXTENTS = physx::PxVec3(0.250f, 0.60f, 0.050f);
+
 Probender::Probender()
 	: GameObject(NULL), leftHandAttack(NULL), rightHandAttack(NULL), currentTarget(NULL), 
-		CurrentZone(TeamData::INVALID_ZONE), currentTeam(TeamData::INVALID_TEAM)
+		CurrentZone(ArenaData::INVALID_ZONE), currentTeam(ArenaData::INVALID_TEAM)
 {
 }
 
 Probender::Probender(const unsigned short _contestantID, Arena* _owningArena)
 	: GameObject(_owningArena->GetOwningScene(), "Probender" + _contestantID), contestantID(_contestantID), owningArena(_owningArena), 
 		leftHandAttack(NULL), rightHandAttack(NULL), currentTarget(NULL), playerColour(TeamData::INVALID_COLOUR), 
-		CurrentZone(TeamData::INVALID_ZONE), currentTeam(TeamData::Team::INVALID_TEAM)
+		CurrentZone(ArenaData::INVALID_ZONE), currentTeam(ArenaData::Team::INVALID_TEAM)
 {
-	
+	tag = TagsAndLayersManager::ContestantTag;
 }
 
 Probender::~Probender(void)
@@ -61,15 +64,18 @@ void Probender::Start()
 	rigid->CreateRigidBody(RigidBodyComponent::DYNAMIC);
 
 	ShapeDefinition shapeDef = ShapeDefinition();
-	shapeDef.SetBoxGeometry(physx::PxVec3(0.250f, 0.60f, 0.050f));
+	shapeDef.SetBoxGeometry(HALF_EXTENTS);
 	shapeDef.AddMaterial("101000");
 	PhysXDataManager::GetSingletonPtr()->CreateShape(shapeDef, "ProbenderShape");
 	rigid->AttachShape("ProbenderShape");
-	rigid->SetKinematic(true);
+	rigid->CalculateCenterOfMass(1000.0f);
+	rigid->FreezeAllRotation();
 
 	rigid->CreateDebugDraw();
 	
 	GameObject::Start();
+
+	stateManager = ProbenderStateManager(this);
 }
 
 void Probender::Update(float gameTime)
@@ -78,6 +84,34 @@ void Probender::Update(float gameTime)
 
 	inputHandler.Update(gameTime);
 	stateManager.Update(gameTime);	
+
+	StateFlags::PossibleStates ps = stateManager.GetCurrentState();
+
+	switch (stateManager.GetCurrentState())
+	{
+	case StateFlags::IDLE_STATE:
+		break;
+	case StateFlags::JUMP_STATE:
+		HandleJump();
+		break;
+	case StateFlags::FALLING_STATE:
+		HandleFall();
+		break;
+	case StateFlags::BLOCK_STATE:
+		break;
+	case StateFlags::CATCH_STATE:
+		break;
+	case StateFlags::HEAL_STATE:
+		break;
+	case StateFlags::DODGE_STATE:
+		break;
+	case StateFlags::REELING_STATE:
+		break;
+	case StateFlags::COUNT:
+		break;
+	default:
+		break;
+	}
 }
 
 void Probender::AcquireNewTarget(bool toRight)
@@ -362,4 +396,56 @@ void Probender::OnCollisionEnter(const CollisionReport& collision)
 	std::string message = "Collision Entered with: " + collision.Collider->GetName() + "\n";
 
 	printf(message.c_str());
+
+	if(collision.Collider->tag == TagsAndLayersManager::GroundTag)
+	{
+		stateManager.SetOnGround(true);
+	}
+	else if(collision.Collider->tag == TagsAndLayersManager::ProjectileTag)
+	{
+		//Change to use knockback resistance instead of 1.0f
+		stateManager.SetState(StateFlags::REELING_STATE, 1.0f);
+	}
+}
+
+void Probender::OnCollisionLeave(const CollisionReport& collision)
+{
+	std::string message = "Collision Leave with: " + collision.Collider->GetName() + "\n";
+
+	printf(message.c_str());
+
+	if(collision.Collider->tag == TagsAndLayersManager::GroundTag)
+	{
+		stateManager.SetOnGround(false);
+	}
+}
+
+void Probender::StateExitted(StateFlags::PossibleStates exittedState)
+{
+
+}
+
+void Probender::StateEntered(StateFlags::PossibleStates enteredState)
+{
+	if(enteredState == StateFlags::JUMP_STATE)
+	{
+		jumpOrigin = GetWorldPosition();
+		rigidBody->ApplyImpulse(physx::PxVec3(0.0f, 5000.0f, 0.0f));
+	}
+}
+
+void Probender::HandleJump()
+{
+	if(rigidBody->GetVelocity().y < 0.0f)
+		stateManager.SetState(StateFlags::FALLING_STATE, 0.0f);
+}
+
+void Probender::HandleFall()
+{
+	//rigidBody->SetKinematicTarget(HelperFunctions::OgreToPhysXVec3(GetWorldPosition()) + physx::PxVec3(0, -0.05f, 0.0f));
+}
+
+void Probender::Jump()
+{
+	stateManager.SetState(StateFlags::JUMP_STATE, 0.0f);
 }

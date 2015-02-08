@@ -31,7 +31,7 @@ private:
 	std::string pxDataRefCollection;
 
 	const std::string ActorCollection;
-	const std::string GameObjectNode, ObjectName;
+	const std::string GameObjectNode, ObjectName, ObjectTag;
 	const std::string Position, Rotation, Scale, X, Y, Z, W;
 	const std::string MeshRenderComponen, RigidBodyComponen, ParticleComponen, Enabled;
 	const std::string EntityName, SubentityMaterial, Subentity, SubentityID, ParticleSpace;

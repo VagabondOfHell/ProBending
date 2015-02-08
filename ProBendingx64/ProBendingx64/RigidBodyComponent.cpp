@@ -5,6 +5,7 @@
 
 #include <stdexcept>
 #include "PxPhysics.h"
+#include "extensions/PxRigidBodyExt.h"
 #include "PxRigidStatic.h"
 #include "PxRigidDynamic.h"
 #include "PxScene.h"
@@ -22,6 +23,9 @@ using namespace physx;
 RigidBodyComponent::RigidBodyComponent()
 	:Component(), bodyType(NONE)
 {
+	forces = PxVec3(0.0f);
+	velocity = PxVec3(0.0f);
+
 	bodyStorage.staticActor = NULL; //set one of the union to NULL to reset whole structure
 }
 
@@ -60,9 +64,12 @@ bool RigidBodyComponent::CreateRigidBody(RigidBodyType _bodyType, physx::PxVec3&
 		break;
 	case RigidBodyComponent::STATIC:
 		bodyStorage.staticActor = PxGetPhysics().createRigidStatic(PxTransform(position, orientation));
+		bodyStorage.staticActor->userData = owningGameObject;
 		break;
 	case RigidBodyComponent::DYNAMIC:
 		bodyStorage.dynamicActor = PxGetPhysics().createRigidDynamic(PxTransform(position, orientation));
+		bodyStorage.dynamicActor->userData = owningGameObject;
+		bodyStorage.dynamicActor->setContactReportThreshold(0.0f);
 		break;
 	default:
 		break;
@@ -127,6 +134,14 @@ bool RigidBodyComponent::CreateAndAttachNewShape(const ShapeDefinition& shapeDef
 	return shape != NULL;
 }
 
+bool RigidBodyComponent::CalculateCenterOfMass(const float bodyMass, const physx::PxVec3 centerOfMass/* = physx::PxVec3(0.0f)*/)
+{
+	if(bodyType != DYNAMIC)
+		return false;
+	
+	return physx::PxRigidBodyExt::setMassAndUpdateInertia(*bodyStorage.dynamicActor, bodyMass, &centerOfMass, true);
+}
+
 void RigidBodyComponent::SetUseGravity(const bool val)
 {
 	switch (bodyType)
@@ -155,6 +170,37 @@ void RigidBodyComponent::ApplyForce(physx::PxVec3& force)
 {
 	if(bodyType == DYNAMIC)
 		bodyStorage.dynamicActor->addForce(force, physx::PxForceMode::eFORCE);
+}
+
+void RigidBodyComponent::ApplyTorqueForce(physx::PxVec3& force)
+{
+	if(bodyType == DYNAMIC)
+		bodyStorage.dynamicActor->addTorque(force, physx::PxForceMode::eFORCE);
+}
+
+void RigidBodyComponent::ApplyTorqueImpulse(physx::PxVec3& impulse)
+{
+	if(bodyType == DYNAMIC)
+		bodyStorage.dynamicActor->addTorque(impulse, physx::PxForceMode::eIMPULSE);
+}
+
+bool RigidBodyComponent::IsKinematic()
+{
+	return bodyStorage.dynamicActor->getRigidBodyFlags().isSet(PxRigidBodyFlag::eKINEMATIC);
+}
+
+physx::PxVec3 RigidBodyComponent::GetMassSpaceInertiaTensor() const
+{
+	if(bodyType == DYNAMIC)
+		return bodyStorage.dynamicActor->getMassSpaceInertiaTensor();
+
+	return physx::PxVec3(0.0f);
+}
+
+void RigidBodyComponent::SetMassSpaceInertiaTensor(const physx::PxVec3& diagonal)
+{
+	if(bodyType == DYNAMIC)
+		bodyStorage.dynamicActor->setMassSpaceInertiaTensor(diagonal);
 }
 
 void RigidBodyComponent::SetPosition(physx::PxVec3& position)
@@ -328,6 +374,19 @@ void RigidBodyComponent::Update(float gameTime)
 	if(bodyType == DYNAMIC)
 	{
 		PxTransform globalPose = bodyStorage.dynamicActor->getGlobalPose();
+
+		if(IsKinematic())
+		{
+			//if(forces != PxVec3(PxZero))
+			{
+				float mass = GetMass();
+				PxVec3 accel = CalculateAcceleration();
+				PxVec3 displacement = CalculateDisplacement(gameTime, accel);
+				SetKinematicTarget(globalPose.p + displacement);
+				velocity = CalculateVelocity(gameTime, accel);
+			}
+		}
+		
 		owningGameObject->SetWorldPosition(globalPose.p.x, globalPose.p.y, globalPose.p.z);
 		owningGameObject->SetWorldOrientation(globalPose.q.w, globalPose.q.x, globalPose.q.y, globalPose.q.z);
 
@@ -462,12 +521,54 @@ void RigidBodyComponent::PrintRigidData()
 		printf("Is Kinematic\n");
 }
 
+float RigidBodyComponent::GetMass()const
+{
+	if(bodyType == DYNAMIC)
+		return bodyStorage.dynamicActor->getMass();
+
+	return 0.0f;
+}
+
+void RigidBodyComponent::SetMass(const float newMass)
+{
+	if(bodyType == DYNAMIC)
+		bodyStorage.dynamicActor->setMass(newMass);
+}
+
 void RigidBodyComponent::SetVelocity(physx::PxVec3& newVel)
 {
 	if(bodyType == DYNAMIC)
 	{
 		bodyStorage.dynamicActor->setLinearVelocity(newVel);
 	}
+}
+
+physx::PxVec3 RigidBodyComponent::GetVelocity() const
+{
+	if(bodyType == DYNAMIC)
+		return bodyStorage.dynamicActor->getLinearVelocity();
+
+	return physx::PxVec3(PxZero);
+}
+
+physx::PxVec3 RigidBodyComponent::GetPosition() const
+{
+	if(bodyType == DYNAMIC)
+		return bodyStorage.dynamicActor->getGlobalPose().p;
+	else if(bodyType == STATIC)
+		return bodyStorage.staticActor->getGlobalPose().p;
+
+	return physx::PxVec3(PxZero);
+}
+
+physx::PxQuat RigidBodyComponent::GetOrientation() const
+{
+	if(bodyType == DYNAMIC)
+		return bodyStorage.dynamicActor->getGlobalPose().q;
+	else if(bodyType == STATIC)
+		return bodyStorage.staticActor->getGlobalPose().q;
+
+	return physx::PxQuat(PxIdentity);
 }
 
 void RigidBodyComponent::ClearForces()
@@ -526,3 +627,13 @@ void RigidBodyComponent::SetKinematic(const bool kinematicOn)
 	if(bodyType == DYNAMIC)
 		bodyStorage.dynamicActor->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, kinematicOn);
 }
+
+void RigidBodyComponent::SetKinematicTarget(const physx::PxTransform& target)
+{
+	if(bodyType == DYNAMIC)
+	{
+		bodyStorage.dynamicActor->setKinematicTarget(target);
+	}
+}
+
+

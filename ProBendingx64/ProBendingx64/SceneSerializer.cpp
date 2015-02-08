@@ -30,7 +30,7 @@ typedef std::unordered_set<SharedGameObject> GameObjectList;
 
 SceneSerializer::SceneSerializer()
 	: StartID(1), ActorCollection("ActorCollection"),
-	GameObjectNode("GameObjectNode"), ObjectName("ObjectName"),
+	GameObjectNode("GameObjectNode"), ObjectName("ObjectName"), ObjectTag("ObjectTag"),
 	Position("Position"), X("X"), Y("Y"), Z("Z"), W("W"), Rotation("Rotation"), Scale("Scale"),
 	MeshRenderComponen("MeshRenderComponent"), RigidBodyComponen("RigidBodyComponent"),
 	ParticleComponen("ParticleComponent"), Enabled("Enabled"), EntityName("Entity"), 
@@ -158,6 +158,8 @@ void SceneSerializer::SerializeGameObject(XMLWriter& writer, const SharedGameObj
 	Ogre::Quaternion rotation = gameObject->GetWorldOrientation();
 	
 	writer.CreateNode(GameObjectNode, std::string(""), true); writer.AddAttribute(ObjectName, gameObject->GetName());
+	writer.AddAttribute(ObjectTag, gameObject->tag, false, false);
+
 		//game object Transform
 		writer.CreateNode(Position);
 			AddVector3Attribute(writer, position);
@@ -645,12 +647,17 @@ SharedGameObject SceneSerializer::DeserializedGameObject(XMLReader& reader, ISce
 	//Handle game object attributes
 	if(reader.NodeHasAttributes())
 	{
-		std::string currAttr = reader.GetCurrentAttributeName();
+		std::string currAttr;
 
 		do 
 		{
+			currAttr = reader.GetCurrentAttributeName();
+
 			if(currAttr == ObjectName)
 				newObject->name = reader.GetStringValue(true);
+
+			if(currAttr == ObjectTag)
+				newObject->tag = reader.GetStringValue(true);
 
 		} while (reader.MoveToNextAttribute());
 	}

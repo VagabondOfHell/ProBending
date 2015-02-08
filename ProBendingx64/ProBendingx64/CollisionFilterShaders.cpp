@@ -1,5 +1,7 @@
 #include "CollisionFilterShaders.h"
+#include <stdio.h>
 
+using namespace physx;
 
 physx::PxFilterFlags CollisionFilterShaders::GameSceneFilterShader
 	(physx::PxFilterObjectAttributes attributes0, physx::PxFilterData filterData0, 
@@ -12,6 +14,7 @@ physx::PxFilterFlags CollisionFilterShaders::GameSceneFilterShader
 		pairFlags = physx::PxPairFlag::eTRIGGER_DEFAULT;
 		return physx::PxFilterFlag::eDEFAULT;
 	}
+
 	// generate contacts for all that were not filtered above
 	pairFlags = physx::PxPairFlag::eCONTACT_DEFAULT;
 
