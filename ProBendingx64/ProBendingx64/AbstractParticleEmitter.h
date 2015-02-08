@@ -4,6 +4,8 @@
 
 class AbstractParticleEmitter
 {
+	friend class SceneSerializer;
+
 private:
 	///<summary>Helper method to ensure the minimum is the minimum and the maximum is the maximum.
 	///If there is a discrepancy, the two illegal values will be swapped</summary>
@@ -25,13 +27,18 @@ private:
 	}
 
 protected:
-	
 	physx::PxVec3 minimumDirection;
 	physx::PxVec3 maximumDirection;
+	
+	float particlesPerSecond; //Amount of particles to launch per second. Can be a fractional number to take longer than a second
+	float particlesToEmitThisFrame;//Number of particles to emit this frame
+
 	float minSpeed, maxSpeed;
 	float timePassed;
 
 public:
+	enum ParticleEmitterType{NONE, POINT_EMITTER, LINE_EMITTER, MESH_EMITTER};
+
 	physx::PxVec3 position;
 	bool loop;
 	float duration;
@@ -44,10 +51,11 @@ public:
 	///<param name="_duration">How long the emitter should emit if not looping</param>
 	///<param name="minParticleSpeed">The minimum value for creating random particle speed </param>
 	///<param name="maxParticleSpeed">The maximum value for creating random particle speed </param>
-	AbstractParticleEmitter(physx::PxVec3 emitterPosition = physx::PxVec3(0.0f), 
+	AbstractParticleEmitter(physx::PxVec3 _position = physx::PxVec3(0.0f), float _particlesPerSecond = 1.0f,
 		physx::PxVec3 minEmissionDirection  = physx::PxVec3(0.0f), physx::PxVec3 maxEmissionDirection  = physx::PxVec3(0.0f),
 		bool _loop = true, float _duration = 1.0f, float minParticleSpeed = 1.0f, float maxParticleSpeed = 2.0f)
-		: position(emitterPosition), timePassed(0), duration(_duration), loop(_loop)
+		: particlesPerSecond(_particlesPerSecond), position(_position), timePassed(0), 
+		duration(_duration), loop(_loop), particlesToEmitThisFrame(0)
 	{
 		SetDirections(minEmissionDirection, maxEmissionDirection);
 
@@ -58,6 +66,8 @@ public:
 	}
 
 	virtual ~AbstractParticleEmitter(){}
+
+	virtual ParticleEmitterType GetEmitterType() = 0;
 
 	///<summary>Emission method called by a particle system</summary>
 	///<param name="gameTime">The game time that has passed </param>

@@ -7,17 +7,14 @@
 #include "IScene.h"
 #include "GameObject.h"
 
+#include "NotImplementedException.h"
+
 Ogre::SceneNode* ParticleComponent::WORLD_PARTICLES_NODE = NULL;
 int ParticleComponent::NUM_INSTANCES = 0;
 
-ParticleComponent::ParticleComponent(GameObject* owningObject, ParticleSystemBase* _particleSystem, bool _useLocalSpace)
-	:Component(owningObject), particleSystem(_particleSystem), useLocalSpace(_useLocalSpace)
+ParticleComponent::ParticleComponent(ParticleSystemBase* _particleSystem, bool _useLocalSpace)
+	:Component(), particleSystem(_particleSystem), useLocalSpace(_useLocalSpace)
 {
-	if(WORLD_PARTICLES_NODE == NULL)
-	{
-		WORLD_PARTICLES_NODE = owningObject->GetOwningScene()->GetSceneRootNode()->createChildSceneNode("WORLD_PARTICLE_NODE");
-	}
-
 	++NUM_INSTANCES;
 }
 
@@ -33,10 +30,27 @@ ParticleComponent::~ParticleComponent(void)
 	//If our static is the only reference
 	if(NUM_INSTANCES <= 0)
 	{
-		//Remove the node from the scene
-		owningGameObject->GetOwningScene()->GetOgreSceneManager()->destroySceneNode(WORLD_PARTICLES_NODE);
-		WORLD_PARTICLES_NODE = NULL;
+		if(WORLD_PARTICLES_NODE)
+		{
+			//Remove the node from the scene
+			owningGameObject->GetOwningScene()->GetOgreSceneManager()->destroySceneNode(WORLD_PARTICLES_NODE);
+			WORLD_PARTICLES_NODE = NULL;
+			NUM_INSTANCES = 0;
+		}
 	}
+}
+
+void ParticleComponent::OnAttach()
+{
+	if(WORLD_PARTICLES_NODE == NULL)//Check if the static scene node has been initialized
+	{
+		WORLD_PARTICLES_NODE = owningGameObject->GetOwningScene()->
+			GetSceneRootNode()->createChildSceneNode("WORLD_PARTICLE_NODE");
+	}
+
+	CreateSceneNode();
+
+	particleSystem->Initialize(owningGameObject->GetOwningScene()->GetPhysXScene());
 }
 
 void ParticleComponent::CreateSceneNode()
@@ -71,18 +85,19 @@ void ParticleComponent::DestroySceneNode()
 
 void ParticleComponent::Start()
 {
-	CreateSceneNode();
-	particleSystem->Initialize(owningGameObject->GetOwningScene()->GetPhysXScene());
 }
 
 void ParticleComponent::Update(float gameTime)
 {
-	if(useLocalSpace)
-		particleSystem->GetEmitter()->position = particleSystem->GetEmitter()->position = physx::PxVec3(0.0f);// HelperFunctions::OgreToPhysXVec3(sceneNode->getPosition());
-	else
-		particleSystem->GetEmitter()->position = HelperFunctions::OgreToPhysXVec3(sceneNode->_getDerivedPosition());
+	if(enabled)
+	{
+		if(useLocalSpace)
+			particleSystem->GetEmitter()->position = HelperFunctions::OgreToPhysXVec3(sceneNode->getPosition());
+		else
+			particleSystem->GetEmitter()->position = HelperFunctions::OgreToPhysXVec3(sceneNode->_getDerivedPosition());
 	
-	particleSystem->Update(gameTime);
+		particleSystem->Update(gameTime);
+	}
 }
 
 void ParticleComponent::SetTransformationSpace(const bool _useLocalSpace)
@@ -93,14 +108,19 @@ void ParticleComponent::SetTransformationSpace(const bool _useLocalSpace)
 	//If switching from world to local
 	if(_useLocalSpace)
 	{
-		owningGameObject->GetOwningScene()->GetSceneRootNode()->detachObject(particleSystem);
+		WORLD_PARTICLES_NODE->detachObject(particleSystem);
 		sceneNode->attachObject(particleSystem);
 	}
 	else
 	{
 		sceneNode->detachObject(particleSystem);
-		owningGameObject->GetOwningScene()->GetSceneRootNode()->attachObject(particleSystem);
+		WORLD_PARTICLES_NODE->attachObject(particleSystem);
 	}
 
 	useLocalSpace = _useLocalSpace;
+}
+
+ParticleComponent* ParticleComponent::Clone(GameObject* gameObject)
+{
+	throw NotImplementedException("Particle Component Clone Not Implemented");
 }

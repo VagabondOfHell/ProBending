@@ -2,7 +2,14 @@
 #include "OgreVector3.h"
 #include "HelperFunctions.h"
 #include <map>
+#include <unordered_set>
+
 #include "Component.h"
+
+#include "PxSimulationEventCallback.h"
+
+#include <vector>
+#include <memory>
 
 namespace physx
 {
@@ -13,25 +20,38 @@ namespace physx
 
 class IScene;
 
+typedef std::shared_ptr<GameObject> SharedGameObject;
+class RigidBodyComponent;
+
+
+struct CollisionReport
+{
+	GameObject* Collider;
+
+	std::vector<physx::PxContactPairPoint> ContactPoints;
+
+};
+
 class GameObject
 {
-	static unsigned int InstanceCounter;
+	friend class SceneSerializer;
 
 protected:
 	std::string name;
-
+	
 	IScene* owningScene;
-	Ogre::Entity* entity;
 	
-	std::map<std::string, GameObject*> children;
+	std::unordered_set<SharedGameObject> children;
 	std::multimap<Component::ComponentType, Component*> components; //Multimap of components based on type
+	RigidBodyComponent* rigidBody;
 
-	Ogre::ManualObject* physxDebugDraw;
-	Ogre::SceneNode* debugNode;
-public:
-	Ogre::SceneNode* gameObjectNode;
-	physx::PxRigidActor* rigidBody;
+	bool started;
 	
+public:
+	std::string tag;
+
+	Ogre::SceneNode* gameObjectNode;//The node representing the game object
+
 	GameObject(IScene* owningScene, std::string objectName = "");
 
 	virtual ~GameObject(void);
@@ -40,64 +60,104 @@ public:
 
 	virtual void Update(float gameTime);
 
+	///<summary>At the moment this is used to differentiate between standard Game Objects and Projectiles and Probenders
+	///Eventually may move the serialization into Game Objects, but at the moment this is easier, since Projectiles
+	///and Probenders don't need serialization</summary>
+	///<returns>True if serializable, false if not</returns>
+	virtual inline bool IsSerializable()const{return true;}
+
 	///<summary>Adds a new child to this game object and if successful calls Start</summary>
 	///<param name="newChild">The new child to be attached</param>
 	///<returns>True if successful, false if the name already exists</returns>
-	bool AddChild(GameObject* newChild);
+	bool AddChild(SharedGameObject newChild);
 
-	///<summary>Removes a child from this game object (DOES NOT DELETE)</summary>
+	///<summary>Removes a child from this game object</summary>
 	///<param name="childToRemove">The child game object to be removed</param>
 	///<returns>True if successful, false if not</returns>
-	bool RemoveChild(GameObject* childToRemove);
+	bool RemoveChild(SharedGameObject childToRemove);
 
-	///<summary>Removes a child from this game object by name (DOES NOT DELETE)</summary>
+	///<summary>Removes a child from this game object by name</summary>
 	///<param name="name">The name of the child to be removed</param>
-	///<returns>The game object that was removed</returns>
-	GameObject* RemoveChild(std::string name);
+	///<returns>The first game object found that was removed, or NULL if not found</returns>
+	SharedGameObject RemoveChild(std::string name);
 
-	///<summary>Deletes a child from this game object </summary>
-	///<param name="childToDelete">The child to delete</param>
-	///<returns>True if successful, false if not</returns>
-	bool DeleteChild(GameObject* childToDelete);
+#pragma region Transform Getter and Setters
 
-	///<summary>Deletes a child from this game object </summary>
-	///<param name="name">The name of the child to delete</param>
-	///<returns>True if successful, false if not</returns>
-	bool DeleteChild(std::string name);
+	void SetWorldTransform(const Ogre::Vector3& pos, const Ogre::Quaternion& rot, const Ogre::Vector3& scale);
+
+	Ogre::Vector3 GetLocalPosition()const;
+
+	Ogre::Vector3 GetWorldPosition()const;
+
+	void SetLocalPosition(const Ogre::Vector3& newPos);
+
+	void SetLocalPosition(const float x, const float y, const float z);
+
+	void SetWorldPosition(const Ogre::Vector3& newPos);
+
+	void SetWorldPosition(const float x, const float y, const float z);
+
+	Ogre::Quaternion GetLocalOrientation()const;
+
+	void SetLocalOrientation(const Ogre::Quaternion& newOrientation);
+
+	void SetLocalOrientation(const float w, const float x, const float y, const float z);
+
+	Ogre::Quaternion GetWorldOrientation()const;
+
+	bool GetInheritOrientation()const;
+
+	void SetWorldOrientation(const Ogre::Quaternion& newOrientation);
+
+	void SetWorldOrientation(const float w, const float x, const float y, const float z);
+
+	void SetInheritOrientation(const bool val);
+
+	Ogre::Vector3 GetLocalScale()const;
+
+	void SetScale(const Ogre::Vector3& newScale);
+
+	void SetScale(const float x, const float y, const float z);
+
+	Ogre::Vector3 GetWorldScale()const;
+
+	bool GetInheritScale()const;
+
+	///<summary>True to inherit scale from parents</summary>
+	///<param name="val">True to inherit, false to not</param>
+	void SetInheritScale(const bool val);
+
+#pragma endregion
 
 	///<summary>Attaches a new component to the GameObject and calls its Start method</summary>
 	///<param name="newComponent">The new component that will be attached</param>
 	void AttachComponent(Component* newComponent);
-	
-	///<summary>Loads a model for Ogre, providing a Try Catch to handle errors</summary>
-	///<param name="modelFileName">The name of the model with the extension to load from Ogre resources</param>
-	///<returns>True if loaded, false if failed</returns>
-	bool LoadModel(const Ogre::String& modelFileName);
-
-	///<summary>Creates a box from the ogre entity dimensions, with scaling</summary>
-	///<param name="boxGeometry">The out value to be filled</param>
-	///<returns>True if successful, false if not. Unsuccessful when entity has not been set</returns>
-	bool ConstructBoxFromEntity(physx::PxBoxGeometry& boxGeometry)const;
-
-	///<summary>Creates an outline of all physX shapes attached to the rigid body
-	///CURRENTLY ONLY SUPPORTS CUBES</summary>
-	void CreatePhysXDebug();
-
-	///<summary>Destroys and deletes the Debug component of the physx rigidbody</summary>
-	void DestroyPhysXDebug();
-
-	///<summary>Provides efficient type casting to a Dynamic Rigid Body</summary>
-	///<returns>The dynamic rigid body representation of the rigid body, or NULL if failed</returns>
-	physx::PxRigidDynamic* GetDynamicRigidBody()const;
-
-	///<summary>Provides efficient type casting to a Static Rigid Body</summary>
-	///<returns>The static rigid body representation of the rigid body, or NULL if failed</returns>
-	physx::PxRigidStatic* GetStaticRigidBody()const;
 
 	///<summary>Gets the name associated with the game object</summary>
-	inline std::string GetName()const {return name;}
+	inline const std::string& GetName()const {return name;}
 
 	///<summary>Gets the scene this object was created on</summary>
 	inline IScene* const GetOwningScene()const{return owningScene;}
-};
 
+	inline Component* GetComponent(Component::ComponentType typeToGet)
+	{
+		auto result = components.find(typeToGet);
+
+		if(result != components.end())
+			return result->second;
+		else
+			return NULL;
+	}
+
+	SharedGameObject Clone();
+
+	virtual void OnCollisionEnter(const CollisionReport& collision){}
+
+	virtual void OnCollisionStay(const CollisionReport& collision){}
+
+	virtual void OnCollisionLeave(const CollisionReport& collision){}
+
+	virtual void OnTriggerEnter(GameObject* trigger, GameObject* other){}
+	
+	virtual void OnTriggerLeave(GameObject* trigger, GameObject* other){}
+};

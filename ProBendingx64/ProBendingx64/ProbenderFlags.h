@@ -1,6 +1,39 @@
 #pragma once
 #include <string>
 
+namespace RenderableJointType
+{
+	//Values taken from Kinect.h to avoid including the whole file
+	enum RenderableJointType{
+		Head = 3,
+		Neck = 2,
+		SpineShoulder = 20,
+		SpineMid = 1,
+		SpineBase = 0,
+		ShoulderRight = 8,
+		ElbowRight = 9,
+		WristRight = 10,
+		HandRight = 11,
+		HandTipRight = 23,
+		ShoulderLeft = 4,
+		ElbowLeft = 5,
+		WristLeft = 6,
+		HandLeft = 7,
+		ThumbRight = 24,
+		HandTipLeft = 21,
+		ThumbLeft = 22,
+		HipLeft = 12,
+		KneeLeft = 13,
+		AnkleLeft = 14,
+		FootLeft = 15,
+		HipRight = 16,
+		KneeRight = 17,
+		AnkleRight = 18,
+		FootRight = 19,
+		Count = ThumbRight + 1
+	};
+};
+
 namespace ElementEnum
 {
 	enum Element{InvalidElement, Air, Earth, Fire, Water, Toxin, Sonic, Astral, 

@@ -6,6 +6,20 @@
 
 class Probender;
 
+struct ConfigurationLayout
+{
+	typedef unsigned int KeyboardKey;
+
+	KeyboardKey AttackButton;
+	KeyboardKey JumpButton;
+
+	ConfigurationLayout(KeyboardKey attackButton = OIS::KC_SPACE, KeyboardKey jumpButton = OIS::KC_J)
+		:AttackButton(attackButton), JumpButton(jumpButton)
+	{
+
+	}
+};
+
 class ProbenderInputHandler :
 	public KinectBodyListener, public InputObserver, public KinectAudioListener
 {
@@ -15,11 +29,15 @@ public:
 private:
 	Probender* probender;
 	ProbenderStances currentStance;
-
+	
 public:
+	ConfigurationLayout keysLayout;
+
 	bool ManageStance; //True to allow the input handler to set Stances based on foot position. False to require input on stances
 
-	ProbenderInputHandler(Probender* _probenderToHandle = NULL, bool manageStance = true);
+	ProbenderInputHandler(Probender* _probenderToHandle = NULL, bool manageStance = true,
+		ConfigurationLayout keyLayout = ConfigurationLayout());
+
 	virtual ~ProbenderInputHandler(void);
 
 	void SetProbenderToHandle(Probender* _probenderToHandle);
@@ -90,7 +108,6 @@ protected:
 
 #pragma region Kinect Input
 
-	virtual void LeanChanged(const CompleteData& currentData, const CompleteData& previousData);
 	virtual void LeanTrackingStateChanged(const CompleteData& currentData, const CompleteData& previousData);
 	
 	virtual void HandTrackingStateChanged(const Hand hand, const CompleteData& currentData, const CompleteData& previousData);
@@ -113,6 +130,10 @@ protected:
 	virtual bool mouseMoved( const OIS::MouseEvent &arg );
 	virtual bool mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID id );
 	virtual bool mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id );
+
+	virtual void BodyAcquired();
+
+	virtual void BodyLost(const CompleteData& currentData, const CompleteData& previousData);
 
 #pragma endregion
 };

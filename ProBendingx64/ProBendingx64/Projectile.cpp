@@ -11,8 +11,8 @@
 #include "PxScene.h"
 #include "IScene.h"
 
-Projectile::Projectile(IScene* _owningScene, SharedAbilityDescriptor _attachedAbility)
-	:GameObject(_owningScene), attachedAbility(_attachedAbility)
+Projectile::Projectile(IScene* _owningScene, const std::string& objectName, SharedAbilityDescriptor _attachedAbility)
+	:GameObject(_owningScene, objectName), attachedAbility(_attachedAbility)
 {
 }
 
@@ -24,37 +24,50 @@ Projectile::~Projectile(void)
 void Projectile::Start()
 {
 	GameObject::Start();
-	
-	physx::PxReal density = 1.0f;
-	physx::PxTransform transform(physx::PxVec3(0.0f), physx::PxQuat::createIdentity());
-	physx::PxBoxGeometry geometry;
-
-	ConstructBoxFromEntity(geometry);
-
-	geometry.halfExtents = physx::PxVec3(1, 1, 1);
-	rigidBody = physx::PxCreateDynamic(PxGetPhysics(), transform, geometry, *PxGetPhysics().createMaterial(0.5,0.5,0.5), density);
-	rigidBody->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, true);
-
-	owningScene->GetPhysXScene()->addActor(*rigidBody);
 }
 
 void Projectile::Update(float gameTime)
 {
-	/*auto itr = components.find(Component::ComponentType::PARTICLE_COMPONENT);
-
-	if(itr != components.end())
-	{
-		ParticleComponent* particleComponent = (ParticleComponent*)itr->second;
-		ParticleSystemBase* fs = particleComponent->particleSystem;
-		fs->GetEmitter()->position = HelperFunctions::OgreToPhysXVec3(gameObjectNode->getPosition());
-	}*/
 	GameObject::Update(gameTime);
 }
 
 void Projectile::AttachAbility(SharedAbilityDescriptor abilityToAttach)
 {
 	if(!attachedAbility.get())
-	{
 		attachedAbility = abilityToAttach;
-	}
+}
+
+void Projectile::OnCollisionEnter(const CollisionReport& collision)
+{
+	std::string message = "Collision Entered with: " + collision.Collider->GetName() + "\n";
+
+	printf(message.c_str());
+}
+
+void Projectile::OnCollisionStay(const CollisionReport& collision)
+{
+	std::string message = "Collision Stayed with: " + collision.Collider->GetName() + "\n";
+
+	printf(message.c_str());
+}
+
+void Projectile::OnCollisionLeave(const CollisionReport& collision)
+{
+	std::string message = "Collision Left with: " + collision.Collider->GetName() + "\n";
+
+	printf(message.c_str());
+}
+
+void Projectile::OnTriggerEnter(GameObject* trigger, GameObject* other)
+{
+	std::string message = "Trigger Entered with: " + trigger->GetName() + "\n";
+
+	printf(message.c_str());
+}
+
+void Projectile::OnTriggerLeave(GameObject* trigger, GameObject* other)
+{
+	std::string message = "Trigger Left with: " + trigger->GetName() + "\n";
+
+	printf(message.c_str());
 }

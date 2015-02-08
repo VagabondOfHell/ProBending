@@ -36,7 +36,7 @@ ParticleKernelMap::ParticleKernelMap()
 
 ParticleSystemBase::ParticleSystemBase(std::shared_ptr<AbstractParticleEmitter> _emitter, size_t _maximumParticles, 
 		float _initialLifetime, ParticleSystemParams& paramsStruct)
-		: emitter(_emitter), cudaContextManager(paramsStruct.cudaContext), initialLifetime(_initialLifetime)
+		: FluidAndParticleBase(_emitter, _maximumParticles, _initialLifetime, paramsStruct.cudaContext)
 {
 	// our vertices are just points
 	mRenderOp.operationType = Ogre::RenderOperation::OT_POINT_LIST;
@@ -49,8 +49,6 @@ ParticleSystemBase::ParticleSystemBase(std::shared_ptr<AbstractParticleEmitter> 
 	//set ogre simple renderable
 	mBox.setExtents(-1000, -1000, -1000, 1000, 1000, 1000);
 	
-	maximumParticles = _maximumParticles;
-
 	gpuTypeCombination = 0;
 	allTypesCombination = 0;
 
@@ -75,24 +73,49 @@ ParticleSystemBase::ParticleSystemBase(std::shared_ptr<AbstractParticleEmitter> 
 
 	cudaKernel = NULL;
 
-	SetParticleBaseFlags(paramsStruct.baseFlags);
+	SetParticleBaseFlags(pxParticleSystem, paramsStruct.baseFlags);
 
 	//Set the gravity flag
 	pxParticleSystem->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, !paramsStruct.useGravity);
 	
-	//Set parameters
-	pxParticleSystem->setGridSize(paramsStruct.gridSize);
-	pxParticleSystem->setMaxMotionDistance(paramsStruct.maxMotionDistance);
-	pxParticleSystem->setParticleMass(paramsStruct.particleMass);
-	pxParticleSystem->setRestitution(paramsStruct.restitution);
-	pxParticleSystem->setStaticFriction(paramsStruct.staticFriction);
-	pxParticleSystem->setContactOffset(paramsStruct.contactOffset);
-	pxParticleSystem->setDamping(paramsStruct.damping);
-	pxParticleSystem->setDynamicFriction(paramsStruct.dynamicFriction);
-	pxParticleSystem->setExternalAcceleration(paramsStruct.externalAcceleration);
-	pxParticleSystem->setRestOffset(paramsStruct.restOffset);
-	pxParticleSystem->setSimulationFilterData(paramsStruct.filterData);
+	SetSystemData(pxParticleSystem, paramsStruct);
 	
+	//Allocate enough space for all the indices
+	availableIndices.reserve(maximumParticles);
+
+	//Add the indices in descending order
+	for (int i = maximumParticles - 1; i >= 0; --i)
+	{
+		availableIndices.push_back(i);
+	}
+
+	hostAffector = false;
+}
+
+ParticleSystemBase::ParticleSystemBase(physx::PxParticleSystem* physxParticleSystem, 
+				std::shared_ptr<AbstractParticleEmitter> _emitter, size_t _maximumParticles, float _initialLifetime)
+		: FluidAndParticleBase(_emitter, _maximumParticles, _initialLifetime, NULL)
+{
+	// our vertices are just points
+	mRenderOp.operationType = Ogre::RenderOperation::OT_POINT_LIST;
+	mRenderOp.useIndexes = false;//EBO
+
+	mRenderOp.vertexData = new Ogre::VertexData();
+	mRenderOp.vertexData->vertexCount = maximumParticles;
+	mRenderOp.vertexData->vertexBufferBinding->unsetAllBindings();
+
+	//set ogre simple renderable
+	mBox.setExtents(-1000, -1000, -1000, 1000, 1000, 1000);
+
+	gpuTypeCombination = 0;
+	allTypesCombination = 0;
+
+	cudaKernel = NULL;
+
+	pxParticleSystem = physxParticleSystem;
+
+	readableData = pxParticleSystem->getParticleReadDataFlags();
+
 	//Allocate enough space for all the indices
 	availableIndices.reserve(maximumParticles);
 
@@ -116,57 +139,6 @@ ParticleSystemBase::~ParticleSystemBase(void)
 		delete[] lifetimes;
 		lifetimes = NULL;
 	}
-}
-
-void ParticleSystemBase::SetParticleReadFlags(physx::PxParticleReadDataFlags newFlags)
-{
-	using namespace physx;
-
-	//Set all the flags as indicated by the newFlags variable
-	pxParticleSystem->setParticleReadDataFlag(PxParticleReadDataFlag::ePOSITION_BUFFER, 
-		newFlags & PxParticleReadDataFlag::ePOSITION_BUFFER);
-
-	pxParticleSystem->setParticleReadDataFlag(PxParticleReadDataFlag::eVELOCITY_BUFFER, 
-		newFlags & PxParticleReadDataFlag::eVELOCITY_BUFFER);
-
-	pxParticleSystem->setParticleReadDataFlag(PxParticleReadDataFlag::eREST_OFFSET_BUFFER, 
-		newFlags & PxParticleReadDataFlag::eREST_OFFSET_BUFFER);
-
-	pxParticleSystem->setParticleReadDataFlag(PxParticleReadDataFlag::eFLAGS_BUFFER, 
-		newFlags & PxParticleReadDataFlag::eFLAGS_BUFFER);
-
-	pxParticleSystem->setParticleReadDataFlag(PxParticleReadDataFlag::eCOLLISION_NORMAL_BUFFER, 
-		newFlags & PxParticleReadDataFlag::eCOLLISION_NORMAL_BUFFER);
-
-	pxParticleSystem->setParticleReadDataFlag(PxParticleReadDataFlag::eCOLLISION_VELOCITY_BUFFER, 
-		newFlags & PxParticleReadDataFlag::eCOLLISION_VELOCITY_BUFFER);
-
-	pxParticleSystem->setParticleReadDataFlag(PxParticleReadDataFlag::eDENSITY_BUFFER, 
-		newFlags & PxParticleReadDataFlag::eDENSITY_BUFFER);
-
-	//Set the flags to the current data
-	readableData = newFlags;
-}
-
-void ParticleSystemBase::SetParticleBaseFlags(physx::PxParticleBaseFlags newFlags)
-{
-	pxParticleSystem->setParticleBaseFlag(physx::PxParticleBaseFlag::eCOLLISION_TWOWAY, 
-		newFlags & PxParticleBaseFlag::eCOLLISION_TWOWAY);
-
-	pxParticleSystem->setParticleBaseFlag(physx::PxParticleBaseFlag::eCOLLISION_WITH_DYNAMIC_ACTORS, 
-		newFlags & PxParticleBaseFlag::eCOLLISION_WITH_DYNAMIC_ACTORS);
-
-	pxParticleSystem->setParticleBaseFlag(physx::PxParticleBaseFlag::eENABLED, 
-		newFlags & PxParticleBaseFlag::eENABLED);
-
-	pxParticleSystem->setParticleBaseFlag(physx::PxParticleBaseFlag::ePER_PARTICLE_COLLISION_CACHE_HINT, 
-		newFlags & PxParticleBaseFlag::ePER_PARTICLE_COLLISION_CACHE_HINT);
-
-	pxParticleSystem->setParticleBaseFlag(physx::PxParticleBaseFlag::ePER_PARTICLE_REST_OFFSET, 
-		newFlags & PxParticleBaseFlag::ePER_PARTICLE_REST_OFFSET);
-
-	pxParticleSystem->setParticleBaseFlag(physx::PxParticleBaseFlag::ePROJECT_TO_PLANE, 
-		newFlags & PxParticleBaseFlag::ePROJECT_TO_PLANE);
 }
 
 Ogre::HardwareVertexBufferSharedPtr ParticleSystemBase::CreateVertexBuffer(Ogre::VertexElementSemantic semantic, unsigned short uvSource)
@@ -511,10 +483,7 @@ void ParticleSystemBase::UpdateParticleSystemCPU(const float time, const physx::
 		}
 		
 		if(onGPU)
-		{
 			mRenderOp.vertexData->vertexCount = numParticles;
-		}
-
 	}//end if valid range > 0
 }
 
@@ -608,26 +577,26 @@ std::shared_ptr<ParticleAffector> ParticleSystemBase::RemoveAndGetAffector(Parti
 
 bool ParticleSystemBase::AssignAffectorKernel(ParticleKernel* newKernel)
 {
-	if(onGPU)
+	if(!onGPU)
+		return false;
+
+	if(cudaKernel)
 	{
-		if(cudaKernel)
-		{
-			delete cudaKernel;
-			cudaKernel = NULL;
-		}
-
-		cudaKernel = newKernel;
-
-		if(cudaKernel)
-		{
-			//Fill the kernel with the necessary data
-			if(cudaKernel->PopulateData(this, &affectorMap) == ParticleKernel::SUCCESS)
-			{
-				return true;
-			}
-		}
+		delete cudaKernel;
+		cudaKernel = NULL;
 	}
 
+	cudaKernel = newKernel;
+
+	if(cudaKernel)
+	{
+		//Fill the kernel with the necessary data
+		if(cudaKernel->PopulateData(this, &affectorMap) == ParticleKernel::SUCCESS)
+		{
+			return true;
+		}
+	}
+	
 	return false;
 }
 

@@ -1,5 +1,4 @@
 #include "GameObject.h"
-#include "PhysXDebugDraw.h"
 #include "OgreEntity.h"
 #include "OgreManualObject.h"
 #include "IScene.h"
@@ -7,32 +6,27 @@
 #include "PxRigidActor.h"
 #include "PxRigidDynamic.h"
 #include "PxRigidStatic.h"
-
-unsigned int GameObject::InstanceCounter = 0;
+#include "RigidBodyComponent.h"
 
 GameObject::GameObject(IScene* _owningScene, std::string objectName)
-	:owningScene(_owningScene), name(objectName), entity(NULL), physxDebugDraw(NULL), rigidBody(NULL)
+	:owningScene(_owningScene), name(objectName), started(false)
 {
-	if(name.empty())
-	{
-		name = "GameObject" + std::to_string(InstanceCounter);
-		++InstanceCounter;
-	}
-
 	gameObjectNode = owningScene->GetOgreSceneManager()->getRootSceneNode()->
 		createChildSceneNode();
+	rigidBody = NULL;
 }
 
 
 GameObject::~GameObject(void)
 {
 	//loop through and destroy all children
-	auto childIterator = children.begin();
+	/*auto childIterator = children.begin();
 	while (childIterator != children.end())
 	{
-		delete childIterator->second;
+		childIterator->reset();
 		childIterator++;
-	}
+	}*/
+	children.clear();
 
 	//Delete all components attached to this object
 	auto componentIter = components.begin();
@@ -42,17 +36,6 @@ GameObject::~GameObject(void)
 		componentIter++;
 	}
 
-	//Detach and destroy any entities
-	if(entity)
-	{
-		gameObjectNode->detachObject(entity);
-		owningScene->GetOgreSceneManager()->destroyEntity(entity);
-		entity = NULL;
-	}
-
-	//Destroy any physx debugging
-	DestroyPhysXDebug();
-
 	//Destroy the scene node
 	if(gameObjectNode)
 	{
@@ -60,33 +43,30 @@ GameObject::~GameObject(void)
 		owningScene->GetOgreSceneManager()->destroySceneNode(gameObjectNode);
 		gameObjectNode = NULL;
 	}
-
-	//destroy the physx rigid body
-	if(rigidBody)
-	{
-		rigidBody->release();
-		rigidBody = NULL;
-	}
 }
 
 void GameObject::Start()
 {
 	//Children and Components have their start called upon Addition. 
-	//Possibly add bool to children and components that check if start has been called 
-	//and provide a Bool in attach and add that checks if they should call start when added?
+	auto componentIter = components.begin();
+	while (componentIter != components.end())
+	{
+		componentIter->second->Start();
+		++componentIter;
+	}
+
+	auto childIter = children.begin();
+	while (childIter != children.end())
+	{
+		childIter->get()->Start();
+		++childIter;
+	}
+
+	started = true;
 }
 
 void GameObject::Update(float gameTime)
 {
-	//If there is a rigid body, update our draw position
-	if(rigidBody)
-	{
-		gameObjectNode->setPosition(HelperFunctions::PhysXToOgreVec3(rigidBody->getGlobalPose().p));
-
-		if(debugNode)
-			debugNode->setPosition(HelperFunctions::PhysXToOgreVec3(rigidBody->getGlobalPose().p));
-	}
-
 	//Update componets
 	auto componentIter = components.begin();
 	while (componentIter != components.end())
@@ -99,175 +79,239 @@ void GameObject::Update(float gameTime)
 	auto childIter = children.begin();
 	while (childIter != children.end())
 	{
-		childIter->second->Update(gameTime);
+		childIter->get()->Update(gameTime);
 		++childIter;
 	}
 }
 
-bool GameObject::AddChild(GameObject* newChild)
+bool GameObject::AddChild(SharedGameObject newChild)
 {
 	//Add the child
-	auto iter = children.insert(std::pair<std::string, GameObject*>(newChild->name, newChild));
-
+	auto iter = children.insert(newChild);
+	
 	if(iter.second)
-		newChild->Start();
+	{
+		Ogre::SceneNode* parentNode = newChild->gameObjectNode->getParentSceneNode();
+		
+		if(parentNode)
+			parentNode->removeChild(newChild->gameObjectNode);
+
+		gameObjectNode->addChild(newChild->gameObjectNode);
+
+		if(started)
+			newChild->Start();
+	}
 
 	//Return success
 	return iter.second;
 }
 
-bool GameObject::RemoveChild(GameObject* childToRemove)
+bool GameObject::RemoveChild(SharedGameObject childToRemove)
 {
-	//The caller has the object already, so check if child was successfully removed instead
-	return RemoveChild(childToRemove->name) != NULL;
+	//Try to erase. 1 for success, 0 for failure
+	if(children.erase(childToRemove) > 0)
+	{
+		gameObjectNode->removeChild(childToRemove->gameObjectNode);
+		return true;
+	}
+
+	return false;
 }
 
-GameObject* GameObject::RemoveChild(std::string name)
+SharedGameObject GameObject::RemoveChild(std::string name)
 {
-	auto childIterator = children.find(name);
+	//lambda comparison to find by name
+	auto childIterator = std::find_if(children.begin(), children.end(), 
+		[&name](const SharedGameObject object){return name == object->name;});
 
 	if(childIterator != children.end())
 	{
-		GameObject* objectRemoved = childIterator->second;
-
+		SharedGameObject objectRemoved = *childIterator;
+		gameObjectNode->removeChild(objectRemoved->gameObjectNode);
 		children.erase(childIterator);
-		
 		return objectRemoved;
 	}
 
 	return NULL;
 }
 
-bool GameObject::DeleteChild(GameObject* childToRemove)
-{
-	return DeleteChild(childToRemove->name);
-}
-
-bool GameObject::DeleteChild(std::string name)
-{
-	auto childIterator = children.find(name);
-
-	if(childIterator != children.end())
-	{
-		GameObject* object = childIterator->second;
-		children.erase(childIterator);
-		delete object;
-		return true;
-	}
-
-	return false;
-}
-
 void GameObject::AttachComponent(Component* newComponent)
 {
 	if(newComponent)
 	{
-		components.insert(std::pair<Component::ComponentType, Component*>(newComponent->GetComponentType(), newComponent));
-		newComponent->Start();
-	}
-}
+		components.insert(std::pair<Component::ComponentType, Component*>(
+			newComponent->GetComponentType(), newComponent));
 
-bool GameObject::LoadModel(const Ogre::String& modelFileName)
-{
-	if(entity)
-		//Detach, modify, reattach
-		gameObjectNode->detachObject(entity);
-	///SHOULD OLD ENTITY BE DESTROYED HERE?
-	try
-	{
-		entity = owningScene->GetOgreSceneManager()->createEntity(modelFileName);
-	}
-	catch(Ogre::Exception e)
-	{
-		entity = NULL;
-		return false;
-	}
+		if(newComponent->GetComponentType() == Component::RIGID_BODY_COMPONENT)
+			rigidBody = (RigidBodyComponent*)newComponent;
 
-	gameObjectNode->attachObject(entity);
-
-	return true;
-}
-
-bool GameObject::ConstructBoxFromEntity(physx::PxBoxGeometry& boxGeometry)const
-{
-	if(entity)
-	{
-		//Get the half size of the entity bounding box and modify by scale factor
-		Ogre::Vector3 boxHalfSize = entity->getBoundingBox().getHalfSize() * gameObjectNode->getScale();
-		//Generate physx geometry
-		boxGeometry = physx::PxBoxGeometry(physx::PxVec3(boxHalfSize.x, boxHalfSize.y, boxHalfSize.z));
-		//indicate success
-		return true;
-	}
-
-	return false;
-}
-
-void GameObject::CreatePhysXDebug()
-{
-	if(!physxDebugDraw && rigidBody)
-	{
-		// create ManualObject
-		physxDebugDraw = owningScene->GetOgreSceneManager()->createManualObject();
- 
-		int numShapes = rigidBody->getNbShapes();
-
-		physx::PxShape** shapes = new physx::PxShape*[numShapes];
-
-		rigidBody->getShapes(shapes, numShapes);
-
-		physx::PxBoxGeometry boxGeometry;
+		newComponent->AttachToObject(this);
 		
-		for (int i = 0; i < numShapes; i++)
-		{
-			switch (shapes[i]->getGeometryType())
-			{
-			case::physx::PxGeometryType::eBOX:
-				shapes[i]->getBoxGeometry(boxGeometry);
-
-				PhysXDebugDraw::DrawBoxGeometry(rigidBody->getGlobalPose().p + shapes[i]->getLocalPose().p, &boxGeometry, physxDebugDraw);
-				break;
-
-			default:
-				break;
-			}
-
-		}
- 
-		if(shapes)
-			delete shapes;
-
-		debugNode = owningScene->GetOgreSceneManager()->getRootSceneNode()->createChildSceneNode();
-		// add ManualObject to the node so it will be visible
-		debugNode->attachObject(physxDebugDraw);
+		if(started)//if game object was already started, start component here
+			newComponent->Start();
 	}
 }
 
-void GameObject::DestroyPhysXDebug()
+#pragma region Transform Getters and Setters
+
+void GameObject::SetWorldTransform(const Ogre::Vector3& pos, const Ogre::Quaternion& rot, const Ogre::Vector3& scale)
 {
-	if(physxDebugDraw)
+	gameObjectNode->_setDerivedPosition(pos);
+	gameObjectNode->_setDerivedOrientation(rot);
+	gameObjectNode->setScale(scale);
+
+	if(rigidBody)
 	{
-		debugNode->detachObject(physxDebugDraw);
-		owningScene->GetOgreSceneManager()->destroyManualObject(physxDebugDraw);
-		owningScene->GetOgreSceneManager()->destroySceneNode(debugNode);
-		physxDebugDraw = NULL;
+		rigidBody->SetOrientation(physx::PxQuat(rot.x, rot.y, rot.z, rot.w));
+		rigidBody->SetPosition(physx::PxVec3(pos.x, pos.y, pos.z));
 	}
 }
 
-physx::PxRigidStatic* GameObject::GetStaticRigidBody()const
+Ogre::Vector3 GameObject::GetLocalPosition() const
 {
-	if(rigidBody)
-		if(rigidBody->isRigidStatic())
-			return (physx::PxRigidStatic*)rigidBody;
-
-	return NULL;
+	return gameObjectNode->getPosition();
 }
 
-physx::PxRigidDynamic* GameObject::GetDynamicRigidBody()const
+Ogre::Vector3 GameObject::GetWorldPosition() const
 {
-	if(rigidBody)
-		if(rigidBody->isRigidDynamic())
-			return (physx::PxRigidDynamic*)rigidBody;
-
-	return NULL;
+	return gameObjectNode->_getDerivedPosition();
 }
+
+void GameObject::SetLocalPosition(const Ogre::Vector3& newPos)
+{
+	gameObjectNode->setPosition(newPos);
+	Ogre::Vector3 wpos = gameObjectNode->_getDerivedPosition();
+	if(rigidBody)
+		rigidBody->SetPosition(physx::PxVec3(wpos.x, wpos.y, wpos.z));
+}
+
+void GameObject::SetLocalPosition(const float x, const float y, const float z)
+{
+	gameObjectNode->setPosition(x, y, z);
+	Ogre::Vector3 wpos = gameObjectNode->_getDerivedPosition();
+	if(rigidBody)
+		rigidBody->SetPosition(physx::PxVec3(wpos.x, wpos.y, wpos.z));
+}
+
+void GameObject::SetWorldPosition(const Ogre::Vector3& newPos)
+{
+	gameObjectNode->_setDerivedPosition(newPos);
+	if(rigidBody)
+		rigidBody->SetPosition(physx::PxVec3(newPos.x, newPos.y, newPos.z));/**/
+}
+
+void GameObject::SetWorldPosition(const float x, const float y, const float z)
+{
+	gameObjectNode->_setDerivedPosition(Ogre::Vector3(x, y, z));
+	if(rigidBody)
+		rigidBody->SetPosition(physx::PxVec3(x, y, z));/**/
+}
+
+Ogre::Quaternion GameObject::GetLocalOrientation() const
+{
+	return gameObjectNode->getOrientation();
+}
+
+void GameObject::SetLocalOrientation(const Ogre::Quaternion& newOrientation)
+{
+	gameObjectNode->setOrientation(newOrientation);
+	Ogre::Quaternion rot = gameObjectNode->_getDerivedOrientation();
+	if(rigidBody)
+		rigidBody->SetOrientation(physx::PxQuat(rot.x, rot.y, rot.z, rot.w));
+}
+
+void GameObject::SetLocalOrientation(const float w, const float x, const float y, const float z)
+{
+	gameObjectNode->setOrientation(w, x, y, z);
+	Ogre::Quaternion rot = gameObjectNode->_getDerivedOrientation();
+	if(rigidBody)
+		rigidBody->SetOrientation(physx::PxQuat(rot.x, rot.y, rot.z, rot.w));
+}
+
+Ogre::Quaternion GameObject::GetWorldOrientation() const
+{
+	return gameObjectNode->_getDerivedOrientation();
+}
+
+bool GameObject::GetInheritOrientation() const
+{
+	return gameObjectNode->getInheritOrientation();
+}
+
+void GameObject::SetWorldOrientation(const Ogre::Quaternion& newOrientation)
+{
+	gameObjectNode->_setDerivedOrientation(newOrientation);
+	if(rigidBody)
+		rigidBody->SetOrientation(physx::PxQuat(newOrientation.x, newOrientation.y, newOrientation.z, newOrientation.w));
+}
+
+void GameObject::SetWorldOrientation(const float w, const float x, const float y, const float z)
+{
+	gameObjectNode->_setDerivedOrientation(Ogre::Quaternion(w, x, y, z));
+	if(rigidBody)
+		rigidBody->SetOrientation(physx::PxQuat(x, y, z, w));
+}
+
+void GameObject::SetInheritOrientation(const bool val)
+{
+	gameObjectNode->setInheritOrientation(val);
+}
+
+Ogre::Vector3 GameObject::GetLocalScale() const
+{
+	return gameObjectNode->getScale();
+}
+
+void GameObject::SetScale(const Ogre::Vector3& newScale)
+{
+	gameObjectNode->setScale(newScale);
+}
+
+void GameObject::SetScale(const float x, const float y, const float z)
+{
+	gameObjectNode->setScale(x, y, z);
+}
+
+Ogre::Vector3 GameObject::GetWorldScale() const
+{
+	return gameObjectNode->_getDerivedScale();
+}
+
+bool GameObject::GetInheritScale() const
+{
+	return gameObjectNode->getInheritScale();
+}
+
+void GameObject::SetInheritScale(const bool val)
+{
+	gameObjectNode->setInheritScale(val);
+}
+
+#pragma endregion
+
+SharedGameObject GameObject::Clone()
+{
+	SharedGameObject clone = std::make_shared<GameObject>(owningScene);
+
+	clone->SetWorldTransform(gameObjectNode->_getDerivedPosition(), gameObjectNode->_getDerivedOrientation(), gameObjectNode->_getDerivedScale());
+	clone->SetInheritOrientation(GetInheritOrientation());
+	clone->SetInheritScale(GetInheritScale());
+
+	clone->owningScene = owningScene;
+
+	if(!name.empty())
+		clone->name = name + "(Clone)";
+
+	for (auto start = components.begin(); start != components.end(); ++start)
+	{
+		clone->AttachComponent(start->second->Clone(clone.get()));
+	}
+
+	for (auto start = children.begin(); start != children.end(); ++start)
+	{
+		clone->AddChild(start->get()->Clone());
+	}
+
+	return clone;
+}
+

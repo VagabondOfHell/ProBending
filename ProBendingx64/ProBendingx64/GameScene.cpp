@@ -1,12 +1,6 @@
 #include "GameScene.h"
 #include "Arena.h"
-#include "ArenaBuilder.h"
 #include "SceneManager.h"
-#include "OgreSceneManager.h"
-#include "OgreRenderWindow.h"
-#include "OgreCamera.h"
-#include "OgreViewport.h"
-#include "PxScene.h"
 #include "GUIManager.h"
 #include "InputNotifier.h"
 #include "InputManager.h"
@@ -14,6 +8,28 @@
 #include "KinectReader.h"
 #include "CudaModuleManager.h"
 #include "CollisionFilterShaders.h"
+#include "PhysXSerializerWrapper.h"
+#include "PhysXDataManager.h"
+#include "SceneSerializer.h"
+
+#include "ArenaBuilder.h"
+#include "RigidBodyComponent.h"
+#include "MeshRenderComponent.h"
+
+#include "OgreMeshManager.h"
+#include "OgreSceneManager.h"
+#include "OgreRenderWindow.h"
+#include "OgreCamera.h"
+#include "OgreViewport.h"
+
+#include "PxScene.h"
+#include "geometry/PxConvexMesh.h"
+#include "PxPhysics.h"
+#include "PxRigidDynamic.h"
+
+bool save = false;
+bool load = false;
+bool savePhysX = false;
 
 GameScene::GameScene(void)
 	:IScene(NULL, NULL, "", "")
@@ -43,8 +59,13 @@ physx::PxSceneDesc* GameScene::GetSceneDescription(physx::PxVec3& gravity, bool 
 	physx::PxSceneDesc* sceneDescriptor = GetDefaultSceneDescription(gravity, initializeCuda);
 
 	sceneDescriptor->filterShader = CollisionFilterShaders::GameSceneFilterShader;
+	sceneDescriptor->flags.set(physx::PxSceneFlag::eENABLE_KINEMATIC_STATIC_PAIRS);
+	
 	//use the following to pass Constant data to the shader
 	//sceneDescriptor->filterShaderData;sceneDescriptor->filterShaderSize;
+	collisionReporter = CollisionReporter();
+
+	sceneDescriptor->simulationEventCallback = &collisionReporter;
 
 	return sceneDescriptor;
 }
@@ -57,27 +78,35 @@ void GameScene::Initialize()
 
 	ogreSceneManager->setAmbientLight(Ogre::ColourValue(1.0f, 1.0f, 1.0f, 1.0f));
 
-	mainOgreCamera = ogreSceneManager->createCamera("MainCamera");
-
-	owningManager->GetRenderWindow()->removeAllViewports();
-
-	Ogre::Viewport* viewport = owningManager->GetRenderWindow()->addViewport(mainOgreCamera);
-	viewport->setBackgroundColour(Ogre::ColourValue(0.0f, 0.0f, 0.0f));
+	CreateCameraAndViewport(Ogre::ColourValue(0.0f, 0.0f, 0.0f, 0.0f), Ogre::Vector3(-10.0f, 1.0f, 0.0f));
 
 	InputNotifier::GetInstance()->AddObserver(this);
 
-	mainOgreCamera->setAspectRatio(Ogre::Real(viewport->getActualWidth()) / Ogre::Real(viewport->getActualHeight()));
-
-	mainOgreCamera->setPosition(0, 0, 40.50f);
-	mainOgreCamera->lookAt(0, 0, 0);
-	mainOgreCamera->setNearClipDistance(0.01);
-	mainOgreCamera->setFarClipDistance(10000);
-
 	InitializePhysics(physx::PxVec3(0.0f, -9.8f, 0.0f), true);
+
+	MeshRenderComponent::CreatePlane("BasicPlane");
+
+	printf("Material Count: %i\n", PhysXDataManager::GetSingletonPtr()->GetMaterialCount());
+
+	printf("Convex Mesh Count: %i\n", PhysXDataManager::GetSingletonPtr()->GetConvexMeshCount());
+
+	printf("Shape Count: %i \n", PhysXDataManager::GetSingletonPtr()->GetShapeCount());
+
+	ArenaBuilder::CreateProbendingPhysXData(this);
+	//ArenaBuilder::GenerateProbendingArena(this);
+	
+	battleArena->DeserializeArena();
+	
+	printf("Material Count: %i\n", PhysXDataManager::GetSingletonPtr()->GetMaterialCount());
+
+	printf("Convex Mesh Count: %i\n", PhysXDataManager::GetSingletonPtr()->GetConvexMeshCount());
+
+	printf("Shape Count: %i \n", PhysXDataManager::GetSingletonPtr()->GetShapeCount());
 
 	InputManager* inputManager = InputManager::GetInstance();
 
-inputManager->FillGestureReader(L"C:\\Users\\Adam\\Desktop\\Capstone\\GestureData\\ProbendingGestures.gbd");
+	inputManager->FillGestureReader(L"C:\\Users\\Adam\\Desktop\\Capstone\\GestureData\\ProbendingGestures.gbd");
+	
 	KinectSpeechReader* speechReader = inputManager->GetSpeechReader();
 	if(speechReader)
 	{
@@ -112,10 +141,55 @@ bool GameScene::Update(float gameTime)
 			physicsWorld->fetchResults(true);
 
 			battleArena->Update(gameTime);
+			int i = 0;
+			for (auto start = gameObjectList.begin();
+				start != gameObjectList.end(); ++start)
+			{
+				start->get()->Update(gameTime);
+			}
 
 			physxSimulating = false;
 		}
+
+	if(!physxSimulating && savePhysX)
+	{
+		PhysXSerializerWrapper::CreateSerializer();
+		std::string arenaFileName =PxDataManSerializeOptions::DEFAULT_FILE_PATH + battleArena->GetArenaName() + "\\" + battleArena->GetArenaName();
+		arenaFileName.erase(std::remove_if(arenaFileName.begin(), arenaFileName.end(), isspace), arenaFileName.end());
+
+		battleArena->SavePhysXData(arenaFileName, "ArenaCollection");
+
+		PhysXSerializerWrapper::DestroySerializer();
+		savePhysX = false;
+	}
+	if(!physxSimulating && save)
+	{
+		PhysXSerializerWrapper::CreateSerializer();
+
+		battleArena->SerializeArena();
+
+		PhysXSerializerWrapper::DestroySerializer();
+		save = false;
+	}
+
+	if(!physxSimulating && load)
+	{
+		PhysXSerializerWrapper::CreateSerializer();
+		gameObjectList.clear();
+		PhysXDataManager::GetSingletonPtr()->ReleaseAll();
+
+		battleArena->DeserializeArena();
 	
+			printf("Num Actors: %i\n", GetPhysXScene()->getNbActors(physx::PxActorTypeFlag::eRIGID_DYNAMIC));
+			printf("Num Game Objects: %i\n", gameObjectList.size());
+
+		PhysXSerializerWrapper::DestroySerializer();
+
+		FindAllByName("ProbendPillarRL(Clone)");
+
+		load = false;
+	}
+
 	return true;
 }
 
@@ -133,41 +207,73 @@ bool GameScene::keyPressed( const OIS::KeyEvent &arg )
 {
 	if(arg.key == OIS::KC_W)
 	{
-		Ogre::Vector3 camPos = mainOgreCamera->getPosition();
-		camPos.x += 10;
-		mainOgreCamera->setPosition(camPos);
+		mainOgreCamera->moveRelative(Ogre::Vector3(1.0f, 0.0f, 0.0f));
 	}
 
 	if(arg.key == OIS::KC_E)
 	{
-		Ogre::Vector3 camPos = mainOgreCamera->getPosition();
-		camPos.x -= 10;
-		mainOgreCamera->setPosition(camPos);
+		mainOgreCamera->moveRelative(Ogre::Vector3(-1.0f, 0.0f, 0.0f));
 	}
 
 	if(arg.key == OIS::KC_I)
 	{
-		Ogre::Vector3 camPos = mainOgreCamera->getPosition();
-		camPos.z += 40;
-		mainOgreCamera->setPosition(camPos);
+		mainOgreCamera->moveRelative(Ogre::Vector3(0.0f, 0.0f, 1.0f));
 	}
 
-	if(arg.key == OIS::KC_P)
+	if(arg.key == OIS::KC_NUMPAD8)
 	{
-		mainOgreCamera->yaw(Ogre::Radian(Ogre::Degree(10)));
+		mainOgreCamera->rotate(Ogre::Vector3::UNIT_X, Ogre::Radian(Ogre::Degree(1)));
+		//mainOgreCamera->yaw(Ogre::Radian(Ogre::Degree(10)));
 	}
 
-	if(arg.key == OIS::KC_O)
+	if(arg.key == OIS::KC_NUMPAD2)
 	{
-		mainOgreCamera->yaw(Ogre::Radian(Ogre::Degree(-10)));
+		mainOgreCamera->rotate(Ogre::Vector3::UNIT_X, Ogre::Radian(Ogre::Degree(-1)));
+		//mainOgreCamera->yaw(Ogre::Radian(Ogre::Degree(-10)));
 	}
+
+	if(arg.key == OIS::KC_NUMPAD4)
+	{
+		mainOgreCamera->rotate(Ogre::Vector3::UNIT_Y, Ogre::Radian(Ogre::Degree(1)));
+		//mainOgreCamera->pitch(Ogre::Radian(Ogre::Degree(10)));
+	}
+	if(arg.key == OIS::KC_NUMPAD6)
+	{
+		mainOgreCamera->rotate(Ogre::Vector3::UNIT_Y, Ogre::Radian(Ogre::Degree(-1)));
+		//mainOgreCamera->pitch(Ogre::Radian(Ogre::Degree(-10)));
+	}
+
+	if(arg.key == OIS::KC_NUMPAD7)
+	{
+		
+		mainOgreCamera->rotate(Ogre::Vector3::UNIT_Z, Ogre::Radian(Ogre::Degree(1)));
+		//mainOgreCamera->roll(Ogre::Radian(Ogre::Degree(10)));
+	}
+	if(arg.key == OIS::KC_NUMPAD9)
+	{
+		mainOgreCamera->rotate(Ogre::Vector3::UNIT_Z, Ogre::Radian(Ogre::Degree(-1)));
+		//mainOgreCamera->roll(Ogre::Radian(Ogre::Degree(-10)));
+	}
+
+	if(arg.key == OIS::KC_M)
+		mainOgreCamera->moveRelative(Ogre::Vector3(0.0f, -1.0f, 0.0f));
+
+	if(arg.key == OIS::KC_N)
+		mainOgreCamera->moveRelative(Ogre::Vector3(0.0f, 1.0f, 0.0f));
 
 	if(arg.key == OIS::KC_J)
 	{
-		Ogre::Vector3 camPos = mainOgreCamera->getPosition();
-		camPos.z -= 40;
-		mainOgreCamera->setPosition(camPos);
+		mainOgreCamera->moveRelative(Ogre::Vector3(0.0f, 0.0f, -1.0f));
 	}
+
+	if(arg.key == OIS::KC_F11)
+		save = true;
+
+	if(arg.key == OIS::KC_F2)
+		load = true;
+
+	if(arg.key == OIS::KC_F9)
+		savePhysX = true;
 
 	return true;
 }

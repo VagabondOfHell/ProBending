@@ -21,10 +21,13 @@ public:
 		switch (code)
 		{
 			case physx::PxErrorCode::eNO_ERROR:
+				errorHeading = "No Error";
 				break;
 			case physx::PxErrorCode::eDEBUG_INFO:
+				errorHeading = "Debug Info";
 				break;
 			case physx::PxErrorCode::eDEBUG_WARNING:
+				errorHeading = "Debug warning";
 				break;
 			case physx::PxErrorCode::eINVALID_PARAMETER:
 				errorHeading = "Invalid Parameter: ";
@@ -48,6 +51,7 @@ public:
 				errorHeading = "All Errors: ";
 				break;
 			default:
+				errorHeading = "Nothing to report";
 				break;
 		}
 

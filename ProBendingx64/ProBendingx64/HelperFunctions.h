@@ -1,6 +1,7 @@
 #pragma once
 #include "foundation\PxVec3.h"
 #include "OgreVector3.h"
+#include "MeshInfo.h"
 
 namespace physx
 {
@@ -34,4 +35,8 @@ public:
 	///<param name="manualObject">The Ogre Manual to fill with draw data</param>
 	static void DrawBoxGeometry(const physx::PxVec3 shapePosition, 
 		const physx::PxBoxGeometry* const boxGeometry, Ogre::ManualObject* manualObject);
+
+	static void GetMeshInformation(const Ogre::Mesh* const mesh, MeshInfo& meshInfo,
+		const Ogre::Vector3 &position = Ogre::Vector3::ZERO, const Ogre::Quaternion &orient = Ogre::Quaternion::IDENTITY, 
+		const Ogre::Vector3 &scale = Ogre::Vector3::UNIT_SCALE);
 };

@@ -5,13 +5,15 @@
 
 class IScene;
 
+typedef std::shared_ptr<Projectile> SharedProjectile;
+
 class ProjectileManager
 {
 private:
 	IScene* owningScene;//The scene that owns this manager
 
 	unsigned int NEXT_PROJECTILE_ID;//The next projectile ID that will be used for the next created projectile
-	typedef std::map<unsigned int, Projectile*> ProjectileMap;//Typedef for the projectile map
+	typedef std::map<unsigned int, SharedProjectile> ProjectileMap;//Typedef for the projectile map
 	
 	ProjectileMap projectileMap;//The projectile map
 
@@ -23,12 +25,12 @@ public:
 	///<param name="element">The element that the ability belongs to</param>
 	///<param name="abilityID">The ID of the ability, as defined in the ProbenderFlags.h header</param>
 	///<returns>A pointer to the newly created projectile, or NULL if failed</returns>
-	Projectile* const CreateProjectile(const ElementEnum::Element element,const AbilityIDs::AbilityID abilityID);
+	SharedProjectile const CreateProjectile(const ElementEnum::Element element,const AbilityIDs::AbilityID abilityID);
 	
 	///<summary>Destroys the specified projectile</summary>
 	///<param name="projectile">The projectile to be destroyed</param>
 	///<returns>True if found and successful, false if not</returns>
-	bool DestroyProjectile(Projectile* projectile);
+	bool DestroyProjectile(SharedProjectile projectile);
 
 	void Update(const float gameTime);
 };

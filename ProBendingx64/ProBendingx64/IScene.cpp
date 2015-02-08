@@ -11,6 +11,7 @@
 #include "extensions\PxDefaultSimulationFilterShader.h"
 #include "foundation\PxFoundation.h"
 #include "pxtask\PxCudaContextManager.h"
+#include "PhysXDataManager.h"
 
 IScene::IScene(SceneManager* _owningManager, Ogre::Root* root, std::string _sceneName, std::string _resourceGroupName)
 	: physicsWorld(NULL), physxSimulating(false), physxEnabled(false), cudaContextManager(NULL), guiManager(new GUIManager()), started(false),
@@ -35,6 +36,10 @@ IScene::~IScene()
 		mCpuDispatcher = NULL;
 	}
 
+	gameObjectList.clear();
+
+	PhysXDataManager::DestroySingleton();
+
 	if(physicsWorld)
 		physicsWorld->release();
 
@@ -49,6 +54,33 @@ IScene::~IScene()
 
 	//DestroyResources();
 	owningManager->ogreRoot->destroySceneManager(ogreSceneManager);
+}
+
+void IScene::CreateCameraAndViewport(const Ogre::ColourValue& clearColour, const Ogre::Vector3& camPos 
+		/*= Ogre::Vector3(0.0f)*/, const Ogre::Vector3& lookAt /*= Ogre::Vector3(0.0f)*/, 
+		float nearClip /*= 0.1f*/, float farClip /*= 10000.0f*/)
+{
+	//Use the main ogre camera as an indicator if this has been called once already
+	if(mainOgreCamera)
+		return;
+
+	//Remove any viewports from before
+	owningManager->GetRenderWindow()->removeAllViewports();
+
+	//Create the camera with the name MainCamera
+	mainOgreCamera = ogreSceneManager->createCamera("MainCamera");
+	mainOgreCamera->setPosition(camPos);
+	mainOgreCamera->lookAt(lookAt);
+	mainOgreCamera->setNearClipDistance(nearClip);
+	mainOgreCamera->setFarClipDistance(farClip);
+
+	//Add a viewport for the specified camera
+	Ogre::Viewport* viewport = owningManager->GetRenderWindow()->addViewport(mainOgreCamera);
+
+	//Set the background colour
+	viewport->setBackgroundColour(clearColour);
+	mainOgreCamera->setAspectRatio(Ogre::Real(viewport->getActualWidth()) / 
+		Ogre::Real(viewport->getActualHeight()));
 }
 
 void IScene::Initialize()
@@ -129,7 +161,7 @@ physx::PxSceneDesc* IScene::GetDefaultSceneDescription(physx::PxVec3& gravity, b
 	return descriptor;
 }
 
-const std::string IScene::GetSceneName()const{return ogreSceneManager->getName();}
+std::string IScene::GetSceneName()const{return ogreSceneManager->getName();}
 
 Ogre::SceneNode* IScene::GetSceneRootNode()const{return ogreSceneManager->getRootSceneNode();}
 
@@ -157,4 +189,25 @@ void IScene::DestroyResources(const std::string& _resourceGroupName)
 {
 	if(!_resourceGroupName.empty())
 		Ogre::ResourceGroupManager::getSingleton().destroyResourceGroup(_resourceGroupName);
+}
+
+std::vector<SharedGameObject> IScene::FindAllByName(const std::string& nameToFind)
+{
+	std::vector<SharedGameObject> results = std::vector<SharedGameObject>();
+	//lambda that grabs the name of the game object and compares its identical
+	std::copy_if(gameObjectList.begin(), gameObjectList.end(),  back_inserter(results), 
+		[nameToFind](SharedGameObject lhs) { return lhs->GetName() == nameToFind; });
+
+	return results;
+}
+
+SharedGameObject IScene::FindByName(const std::string& nameToFind)
+{
+	auto result = std::find_if(gameObjectList.begin(), gameObjectList.end(), 
+		[nameToFind](SharedGameObject lhs){return lhs->GetName() == nameToFind;});
+
+	if(result != gameObjectList.end())
+		return *result;
+	else
+		return NULL;
 }

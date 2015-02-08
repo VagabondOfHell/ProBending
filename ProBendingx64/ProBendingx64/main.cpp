@@ -33,6 +33,11 @@ extern "C" {
                 e.getFullDescription().c_str() << std::endl;
 #endif
         }
+		catch(std::exception e)
+		{
+			MessageBox( NULL, e.what(), "An exception has occured!", MB_OK | MB_ICONERROR | MB_TASKMODAL);
+			game.CloseGame();
+		}
 
         return 0;
     }

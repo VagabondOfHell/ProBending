@@ -1,7 +1,14 @@
 #pragma once
-#include <string>
+#define NOMINMAX
 #include "foundation\PxVec3.h"
 #include "PxSceneDesc.h"
+#include "OgreVector3.h"
+
+#include "GameObject.h"
+
+#include <string>
+#include <unordered_set>
+#include <memory>
 
 namespace Ogre
 {
@@ -9,6 +16,7 @@ namespace Ogre
 	class Camera;
 	class Root;
 	class SceneNode;
+	class ColourValue;
 };
 
 namespace physx
@@ -21,10 +29,19 @@ namespace physx
 class SceneManager;
 class GUIManager;
 
+typedef std::shared_ptr<GameObject> SharedGameObject;
+
 class IScene
 {
-protected:
+	friend class SceneSerializer;
 
+private:
+	
+
+protected:
+	typedef std::unordered_set<SharedGameObject> GameObjectList;
+	GameObjectList gameObjectList;
+	
 	SceneManager* owningManager;
 
 	std::string resourceGroupName;
@@ -70,6 +87,15 @@ public:
 
 	virtual ~IScene();	
 
+	///<summary>Handles creation of the viewport and the Camera</summary>
+	///<param name="clearColour">The colour to clear the viewport with</param>
+	///<param name="camPos">The start position of the camera</param>
+	///<param name="lookAt">Where the camera should look towards</param>
+	///<param name="nearClip">The near clipping plane</param>
+	///<param name="farClip">The far clipping plane</param>
+	virtual void CreateCameraAndViewport(const Ogre::ColourValue& clearColour, const Ogre::Vector3& camPos = Ogre::Vector3(0.0f), 
+		const Ogre::Vector3& lookAt = Ogre::Vector3(0.0f), float nearClip = 0.1f, float farClip = 10000.0f);
+
 	virtual void Initialize();
 
 	///<summary>Initializes PhysX Physics with the scene, handling generic PxScene creation. Marked virtual for more
@@ -77,6 +103,33 @@ public:
 	///<param name="gravity">The gravity force acted on all objects in the physics scene</param>
 	///<param name="initializeCuda">True to initialize the CUDA component of physx, false if not</param>
 	void InitializePhysics(physx::PxVec3& gravity = physx::PxVec3(0.0f, -9.8f, 0.0f), bool initializeCuda = false);
+
+	///<summary>Creates a new game object</summary>
+	///<param name="objectName">The name to assign to the object</param>
+	///<returns>Pointer to the newly created Game Object</returns>
+	inline SharedGameObject CreateGameObject(const std::string& objectName = "")
+	{
+		SharedGameObject newObject = std::make_shared<GameObject>(GameObject(this, objectName));
+		gameObjectList.insert(newObject);
+		return newObject;
+	}
+
+	///<summary>Adds a game object (used for inherited types)</summary>
+	///<param name="gameObject">The shared pointer to the game object</param>
+	///<returns>True if addable, false if not</returns>
+	inline bool AddGameObject(SharedGameObject gameObject)
+	{
+		std::pair<GameObjectList::iterator, bool> result = gameObjectList.insert(gameObject);
+		return result.second;
+	}
+
+	///<summary>Destroys the specified game object</summary>
+	///<param name="gameObject">The game object to destroy</param>
+	///<returns></returns>
+	inline void RemoveGameObject(SharedGameObject gameObject)
+	{
+		gameObjectList.erase(gameObject);
+	}
 
 	///<summary>Called by the scene manager when the scene is first started</summary>
 	virtual void Start() = 0;
@@ -103,8 +156,18 @@ public:
 
 	///<summary>Gets the name of the scene</summary>
 	///<returns>String representing the name of the scene, or empty string if none assigned</returns>
-	const std::string GetSceneName()const;
+	std::string GetSceneName()const;
 	
+	///<summary>Finds all game objects by the specified name and returns it in a vector</summary>
+	///<param name="nameToFind">The name to find</param>
+	///<returns>Vector representing game objects of the specified name. Size of 0 if not found</returns>
+	std::vector<SharedGameObject> FindAllByName(const std::string& nameToFind);
+
+	///<summary>Finds the first instance of the specified name</summary>
+	///<param name="nameToFind">Name of the object to find</param>
+	///<returns>The object, or NULL if not found</returns>
+	SharedGameObject FindByName(const std::string& nameToFind);
+
 	///<summary>Checks if this scene is utilizing physx for physics</summary>
 	///<returns>True if physx has been initialized, false if not</returns>
 	inline const bool IsUsingPhysX()const{return physxEnabled;}

@@ -1,11 +1,13 @@
 #pragma once
-#include <string>
 
-class Arena;
+class IScene;
 
 class ArenaBuilder
 {
 public:
-	static void LoadArena(Arena& arenaToFill, const std::string arenaName);
-};
+	///<summary>Creates the probending arena in code to be able to serialize required PhysX data</summary>
+	///<param name="scene">The scene for objects to be added to</param>
+	static void GenerateProbendingArena(IScene* scene);
 
+	static void CreateProbendingPhysXData(IScene* scene);
+};

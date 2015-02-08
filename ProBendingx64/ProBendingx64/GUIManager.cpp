@@ -62,7 +62,7 @@ bool GUIManager::AddScheme(const CEGUI::String& schemeFileName)
 	return false;
 }
 
-bool GUIManager::AddWindow(const CEGUI::String& layoutFileName, const CEGUI::String& windowName, const CEGUI::String& schemeFileName)
+bool GUIManager::LoadLayout(const CEGUI::String& layoutFileName, const CEGUI::String& windowName, const CEGUI::String& schemeFileName)
 {
 	CEGUI::Window* newWindow = NULL;
 	try

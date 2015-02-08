@@ -1,51 +1,139 @@
 #include "ProbenderStateManager.h"
-#include "NotImplementedException.h"
+#include "Probender.h"
 
 ProbenderStateManager::ProbenderStateManager(void)
+	:probender(NULL)
 {
-	isFlying = false;
-	currentState = Idle;
 	timeInCurrentState = 0.0f;
-	timeSpentFlying = 0.0f;
+	stateChangeBlockTimer = 0.0f;
+
+	stateChangedThisFrame = false;
+	disallowStateChange = false;
+
+	currentState = StateFlags::IDLE_STATE;
 }
 
+ProbenderStateManager::ProbenderStateManager(Probender* bender)
+	:probender(bender)
+{
+	timeInCurrentState = 0.0f;
+	stateChangeBlockTimer = 0.0f;
+
+	stateChangedThisFrame = false;
+	disallowStateChange = false;
+
+	States[StateFlags::IDLE_STATE] = State(StateFlags::IDLE_STATE, 
+		StateFlags::ALL_STATES & ~StateFlags::IDLE_STATE_FLAG, 0.0f, StateFlags::ALL_STATES & ~StateFlags::IDLE_STATE_FLAG);
+
+	States[StateFlags::JUMP_STATE] = State(StateFlags::JUMP_STATE, 
+		StateFlags::FALLING_STATE_FLAG, 0.0f, StateFlags::REELING_STATE_FLAG | StateFlags::FALLING_STATE_FLAG);
+
+	States[StateFlags::FALLING_STATE] = State(StateFlags::FALLING_STATE,
+		StateFlags::IDLE_STATE_FLAG, 0.0f, StateFlags::IDLE_STATE_FLAG | StateFlags::REELING_STATE_FLAG);
+
+	States[StateFlags::BLOCK_STATE] = State(StateFlags::BLOCK_STATE, StateFlags::IDLE_STATE_FLAG, 1.0f, StateFlags::REELING_STATE_FLAG);
+
+	States[StateFlags::CATCH_STATE] = State(StateFlags::CATCH_STATE, StateFlags::IDLE_STATE_FLAG, 1.0f, StateFlags::REELING_STATE_FLAG);
+
+	States[StateFlags::HEAL_STATE] = State(StateFlags::HEAL_STATE, StateFlags::IDLE_STATE_FLAG, 1.0f, StateFlags::REELING_STATE_FLAG);
+
+	States[StateFlags::DODGE_STATE] = State(StateFlags::DODGE_STATE, StateFlags::IDLE_STATE_FLAG, 1.0f, StateFlags::INVALID_STATE_FLAG);
+
+	States[StateFlags::REELING_STATE] = State(StateFlags::REELING_STATE, StateFlags::IDLE_STATE_FLAG, 1.0f, StateFlags::INVALID_STATE_FLAG);
+
+	currentState = StateFlags::IDLE_STATE;
+}
 
 ProbenderStateManager::~ProbenderStateManager(void)
 {
 }
 
-void ProbenderStateManager::SetState(PossibleStates newState)
+bool ProbenderStateManager::SetState(StateFlags::PossibleStates newState, float timeInNewState)
 {
-	if(currentState == newState)
-		return;
+	if(disallowStateChange)
+		return false;
 
-	//Reset the timer upon new state assignment
-	timeInCurrentState = 0.0f;
+	if(stateChangedThisFrame)
+		return false;
 
-	//Throw this to complete this method later on
-	throw NotImplementedException();
+	if(States[currentState].GetStateID() == newState)
+		return false;
+
+	if(newState == StateFlags::COUNT)
+		return false;
+
+	if(States[currentState].ValidTransition(newState))
+	{
+		States[currentState].ExitState();
+
+		probender->StateExitted(currentState);
+
+		//Set the new state then call Reset on it
+		currentState = newState;
+		stateChangedThisFrame = true;
+
+		probender->StateEntered(currentState);
+
+		return true;
+	}
+	
+	return false;
 }
 
-void ProbenderStateManager::SetFlyState(bool _isFlying)
+bool ProbenderStateManager::SetStateImmediate(StateFlags::PossibleStates newState, float timeInNewState)
 {
-	if(isFlying == _isFlying)
-		return;
-
-	///Reset the flying counter when we begin flying
-	if(isFlying)
-		timeSpentFlying = 0.0f;
+	if(disallowStateChange)
+		return false;
 	
-	isFlying = _isFlying;
+	if(States[currentState].GetStateID() == newState)
+		return false;
 
-	//Throw this to make sure I double check requirements of this method
-	throw NotImplementedException();
+	if(newState == StateFlags::COUNT)
+		return false;
+
+	States[currentState].ExitState();
+
+	probender->StateExitted(currentState);
+
+	//Set the new state then call Reset on it
+	currentState = newState;
+	stateChangedThisFrame = true;
+
+	probender->StateEntered(currentState);
+
+	return true;
 }
 
 void ProbenderStateManager::Update(float gameTime)
 {
-	if(isFlying)
-		timeSpentFlying += gameTime;
-
 	//Increment the amount of time we have spent in the current state
 	timeInCurrentState += gameTime;
+
+	for (int i = 0; i < States.size(); i++)
+	{
+		States[i].Update(gameTime);
+	}
+
+	stateChangedThisFrame = false;
+}
+
+void ProbenderStateManager::SetOnGround(bool val)
+{
+	//if no change, ignore
+	if(onGround == val)
+		return;
+
+	if(val)//if val is true and onGround is false
+	{
+		if(currentState == StateFlags::FALLING_STATE)
+			SetStateImmediate(StateFlags::IDLE_STATE, 0.0f);
+	}
+	else
+	{
+		//if val is false, indicate we are falling regardless of current state if we are not jumping
+		if(currentState != StateFlags::JUMP_STATE)
+			SetStateImmediate(StateFlags::FALLING_STATE, 0.0f);
+	}
+
+	onGround = val;
 }

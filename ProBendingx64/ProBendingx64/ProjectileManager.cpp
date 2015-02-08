@@ -2,7 +2,7 @@
 #include "ProjectileFactory.h"
 #include "Probender.h"
 #include "AbilityDescriptor.h"
-
+#include "RigidBodyComponent.h"
 ///When a projectile gets removed, check its ability data for the caster
 ///and check if the projectile is on one of the casters hands. If it is,
 ///set that hand to null before deleting the projectile
@@ -16,22 +16,22 @@ ProjectileManager::ProjectileManager(IScene* _owningScene)
 
 ProjectileManager::~ProjectileManager(void)
 {
-	//Destroy all projectiles
 	ProjectileMap::iterator iter = projectileMap.begin();
 	while (iter != projectileMap.end())
 	{
-		delete iter->second;
+		iter->second.reset();
 		++iter;
 	}
-
+	//Destroy all projectiles
+	projectileMap.clear();
 }
 
-Projectile* const ProjectileManager::CreateProjectile(const ElementEnum::Element element, const AbilityIDs::AbilityID abilityID)
+SharedProjectile const ProjectileManager::CreateProjectile(const ElementEnum::Element element, const AbilityIDs::AbilityID abilityID)
 {
 	if(element == ElementEnum::InvalidElement)
 		return NULL;
 
-	Projectile* projectile = ProjectileFactory::CreateProjectile(owningScene, element, abilityID);
+	SharedProjectile projectile = ProjectileFactory::CreateProjectile(owningScene, element, abilityID);
 
 	if(projectile)
 	{
@@ -52,16 +52,12 @@ Projectile* const ProjectileManager::CreateProjectile(const ElementEnum::Element
 	return NULL;
 }
 
-bool ProjectileManager::DestroyProjectile(Projectile* projectile)
+bool ProjectileManager::DestroyProjectile(SharedProjectile projectile)
 {
 	ProjectileMap::iterator iter = projectileMap.find(projectile->projectileID);
 	if(iter != projectileMap.end())
 	{
-		//Remove it from the caster
-		projectile->attachedAbility->caster->RemoveProjectile(projectile);
-		//Delete it (change this to return to object pool
-		delete iter->second;
-
+		projectileMap.erase(iter);
 		return true;
 	}
 
@@ -71,10 +67,10 @@ bool ProjectileManager::DestroyProjectile(Projectile* projectile)
 void ProjectileManager::Update(const float gameTime)
 {
 	//Loop through and update all projectiles
-	ProjectileMap::iterator iter = projectileMap.begin();
+	/*ProjectileMap::iterator iter = projectileMap.begin();
 	while (iter != projectileMap.end())
 	{
 		iter->second->Update(gameTime);
 		++iter;
-	}
+	}*/
 }

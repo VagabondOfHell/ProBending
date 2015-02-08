@@ -3,22 +3,32 @@
 #include "ProbenderInGameData.h"
 #include "ProbenderStateManager.h"
 #include "ProbenderData.h"
+#include "Projectile.h"
+
+#include <memory>
 
 namespace physx
 {
 	class PxRigidDynamic;
 };
 
+class MeshRenderComponent;
 class IScene;
-class Projectile;
 class Arena;
 
-class Probender
+typedef std::shared_ptr<Projectile> SharedProjectile;
+
+class Probender : public GameObject
 {
 	friend class ProbenderInputHandler;
 
 private:
 	unsigned short contestantID;//The ID the contestant is stored in the arena with
+	
+	static const physx::PxVec3 HALF_EXTENTS;
+
+	TeamData::ContestantColour playerColour;
+	ArenaData::Team currentTeam;
 
 	ElementEnum::Element currentElement;//The current element used
 
@@ -26,31 +36,48 @@ private:
 
 	ProbenderInputHandler inputHandler;//The component handling input
 
-	physx::PxRigidDynamic* physicsBody;//The PhysX rigid body around the character
-
 	///Flight Game Object here
 
-	Projectile* leftHandAttack;//The projectile in the left hand
-	Projectile* rightHandAttack;//The projectile in the right hand
-
-	ProbenderStateManager stateManager;//The state manager for probenders
-
+	SharedProjectile leftHandAttack;//The projectile in the left hand
+	SharedProjectile rightHandAttack;//The projectile in the right hand
+	
 	Probender* currentTarget;//The probender currently targeted by this player
 
 	Arena* owningArena;//The arena the contestant is part of
 
+	MeshRenderComponent* meshRenderComponent;
+
+	Ogre::Vector3 jumpOrigin;
+
+	std::string GetMeshAndMaterialName();
+
+	void HandleJump();
+
 public:
+	ArenaData::Zones CurrentZone;
+	ProbenderStateManager stateManager;//The state manager for probenders
+	
 	enum InputState{Listen, Pause, Stop};
 
 	Probender();
 	Probender(const unsigned short _contestantID, Arena* _owningArena);
 	~Probender(void);
 
-	void AttachToScene(IScene* scene);
+	///<summary>At the moment this is used to differentiate between standard Game Objects and Projectiles and Probenders</summary>
+	///<returns>True if serializable, false if not</returns>
+	virtual inline bool IsSerializable()const{return false;}
+
+	inline ArenaData::Team GetTeam()const{return currentTeam;}
+
+	inline TeamData::ContestantColour GetColour()const {return playerColour;}
+
+	inline ArenaData::Zones GetCurrentZone()const{return CurrentZone;}
 
 	///<summary>Takes the menu created data of the probender and converts it to usable in-game data</summary>
 	///<param name="data">The menu data to convert</param>
 	void CreateInGameData(const ProbenderData& data);
+
+	void Start();
 
 	void Update(float gameTime);
 	
@@ -64,11 +91,13 @@ public:
 
 	///<summary>Checks if the passed projectile is currently on one of the hands, and if so, removes it</summary>
 	///<param name="projectileToRemove">The projectile to remove</param>
-	void RemoveProjectile(Projectile* projectileToRemove);
+	void RemoveProjectile(SharedProjectile projectileToRemove);
 
 	///<summary>Sets the input state of the probender</summary>
 	///<param name="newState">The new state to set to</param>
 	void SetInputState(const InputState newState);
+
+	void SetKeyboardConfiguration(const ConfigurationLayout& newKeyLayout){inputHandler.keysLayout = newKeyLayout;}
 
 	///<summary>Gets the arena that the probender is currently participating in</summary>
 	///<returns>Pointer to the arena </returns>
@@ -81,5 +110,29 @@ public:
 	///<summary>Sets the element that the probender has currently equipped</summary>
 	///<param name="elementToSet">The element to set to</param>
 	virtual void SetCurrentElement(const ElementEnum::Element elementToSet);
+
+	///<summary>Creates the mesh for the specified colours</summary>
+	///<param name="sceneMan">The Ogre Scene Manager used to create the Manual Object with</param>
+	///<param name="red">True to create Red contestant, false if not</param>
+	///<param name="blue">True to create Blue contestant, false if not</param>
+	///<param name="green">True to create Green contestant, false if not</param>
+	///<param name="yellow">True to create Yellow contestant, false if not</param>
+	///<param name="purple">True to create Purple contestant, false if not</param>
+	///<param name="orange">True to create Orange contestant, false if not</param>
+	static void CreateContestantMeshes(Ogre::SceneManager* sceneMan, bool red, bool blue, 
+		bool green, bool yellow, bool purple, bool orange);
+
+	void StateExitted(StateFlags::PossibleStates exittedState);
+
+	void StateEntered(StateFlags::PossibleStates enteredState);
+
+	void Jump();
+	
+	void HandleFall();
+
+	virtual void OnCollisionEnter(const CollisionReport& collision);
+
+	virtual void OnCollisionLeave(const CollisionReport& collision);
+
 };
 

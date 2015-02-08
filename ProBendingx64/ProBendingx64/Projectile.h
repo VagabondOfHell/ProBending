@@ -1,8 +1,9 @@
 #pragma once
 #include "GameObject.h"
+#include "AbilityDescriptor.h"
+
 #include <memory>
 
-class AbilityDescriptor;
 class ParticleGameObject;
 
 namespace Ogre
@@ -28,8 +29,12 @@ private:
 
 public:
 	
-	Projectile(IScene* owningScene, SharedAbilityDescriptor _attachedAbility);
+	Projectile(IScene* owningScene, const std::string& objectName, SharedAbilityDescriptor _attachedAbility);
 	virtual ~Projectile(void);
+
+	///<summary>At the moment this is used to differentiate between standard Game Objects and Projectiles and Probenders</summary>
+	///<returns>True if serializable, false if not</returns>
+	virtual inline bool IsSerializable()const{return false;}
 
 	virtual void Start();
 
@@ -38,5 +43,16 @@ public:
 	///<summary>Attaches an ability if there isn't one already</summary>
 	///<param name="abilityToAttach">The new ability to be attached to the projectile</param>
 	void AttachAbility(SharedAbilityDescriptor abilityToAttach);
+
+	virtual void OnCollisionEnter(const CollisionReport& collision);
+
+	virtual void OnCollisionStay(const CollisionReport& collision);
+
+	virtual void OnCollisionLeave(const CollisionReport& collision);
+
+	virtual void OnTriggerEnter(GameObject* trigger, GameObject* other);
+
+	virtual void OnTriggerLeave(GameObject* trigger, GameObject* other);
+
 };
 

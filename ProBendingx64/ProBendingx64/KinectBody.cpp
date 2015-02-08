@@ -112,15 +112,15 @@ void KinectBody::RecieveBodyInformation(IBody* body)
 
 	}
 
-	//Pass the data to the KinectBodyEventNotifier
-	KinectBodyEventNotifier::GetInstance()->InjectBodyFrameData(this, &previousData, &currBodyData);
-	
 	//If the tracking ID has changed, fill in the data for the body
 	if(currBodyData.BodyTrackingID != previousData.BodyTrackingID)
 	{
 		SetBodyTrackingID(currBodyData.BodyTrackingID);	
 	}
 
+	//Pass the data to the KinectBodyEventNotifier
+	KinectBodyEventNotifier::GetInstance()->InjectBodyFrameData(this, &previousData, &currBodyData);
+	
 	previousData = currBodyData;
 		
 	if(gestureReader)

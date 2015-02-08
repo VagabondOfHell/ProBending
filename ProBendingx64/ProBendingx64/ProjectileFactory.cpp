@@ -8,6 +8,9 @@
 #include "ParticlePointEmitter.h"
 #include "ParticleAffectors.h"
 #include "ColourFadeParticleAffector.h"
+#include "MeshRenderComponent.h"
+#include "RigidBodyComponent.h"
+#include "PhysXDataManager.h"
 
 #include "PxScene.h"
 #include "geometry/PxBoxGeometry.h"
@@ -16,14 +19,16 @@
 #include "PxRigidDynamic.h"
 #include "foundation/PxVec4.h"
 
+#include "OgreEntity.h"
 #include "OgreMaterialManager.h"
 #include "OgreTechnique.h"
 #include "OgrePass.h"
 #include "OgreSceneNode.h"
+#include "OgreMeshManager.h"
 
-Projectile* ProjectileFactory::CreateProjectile(IScene* const scene,const ElementEnum::Element element,const AbilityIDs::AbilityID abilityID)
+SharedProjectile ProjectileFactory::CreateProjectile(IScene* const scene,const ElementEnum::Element element,const AbilityIDs::AbilityID abilityID)
 {
-	Projectile* newProjectile = NULL;
+	SharedProjectile newProjectile = NULL;
 
 	switch (element)
 	{
@@ -35,45 +40,139 @@ Projectile* ProjectileFactory::CreateProjectile(IScene* const scene,const Elemen
 	case ElementEnum::Earth:
 		if(abilityID == AbilityIDs::EARTH_BOULDER)
 		{
-			newProjectile = new Projectile(scene, nullptr);
-			newProjectile->LoadModel("Rock_01.mesh");
-			newProjectile->gameObjectNode->setScale(0.1f, 0.1f, 0.1f);
-			physx::PxBoxGeometry boxGeo;
-			if(newProjectile->ConstructBoxFromEntity(boxGeo))
+			newProjectile = std::make_shared<Projectile>(scene, "EarthBoulder", nullptr);
+			MeshRenderComponent* renderComponent = new MeshRenderComponent();
+		//	newProjectile->SetWorldPosition(-80, 0, 0);
+			
+			newProjectile->AttachComponent(renderComponent);
+			
+			renderComponent->LoadModel("Rock_01.mesh");
+			//renderComponent->SetMaterial("RedProbender");
+			newProjectile->SetScale(0.01f, 0.01f, 0.01f);
+
+			RigidBodyComponent* rigidBody = new RigidBodyComponent();
+			newProjectile->AttachComponent(rigidBody);
+
+			SharedMeshInfo info = renderComponent->GetMeshInfo();
+
+			rigidBody->CreateRigidBody(RigidBodyComponent::DYNAMIC, physx::PxVec3(0, 0, 0)); //Create dynamic body at 0,0,0 with 0 rotation
+			//rigidBody->SetPosition(physx::PxVec3(0, 0, 0));
+			physx::PxVec3 entityHalfSize = HelperFunctions::OgreToPhysXVec3(renderComponent->GetHalfExtents());
+			//SharedBoxGeo geo = PhysXDataManager::GetSingletonPtr()->CreateBoxGeometry(entityHalfSize, "RockBox");
+			
+			physx::PxConvexMesh* convexMesh = PhysXDataManager::GetSingletonPtr()->CookConvexMesh(info, "RockMesh");
+
+			if(!convexMesh)
+				convexMesh = PhysXDataManager::GetSingletonPtr()->GetConvexMesh("RockMesh");
+
+			if(convexMesh)
 			{
-				physx::PxMaterial* mat = PxGetPhysics().createMaterial(0.5f, 0.5f, 0.5f);
+				PhysXDataManager::GetSingletonPtr()->CreateMaterial(1.0f, 1.0f, 0.0f, "RockMaterial");
 
-				physx::PxTransform tran = physx::PxTransform(physx::PxVec3(0.0f, 0.0f, 0.0f), physx::PxQuat::createIdentity());
-				newProjectile->rigidBody = physx::PxCreateDynamic(PxGetPhysics(), tran, boxGeo, *mat, 1.0f);
+				ShapeDefinition shapeDef = ShapeDefinition();
+				//shapeDef.SetConvexMeshGeometry(convexMesh);
+				//shapeDef.SetBoxGeometry(entityHalfSize);
+				shapeDef.SetSphereGeometry(entityHalfSize.magnitude());
+				shapeDef.AddMaterial("RockMaterial");
+				
+				physx::PxShape* shape = PhysXDataManager::GetSingletonPtr()->CreateShape(shapeDef, "RockShape");
 
-				newProjectile->CreatePhysXDebug();
-				newProjectile->rigidBody->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, true);
-				scene->GetPhysXScene()->addActor(*newProjectile->rigidBody);
+				if(shape)
+				{
+					rigidBody->AttachShape(*shape);
+					rigidBody->GetDynamicActor()->setRigidBodyFlag(physx::PxRigidBodyFlag::eENABLE_CCD, true);
+					rigidBody->CreateDebugDraw();
+					//rigidBody->SetUseGravity(false);
+				}
+				//rigidBody->CreateAndAttachNewShape(shapeDef);
+				
+				//renderComponent->Disable();
 			}
+			newProjectile->SetWorldPosition(0, 40, 0);
+			scene->AddGameObject(newProjectile);
 		}
 		break;
 	case ElementEnum::Fire:
 		if(abilityID == AbilityIDs::FIRE_JAB)
 		{
-			newProjectile = new Projectile(scene, nullptr);
-			ParticlePointEmitter* emitter = new ParticlePointEmitter(150, physx::PxVec3(0.0f, 0.0f, 1.0f),
+			newProjectile = std::make_shared<Projectile>(scene, "Fire Jab", nullptr);
+			std::shared_ptr<ParticlePointEmitter> emitter = std::make_shared<ParticlePointEmitter>
+				(ParticlePointEmitter(50, physx::PxVec3(0.0f, 0.0f, 0.0f), 
 				physx::PxVec3(-1.0f, -1.0f, 0.0f).getNormalized(), physx::PxVec3(1.0f, 1.0f, 0.0f).getNormalized(),
-				10.0f, 10.0f);
+				true, 2.0f, 10.0f, 20.0f));
 
 			ParticleSystemParams params = ParticleSystemParams(40.0f, 2.0f, scene->GetCudaContextManager(),
 				physx::PxVec3(0.0f, 0.0f, 0.0f),1.0f, false);
 
-			ParticleSystemBase* particles = new ParticleSystemBase(emitter, 500, 2.0f,params, true);
+			ParticleSystemBase* particles = new ParticleSystemBase(emitter, 500, 2.0f,params);
 			
-			ParticleComponent* particleComponent = new ParticleComponent(newProjectile, particles, false);
+			ParticleComponent* particleComponent = new ParticleComponent(particles, false);
 
 			newProjectile->AttachComponent(particleComponent);
 
-			particles->AddAffector(new ScaleParticleAffector(false, 0, 10, true));
-			particles->AddAffector(new ColourFadeParticleAffector(physx::PxVec4(1, 0.5, 0, 1.0f), 
-				physx::PxVec4(0, 0, 1.0, 0.20f), true));/**/
+			particles->AddAffector(std::make_shared<ScaleParticleAffector>(ScaleParticleAffector(false, 0, 10, true)));
+			particles->AddAffector(std::make_shared<ColourFadeParticleAffector>(ColourFadeParticleAffector(physx::PxVec4(1, 0.5, 0, 1.0f), 
+				physx::PxVec4(0, 0, 1.0, 0.20f), true)));/**/
 			particles->AssignAffectorKernel(particles->FindBestKernel());
 			particles->setMaterial(particles->FindBestShader());
+
+			/*RigidBodyComponent* rigidBody = new RigidBodyComponent();
+			newProjectile->AttachComponent(rigidBody);
+			rigidBody->CreateRigidBody(RigidBodyComponent::DYNAMIC);
+			rigidBody->SetUseGravity(false);
+
+			MeshRenderComponent* renderComponent = new MeshRenderComponent();
+			newProjectile->AttachComponent(renderComponent);
+
+			renderComponent->LoadModel("Rock_01.mesh");*/
+
+			newProjectile->SetScale(0.1f, 0.1f, 0.1f);
+
+			scene->AddGameObject(newProjectile);
+
+
+
+			//SharedProjectile newProjectile2 = std::make_shared<Projectile>(scene, nullptr);
+			// emitter = std::make_shared<ParticlePointEmitter>
+			//	(ParticlePointEmitter(50, physx::PxVec3(0.0f, 0.0f, 0.0f), 
+			//	physx::PxVec3(-1.0f, -1.0f, 0.0f).getNormalized(), physx::PxVec3(1.0f, 1.0f, 0.0f).getNormalized(),
+			//	false, 0.0f, 10.0f, 20.0f));
+
+			// params = ParticleSystemParams(40.0f, 2.0f, NULL, // scene->GetCudaContextManager(),
+			//	physx::PxVec3(0.0f, 0.0f, 0.0f),1.0f, false);
+
+			// particles = new ParticleSystemBase(emitter, 500, 2.0f,params);
+
+			// particleComponent = new ParticleComponent(particles, false);
+
+			//newProjectile2->AttachComponent(particleComponent);
+
+			//particles->AddAffector(std::make_shared<ScaleParticleAffector>(ScaleParticleAffector(false, 0, 10, false)));
+			//particles->AddAffector(std::make_shared<ColourFadeParticleAffector>(ColourFadeParticleAffector(physx::PxVec4(1, 0.5, 0, 1.0f), 
+			//	physx::PxVec4(0, 0, 1.0, 0.20f), false)));
+			//particles->AssignAffectorKernel(particles->FindBestKernel());
+			//particles->setMaterial(particles->FindBestShader());
+
+			//renderComponent = new MeshRenderComponent();
+			//newProjectile2->AttachComponent(renderComponent);
+
+			//renderComponent->LoadModel("Rock_01.mesh");
+
+			//newProjectile2->SetScale(0.1f, 0.1f, 0.1f);
+			//newProjectile2->SetInheritScale(false);
+
+			//newProjectile->AddChild(newProjectile2);
+
+			//newProjectile2->SetLocalPosition(95.0f, 0.0f, 0.0f);
+
+
+
+			//newProjectile2->SetWorldPosition(5.0f, 0.0f, 0.0f);
+			/*physx::PxBoxGeometry geo = physx::PxBoxGeometry(0.5f, 0.5f, 0.5f);
+			rigidBody->AttachShape(geo);
+			rigidBody->SetUseGravity(false);
+			rigidBody->CreateDebugDraw();*/
+
 			//Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().getByName("DefaultParticleShader");
 
 			//Ogre::Pass* pass = material->getTechnique(0)->getPass(0);
