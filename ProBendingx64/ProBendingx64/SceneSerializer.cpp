@@ -375,13 +375,13 @@ bool SceneSerializer::SerializeParticleAffectors(XMLWriter& writer, const Partic
 {
 	ParticleSystemBase* particleSystem = particles->particleSystem;
 
-	if(particleSystem->affectorMap.size() > 0)
+	if(particleSystem->affectors.affectorMap.size() > 0)
 		writer.CreateNode(ParticleAffectors);
 	else
 		return true;//if none to process, return as if successful
 
-	for (auto affectIter = particleSystem->affectorMap.begin();
-		affectIter != particleSystem->affectorMap.end(); ++affectIter)
+	for (auto affectIter = particleSystem->affectors.GetMapBegin();
+		affectIter != particleSystem->affectors.GetMapEnd(); ++affectIter)
 	{
 		ParticleAffectorType::ParticleAffectorType affectType = 
 			affectIter->second->GetAffectorType();

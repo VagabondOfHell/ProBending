@@ -116,11 +116,11 @@ SharedProjectile ProjectileFactory::CreateProjectile(IScene* const scene,const E
 			particles->AssignAffectorKernel(particles->FindBestKernel());
 			particles->setMaterial(particles->FindBestShader());
 			
-			/*RigidBodyComponent* rigidBody = new RigidBodyComponent();
+			RigidBodyComponent* rigidBody = new RigidBodyComponent();
 			newProjectile->AttachComponent(rigidBody);
 			rigidBody->CreateRigidBody(RigidBodyComponent::DYNAMIC);
 			rigidBody->SetUseGravity(false);
-
+			/*
 			MeshRenderComponent* renderComponent = new MeshRenderComponent();
 			newProjectile->AttachComponent(renderComponent);
 

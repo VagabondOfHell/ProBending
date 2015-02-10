@@ -2,7 +2,7 @@
 #include "CudaGPUData.h"
 #include "ParticleAffectors.h"
 #include "ColourFadeParticleAffector.h"
-#include "ParticleSystemBase.h"
+#include "FluidAndParticleBase.h"
 #include "CudaModuleManager.h"
 #if _DEBUG
 #include "OgreLogManager.h"
@@ -36,7 +36,7 @@ ParticleKernel::~ParticleKernel(void)
 	}
 }
 
-ParticleKernel::ParticleKernelError ParticleKernel::PopulateData(ParticleSystemBase* particleSystem, AffectorMap* affectors)
+ParticleKernel::ParticleKernelError ParticleKernel::PopulateData(FluidAndParticleBase* particleSystem, AffectorMap* affectors)
 {
 	if(gpuData) //If the gpu data already exists, break out early
 		return SUCCESS;
@@ -78,15 +78,18 @@ ParticleKernel::ParticleKernelError ParticleKernel::PopulateData(ParticleSystemB
 		return ALLOCATION_ERROR;
 	}
 
-	for (AffectorMap::iterator start = affectors->begin(); start != affectors->end(); ++start)
+	if(affectors)
 	{
-		PrepareAffectorData(particleSystem, start);
+		for (AffectorMap::iterator start = affectors->begin(); start != affectors->end(); ++start)
+		{
+			PrepareAffectorData(particleSystem, start);
+		}
 	}
 
 	return SUCCESS;
 }
 
-void ParticleKernel::PrepareAffectorData(ParticleSystemBase* particleSystem, AffectorMap::iterator affector)
+void ParticleKernel::PrepareAffectorData(FluidAndParticleBase* particleSystem, AffectorMap::iterator affector)
 {
 	CUresult allocationResult = CUDA_SUCCESS;
 
