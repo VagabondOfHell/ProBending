@@ -4,6 +4,7 @@
 #include <vector>
 #include "InputObserver.h"
 #include "CollisionReporter.h"
+#include "PxBatchQuery.h"
 
 class Arena;
 
@@ -12,7 +13,6 @@ class GameScene:public IScene, public InputObserver
 protected:
 	Arena* battleArena;
 	CollisionReporter collisionReporter;
-
 public:
 
 	GameScene(void);

@@ -674,14 +674,16 @@ SharedGameObject SceneSerializer::DeserializedGameObject(XMLReader& reader, ISce
 
 			if(currNode == Position)
 			{
-				DeserializeVector3(reader, objectPosition);
+				if(DeserializeVector3(reader, objectPosition))
+					newObject->SetWorldPosition(objectPosition);
 			}
 			else if(currNode == Rotation)
 			{
 				if(!DeserializeVector4(reader, objectRotation.x,
 					objectRotation.y, objectRotation.z, objectRotation.w))
 					printf("Rot Fail\n");
-					//newObject->SetWorldOrientation(objectRotation);
+				else
+					newObject->SetWorldOrientation(objectRotation);
 
 				bool inheritRot = true;
 
@@ -690,8 +692,8 @@ SharedGameObject SceneSerializer::DeserializedGameObject(XMLReader& reader, ISce
 			}
 			else if(currNode == Scale)
 			{
-				DeserializeVector3(reader, objectScale);
-					//newObject->SetScale(objectScale);
+				if(DeserializeVector3(reader, objectScale))
+					newObject->SetScale(objectScale);
 
 				bool inheritScale = true;
 
@@ -825,7 +827,8 @@ bool SceneSerializer::DeserializeRigidBodyComponent(XMLReader& reader, SharedGam
 					if(dynamic)
 						rigid->CreateRigidBody(RigidBodyComponent::DYNAMIC);
 					else
-						rigid->CreateRigidBody(RigidBodyComponent::STATIC);
+						rigid->CreateRigidBody(RigidBodyComponent::STATIC, 
+							HelperFunctions::OgreToPhysXVec3(objectToAdd->GetWorldPosition()));
 					rigidCreated = true;
 				}
 				else
@@ -857,7 +860,7 @@ bool SceneSerializer::DeserializeRigidBodyComponent(XMLReader& reader, SharedGam
 
 		//pop off shapes node
 		reader.PopNode();
-		rigid->CreateDebugDraw();
+		//rigid->CreateDebugDraw();
 		return success;
 	}
 

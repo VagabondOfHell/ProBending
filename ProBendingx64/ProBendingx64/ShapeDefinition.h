@@ -7,6 +7,8 @@
 #include "geometry/PxConvexMeshGeometry.h"
 #include "geometry/PxTriangleMeshGeometry.h"
 
+#include "ArenaData.h"
+
 #include <memory>
 #include <vector>
 
@@ -39,6 +41,8 @@ private:
 public:
 	physx::PxTransform Transform;
 	physx::PxShapeFlags ShapeFlags;
+	unsigned int FilterFlags;
+
 	SharedGeo ShapeGeometry;
 
 	ShapeDefinition(const bool _isTrigger = false, 
@@ -90,5 +94,8 @@ public:
 	///<param name="geometry">The geometry to assign</param>
 	///<returns>True if geometry is not NULL, false if not</returns>
 	bool SetGeometry(const SharedGeo& geometry);
+
+	void SetFilterFlags(const unsigned int filterFlags);
+
 };
 

@@ -85,6 +85,10 @@ void Probender::Update(float gameTime)
 	inputHandler.Update(gameTime);
 	stateManager.Update(gameTime);	
 
+	/*std::string message = "Current Zone for " + std::to_string(contestantID) + 
+		" : " + ArenaData::GetStringFromZone(CurrentZone) + "\n";
+	printf(message.c_str());*/
+
 	StateFlags::PossibleStates ps = stateManager.GetCurrentState();
 
 	switch (stateManager.GetCurrentState())
@@ -231,131 +235,7 @@ void Probender::CreateContestantMeshes(Ogre::SceneManager* sceneMan, bool red,
 
 	if(purple)
 		manObject->convertToMesh("PurpleProbender");
-	//Ogre::MeshPtr contestantMesh = Ogre::MeshManager::getSingletonPtr()->createManual("RedProbender", "General");
-
-	///// Create one submesh
-	//Ogre::SubMesh* sub = contestantMesh->createSubMesh();
-	//	Ogre::RenderOperation op;
-	//	sub->operationType = Ogre::RenderOperation::OT_LINE_LIST;
-	//	sub->_getRenderOperation(op);
-
-	//	op.operationType = Ogre::RenderOperation::OT_LINE_LIST;
-
-	//	sub->_getRenderOperation(op);
-
-	//const float sqrt13 = 0.577350269f; /* sqrt(1/3) */
-
-	///// Define the vertices 
-	//const size_t nVertices = RenderableJointType::Count;
-	//const size_t vbufCount = 3*nVertices;
-
-	//float vertices[vbufCount] = {
-	//	0.0f, 0.0f, 0.0f,        //0 position
-	//	0.0f, 0.0f, 0.0f,         //1 position
-	//	0.0f, 0.0f, 0.0f,        //2 position
-	//	0.0f, 0.0f, 0.0f,       //3 position
-	//	0.0f, 0.0f, 0.0f,         //4 position
-	//	0.0f, 0.0f, 0.0f,          //5 position
-	//	0.0f, 0.0f, 0.0f,         //6 position
-	//	0.0f, 0.0f, 0.0f,        //7 position
-	//	0.0f, 0.0f, 0.0f,        //8 position
-	//	0.0f, 0.0f, 0.0f,        //9 position
-	//	0.0f, 0.0f, 0.0f,        //10 position
-	//	0.0f, 0.0f, 0.0f,        //11 position
-	//	0.0f, 0.0f, 0.0f,        //12 position
-	//	0.0f, 0.0f, 0.0f,        //13 position
-	//	0.0f, 0.0f, 0.0f,        //14 position
-	//	0.0f, 0.0f, 0.0f,        //15 position
-	//	0.0f, 0.0f, 0.0f,        //16 position
-	//	0.0f, 0.0f, 0.0f,        //17 position
-	//	0.0f, 0.0f, 0.0f,        //18 position
-	//	0.0f, 0.0f, 0.0f,        //19 position
-	//	0.0f, 0.0f, 0.0f,        //20 position
-	//	0.0f, 0.0f, 0.0f,        //21 position
-	//	0.0f, 0.0f, 0.0f,        //22 position
-	//	0.0f, 0.0f, 0.0f,        //23 position
-	//	0.0f, 0.0f, 0.0f        //24 position
-	//};
-
-	///// Define 12 triangles (two triangles per cube face)
-	///// The values in this table refer to vertices in the above table
-	//const size_t ibufCount = 48;
-	//unsigned short lines[ibufCount] = {
-	//	//Lower Left Body
-	//	RenderableJointType::FootLeft, RenderableJointType::AnkleLeft,
-	//	RenderableJointType::AnkleLeft, RenderableJointType::KneeLeft,
-	//	RenderableJointType::KneeLeft, RenderableJointType::HipLeft,
-	//	RenderableJointType::HipLeft, RenderableJointType::SpineBase,
-	//	//Lower Right Body
-	//	RenderableJointType::FootRight, RenderableJointType::AnkleRight,
-	//	RenderableJointType::AnkleRight, RenderableJointType::KneeRight,
-	//	RenderableJointType::KneeRight, RenderableJointType::HipRight,
-	//	RenderableJointType::HipRight, RenderableJointType::SpineBase,
-	//	//Torso and Head
-	//	RenderableJointType::SpineBase, RenderableJointType::SpineMid,
-	//	RenderableJointType::SpineMid, RenderableJointType::SpineShoulder,
-	//	RenderableJointType::SpineShoulder, RenderableJointType::Neck,
-	//	RenderableJointType::Neck, RenderableJointType::Head,
-	//	//Left Arm
-	//	RenderableJointType::SpineShoulder, RenderableJointType::ShoulderLeft,
-	//	RenderableJointType::ShoulderLeft, RenderableJointType::ElbowLeft,
-	//	RenderableJointType::ElbowLeft, RenderableJointType::WristLeft,
-	//	RenderableJointType::WristLeft, RenderableJointType::HandLeft,
-	//	RenderableJointType::HandLeft, RenderableJointType::ThumbLeft,
-	//	RenderableJointType::HandLeft, RenderableJointType::HandTipLeft,
-	//	//Right Arm
-	//	RenderableJointType::SpineShoulder, RenderableJointType::ShoulderRight,
-	//	RenderableJointType::ShoulderRight, RenderableJointType::ElbowRight,
-	//	RenderableJointType::ElbowRight, RenderableJointType::WristRight,
-	//	RenderableJointType::WristRight, RenderableJointType::HandRight,
-	//	RenderableJointType::HandRight, RenderableJointType::ThumbRight,
-	//	RenderableJointType::HandRight, RenderableJointType::HandTipRight,
-	//};
-
-	///// Create vertex data structure for 8 vertices shared between submeshes
-	//contestantMesh->sharedVertexData = new Ogre::VertexData();
-	//contestantMesh->sharedVertexData->vertexCount = nVertices;
-	//
-	///// Create declaration (memory format) of vertex data
-	//Ogre::VertexDeclaration* decl = contestantMesh->sharedVertexData->vertexDeclaration;
-	//size_t offset = 0;
-	//// 1st buffer
-	//decl->addElement(0, offset, Ogre::VET_FLOAT3, Ogre::VES_POSITION);
-
-	///// Allocate vertex buffer of the requested number of vertices (vertexCount) 
-	///// and bytes per vertex (offset)
-	//Ogre::HardwareVertexBufferSharedPtr vbuf = 
-	//	Ogre::HardwareBufferManager::getSingleton().createVertexBuffer(
-	//	offset, contestantMesh->sharedVertexData->vertexCount, Ogre::HardwareBuffer::HBU_STATIC_WRITE_ONLY);
-	///// Upload the vertex data to the card
-	//vbuf->writeData(0, vbuf->getSizeInBytes(), vertices, true);
-
-	///// Set vertex buffer binding so buffer 0 is bound to our vertex buffer
-	//Ogre::VertexBufferBinding* bind = contestantMesh->sharedVertexData->vertexBufferBinding; 
-	//bind->setBinding(0, vbuf);
-
-	///// Allocate index buffer of the requested number of vertices (ibufCount) 
-	//Ogre::HardwareIndexBufferSharedPtr ibuf = Ogre::HardwareBufferManager::getSingleton().
-	//	createIndexBuffer(Ogre::HardwareIndexBuffer::IT_16BIT, 
-	//	ibufCount, 
-	//	Ogre::HardwareBuffer::HBU_STATIC_WRITE_ONLY);
-
-	///// Upload the index data to the card
-	//ibuf->writeData(0, ibuf->getSizeInBytes(), lines, true);
-
-	///// Set parameters of the submesh
-	//sub->useSharedVertices = true;
-	//sub->indexData->indexBuffer = ibuf;
-	//sub->indexData->indexCount = ibufCount;
-	//sub->indexData->indexStart = 0;
-
-	///// Set bounding information (for culling)
-	//contestantMesh->_setBounds(Ogre::AxisAlignedBox(-0.5f, -0.5f, -0.5f, 0.5f, 0.5f, 0.5f));
-	//contestantMesh->_setBoundingSphereRadius(Ogre::Math::Sqrt(3*1.0f));
-
-	///// Notify -Mesh object that it has been loaded
-	//contestantMesh->load();
-
+	
 }
 
 std::string Probender::GetMeshAndMaterialName()
@@ -393,10 +273,10 @@ std::string Probender::GetMeshAndMaterialName()
 
 void Probender::OnCollisionEnter(const CollisionReport& collision)
 {
-	std::string message = "Collision Entered with: " + collision.Collider->GetName() + "\n";
+	/*std::string message = "Collision Entered with: " + collision.Collider->GetName() + "\n";
 
 	printf(message.c_str());
-
+	*/
 	if(collision.Collider->tag == TagsAndLayersManager::GroundTag)
 	{
 		stateManager.SetOnGround(true);
@@ -410,9 +290,9 @@ void Probender::OnCollisionEnter(const CollisionReport& collision)
 
 void Probender::OnCollisionLeave(const CollisionReport& collision)
 {
-	std::string message = "Collision Leave with: " + collision.Collider->GetName() + "\n";
+	/*std::string message = "Collision Leave with: " + collision.Collider->GetName() + "\n";
 
-	printf(message.c_str());
+	printf(message.c_str());*/
 
 	if(collision.Collider->tag == TagsAndLayersManager::GroundTag)
 	{
@@ -448,4 +328,37 @@ void Probender::HandleFall()
 void Probender::Jump()
 {
 	stateManager.SetState(StateFlags::JUMP_STATE, 0.0f);
+}
+
+void Probender::OnTriggerEnter(GameObject* trigger, GameObject* other)
+{
+	if(trigger->tag == TagsAndLayersManager::ArenaZoneTag)
+	{
+		ArenaData::Zones newZone = ArenaData::GetZoneFromString(trigger->GetName());
+
+		if(newZone != CurrentZone)
+		{
+			CurrentZone = newZone;
+
+			/*std::string message = "Trigger Entered with: " + trigger->GetName() + "For " + std::to_string(contestantID) + 
+			" : "+ "\n";
+			printf(message.c_str());*/
+		}
+	}
+}
+
+void Probender::OnTriggerLeave(GameObject* trigger, GameObject* other)
+{
+	if(trigger->tag == TagsAndLayersManager::ArenaZoneTag)
+	{
+		ArenaData::Zones currZone = ArenaData::GetZoneFromString(trigger->GetName());
+
+		if((currZone == ArenaData::BLUE_ZONE_3 || currZone == ArenaData::RED_ZONE_3 )&& currZone == CurrentZone)
+		{
+			CurrentZone = ArenaData::INVALID_ZONE;
+			/*std::string message = "Trigger Left with: " + trigger->GetName() + " For: " + std::to_string(contestantID) + 
+				" : " + "\n";
+			printf(message.c_str());*/
+		}
+	}
 }

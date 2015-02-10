@@ -106,7 +106,7 @@ void ProbenderInputHandler::BodyFrameAcquired(const CompleteData& currentData, c
 {
 	std::vector<Ogre::Vector3> meshData = std::vector<Ogre::Vector3>();
 	meshData.reserve(JointType::JointType_Count);
-
+	
 	CameraSpacePoint spineBasePoint = currentData.JointData[JointType_SpineBase].Position;
 	Ogre::Vector3 spineBasePosition = Ogre::Vector3(spineBasePoint.X, spineBasePoint.Y, 1.0f);
 

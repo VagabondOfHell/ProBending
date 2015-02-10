@@ -1,4 +1,9 @@
-//#include "vld.h"
+#define MEMORY_LEAK_DETECT 0
+
+#if(MEMORY_LEAK_DETECT)
+#include "vld.h"
+#endif
+
 #include "Game.h"
 #include "InputManager.h"
 #include "GameScene.h"
@@ -223,6 +228,7 @@ bool Game::ConnectToPVD()
 		std::cout << "Connected to PhysX Visual Debugger!\n";
  
 		gPhysicsSDK->getVisualDebugger()->setVisualizeConstraints(true);
+		gPhysicsSDK->getVisualDebugger()->setVisualDebuggerFlag(physx::PxVisualDebuggerFlag::eTRANSMIT_SCENEQUERIES, true);
 		gPhysicsSDK->getVisualDebugger()->setVisualDebuggerFlag(physx::PxVisualDebuggerFlag::eTRANSMIT_CONTACTS, true);
 
 		return true;
@@ -381,8 +387,9 @@ void Game::Run()
 			rendering = false;
 
 		//Ogre::WindowEventUtilities::messagePump();
+#if(!MEMORY_LEAK_DETECT)
 		mRoot->renderOneFrame();
-
+#endif
 		currentTime = (float)gameTimer.getMilliseconds();
 		
 		previousTime = currentTime;

@@ -115,7 +115,7 @@ SharedProjectile ProjectileFactory::CreateProjectile(IScene* const scene,const E
 				physx::PxVec4(0, 0, 1.0, 0.20f), true)));/**/
 			particles->AssignAffectorKernel(particles->FindBestKernel());
 			particles->setMaterial(particles->FindBestShader());
-
+			
 			/*RigidBodyComponent* rigidBody = new RigidBodyComponent();
 			newProjectile->AttachComponent(rigidBody);
 			rigidBody->CreateRigidBody(RigidBodyComponent::DYNAMIC);
@@ -129,8 +129,6 @@ SharedProjectile ProjectileFactory::CreateProjectile(IScene* const scene,const E
 			newProjectile->SetScale(0.1f, 0.1f, 0.1f);
 
 			scene->AddGameObject(newProjectile);
-
-
 
 			//SharedProjectile newProjectile2 = std::make_shared<Projectile>(scene, nullptr);
 			// emitter = std::make_shared<ParticlePointEmitter>

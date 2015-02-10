@@ -17,6 +17,7 @@
 #include "OgreEntity.h"
 #include "OgreManualObject.h"
 #endif
+#include "OgreNameGenerator.h"
 
 using namespace physx;
 
@@ -107,7 +108,7 @@ bool RigidBodyComponent::AttachShape(PxShape& newShape)
 bool RigidBodyComponent::AttachShape(const std::string& shapeName)
 {
 	physx::PxShape* shape = PhysXDataManager::GetSingletonPtr()->GetShape(shapeName);
-	
+
 	if(shape)
 		return AttachShape(*shape);
 
@@ -307,7 +308,10 @@ void RigidBodyComponent::CreateDebugDraw()
 				
 					const physx::PxVec3* vertexBuffer = meshGeometry.convexMesh->getVertices();
 					const physx::PxU8* indexBuffer = meshGeometry.convexMesh->getIndexBuffer();
-									
+							
+					//Ogre::Vector3 scale = owningGameObject->GetWorldScale();
+					physx::PxVec3 scale = meshGeometry.scale.scale;
+
 					Ogre::ManualObject* manObject = sceneManager->createManualObject();
 					manObject->begin("WireframeRender", Ogre::RenderOperation::OT_TRIANGLE_LIST);
 					
@@ -315,7 +319,8 @@ void RigidBodyComponent::CreateDebugDraw()
 
 					for (unsigned int i = 0; i < meshGeometry.convexMesh->getNbVertices(); i++)
 					{
-						manObject->position(vertexBuffer[i].x,vertexBuffer[i].y , vertexBuffer[i].z );
+						//manObject->position(vertexBuffer[i].x,vertexBuffer[i].y, vertexBuffer[i].z );
+						manObject->position(vertexBuffer[i].x * scale.x,vertexBuffer[i].y * scale.y, vertexBuffer[i].z* scale.z );
 						//manObject->position(vertexBuffer[i].x - pos.x,vertexBuffer[i].y - pos.y, vertexBuffer[i].z - pos.z );
 					}
 
@@ -332,8 +337,10 @@ void RigidBodyComponent::CreateDebugDraw()
 					}
 
 					manObject->end();
-					Ogre::MeshPtr mesh = manObject->convertToMesh("RockConvexMesh");
-					physxDebugNode->attachObject(sceneManager->createEntity(mesh));
+										
+					//Ogre::MeshPtr mesh = manObject->convertToMesh(ng.generate());
+					physxDebugNode->attachObject(manObject);//sceneManager->createEntity(mesh));
+					//physxDebugNode->setScale(scale);
 				}
 			default:
 				break;

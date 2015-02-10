@@ -148,6 +148,7 @@ void ArenaBuilder::CreateProbendingPhysXData(IScene* scene)
 	ShapeDefinition waterShapeDef = ShapeDefinition(true);
 	waterShapeDef.SetPlaneGeometry();
 	waterShapeDef.AddMaterial("050505");
+	waterShapeDef.SetFilterFlags(ArenaData::WATER);
 	dataMan->CreateShape(waterShapeDef, "BasicPlane");
 
 	//Arena Surface PhysX Data
@@ -159,6 +160,7 @@ void ArenaBuilder::CreateProbendingPhysXData(IScene* scene)
 	arenaSurfaceShapeDef.SetConvexMeshGeometry(dataMan->CookConvexMesh(arenaSurfaceMeshInfo, "ArenaSurfaceMesh"),
 		physx::PxVec3(2.0f, 1.0f, 2.0f));
 	arenaSurfaceShapeDef.AddMaterial("101000");
+	arenaSurfaceShapeDef.SetFilterFlags(ArenaData::ARENA_SURFACE);
 	dataMan->CreateShape(arenaSurfaceShapeDef, "ArenaSurfaceShape");
 
 	//Arena Pillars PhysX Data
@@ -168,6 +170,7 @@ void ArenaBuilder::CreateProbendingPhysXData(IScene* scene)
 	ShapeDefinition arenaPillarShapeDef = ShapeDefinition();
 	arenaPillarShapeDef.SetBoxGeometry(HelperFunctions::OgreToPhysXVec3(arenaPillarMesh->GetHalfExtents()));
 	arenaPillarShapeDef.AddMaterial("101000");
+	arenaPillarShapeDef.SetFilterFlags(ArenaData::PILLAR);
 	dataMan->CreateShape(arenaPillarShapeDef, "ArenaPillarShape");
 
 	//Arena Walls PhysX Data
@@ -181,6 +184,7 @@ void ArenaBuilder::CreateProbendingPhysXData(IScene* scene)
 	ShapeDefinition arenaWallShapeDef = ShapeDefinition();
 	arenaWallShapeDef.SetBoxGeometry(physx::PxVec3(0.2f, planeSize.y, planeSize.z));
 	arenaWallShapeDef.AddMaterial("101000");
+	arenaWallShapeDef.SetFilterFlags(ArenaData::WALL);
 	dataMan->CreateShape(arenaWallShapeDef, "ArenaWallShapeMedium");
 
 	temp->SetScale(1.0f, 10.0f, 19.0f);
@@ -188,6 +192,7 @@ void ArenaBuilder::CreateProbendingPhysXData(IScene* scene)
 	arenaWallShapeDef = ShapeDefinition();
 	arenaWallShapeDef.SetBoxGeometry(physx::PxVec3(0.2f, planeSize.y, planeSize.z));
 	arenaWallShapeDef.AddMaterial("101000");
+	arenaWallShapeDef.SetFilterFlags(ArenaData::WALL);
 	dataMan->CreateShape(arenaWallShapeDef, "ArenaWallShapeLarge");
 
 	temp->SetScale(1.0f, 10.0f, 10.0f);
@@ -195,6 +200,7 @@ void ArenaBuilder::CreateProbendingPhysXData(IScene* scene)
 	arenaWallShapeDef = ShapeDefinition();
 	arenaWallShapeDef.SetBoxGeometry(physx::PxVec3(0.2f, planeSize.y, planeSize.z));
 	arenaWallShapeDef.AddMaterial("101000");
+	arenaWallShapeDef.SetFilterFlags(ArenaData::WALL);
 	dataMan->CreateShape(arenaWallShapeDef, "ArenaWallShapeSmall");
 
 	MeshRenderComponent* lowerPlatformMesh = new MeshRenderComponent();
@@ -204,7 +210,68 @@ void ArenaBuilder::CreateProbendingPhysXData(IScene* scene)
 	ShapeDefinition lowerPlatformShape = ShapeDefinition();
 	lowerPlatformShape.SetBoxGeometry(HelperFunctions::OgreToPhysXVec3(lowerPlatformMesh->GetHalfExtents()));
 	lowerPlatformShape.AddMaterial("101000");
+	lowerPlatformShape.SetFilterFlags(ArenaData::PLATFORM);
 	dataMan->CreateShape(lowerPlatformShape, "ArenaLowerPlatformShape");
 
+	temp->SetScale(1.0f, 1.0f, 1.0f);
+
+	//Zone Trigger Shapes 
+	//Zone 1 Pieces
+	MeshRenderComponent* z1p1 = new MeshRenderComponent();
+	temp->AttachComponent(z1p1);
+	z1p1->LoadModel("ProbendArenaZone1P1.mesh");
+	std::shared_ptr<MeshInfo> z1p1MeshInfo = z1p1->GetMeshInfo();
+	ShapeDefinition z1p1ShapeDef = ShapeDefinition(true);
+	z1p1ShapeDef.SetConvexMeshGeometry(dataMan->CookConvexMesh(z1p1MeshInfo, "Z1P1Mesh"),
+		physx::PxVec3(2.0f, 8.0f, 2.0f));
+	z1p1ShapeDef.AddMaterial("101000");
+	z1p1ShapeDef.SetFilterFlags(ArenaData::ZONE_TRIGGER);
+	dataMan->CreateShape(z1p1ShapeDef, "Z1P1Shape");
+
+	MeshRenderComponent* z1p2 = new MeshRenderComponent();
+	temp->AttachComponent(z1p2);
+	z1p2->LoadModel("ProbendArenaZone1P2.mesh");
+	std::shared_ptr<MeshInfo> z1p2MeshInfo = z1p2->GetMeshInfo();
+	ShapeDefinition z1p2ShapeDef = ShapeDefinition(true);
+	z1p2ShapeDef.SetConvexMeshGeometry(dataMan->CookConvexMesh(z1p2MeshInfo, "Z1P2Mesh"),
+		physx::PxVec3(2.0f, 8.0f, 2.0f));
+	z1p2ShapeDef.AddMaterial("101000");
+	z1p2ShapeDef.SetFilterFlags(ArenaData::ZONE_TRIGGER);
+	dataMan->CreateShape(z1p2ShapeDef, "Z1P2Shape");
+
+	//Zone 2 Pieces
+	MeshRenderComponent* z2p1 = new MeshRenderComponent();
+	temp->AttachComponent(z2p1);
+	z2p1->LoadModel("ProbendArenaZone2P1.mesh");
+	std::shared_ptr<MeshInfo> z2p1MeshInfo = z2p1->GetMeshInfo();
+	ShapeDefinition z2p1ShapeDef = ShapeDefinition(true);
+	z2p1ShapeDef.SetConvexMeshGeometry(dataMan->CookConvexMesh(z2p1MeshInfo, "Z2P1Mesh"),
+		physx::PxVec3(2.20f, 8.0f, 2.0f));
+	z2p1ShapeDef.AddMaterial("101000");
+	z2p1ShapeDef.SetFilterFlags(ArenaData::ZONE_TRIGGER);
+	dataMan->CreateShape(z2p1ShapeDef, "Z2P1Shape");
+
+	MeshRenderComponent* z2p2 = new MeshRenderComponent();
+	temp->AttachComponent(z2p2);
+	z2p2->LoadModel("ProbendArenaZone2P2.mesh");
+	std::shared_ptr<MeshInfo> z2p2MeshInfo = z2p2->GetMeshInfo();
+	ShapeDefinition z2p2ShapeDef = ShapeDefinition(true);
+	z2p2ShapeDef.SetConvexMeshGeometry(dataMan->CookConvexMesh(z2p2MeshInfo, "Z2P2Mesh"),
+		physx::PxVec3(2.0f, 8.0f, 2.0f));
+	z2p2ShapeDef.AddMaterial("101000");
+	z2p2ShapeDef.SetFilterFlags(ArenaData::ZONE_TRIGGER);
+	dataMan->CreateShape(z2p2ShapeDef, "Z2P2Shape");
+
+	//Zone 3 Pieces
+	MeshRenderComponent* z3 = new MeshRenderComponent();
+	temp->AttachComponent(z3);
+	z3->LoadModel("ProbendArenaZone3.mesh");
+	std::shared_ptr<MeshInfo> z3MeshInfo = z3->GetMeshInfo();
+	ShapeDefinition z3ShapeDef = ShapeDefinition(true);
+	z3ShapeDef.SetConvexMeshGeometry(dataMan->CookConvexMesh(z3MeshInfo, "Z3Mesh"),
+		physx::PxVec3(2.150f, 8.0f, 2.10f));
+	z3ShapeDef.AddMaterial("101000");
+	z3ShapeDef.SetFilterFlags(ArenaData::ZONE_TRIGGER);
+	dataMan->CreateShape(z3ShapeDef, "Z3Shape");
 }
 

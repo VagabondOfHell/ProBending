@@ -8,7 +8,9 @@ ShapeDefinition::ShapeDefinition(const bool _isTrigger /*= false*/,
 								 const physx::PxQuat& orientation /*= physx::PxQuat(physx::PxIdentity)*/)
 								 : Transform(position, orientation)
 {
-	SetTriggerFlags(_isTrigger);
+	FilterFlags = 0;
+
+	SetShapeFlags(false, true, _isTrigger);
 }
 
 ShapeDefinition::~ShapeDefinition()
@@ -17,12 +19,10 @@ ShapeDefinition::~ShapeDefinition()
 
 void ShapeDefinition::SetShapeFlags(const bool particleDrainShape, const bool sceneQueryShape, const bool triggerShape)
 {
-	physx::PxShapeFlags flags = physx::PxShapeFlags();
-
 	if(particleDrainShape)
-		flags.set(physx::PxShapeFlag::ePARTICLE_DRAIN);
+		ShapeFlags |= PxShapeFlag::ePARTICLE_DRAIN;
 	if(sceneQueryShape)
-		flags.set(physx::PxShapeFlag::eSCENE_QUERY_SHAPE);
+		ShapeFlags |= PxShapeFlag::eSCENE_QUERY_SHAPE;
 
 	SetTriggerFlags(triggerShape);
 }
@@ -44,12 +44,12 @@ void ShapeDefinition::SetTriggerFlags(const bool isTrigger)
 	if(isTrigger)//if trigger shape, disable simulation shape and enable trigger
 	{
 		ShapeFlags.clear(PxShapeFlag::eSIMULATION_SHAPE);
-		ShapeFlags.set(PxShapeFlag::eTRIGGER_SHAPE);
+		ShapeFlags |= PxShapeFlag::eTRIGGER_SHAPE;
 	}
 	else//otherwise do the opposite. Results in shape always being either trigger or simulation
 	{
 		ShapeFlags.clear(PxShapeFlag::eTRIGGER_SHAPE);
-		ShapeFlags.set(PxShapeFlag::eSIMULATION_SHAPE);
+		ShapeFlags |= PxShapeFlag::eSIMULATION_SHAPE;
 	}
 }
 
@@ -99,4 +99,9 @@ bool ShapeDefinition::SetConvexMeshGeometry(physx::PxConvexMesh* convexMesh,
 void ShapeDefinition::SetPlaneGeometry()
 {
 	ShapeGeometry = std::make_shared<physx::PxPlaneGeometry>(physx::PxPlaneGeometry());
+}
+
+void ShapeDefinition::SetFilterFlags(const unsigned int filterFlags)
+{
+	FilterFlags = filterFlags;
 }

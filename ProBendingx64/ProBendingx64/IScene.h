@@ -10,6 +10,11 @@
 #include <unordered_set>
 #include <memory>
 
+#include "PxQueryFiltering.h"
+#include "geometry/PxSphereGeometry.h"
+#include "geometry/PxBoxGeometry.h"
+#include "geometry/PxCapsuleGeometry.h"
+
 namespace Ogre
 {
 	class SceneManager;
@@ -24,6 +29,7 @@ namespace physx
 	class PxCudaContextManager;
 	class PxDefaultCpuDispatcher;
 	class PxScene;
+	class PxGeometry;
 };
 
 class SceneManager;
@@ -36,8 +42,12 @@ class IScene
 	friend class SceneSerializer;
 
 private:
+	bool GeometryCast(const physx::PxGeometry& geo, const physx::PxTransform& origin, const physx::PxVec3& unitDir, 
+		const physx::PxReal maxDistance, physx::PxSweepBuffer& outValHitResult,
+		const physx::PxHitFlags hitFlags = physx::PxHitFlag::eDEFAULT,
+		const physx::PxFilterData& filterData = physx::PxFilterData(),
+		const physx::PxQueryFlags queryFlags = physx::PxQueryFlag::eDYNAMIC | physx::PxQueryFlag::eSTATIC);
 	
-
 protected:
 	typedef std::unordered_set<SharedGameObject> GameObjectList;
 	GameObjectList gameObjectList;
@@ -217,4 +227,61 @@ public:
 	///<param name="resourceName">The name of the resource group to be destroyed</param>
 	virtual void DestroyResources(const std::string& resourceGroupName);
 
+	///<summary>Fire a raycast through the PhysX scene</summary>
+	///<param name="origin">Where the ray originates from</param>
+	///<param name="unitDir">The normalized direction to fire the ray along</param>
+	///<param name="maxDistance">The maximum distance for the ray to travel</param>
+	///<param name="outValHitResult">The container of the results to be filled</param>
+	///<param name="filterData">The data used to filter the results</param>
+	///<param name="queryFlags">The flags that represent the type of objects to filter through on physx side</param>
+	///<param name="hitFilter">The hit filter flags</param>
+	///<returns>True if successful, false if not</returns>
+	bool Raycast(const physx::PxVec3& origin, const physx::PxVec3& unitDir, const physx::PxReal maxDistance,
+		physx::PxRaycastBuffer& outValHitResult,
+		const physx::PxFilterData& filterData = physx::PxFilterData(), 
+		const physx::PxQueryFlags queryFlags = physx::PxQueryFlag::eDYNAMIC | physx::PxQueryFlag::eSTATIC,
+		const physx::PxHitFlags hitFilter = physx::PxHitFlag::eDEFAULT);
+
+	///<summary>Fire a raycast through the PhysX scene</summary>
+	///<param name="origin">Where the ray originates from</param>
+	///<param name="unitDir">The normalized direction to fire the ray along</param>
+	///<param name="maxDistance">The maximum distance for the ray to travel</param>
+	///<param name="outValHitResult">The container of the results to be filled</param>
+	///<param name="filter0">word0 of the filter data</param>
+	///<param name="filter1">word1 of the filter data</param>
+	///<param name="filter2">word2 of the filter data</param>
+	///<param name="filter3">word3 of the filter data</param>
+	///<param name="queryFlags">The flags that represent the type of objects to filter through on physx side</param>
+	///<param name="hitFilter">The hit filter flags</param>
+	///<returns>True if successful, false if not</returns>
+	inline bool Raycast(const physx::PxVec3& origin, const physx::PxVec3& unitDir, const physx::PxReal maxDistance,
+		physx::PxRaycastBuffer& outValHitResult,
+		const physx::PxU32 filter0 = 0, const physx::PxU32 filter1 = 0, const physx::PxU32 filter2 = 0, 
+		const physx::PxU32 filter3 = 0,  
+		const physx::PxQueryFlags queryFlags = physx::PxQueryFlag::eDYNAMIC | physx::PxQueryFlag::eSTATIC,
+		const physx::PxHitFlags hitFilter = physx::PxHitFlag::eDEFAULT)
+	{
+		return Raycast(origin, unitDir, maxDistance, outValHitResult, 
+			physx::PxFilterData(filter0, filter1, filter2, filter3), queryFlags, hitFilter);
+	}
+
+	inline bool SphereCast(const physx::PxTransform& origin, const physx::PxVec3& unitDir, const physx::PxReal radius,
+		const physx::PxReal maxDistance, physx::PxSweepBuffer& outValHitResult, 
+		const physx::PxHitFlags hitFlags = physx::PxHitFlag::eDEFAULT,
+		const physx::PxFilterData& filterData = physx::PxFilterData(),
+		const physx::PxQueryFlags queryFlags = physx::PxQueryFlag::eDYNAMIC | physx::PxQueryFlag::eSTATIC)
+	{
+		return GeometryCast(physx::PxSphereGeometry(radius), origin, unitDir, maxDistance, outValHitResult,
+			hitFlags, filterData, queryFlags);
+	}
+
+	inline bool BoxCast(const physx::PxTransform& origin, const physx::PxVec3& unitDir, 
+		const physx::PxVec3& halfExtents, const physx::PxReal maxDistance, physx::PxSweepBuffer& outValHitResult, 
+		const physx::PxHitFlags hitFlags = physx::PxHitFlag::eDEFAULT,
+		const physx::PxFilterData& filterData = physx::PxFilterData(),
+		const physx::PxQueryFlags queryFlags = physx::PxQueryFlag::eDYNAMIC | physx::PxQueryFlag::eSTATIC)
+	{
+		return GeometryCast(physx::PxBoxGeometry(halfExtents), origin, unitDir, maxDistance, outValHitResult,
+			hitFlags, filterData, queryFlags);
+	}
 };

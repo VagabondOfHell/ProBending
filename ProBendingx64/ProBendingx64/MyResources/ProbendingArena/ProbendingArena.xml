@@ -5,17 +5,27 @@
 	</MaterialList>
 	<ConvexMeshList>
 		<ConvexListItem SerialID="3" StorageName="ArenaSurfaceMesh"/>
+		<ConvexListItem SerialID="4" StorageName="Z1P1Mesh"/>
+		<ConvexListItem SerialID="5" StorageName="Z1P2Mesh"/>
+		<ConvexListItem SerialID="6" StorageName="Z2P1Mesh"/>
+		<ConvexListItem SerialID="7" StorageName="Z2P2Mesh"/>
+		<ConvexListItem SerialID="8" StorageName="Z3Mesh"/>
 	</ConvexMeshList>
 	<TriangleMeshList/>
 	<HeightFieldList/>
 	<ShapeList>
-		<ShapeListItem SerialID="4" StorageName="ArenaLowerPlatformShape"/>
-		<ShapeListItem SerialID="5" StorageName="ArenaPillarShape"/>
-		<ShapeListItem SerialID="6" StorageName="ArenaSurfaceShape"/>
-		<ShapeListItem SerialID="7" StorageName="ArenaWallShapeLarge"/>
-		<ShapeListItem SerialID="8" StorageName="ArenaWallShapeMedium"/>
-		<ShapeListItem SerialID="9" StorageName="ArenaWallShapeSmall"/>
-		<ShapeListItem SerialID="10" StorageName="BasicPlane"/>
+		<ShapeListItem SerialID="9" StorageName="ArenaLowerPlatformShape"/>
+		<ShapeListItem SerialID="10" StorageName="ArenaPillarShape"/>
+		<ShapeListItem SerialID="11" StorageName="ArenaSurfaceShape"/>
+		<ShapeListItem SerialID="12" StorageName="ArenaWallShapeLarge"/>
+		<ShapeListItem SerialID="13" StorageName="ArenaWallShapeMedium"/>
+		<ShapeListItem SerialID="14" StorageName="ArenaWallShapeSmall"/>
+		<ShapeListItem SerialID="15" StorageName="BasicPlane"/>
+		<ShapeListItem SerialID="16" StorageName="Z1P1Shape"/>
+		<ShapeListItem SerialID="17" StorageName="Z1P2Shape"/>
+		<ShapeListItem SerialID="18" StorageName="Z2P1Shape"/>
+		<ShapeListItem SerialID="19" StorageName="Z2P2Shape"/>
+		<ShapeListItem SerialID="20" StorageName="Z3Shape"/>
 	</ShapeList>
 </PhysXDataManager>
 

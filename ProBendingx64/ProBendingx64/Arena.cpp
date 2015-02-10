@@ -132,6 +132,9 @@ void Arena::PlaceContestants()
 	SharedGameObject bz2Obj = owningScene->FindByName("BlueZone2SP");
 	SharedGameObject bz3Obj = owningScene->FindByName("BlueZone3SP");
 
+	if(!rz1Obj)
+		return;
+
 	Ogre::Vector3 rightShift(0.0f, 0.0f, 1.0f);
 	Ogre::Vector3 leftShift(0.0f, 0.0f, -1.0f);
 

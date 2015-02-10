@@ -26,10 +26,18 @@
 #include "geometry/PxConvexMesh.h"
 #include "PxPhysics.h"
 #include "PxRigidDynamic.h"
+#include "PxBatchQueryDesc.h"
+#include "PxBatchQuery.h"
+#include "PxSceneLock.h"
+#include "PxQueryReport.h"
+
+using namespace physx;
 
 bool save = false;
 bool load = false;
 bool savePhysX = false;
+
+bool raycast = false;
 
 GameScene::GameScene(void)
 	:IScene(NULL, NULL, "", "")
@@ -59,7 +67,7 @@ physx::PxSceneDesc* GameScene::GetSceneDescription(physx::PxVec3& gravity, bool 
 	physx::PxSceneDesc* sceneDescriptor = GetDefaultSceneDescription(gravity, initializeCuda);
 
 	sceneDescriptor->filterShader = CollisionFilterShaders::GameSceneFilterShader;
-	sceneDescriptor->flags.set(physx::PxSceneFlag::eENABLE_KINEMATIC_STATIC_PAIRS);
+	sceneDescriptor->flags |= physx::PxSceneFlag::eENABLE_KINEMATIC_STATIC_PAIRS;
 	
 	//use the following to pass Constant data to the shader
 	//sceneDescriptor->filterShaderData;sceneDescriptor->filterShaderSize;
@@ -83,7 +91,7 @@ void GameScene::Initialize()
 	InputNotifier::GetInstance()->AddObserver(this);
 
 	InitializePhysics(physx::PxVec3(0.0f, -9.8f, 0.0f), true);
-
+	
 	MeshRenderComponent::CreatePlane("BasicPlane");
 
 	printf("Material Count: %i\n", PhysXDataManager::GetSingletonPtr()->GetMaterialCount());
@@ -92,7 +100,7 @@ void GameScene::Initialize()
 
 	printf("Shape Count: %i \n", PhysXDataManager::GetSingletonPtr()->GetShapeCount());
 
-	ArenaBuilder::CreateProbendingPhysXData(this);
+	//ArenaBuilder::CreateProbendingPhysXData(this);
 	//ArenaBuilder::GenerateProbendingArena(this);
 	
 	battleArena->DeserializeArena();
@@ -151,6 +159,22 @@ bool GameScene::Update(float gameTime)
 			physxSimulating = false;
 		}
 
+	if(raycast)
+	{
+		physx::PxSceneReadLock scopedLock(*physicsWorld);
+
+		physx::PxSweepBuffer buf;
+
+		if(BoxCast(physx::PxTransform(PxIdentity), physx::PxVec3(0, -1, 0), physx::PxVec3(1, 1, 1),
+			250, buf, physx::PxHitFlag::eDEFAULT, physx::PxFilterData(ArenaData::WATER, 0, 0, 0)))
+		{
+			printf("Box Cast Successful\n");
+			physx::PxSweepHit hit = buf.getAnyHit(0);
+
+			printf("Distance: %f\n", hit.distance);
+		}
+	}
+
 	if(!physxSimulating && savePhysX)
 	{
 		PhysXSerializerWrapper::CreateSerializer();
@@ -184,9 +208,7 @@ bool GameScene::Update(float gameTime)
 			printf("Num Game Objects: %i\n", gameObjectList.size());
 
 		PhysXSerializerWrapper::DestroySerializer();
-
-		FindAllByName("ProbendPillarRL(Clone)");
-
+		
 		load = false;
 	}
 
@@ -274,6 +296,9 @@ bool GameScene::keyPressed( const OIS::KeyEvent &arg )
 
 	if(arg.key == OIS::KC_F9)
 		savePhysX = true;
+
+	if(arg.key == OIS::KC_R)
+		raycast = true;
 
 	return true;
 }

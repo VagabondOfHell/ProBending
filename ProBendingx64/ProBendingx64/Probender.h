@@ -134,5 +134,9 @@ public:
 
 	virtual void OnCollisionLeave(const CollisionReport& collision);
 
+	virtual void OnTriggerEnter(GameObject* trigger, GameObject* other);
+
+	virtual void OnTriggerLeave(GameObject* trigger, GameObject* other);
+
 };
 
