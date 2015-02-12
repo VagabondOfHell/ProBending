@@ -278,10 +278,11 @@ bool ProbenderInputHandler::keyPressed( const OIS::KeyEvent &arg )
 		}
 		else
 		{
-			Ogre::Vector3 newPos = probender->GetWorldPosition();
+			probender->Dodge(HelperFunctions::OgreToPhysXVec3(probender->GetWorldPosition()) - physx::PxVec3(0.0f, 0.0f, 1.0f));
+			/*Ogre::Vector3 newPos = probender->GetWorldPosition();
 			newPos.z -= 1;
 			probender->rigidBody->SetPosition(HelperFunctions::OgreToPhysXVec3(newPos));
-			printf("New Position: %f, %f, %f\n", newPos.x, newPos.y, newPos.z);
+			printf("New Position: %f, %f, %f\n", newPos.x, newPos.y, newPos.z);*/
 		}
 	}
 	else if(arg.key == OIS::KC_RIGHT)
@@ -295,10 +296,11 @@ bool ProbenderInputHandler::keyPressed( const OIS::KeyEvent &arg )
 		}
 		else
 		{
-			Ogre::Vector3 newPos = probender->GetWorldPosition();
+			probender->Dodge(HelperFunctions::OgreToPhysXVec3(probender->GetWorldPosition()) + physx::PxVec3(0.0f, 0.0f, 1.0f));
+			/*Ogre::Vector3 newPos = probender->GetWorldPosition();
 			newPos.z += 1;
 			probender->rigidBody->SetPosition(HelperFunctions::OgreToPhysXVec3(newPos));
-			printf("New Position: %f, %f, %f\n", newPos.x, newPos.y, newPos.z);
+			printf("New Position: %f, %f, %f\n", newPos.x, newPos.y, newPos.z);*/
 		}
 	}
 	else if(arg.key == keysLayout.JumpButton)

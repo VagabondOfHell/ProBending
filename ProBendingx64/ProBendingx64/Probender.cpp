@@ -22,7 +22,7 @@
 #include "OgreMeshManager.h"
 #include "OgreHardwareBufferManager.h"
 
-const physx::PxVec3 Probender::HALF_EXTENTS = physx::PxVec3(0.250f, 0.60f, 0.050f);
+const physx::PxVec3 Probender::HALF_EXTENTS = physx::PxVec3(0.250f, 0.60f, 0.040f);
 
 Probender::Probender()
 	: GameObject(NULL), leftHandAttack(NULL), rightHandAttack(NULL), currentTarget(NULL), 
@@ -62,10 +62,11 @@ void Probender::Start()
 	AttachComponent(rigid);
 
 	rigid->CreateRigidBody(RigidBodyComponent::DYNAMIC);
-
+	
 	ShapeDefinition shapeDef = ShapeDefinition();
 	shapeDef.SetBoxGeometry(HALF_EXTENTS);
 	shapeDef.AddMaterial("101000");
+	shapeDef.SetFilterFlags(ArenaData::CONTESTANT);
 	PhysXDataManager::GetSingletonPtr()->CreateShape(shapeDef, "ProbenderShape");
 	rigid->AttachShape("ProbenderShape");
 	rigid->CalculateCenterOfMass(1000.0f);
@@ -108,6 +109,7 @@ void Probender::Update(float gameTime)
 	case StateFlags::HEAL_STATE:
 		break;
 	case StateFlags::DODGE_STATE:
+		HandleDodge(gameTime);
 		break;
 	case StateFlags::REELING_STATE:
 		break;
@@ -129,8 +131,7 @@ void Probender::CreateInGameData(const ProbenderData& data)
 	CurrentZone = data.TeamDatas.StartZone;
 	playerColour = data.TeamDatas.PlayerColour;
 
-	characterData.ElementAbilities.Element = data.Attributes.MainElement;
-	characterData.SubelementAbilities.Element = data.Attributes.SubElement;
+	characterData.FillFromProbenderData(data);
 
 	currentElement = characterData.GetMainElement();
 }
@@ -302,16 +303,74 @@ void Probender::OnCollisionLeave(const CollisionReport& collision)
 
 void Probender::StateExitted(StateFlags::PossibleStates exittedState)
 {
-
+	switch (exittedState)
+	{
+	case StateFlags::IDLE_STATE:
+		break;
+	case StateFlags::JUMP_STATE:
+		break;
+	case StateFlags::FALLING_STATE:
+		break;
+	case StateFlags::BLOCK_STATE:
+		break;
+	case StateFlags::CATCH_STATE:
+		break;
+	case StateFlags::HEAL_STATE:
+		break;
+	case StateFlags::DODGE_STATE:
+		rigidBody->SetVelocity(physx::PxVec3(0.0f));
+		SetWorldPosition(dodgeTargetPos.x, dodgeTargetPos.y, dodgeTargetPos.z);
+		dodgeTargetPos = physx::PxVec3(0.0f);
+		dodgeMagnitude = 0.0f;
+		dodgeDirection = dodgeTargetPos;
+		dodgeDistanceTravelled = 0.0f;
+		break;
+	case StateFlags::REELING_STATE:
+		break;
+	case StateFlags::COUNT:
+		break;
+	default:
+		break;
+	}
 }
 
 void Probender::StateEntered(StateFlags::PossibleStates enteredState)
 {
-	if(enteredState == StateFlags::JUMP_STATE)
+	switch (enteredState)
 	{
+	case StateFlags::IDLE_STATE:
+		break;
+	case StateFlags::JUMP_STATE:
 		jumpOrigin = GetWorldPosition();
 		rigidBody->ApplyImpulse(physx::PxVec3(0.0f, 5000.0f, 0.0f));
+		break;
+	case StateFlags::FALLING_STATE:
+		break;
+	case StateFlags::BLOCK_STATE:
+		break;
+	case StateFlags::CATCH_STATE:
+		break;
+	case StateFlags::HEAL_STATE:
+		break;
+	case StateFlags::DODGE_STATE:
+		break;
+	case StateFlags::REELING_STATE:
+		break;
+	case StateFlags::COUNT:
+		break;
+	default:
+		break;
 	}
+}
+
+void Probender::HandleDodge(const float gameTime)
+{
+	float distanceAway = (HelperFunctions::OgreToPhysXVec3(GetWorldPosition()) - dodgeTargetPos).magnitude();
+
+	if(distanceAway > 0.1f)
+		rigidBody->SetVelocity(dodgeDirection * characterData.SkillsBonus.DodgeSpeed);
+	else
+		stateManager.SetState(StateFlags::IDLE_STATE, 0.0f);
 }
 
 void Probender::HandleJump()
@@ -323,11 +382,6 @@ void Probender::HandleJump()
 void Probender::HandleFall()
 {
 	//rigidBody->SetKinematicTarget(HelperFunctions::OgreToPhysXVec3(GetWorldPosition()) + physx::PxVec3(0, -0.05f, 0.0f));
-}
-
-void Probender::Jump()
-{
-	stateManager.SetState(StateFlags::JUMP_STATE, 0.0f);
 }
 
 void Probender::OnTriggerEnter(GameObject* trigger, GameObject* other)
@@ -353,7 +407,7 @@ void Probender::OnTriggerLeave(GameObject* trigger, GameObject* other)
 	{
 		ArenaData::Zones currZone = ArenaData::GetZoneFromString(trigger->GetName());
 
-		if((currZone == ArenaData::BLUE_ZONE_3 || currZone == ArenaData::RED_ZONE_3 )&& currZone == CurrentZone)
+		if((currZone == ArenaData::BLUE_ZONE_3 || currZone == ArenaData::RED_ZONE_3) && currZone == CurrentZone)
 		{
 			CurrentZone = ArenaData::INVALID_ZONE;
 			/*std::string message = "Trigger Left with: " + trigger->GetName() + " For: " + std::to_string(contestantID) + 

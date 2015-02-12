@@ -359,11 +359,15 @@ void Game::Run()
 	player1Data.TeamDatas.StartZone = ArenaData::BLUE_ZONE_1;
 	player1Data.TeamDatas.PlayerColour = TeamData::RED;
 
+	player1Data.Skills.Dodge = 100;
+
 	ProbenderData player2Data = ProbenderData();
 	player2Data.Attributes.MainElement = ElementEnum::Element::Fire;
 	player2Data.TeamDatas.StartTeam = ArenaData::RED_TEAM;
 	player2Data.TeamDatas.StartZone = ArenaData::RED_ZONE_1;
 	player2Data.TeamDatas.PlayerColour = TeamData::BLUE;
+
+	player2Data.Skills.Dodge = 0;
 
 	contestantData.push_back(player1Data);
 	contestantData.push_back(player2Data);

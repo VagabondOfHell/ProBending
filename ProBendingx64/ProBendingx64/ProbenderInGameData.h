@@ -3,6 +3,8 @@
 #include <array>
 #include "StatusEffectModifiers.h"
 
+struct ProbenderData;//Forward declaration
+
 struct AttributeBonuses
 {
 	float HealthRegenRate, FocusRegenRate;
@@ -81,4 +83,12 @@ struct ProbenderInGameData
 	///<returns>The subelement associated with the character. If Invalid, then the Subelement Ability Structure
 	///for this character is invalid or the character doesn't have a sub element</returns>
 	inline const ElementEnum::Element GetSubElement()const{return SubelementAbilities.Element;}
+
+	void FillFromProbenderData(const ProbenderData& data);
+
+private:
+	static const float MAX_DODGE_SPEED;//The number of frames until a dodge maneuver is completed
+	static const float MIN_DODGE_SPEED;
+
+	float CalculateDodgeSpeed(const short dodgeSkill);
 };

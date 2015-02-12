@@ -14,36 +14,12 @@ protected:
 	AffectorData affectors;
 
 #pragma region Virtual Methods for Inherited System Customization
-	
-	///<summary>Called before updating to allow children to lock extra buffers, or other pre-update actions</summary>
-	virtual void PreUpdateCPU(){}
 
 	///<summary>Updates the policy. Any CPU focused updating should go here. Returns a vector of indices that represent
 	///the indices that should be removed</summary>
 	///<param name="time">The time that has passed between frames</param>
 	///<param name="readData">The particle data as provided by PhysX</param>
 	virtual void UpdateParticleSystemCPU(const float time, const physx::PxParticleReadData* const readData) ;
-
-	///<summary>Called per particle to check if the particle should be removed or not. Children can also
-	///apply removal changes here (i.e. reset value to initials)</summary>
-	///<param name="particleIndex">The index of the particle queried</param>
-	///<param name="readData">The PhysX particle data</param>
-	///<returns>True to remove, false if valid</returns>
-	virtual inline bool QueryParticleRemoval(const unsigned int particleIndex, const physx::PxParticleReadData* const readData);
-
-	///<summary>Allows children to add additional update information on a per-particle basis. Children don't have to implement this method</summary>
-	///<param name="particleIndex">The index of the current particle</param>
-	///<param name="readData">Any physx particle data that may be required</param>
-	virtual inline void UpdateParticle(const unsigned int particleIndex, const physx::PxParticleReadData* const readData){}
-
-	///<summary>Called after updating to allow children to unlock extra buffers, or other post-update actions</summary>
-	virtual void PostUpdateCPU(){}
-
-	///<summary>Updates the policy. Any GPU focused updating should go here. This is only called if physX 
-	///is running on the GPU</summary>
-	///<param name="time">The time that has passed between frames</param>
-	///<param name="readData">The particle data as provided by PhysX in a GPU format</param>
-	virtual void UpdatePolicyGPU(const float time, physx::PxParticleReadData* const readData){};
 
 #pragma endregion
 
@@ -60,15 +36,7 @@ public:
 	///<summary>Gets the PhysX Particle System that this class wraps</summary>
 	///<returns>The physx Particle system</returns>
 	inline physx::PxParticleSystem* const GetPhysXParticleSystem()const{return pxParticleSystem;}
-
-	///<summary>Initializes particle system and attaches to the specified scene</summary>
-	///<param name="scene">The physX scene to add the particle system to</param>
-	void Initialize(physx::PxScene* scene);
-
-	///<summary>Updates the information of the particle system</summary>
-	///<param name="time">The time step of the frame</param>
-	void Update(float time);
-
+	
 	///<summary>Adds an affector to the particle system. The system claims ownership of the pointer</summary>
 	///<param name="affectorToAdd">The affector to add</param>
 	///<returns>True if added, false if an identical type exists (uses Affector.GetType())</returns>

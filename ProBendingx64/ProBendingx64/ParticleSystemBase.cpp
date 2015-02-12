@@ -17,27 +17,7 @@ using namespace physx;
 ParticleSystemBase::ParticleSystemBase(std::shared_ptr<AbstractParticleEmitter> _emitter, size_t _maximumParticles, 
 		float _initialLifetime, ParticleSystemParams& paramsStruct)
 		: FluidAndParticleBase(_emitter, _maximumParticles, _initialLifetime, paramsStruct.cudaContext)
-{
-	// our vertices are just points
-	mRenderOp.operationType = Ogre::RenderOperation::OT_POINT_LIST;
-	mRenderOp.useIndexes = false;//EBO
-
-	mRenderOp.vertexData = new Ogre::VertexData();
-	mRenderOp.vertexData->vertexCount = maximumParticles;
-	mRenderOp.vertexData->vertexBufferBinding->unsetAllBindings();
-		
-	//set ogre simple renderable
-	mBox.setExtents(-1000, -1000, -1000, 1000, 1000, 1000);
-	
-	affectors.gpuTypeCombination = 0;
-	affectors.allTypesCombination = 0;
-
-	//Check for gpu usage validity
-	if(cudaContextManager == NULL)
-		onGPU = false;
-	else
-		onGPU = true;
-	
+{	
 	//Create the particle system on PhysX's end. Ignores per particle rest offset arguments here because set base flags handles it
 	pxParticleSystem = PxGetPhysics().createParticleSystem(maximumParticles);
 		
@@ -51,8 +31,6 @@ ParticleSystemBase::ParticleSystemBase(std::shared_ptr<AbstractParticleEmitter> 
 		cudaContextManager = NULL;
 	}
 
-	cudaKernel = NULL;
-
 	SetParticleBaseFlags(pxParticleSystem, paramsStruct.baseFlags);
 
 	//Set the gravity flag
@@ -60,52 +38,19 @@ ParticleSystemBase::ParticleSystemBase(std::shared_ptr<AbstractParticleEmitter> 
 	
 	SetSystemData(pxParticleSystem, paramsStruct);
 	
-	//Allocate enough space for all the indices
-	availableIndices.reserve(maximumParticles);
-
-	//Add the indices in descending order
-	for (int i = maximumParticles - 1; i >= 0; --i)
-	{
-		availableIndices.push_back(i);
-	}
-
-	affectors.hostAffector = false;
+	particleBase = pxParticleSystem;
 }
 
 ParticleSystemBase::ParticleSystemBase(physx::PxParticleSystem* physxParticleSystem, 
 				std::shared_ptr<AbstractParticleEmitter> _emitter, size_t _maximumParticles, float _initialLifetime)
 		: FluidAndParticleBase(_emitter, _maximumParticles, _initialLifetime, NULL)
 {
-	// our vertices are just points
-	mRenderOp.operationType = Ogre::RenderOperation::OT_POINT_LIST;
-	mRenderOp.useIndexes = false;//EBO
-
-	mRenderOp.vertexData = new Ogre::VertexData();
-	mRenderOp.vertexData->vertexCount = maximumParticles;
-	mRenderOp.vertexData->vertexBufferBinding->unsetAllBindings();
-
-	//set ogre simple renderable
-	mBox.setExtents(-1000, -1000, -1000, 1000, 1000, 1000);
-
-	affectors.gpuTypeCombination = 0;
-	affectors.allTypesCombination = 0;
-
 	cudaKernel = NULL;
 
-	pxParticleSystem = physxParticleSystem;
+	//Set parent copy and this copy to the specified system
+	particleBase = pxParticleSystem = physxParticleSystem;
 
 	readableData = pxParticleSystem->getParticleReadDataFlags();
-
-	//Allocate enough space for all the indices
-	availableIndices.reserve(maximumParticles);
-
-	//Add the indices in descending order
-	for (int i = maximumParticles - 1; i >= 0; --i)
-	{
-		availableIndices.push_back(i);
-	}
-
-	affectors.hostAffector = false;
 }
 
 
@@ -118,101 +63,6 @@ ParticleSystemBase::~ParticleSystemBase(void)
 	{
 		delete[] lifetimes;
 		lifetimes = NULL;
-	}
-}
-
-void ParticleSystemBase::Initialize(physx::PxScene* scene)
-{
-	lifetimes = new float[maximumParticles];
-	
-	//Reserve 5% of the max particles for removal
-	indicesToRemove.reserve(maximumParticles * 0.05f);
-
-	//Call child initialize
-	InitializeParticleSystemData();
-
-	InitializeVertexBuffers();
-
-	//Add it to the scene
-	scene->addActor(*pxParticleSystem);
-}
-
-void ParticleSystemBase::Update(float time)
-{
-	using namespace physx;
-	PxParticleReadData* rd;
-	
-	//We then call the update attributes for CPU readable data, even if the system utilizes the GPU
-	rd = pxParticleSystem->lockParticleReadData(PxDataAccessFlag::eREADABLE);
-
-	if(rd)
-	{
-		//Update the policy collect the indices to remove from the policy
-		UpdateParticleSystemCPU(time, rd);
-		rd->unlock();
-	}
-	//If we have the particle system using the GPU
-	if(onGPU)			
-		if(cudaContextManager)
-		{
-			//Prepare the data on the GPU
-			cudaContextManager->acquireContext();
-			rd = pxParticleSystem->lockParticleReadData(PxDataAccessFlag::eDEVICE);
-
-			if(rd)
-			{
-				if(!cudaKernel->LaunchKernel(rd, lifetimes, initialLifetime, maximumParticles))
-					printf("Cuda Launch Failed\n");
-				//Call the policies update GPU method
-				//UpdatePolicyGPU(time, rd);
-				rd->unlock();
-			}
-			//release the cuda context
-			cudaContextManager->releaseContext();
-		}
-	
-		//If we should remove some, remove them
-	if(indicesToRemove.size() > 0)
-	{
-		pxParticleSystem->releaseParticles(indicesToRemove.size(), PxStrideIterator<PxU32>(&indicesToRemove[0]));
-
-		for (int i = indicesToRemove.size() - 1; i >= 0; --i)
-		{
-			availableIndices.push_back(indicesToRemove[i]);
-			indicesToRemove.pop_back();
-		}
-	}
-
-	//Create the emission data and initialize number to 0
-	PxParticleCreationData creationData; 
-	creationData.numParticles = 0;
-
-	//Indicate the emitter should emit
-	emitter->Emit(time, availableIndices.size(), creationData);
-
-	if(creationData.numParticles > 0)
-	{
-		//Fill the index buffer
-		creationData.indexBuffer = physx::PxStrideIterator<PxU32>(&availableIndices[availableIndices.size() - creationData.numParticles]);
-
-		//Check validity
-		if(creationData.isValid())
-		{
-			//Create the particles
-			if(pxParticleSystem->createParticles(creationData))
-			{
-				//Callback for successful creation
-				ParticlesCreated(creationData.numParticles, creationData.indexBuffer);
-
-				//Remove the particles from the available list
-				for (unsigned int i = 0; i < creationData.numParticles; i++)
-				{
-					availableIndices.pop_back();
-				}
-			}
-			else
-				printf("CREATION ERROR");
-		}	
 	}
 }
 
@@ -304,13 +154,6 @@ void ParticleSystemBase::UpdateParticleSystemCPU(const float time, const physx::
 		if(onGPU)
 			mRenderOp.vertexData->vertexCount = numParticles;
 	}//end if valid range > 0
-}
-
-
-bool ParticleSystemBase::QueryParticleRemoval(const unsigned int particleIndex, const physx::PxParticleReadData* const readData)
-{
-	return readData->flagsBuffer[particleIndex] & PxParticleFlag::eSPATIAL_DATA_STRUCTURE_OVERFLOW ||
-		!(readData->flagsBuffer[particleIndex] & PxParticleFlag::eVALID) || lifetimes[particleIndex] <= 0.0f;
 }
 
 bool ParticleSystemBase::AddAffector(std::shared_ptr<ParticleAffector> affectorToAdd)

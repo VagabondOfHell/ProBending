@@ -22,24 +22,24 @@ ProbenderStateManager::ProbenderStateManager(Probender* bender)
 	stateChangedThisFrame = false;
 	disallowStateChange = false;
 
-	States[StateFlags::IDLE_STATE] = State(StateFlags::IDLE_STATE, 
+	States[StateFlags::IDLE_STATE - 1] = State(StateFlags::IDLE_STATE, 
 		StateFlags::ALL_STATES & ~StateFlags::IDLE_STATE_FLAG, 0.0f, StateFlags::ALL_STATES & ~StateFlags::IDLE_STATE_FLAG);
 
-	States[StateFlags::JUMP_STATE] = State(StateFlags::JUMP_STATE, 
+	States[StateFlags::JUMP_STATE - 1] = State(StateFlags::JUMP_STATE, 
 		StateFlags::FALLING_STATE_FLAG, 0.0f, StateFlags::REELING_STATE_FLAG | StateFlags::FALLING_STATE_FLAG);
 
-	States[StateFlags::FALLING_STATE] = State(StateFlags::FALLING_STATE,
+	States[StateFlags::FALLING_STATE - 1] = State(StateFlags::FALLING_STATE,
 		StateFlags::IDLE_STATE_FLAG, 0.0f, StateFlags::IDLE_STATE_FLAG | StateFlags::REELING_STATE_FLAG);
 
-	States[StateFlags::BLOCK_STATE] = State(StateFlags::BLOCK_STATE, StateFlags::IDLE_STATE_FLAG, 1.0f, StateFlags::REELING_STATE_FLAG);
+	States[StateFlags::BLOCK_STATE - 1] = State(StateFlags::BLOCK_STATE, StateFlags::IDLE_STATE_FLAG, 1.0f, StateFlags::REELING_STATE_FLAG);
 
-	States[StateFlags::CATCH_STATE] = State(StateFlags::CATCH_STATE, StateFlags::IDLE_STATE_FLAG, 1.0f, StateFlags::REELING_STATE_FLAG);
+	States[StateFlags::CATCH_STATE - 1] = State(StateFlags::CATCH_STATE, StateFlags::IDLE_STATE_FLAG, 1.0f, StateFlags::REELING_STATE_FLAG);
 
-	States[StateFlags::HEAL_STATE] = State(StateFlags::HEAL_STATE, StateFlags::IDLE_STATE_FLAG, 1.0f, StateFlags::REELING_STATE_FLAG);
+	States[StateFlags::HEAL_STATE - 1] = State(StateFlags::HEAL_STATE, StateFlags::IDLE_STATE_FLAG, 1.0f, StateFlags::REELING_STATE_FLAG);
 
-	States[StateFlags::DODGE_STATE] = State(StateFlags::DODGE_STATE, StateFlags::IDLE_STATE_FLAG, 1.0f, StateFlags::INVALID_STATE_FLAG);
+	States[StateFlags::DODGE_STATE - 1] = State(StateFlags::DODGE_STATE, StateFlags::IDLE_STATE_FLAG, 0.0f, StateFlags::INVALID_STATE_FLAG);
 
-	States[StateFlags::REELING_STATE] = State(StateFlags::REELING_STATE, StateFlags::IDLE_STATE_FLAG, 1.0f, StateFlags::INVALID_STATE_FLAG);
+	States[StateFlags::REELING_STATE - 1] = State(StateFlags::REELING_STATE, StateFlags::IDLE_STATE_FLAG, 1.0f, StateFlags::INVALID_STATE_FLAG);
 
 	currentState = StateFlags::IDLE_STATE;
 }
@@ -50,21 +50,21 @@ ProbenderStateManager::~ProbenderStateManager(void)
 
 bool ProbenderStateManager::SetState(StateFlags::PossibleStates newState, float timeInNewState)
 {
+	if(newState == StateFlags::COUNT || newState == StateFlags::INVALID_STATE)
+		return false;
+
 	if(disallowStateChange)
 		return false;
 
 	if(stateChangedThisFrame)
 		return false;
 
-	if(States[currentState].GetStateID() == newState)
+	if(States[currentState - 1].GetStateID() == newState)
 		return false;
 
-	if(newState == StateFlags::COUNT)
-		return false;
-
-	if(States[currentState].ValidTransition(newState))
+	if(States[currentState - 1].ValidTransition(newState))
 	{
-		States[currentState].ExitState();
+		States[currentState - 1].ExitState();
 
 		probender->StateExitted(currentState);
 

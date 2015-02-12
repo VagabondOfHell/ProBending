@@ -31,7 +31,7 @@ private:
 		if(stateToGet == StateFlags::COUNT)
 			return NULL;
 
-		return &States[stateToGet];
+		return &States[stateToGet - 1];
 	}
 
 public:

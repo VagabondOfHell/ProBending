@@ -2,6 +2,7 @@ namespace StateFlags
 {
 	enum PossibleStates
 	{
+		INVALID_STATE,
 		IDLE_STATE,
 		JUMP_STATE,
 		FALLING_STATE,

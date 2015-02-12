@@ -36,8 +36,6 @@ private:
 
 	ProbenderInputHandler inputHandler;//The component handling input
 
-	///Flight Game Object here
-
 	SharedProjectile leftHandAttack;//The projectile in the left hand
 	SharedProjectile rightHandAttack;//The projectile in the right hand
 	
@@ -49,9 +47,18 @@ private:
 
 	Ogre::Vector3 jumpOrigin;
 
+	physx::PxVec3 dodgeTargetPos;//The final position
+	physx::PxVec3 dodgeDirection;//direction to move towards
+	physx::PxReal dodgeMagnitude;//the total distance that should be travelled. 
+	physx::PxReal dodgeDistanceTravelled;//how far moved so far (avoids sqrt every frame)
+
 	std::string GetMeshAndMaterialName();
 
 	void HandleJump();
+
+	void HandleDodge(const float gameTime);
+
+	void HandleFall();
 
 public:
 	ArenaData::Zones CurrentZone;
@@ -126,9 +133,18 @@ public:
 
 	void StateEntered(StateFlags::PossibleStates enteredState);
 
-	void Jump();
+	inline void Jump(){stateManager.SetState(StateFlags::JUMP_STATE, 0.0f);}
 	
-	void HandleFall();
+	inline void Dodge(const physx::PxVec3& targetPos){
+		if(stateManager.SetState(StateFlags::DODGE_STATE, 0.0f))
+		{
+			//dodgeTarget->SetWorldPosition(targetPos.x, targetPos.y, targetPos.z);
+			dodgeTargetPos = targetPos;
+			dodgeDirection = dodgeTargetPos - HelperFunctions::OgreToPhysXVec3(GetWorldPosition());
+			dodgeMagnitude = dodgeDirection.normalize();
+			dodgeDistanceTravelled = 1.0f;
+		}
+	}
 
 	virtual void OnCollisionEnter(const CollisionReport& collision);
 

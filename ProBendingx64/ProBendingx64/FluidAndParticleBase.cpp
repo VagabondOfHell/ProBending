@@ -1,6 +1,11 @@
 #include "FluidAndParticleBase.h"
 
 #include "ParticleKernel.h"
+#include "AbstractParticleEmitter.h"
+
+#include "PxScene.h"
+#include "pxtask/PxCudaContextManager.h"
+#include "PsBitUtils.h"
 
 #include "OgreCamera.h"
 #include "OgreHardwareBufferManager.h"
@@ -30,6 +35,44 @@ ParticleKernelMap::ParticleKernelMap()
 	kernelMap.insert(KernelMap::value_type(ParticleAffectorType::Scale | ParticleAffectorType::ColourToColour, mainKernel));
 }
 
+FluidAndParticleBase::FluidAndParticleBase(std::shared_ptr<AbstractParticleEmitter> _emitter, 
+	size_t _maximumParticles, float _initialLifetime, physx::PxCudaContextManager* _cudaMan)
+	: emitter(_emitter), maximumParticles(_maximumParticles), initialLifetime(_initialLifetime), cudaContextManager(_cudaMan), cudaKernel(NULL)
+{
+	// our vertices are just points
+	mRenderOp.operationType = Ogre::RenderOperation::OT_POINT_LIST;
+	mRenderOp.useIndexes = false;//EBO
+
+	mRenderOp.vertexData = new Ogre::VertexData();
+	mRenderOp.vertexData->vertexCount = maximumParticles;
+	mRenderOp.vertexData->vertexBufferBinding->unsetAllBindings();
+
+	//set ogre simple renderable
+	mBox.setExtents(-1000, -1000, -1000, 1000, 1000, 1000);
+
+	//Check for gpu usage validity
+	if(cudaContextManager == NULL)
+		onGPU = false;
+	else
+		onGPU = true;
+
+	//Allocate enough space for all the indices
+	availableIndices.reserve(maximumParticles);
+
+	//Add the indices in descending order
+	for (int i = maximumParticles - 1; i >= 0; --i)
+	{
+		availableIndices.push_back(i);
+	}
+
+}
+
+FluidAndParticleBase::~FluidAndParticleBase()
+{
+
+}
+
+#pragma region Particle System Data Setters
 void FluidAndParticleBase::SetParticleReadFlags(physx::PxParticleBase* pxParticleSystem, physx::PxParticleReadDataFlags newFlags)
 {
 	using namespace physx;
@@ -97,6 +140,261 @@ void FluidAndParticleBase::SetSystemData(physx::PxParticleBase* pxParticleSystem
 	pxParticleSystem->setSimulationFilterData(paramsStruct.filterData);
 }
 
+#pragma  endregion
+
+#pragma region Initialization and Updating
+
+void FluidAndParticleBase::Initialize(physx::PxScene* scene)
+{
+	lifetimes = new float[maximumParticles];
+
+	//Reserve 5% of the max particles for removal
+	indicesToRemove.reserve(maximumParticles * 0.05f);
+
+	//Call child initialize
+	InitializeParticleSystemData();
+
+	InitializeVertexBuffers();
+
+	//Add it to the scene
+	scene->addActor(*particleBase);
+}
+
+void FluidAndParticleBase::Update(float time)
+{
+	using namespace physx;
+	PxParticleReadData* rd;
+
+	//We then call the update attributes for CPU readable data, even if the system utilizes the GPU
+	rd = particleBase->lockParticleReadData(PxDataAccessFlag::eREADABLE);
+
+	if(rd)
+	{
+		//Update the policy collect the indices to remove from the policy
+		UpdateParticleSystemCPU(time, rd);
+		rd->unlock();
+	}
+	//If we have the particle system using the GPU
+	if(onGPU && cudaContextManager)
+	{
+		//Prepare the data on the GPU
+		cudaContextManager->acquireContext();
+		rd = particleBase->lockParticleReadData(PxDataAccessFlag::eDEVICE);
+
+		if(rd)
+		{
+			if(!cudaKernel->LaunchKernel(rd, lifetimes, initialLifetime, maximumParticles))
+				printf("Cuda Launch Failed\n");
+			//Call the policies update GPU method
+			//UpdatePolicyGPU(time, rd);
+			rd->unlock();
+		}
+		//release the cuda context
+		cudaContextManager->releaseContext();
+	}
+
+	//If we should remove some, remove them
+	if(indicesToRemove.size() > 0)
+	{
+		particleBase->releaseParticles(indicesToRemove.size(), PxStrideIterator<PxU32>(&indicesToRemove[0]));
+
+		for (int i = indicesToRemove.size() - 1; i >= 0; --i)
+		{
+			availableIndices.push_back(indicesToRemove[i]);
+			indicesToRemove.pop_back();
+		}
+	}
+
+	//Create the emission data and initialize number to 0
+	PxParticleCreationData creationData; 
+	creationData.numParticles = 0;
+
+	//Indicate the emitter should emit
+	emitter->Emit(time, availableIndices.size(), creationData);
+
+	if(creationData.numParticles > 0)
+	{
+		//Fill the index buffer
+		creationData.indexBuffer = physx::PxStrideIterator<PxU32>(&availableIndices[availableIndices.size() - creationData.numParticles]);
+
+		//Check validity
+		if(creationData.isValid())
+		{
+			//Create the particles
+			if(particleBase->createParticles(creationData))
+			{
+				//Callback for successful creation
+				ParticlesCreated(creationData.numParticles, creationData.indexBuffer);
+
+				//Remove the particles from the available list
+				for (unsigned int i = 0; i < creationData.numParticles; i++)
+				{
+					availableIndices.pop_back();
+				}
+			}
+			else
+				printf("CREATION ERROR");
+		}	
+	}
+}
+
+#pragma endregion
+
+#pragma region Virtual Methods for Inherited System Customization
+
+GPUResourcePointers FluidAndParticleBase::LockBuffersCPU()
+{
+	GPUResourcePointers pointers;
+
+	for (BufferMap::iterator start = bufferMap.begin(); start != bufferMap.end(); ++start)
+	{
+		switch (start->first)
+		{
+		case Ogre::VES_POSITION:
+			pointers.positions = (physx::PxVec4*)start->second->lock(Ogre::HardwareBuffer::HBL_WRITE_ONLY);
+			break;
+		case Ogre::VES_BLEND_WEIGHTS:
+			pointers.blendWeights = (physx::PxVec4*)start->second->lock(Ogre::HardwareBuffer::HBL_WRITE_ONLY);
+			break;
+		case Ogre::VES_BLEND_INDICES:
+			pointers.blendIndices = (physx::PxVec4*)start->second->lock(Ogre::HardwareBuffer::HBL_WRITE_ONLY);
+			break;
+		case Ogre::VES_DIFFUSE:
+			pointers.primaryColour = (physx::PxVec4*)start->second->lock(Ogre::HardwareBuffer::HBL_WRITE_ONLY);
+			break;
+		case Ogre::VES_SPECULAR:
+			pointers.secondaryColour = (physx::PxVec4*)start->second->lock(Ogre::HardwareBuffer::HBL_WRITE_ONLY);
+			break;
+		case Ogre::VES_TEXTURE_COORDINATES:
+			pointers.uv0 = (physx::PxVec4*)start->second->lock(Ogre::HardwareBuffer::HBL_WRITE_ONLY);
+			break;
+
+		case Ogre::VES_BINORMAL:
+			pointers.binormals = (physx::PxVec3*)start->second->lock(Ogre::HardwareBuffer::HBL_WRITE_ONLY);
+			break;
+		case Ogre::VES_TANGENT:
+			pointers.tangent = (physx::PxVec3*)start->second->lock(Ogre::HardwareBuffer::HBL_WRITE_ONLY);
+			break;
+		case Ogre::VES_NORMAL:
+			pointers.normals = (physx::PxVec3*)start->second->lock(Ogre::HardwareBuffer::HBL_WRITE_ONLY);
+			break;
+
+		default:
+			break;
+		}
+	}
+
+	return pointers;
+}
+
+void FluidAndParticleBase::UpdateParticleSystemCPU(const float time, const physx::PxParticleReadData* const readData)
+{
+	using namespace physx;
+
+	//Check if there is any updating to do
+	if (readData->validParticleRange > 0)
+	{
+		GPUResourcePointers lockedBufferData = LockBuffersCPU();
+		int numParticles(0);
+
+		for (PxU32 w = 0; w <= (readData->validParticleRange-1) >> 5; w++)
+		{
+			//For each bit of the bitmap
+			for (PxU32 b = readData->validParticleBitmap[w]; b; b &= b-1)
+			{
+				PxU32 index = (w << 5 | shdfnd::lowestSetBit(b));
+
+				++numParticles;
+
+				//Check particle validity
+				if(QueryParticleRemoval(index, readData))
+				{
+					//If lifetime is equal or below zero
+					indicesToRemove.push_back(index); //indicate removal
+					lifetimes[index] = 0;//set lifetime to 0
+
+					if(!onGPU)
+						//Reset position. Not concerned of W component here because its a dead particle anyways
+							lockedBufferData.positions[index] = PxVec4(std::numeric_limits<float>::quiet_NaN());
+
+					continue;
+				}
+				//If the particle is valid and lifetimes are above 0, subtract this frame
+				else
+				{
+					lifetimes[index] -= time;
+
+					if(!onGPU)
+					{
+						// copy particle positions over
+						const PxVec3& position = readData->positionBuffer[index];
+						lockedBufferData.positions[index].x = position.x;
+						lockedBufferData.positions[index].y = position.y;
+						lockedBufferData.positions[index].z = position.z;
+					}
+					
+					//Allow children to update their own particle data
+					UpdateParticle(index, readData);
+				}
+			}//end of bitmap for loop (b)
+		}//end of particle range for loop
+
+		UnlockBuffersCPU();
+
+		if(onGPU)
+			mRenderOp.vertexData->vertexCount = numParticles;
+	}//end if valid range > 0
+}
+
+
+#pragma endregion
+
+bool FluidAndParticleBase::AssignAffectorKernel(ParticleKernel* newKernel)
+{
+	if(!onGPU)
+		return false;
+
+	if(cudaKernel)
+	{
+		delete cudaKernel;
+		cudaKernel = NULL;
+	}
+
+	cudaKernel = newKernel;
+
+	if(cudaKernel)
+	{
+		//Fill the kernel with the necessary data
+		if(cudaKernel->PopulateData(this, NULL) == ParticleKernel::SUCCESS)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+std::string FluidAndParticleBase::FindBestShader(ParticleAffectorType::ParticleAffectorFlag combination)
+{
+	ParticleMaterialMap::MaterialMap::iterator iter = materialsMap.materialMap.find(combination);
+
+	if(iter != materialsMap.materialMap.end())
+		return iter->second;
+
+	return "DefaultParticleShader";
+}
+
+ParticleKernel* FluidAndParticleBase::FindBestKernel(ParticleAffectorType::ParticleAffectorFlag combination)
+{
+	ParticleKernelMap::KernelMap::iterator iter = kernelsMap.kernelMap.find(combination);
+
+	if(iter != kernelsMap.kernelMap.end())
+		return iter->second->Clone();
+
+	return NULL;
+}
+
+#pragma region Ogre Rendering
 Ogre::HardwareVertexBufferSharedPtr FluidAndParticleBase::CreateVertexBuffer(Ogre::VertexElementSemantic semantic, unsigned short uvSource)
 {
 	Ogre::HardwareVertexBufferSharedPtr returnVal = GetBuffer(semantic);
@@ -215,108 +513,6 @@ Ogre::HardwareVertexBufferSharedPtr FluidAndParticleBase::GetBuffer(Ogre::Vertex
 		return Ogre::HardwareVertexBufferSharedPtr(NULL);
 }
 
-#pragma region Virtual Methods for Inherited System Customization
-
-//void FluidAndParticleBase::UnlockBuffersCPU()
-//{
-//	for (BufferMap::iterator start = bufferMap.begin(); start != bufferMap.end(); ++start)
-//	{
-//		start->second->unlock();
-//	}
-//}
-
-GPUResourcePointers FluidAndParticleBase::LockBuffersCPU()
-{
-	GPUResourcePointers pointers;
-
-	for (BufferMap::iterator start = bufferMap.begin(); start != bufferMap.end(); ++start)
-	{
-		switch (start->first)
-		{
-		case Ogre::VES_POSITION:
-			pointers.positions = (physx::PxVec4*)start->second->lock(Ogre::HardwareBuffer::HBL_WRITE_ONLY);
-			break;
-		case Ogre::VES_BLEND_WEIGHTS:
-			pointers.blendWeights = (physx::PxVec4*)start->second->lock(Ogre::HardwareBuffer::HBL_WRITE_ONLY);
-			break;
-		case Ogre::VES_BLEND_INDICES:
-			pointers.blendIndices = (physx::PxVec4*)start->second->lock(Ogre::HardwareBuffer::HBL_WRITE_ONLY);
-			break;
-		case Ogre::VES_DIFFUSE:
-			pointers.primaryColour = (physx::PxVec4*)start->second->lock(Ogre::HardwareBuffer::HBL_WRITE_ONLY);
-			break;
-		case Ogre::VES_SPECULAR:
-			pointers.secondaryColour = (physx::PxVec4*)start->second->lock(Ogre::HardwareBuffer::HBL_WRITE_ONLY);
-			break;
-		case Ogre::VES_TEXTURE_COORDINATES:
-			pointers.uv0 = (physx::PxVec4*)start->second->lock(Ogre::HardwareBuffer::HBL_WRITE_ONLY);
-			break;
-
-		case Ogre::VES_BINORMAL:
-			pointers.binormals = (physx::PxVec3*)start->second->lock(Ogre::HardwareBuffer::HBL_WRITE_ONLY);
-			break;
-		case Ogre::VES_TANGENT:
-			pointers.tangent = (physx::PxVec3*)start->second->lock(Ogre::HardwareBuffer::HBL_WRITE_ONLY);
-			break;
-		case Ogre::VES_NORMAL:
-			pointers.normals = (physx::PxVec3*)start->second->lock(Ogre::HardwareBuffer::HBL_WRITE_ONLY);
-			break;
-
-		default:
-			break;
-		}
-	}
-
-	return pointers;
-}
-
-#pragma endregion
-
-bool FluidAndParticleBase::AssignAffectorKernel(ParticleKernel* newKernel)
-{
-	if(!onGPU)
-		return false;
-
-	if(cudaKernel)
-	{
-		delete cudaKernel;
-		cudaKernel = NULL;
-	}
-
-	cudaKernel = newKernel;
-
-	if(cudaKernel)
-	{
-		//Fill the kernel with the necessary data
-		if(cudaKernel->PopulateData(this, NULL) == ParticleKernel::SUCCESS)
-		{
-			return true;
-		}
-	}
-
-	return false;
-}
-
-std::string FluidAndParticleBase::FindBestShader(ParticleAffectorType::ParticleAffectorFlag combination)
-{
-	ParticleMaterialMap::MaterialMap::iterator iter = materialsMap.materialMap.find(combination);
-
-	if(iter != materialsMap.materialMap.end())
-		return iter->second;
-
-	return "DefaultParticleShader";
-}
-
-ParticleKernel* FluidAndParticleBase::FindBestKernel(ParticleAffectorType::ParticleAffectorFlag combination)
-{
-	ParticleKernelMap::KernelMap::iterator iter = kernelsMap.kernelMap.find(combination);
-
-	if(iter != kernelsMap.kernelMap.end())
-		return iter->second->Clone();
-
-	return NULL;
-}
-
 Ogre::Real FluidAndParticleBase::getSquaredViewDepth(const Ogre::Camera* cam)const
 {
 	Ogre::Vector3 min, max, mid, dist;
@@ -326,3 +522,5 @@ Ogre::Real FluidAndParticleBase::getSquaredViewDepth(const Ogre::Camera* cam)con
 	dist = cam->getDerivedPosition() - mid;
 	return dist.squaredLength();
 }
+
+#pragma endregion

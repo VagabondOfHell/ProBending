@@ -25,4 +25,5 @@ struct AffectorData
 	inline AffectorMap::iterator GetMapBegin(){return affectorMap.begin();}
 
 	inline AffectorMap::iterator GetMapEnd(){return affectorMap.end();}
+
 };

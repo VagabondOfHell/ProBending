@@ -194,7 +194,7 @@ namespace ElementFlags
 namespace ProbenderAttributes
 {
 	///The maximum allowed skill points for attributes
-	static const short MAX_ATTRIBUTE_POINTS_ALLOWED = 99;
+	static const short MAX_ATTRIBUTE_POINTS_ALLOWED = 100;
 
 	enum Attributes{InvalidAttribute, Health, Focus, OffensiveStrength, DefensiveStrength, Agility, Luck};
 };
@@ -202,7 +202,7 @@ namespace ProbenderAttributes
 namespace ProbenderGeneralSkills
 {
 	///The maximum allowed skill points for skills
-	static const short MAX_SKILL_POINTS_ALLOWED = 99;
+	static const short MAX_SKILL_POINTS_ALLOWED = 100;
 	enum Skills{InvalidSkill, Dodge, Jump, Fly, SameElementCatch, Block, CounterAttack, ArenaInteraction, Healing};
 };
 
@@ -217,7 +217,7 @@ namespace ProbenderAbilities
 	///The number of modifiers for abilities (where points are placed in)
 	static const short NUM_ABILITY_MODIFIERS = 3;
 	//Maximum for skill point application to special abilities
-	static const short MAX_SKILL_POINTS_ALLOWED = 99;
+	static const short MAX_SKILL_POINTS_ALLOWED = 100;
 };
 
 namespace AbilityIDs

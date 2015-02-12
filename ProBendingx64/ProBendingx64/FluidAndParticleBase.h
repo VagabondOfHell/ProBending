@@ -35,6 +35,8 @@ protected:
 	static ParticleMaterialMap materialsMap;//Shared instance of a list of shaders
 	static ParticleKernelMap kernelsMap;//Shared instance of a list of kernels
 
+	physx::PxParticleBase* particleBase;//The particle base, whether fluid or particles, so majority of functionality can be stored in this class
+
 	physx::PxParticleReadDataFlags readableData; ///The readable data of the particle system
 
 	std::shared_ptr<AbstractParticleEmitter> emitter;//The emitter used to create particles
@@ -101,20 +103,47 @@ protected:
 		}
 	}
 
+	///<summary>Called before updating to allow children to lock extra buffers, or other pre-update actions</summary>
+	virtual void PreUpdateCPU(){}
+
+	///<summary>Updates the policy. Any CPU focused updating should go here. Returns a vector of indices that represent
+	///the indices that should be removed</summary>
+	///<param name="time">The time that has passed between frames</param>
+	///<param name="readData">The particle data as provided by PhysX</param>
+	virtual void UpdateParticleSystemCPU(const float time, const physx::PxParticleReadData* const readData) ;
+
+	///<summary>Allows children to add additional update information on a per-particle basis. Children don't have to implement this method</summary>
+	///<param name="particleIndex">The index of the current particle</param>
+	///<param name="readData">Any physx particle data that may be required</param>
+	virtual inline void UpdateParticle(const unsigned int particleIndex, const physx::PxParticleReadData* const readData){}
+	
+	///<summary>Updates the policy. Any GPU focused updating should go here. This is only called if physX 
+	///is running on the GPU</summary>
+	///<param name="time">The time that has passed between frames</param>
+	///<param name="readData">The particle data as provided by PhysX in a GPU format</param>
+	virtual void UpdateParticleSystemGPU(const float time, physx::PxParticleReadData* const readData){};
+
+	///<summary>Called per particle to check if the particle should be removed or not. Children can also
+	///apply removal changes here (i.e. reset value to initials)</summary>
+	///<param name="particleIndex">The index of the particle queried</param>
+	///<param name="readData">The PhysX particle data</param>
+	///<returns>True to remove, false if valid</returns>
+	virtual inline bool QueryParticleRemoval(const unsigned int particleIndex, const physx::PxParticleReadData* const readData)
+	{
+		return readData->flagsBuffer[particleIndex] & physx::PxParticleFlag::eSPATIAL_DATA_STRUCTURE_OVERFLOW ||
+			!(readData->flagsBuffer[particleIndex] & physx::PxParticleFlag::eVALID) || lifetimes[particleIndex] <= 0.0f;
+	}
+
+	///<summary>Called after updating to allow children to unlock extra buffers, or other post-update actions</summary>
+	virtual void PostUpdateCPU(){}
+
 #pragma endregion
 
 public:
 	FluidAndParticleBase(std::shared_ptr<AbstractParticleEmitter> _emitter, size_t _maximumParticles, float _initialLifetime,
-		physx::PxCudaContextManager* _cudaMan)
-		: emitter(_emitter), maximumParticles(_maximumParticles), initialLifetime(_initialLifetime), cudaContextManager(_cudaMan)
-	{
+		physx::PxCudaContextManager* _cudaMan);
 
-	}
-
-	virtual ~FluidAndParticleBase()
-	{
-
-	}
+	virtual ~FluidAndParticleBase();
 
 #pragma region Getters and Setters
 
@@ -148,6 +177,19 @@ public:
 
 #pragma endregion
 
+#pragma region Initialization and Updating
+
+	///<summary>Initializes particle system and attaches to the specified scene</summary>
+	///<param name="scene">The physX scene to add the particle system to</param>
+	void Initialize(physx::PxScene* scene);
+
+	///<summary>Updates the information of the particle system</summary>
+	///<param name="time">The time step of the frame</param>
+	void Update(float time);
+
+#pragma endregion
+
+#pragma region Ogre Rendering Methods
 	///<summary>Creates a vertex buffer for this system</summary>
 	///<param name="semantic">The semantic to create</param>
 	///<param name="uvSource">The uv index</param>
@@ -165,4 +207,6 @@ public:
 	}
 
 	virtual Ogre::Real getSquaredViewDepth(const Ogre::Camera* cam)const;
+#pragma endregion
+
 };
