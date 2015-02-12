@@ -45,8 +45,6 @@ ParticleSystemBase::ParticleSystemBase(physx::PxParticleSystem* physxParticleSys
 				std::shared_ptr<AbstractParticleEmitter> _emitter, size_t _maximumParticles, float _initialLifetime)
 		: FluidAndParticleBase(_emitter, _maximumParticles, _initialLifetime, NULL)
 {
-	cudaKernel = NULL;
-
 	//Set parent copy and this copy to the specified system
 	particleBase = pxParticleSystem = physxParticleSystem;
 
@@ -56,14 +54,7 @@ ParticleSystemBase::ParticleSystemBase(physx::PxParticleSystem* physxParticleSys
 
 ParticleSystemBase::~ParticleSystemBase(void)
 {
-	if(cudaKernel)
-		delete cudaKernel;
-
-	if(lifetimes)
-	{
-		delete[] lifetimes;
-		lifetimes = NULL;
-	}
+	
 }
 
 void ParticleSystemBase::UpdateParticleSystemCPU(const float time, const physx::PxParticleReadData* const readData)

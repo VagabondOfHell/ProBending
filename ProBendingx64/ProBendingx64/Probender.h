@@ -79,7 +79,7 @@ public:
 	inline TeamData::ContestantColour GetColour()const {return playerColour;}
 
 	inline ArenaData::Zones GetCurrentZone()const{return CurrentZone;}
-
+	
 	///<summary>Takes the menu created data of the probender and converts it to usable in-game data</summary>
 	///<param name="data">The menu data to convert</param>
 	void CreateInGameData(const ProbenderData& data);

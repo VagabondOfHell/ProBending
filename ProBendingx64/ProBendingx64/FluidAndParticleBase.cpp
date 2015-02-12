@@ -69,7 +69,14 @@ FluidAndParticleBase::FluidAndParticleBase(std::shared_ptr<AbstractParticleEmitt
 
 FluidAndParticleBase::~FluidAndParticleBase()
 {
+	if(cudaKernel)
+		delete cudaKernel;
 
+	if(lifetimes)
+	{
+		delete[] lifetimes;
+		lifetimes = NULL;
+	}
 }
 
 #pragma region Particle System Data Setters

@@ -19,7 +19,7 @@ ProbenderInputHandler::ProbenderInputHandler(Probender* _probenderToHandle, bool
 					ConfigurationLayout keyLayout/* = ConfigurationLayout()*/)
 					:keysLayout(keyLayout)
 {
-	probender = _probenderToHandle;
+	SetProbenderToHandle(_probenderToHandle);
 	ManageStance = manageStance;
 }
 
@@ -34,7 +34,52 @@ ProbenderInputHandler::~ProbenderInputHandler(void)
 void ProbenderInputHandler::SetProbenderToHandle(Probender* _probenderToHandle)
 {
 	probender = _probenderToHandle;
+
+	if(probender)
+		GenerateGestures();
 }
+
+#pragma region GestureDatabase
+void ProbenderInputHandler::GenerateGestures()
+{
+	switch (probender->characterData.GetMainElement())
+	{
+	case ElementEnum::Element::Earth:
+		PopulateWithGestures(mainElementGestures, ElementEnum::Earth);
+		break;
+	case ElementEnum::Element::Fire:
+		PopulateWithGestures(mainElementGestures, ElementEnum::Fire);
+		break;
+	case ElementEnum::Element::Water:
+		PopulateWithGestures(mainElementGestures, ElementEnum::Water);
+		break;
+	default:
+		break;
+	}
+}
+
+void ProbenderInputHandler::PopulateWithGestures(std::vector<GestureChain>& elementVector, ElementEnum::Element element)
+{
+	elementVector.clear();
+
+	switch (element)
+	{
+	case ElementEnum::Earth:
+		elementVector.push_back(GestureChain(AttackEnum::EarthAttackToString(AttackEnum::STOMP_BLAST),
+			2.0f, AttackEnum::STOMP_BLAST_PROGRESS_COUNT, this));
+		break;
+	case ElementEnum::Fire:
+		break;
+	case ElementEnum::Water:
+		break;
+	default:
+		break;
+	}
+}
+
+#pragma endregion
+
+#pragma region Input State Controls
 
 void ProbenderInputHandler::BeginListeningToAll()
 {
@@ -64,6 +109,8 @@ void ProbenderInputHandler::ResumeListeningToAll()
 	ResumeOISInputListening();
 }
 
+#pragma endregion
+
 void ProbenderInputHandler::Update(const float gameTime)
 {
 	if(!IsListening())
@@ -73,6 +120,17 @@ void ProbenderInputHandler::Update(const float gameTime)
 		if(inputManager->RegisterListenerToNewBody(this))
 			printf("Registered!\n");
 	}
+
+	for (unsigned int i = 0; i < mainElementGestures.size(); i++)
+	{
+		mainElementGestures[i].Update(gameTime);
+	}
+
+	for (int i = 0; i < subElementGestures.size(); i++)
+	{
+		subElementGestures[i].Update(gameTime);
+	}
+
 }
 
 #pragma region Kinect Input
@@ -112,13 +170,14 @@ void ProbenderInputHandler::BodyFrameAcquired(const CompleteData& currentData, c
 
 	for (int i = 0; i < RenderableJointType::Count; i++)
 	{
-		CameraSpacePoint point = currentData.JointData[i].Position;
-		meshData.push_back(Ogre::Vector3(point.X, point.Y, 1.0f) - spineBasePosition);
+		if(currentData.JointData->TrackingState != TrackingState::TrackingState_NotTracked)
+		{
+			CameraSpacePoint point = currentData.JointData[i].Position;
+			meshData.push_back(Ogre::Vector3(point.X, point.Y, 1.0f) - spineBasePosition);
+		}
 	}
 
 	probender->meshRenderComponent->UpdateMesh(meshData, 0, Ogre::VES_POSITION);
-	if(currentData.LeanAmount.X >= 0.8f)
-		probender->rigidBody->ApplyImpulse(physx::PxVec3(20.0f, 0.0f, 0.0f));
 
 	if(!IsListening())
 		printf("Data Recieved while not listening!\n");
@@ -426,6 +485,16 @@ bool ProbenderInputHandler::mousePressed( const OIS::MouseEvent &arg, OIS::Mouse
 bool ProbenderInputHandler::mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id )
 {
 	return true;
+}
+
+void ProbenderInputHandler::GestureCompleted(const GestureChain& gestureCompleted)
+{
+	throw std::logic_error("The method or operation is not implemented.");
+}
+
+void ProbenderInputHandler::GestureReset(const GestureChain& gestureReset)
+{
+	throw std::logic_error("The method or operation is not implemented.");
 }
 
 

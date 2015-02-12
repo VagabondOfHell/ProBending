@@ -3,6 +3,8 @@
 #include "KinectBodyListener.h"
 #include "InputManager.h"
 #include "InputNotifier.h"
+#include "GestureCollection.h"
+#include "ProbenderFlags.h"
 
 class Probender;
 
@@ -21,7 +23,7 @@ struct ConfigurationLayout
 };
 
 class ProbenderInputHandler :
-	public KinectBodyListener, public InputObserver, public KinectAudioListener
+	public KinectBodyListener, public GestureObserver, public InputObserver, public KinectAudioListener
 {
 public:
 	enum ProbenderStances{UnknownStance, OffenseStance, DefenceStance};
@@ -30,6 +32,13 @@ private:
 	Probender* probender;
 	ProbenderStances currentStance;
 	
+	std::vector<GestureChain> mainElementGestures;
+	std::vector<GestureChain> subElementGestures;
+
+	void GenerateGestures();
+
+	void PopulateWithGestures(std::vector<GestureChain>& elementVector, ElementEnum::Element element);
+
 public:
 	ConfigurationLayout keysLayout;
 
@@ -134,6 +143,10 @@ protected:
 	virtual void BodyAcquired();
 
 	virtual void BodyLost(const CompleteData& currentData, const CompleteData& previousData);
+
+	virtual void GestureCompleted(const GestureChain& gestureCompleted);
+
+	virtual void GestureReset(const GestureChain& gestureReset);
 
 #pragma endregion
 };

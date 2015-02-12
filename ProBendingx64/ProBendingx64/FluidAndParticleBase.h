@@ -3,6 +3,8 @@
 #include "ParticleSystemParams.h"
 #include "AffectorParameters.h"
 
+#include <memory>
+
 class AbstractParticleEmitter;
 class ParticleKernel;
 
