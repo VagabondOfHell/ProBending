@@ -65,8 +65,8 @@ public:
 	///<summary>Constructor of the Particle Scaling Affector</summary>
 	///<param name="_onGPU">True if on GPU, false if not</param>
 	///<param name="enlarge">True to grow, false to shrink</param>
-	///<param name="_minScale">The smallest scale permitted (used as start scale if growing)</param>
-	///<param name="_maxScale">The largest scale permitted (used as start scale if shrinking)</param>
+	///<param name="_minScale">The smallest scale permitted (lowest is 0.0f) (used as start scale if growing)</param>
+	///<param name="_maxScale">The largest scale permitted (highest is 1.0f) (used as start scale if shrinking)</param>
 	///<param name="onGPU">True to utilize CUDA, false if not. Will be overwritten 
 	///if a valid Cuda Context is not given in Initialize</param>
 	ScaleParticleAffector(const bool enlarge, const float _minScale, const float _maxScale, bool onGPU = false);

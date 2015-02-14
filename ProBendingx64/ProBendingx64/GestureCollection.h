@@ -12,8 +12,15 @@ namespace AttackEnum
 
 	static std::string EarthAttackToString(EarthAttacks attack)
 	{
-		if(attack == STOMP_BLAST)
+		switch (attack)
+		{
+		case AttackEnum::STOMP_BLAST:
 			return "Stomp Blast";
+			break;
+		default:
+			return "";
+			break;
+		}
 	}
 
 	enum StompBlastProgress

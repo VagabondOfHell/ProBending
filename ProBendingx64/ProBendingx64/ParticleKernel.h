@@ -10,6 +10,7 @@ typedef struct CUfunc_st *CUfunction;
 class ParticleAffector;
 class ScaleParticleAffector;
 class ColourFadeParticleAffector;
+class TextureParticleAffector;
 
 class FluidAndParticleBase;
 
@@ -46,6 +47,9 @@ protected:
 
 	std::shared_ptr<ColourFadeParticleAffector> colourFadeAffector;
 	MappedGPUData* colourMappedData;
+
+	std::shared_ptr<TextureParticleAffector> textureParticleAffector;
+	MappedGPUData* textureMappedData;
 
 	virtual void PrepareAffectorData(FluidAndParticleBase* particleSystem, AffectorMap::iterator affector);
 

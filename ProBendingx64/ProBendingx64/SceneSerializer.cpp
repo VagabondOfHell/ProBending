@@ -291,15 +291,15 @@ bool SceneSerializer::SerializeParticleComponent(XMLWriter& writer, const Partic
 		writer.AddAttribute(Enabled, particles->IsEnabled());
 		writer.AddAttribute(ParticleSpace, particles->GetTransformationSpace(), false);//Store transformation space
 		
-		ParticleSystemBase* particleSystem = particles->particleSystem;
-		particleSystem->pxParticleSystem->releaseParticles();
+		FluidAndParticleBase* particleSystem = particles->particleSystem;
+		particleSystem->particleBase->releaseParticles();
 
 		//Add particle system actor to the collection and store the ID in our format
-		if(PhysXSerializerWrapper::AddToWorkingCollection(*particleSystem->pxParticleSystem))
+		if(PhysXSerializerWrapper::AddToWorkingCollection(*particleSystem->particleBase))
 		{
 			PhysXSerializerWrapper::CreateIDs(ActorCollection, StartID);
 			long long systemID = PhysXSerializerWrapper::GetID(ActorCollection, 
-				*particleSystem->pxParticleSystem);
+				*particleSystem->particleBase);
 
 			if(systemID > PX_SERIAL_OBJECT_ID_INVALID)
 				writer.AddAttribute(ParticleActorID, systemID);
@@ -373,7 +373,7 @@ bool SceneSerializer::SerializeParticleEmitter(XMLWriter& writer, const Particle
 
 bool SceneSerializer::SerializeParticleAffectors(XMLWriter& writer, const ParticleComponent* particles)
 {
-	ParticleSystemBase* particleSystem = particles->particleSystem;
+	ParticleSystemBase* particleSystem = (ParticleSystemBase*)particles->particleSystem;
 
 	if(particleSystem->affectors.affectorMap.size() > 0)
 		writer.CreateNode(ParticleAffectors);
@@ -950,6 +950,7 @@ bool SceneSerializer::DeserializeParticleComponent(XMLReader& reader, SharedGame
 			for (int i = 0; i < affectorList.size(); ++i)
 			{
 				particleSystem->AddAffector(affectorList[i]);
+				particleSystem->GetMaterial()->AddAffector(affectorList[i]->GetAffectorType());
 			}
 			if(onGPU)
 			{
@@ -963,7 +964,8 @@ bool SceneSerializer::DeserializeParticleComponent(XMLReader& reader, SharedGame
 				}
 			}
 
-			particleSystem->setMaterial(particleSystem->FindBestShader());
+			particleSystem->GetMaterial()->CreateMaterial();
+			particleSystem->setMaterial(particleSystem->GetMaterial()->GetMaterialName());
 
 			return true;
 		}

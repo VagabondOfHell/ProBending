@@ -12,18 +12,7 @@
 
 using namespace physx;
 
-ParticleMaterialMap FluidAndParticleBase::materialsMap = ParticleMaterialMap();
-
 ParticleKernelMap FluidAndParticleBase::kernelsMap = ParticleKernelMap();
-
-//Constructor for material map
-ParticleMaterialMap::ParticleMaterialMap()
-{
-	materialMap.insert(MaterialMap::value_type(ParticleAffectorType::None, "DefaultParticleShader"));
-	materialMap.insert(MaterialMap::value_type(ParticleAffectorType::Scale, "ScaleParticleShader"));
-	materialMap.insert(MaterialMap::value_type(ParticleAffectorType::ColourToColour, "ColorParticleShader"));
-	materialMap.insert(MaterialMap::value_type(ParticleAffectorType::Scale | ParticleAffectorType::ColourToColour, "ColorParticleShader"));
-}
 
 //Constructor for Kernel Map
 ParticleKernelMap::ParticleKernelMap()
@@ -46,6 +35,8 @@ FluidAndParticleBase::FluidAndParticleBase(std::shared_ptr<AbstractParticleEmitt
 	mRenderOp.vertexData = new Ogre::VertexData();
 	mRenderOp.vertexData->vertexCount = maximumParticles;
 	mRenderOp.vertexData->vertexBufferBinding->unsetAllBindings();
+
+	infiniteLifetime = false;
 
 	//set ogre simple renderable
 	mBox.setExtents(-1000, -1000, -1000, 1000, 1000, 1000);
@@ -145,6 +136,14 @@ void FluidAndParticleBase::SetSystemData(physx::PxParticleBase* pxParticleSystem
 	pxParticleSystem->setExternalAcceleration(paramsStruct.externalAcceleration);
 	pxParticleSystem->setRestOffset(paramsStruct.restOffset);
 	pxParticleSystem->setSimulationFilterData(paramsStruct.filterData);
+
+	if(pxParticleSystem->isParticleFluid())
+	{
+		PxParticleFluid* fluid = (PxParticleFluid*)pxParticleSystem;
+		fluid->setViscosity(paramsStruct.viscosity);
+		fluid->setStiffness(paramsStruct.stiffness);
+		fluid->setRestParticleDistance(paramsStruct.restParticleDistance);
+	}
 }
 
 #pragma  endregion
@@ -379,16 +378,6 @@ bool FluidAndParticleBase::AssignAffectorKernel(ParticleKernel* newKernel)
 	}
 
 	return false;
-}
-
-std::string FluidAndParticleBase::FindBestShader(ParticleAffectorType::ParticleAffectorFlag combination)
-{
-	ParticleMaterialMap::MaterialMap::iterator iter = materialsMap.materialMap.find(combination);
-
-	if(iter != materialsMap.materialMap.end())
-		return iter->second;
-
-	return "DefaultParticleShader";
 }
 
 ParticleKernel* FluidAndParticleBase::FindBestKernel(ParticleAffectorType::ParticleAffectorFlag combination)

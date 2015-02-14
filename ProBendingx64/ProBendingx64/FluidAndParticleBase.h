@@ -3,20 +3,11 @@
 #include "ParticleSystemParams.h"
 #include "AffectorParameters.h"
 
+#include "ParticleSystemMaterial.h"
 #include <memory>
 
 class AbstractParticleEmitter;
 class ParticleKernel;
-
-//Static container for particle material list. Populates itself on construction
-struct ParticleMaterialMap
-{
-	typedef std::map<ParticleAffectorType::ParticleAffectorFlag, std::string> MaterialMap;
-
-	MaterialMap materialMap;
-
-	ParticleMaterialMap();
-};
 
 //Static container for particle kernel list. Populates itself on construction
 struct ParticleKernelMap
@@ -31,10 +22,11 @@ struct ParticleKernelMap
 ///Base class shared between Fluid and Particle System to be inherited from
 class FluidAndParticleBase: public Ogre::SimpleRenderable
 {
+	friend class SceneSerializer;
+
 protected:
 
 #pragma region Variables
-	static ParticleMaterialMap materialsMap;//Shared instance of a list of shaders
 	static ParticleKernelMap kernelsMap;//Shared instance of a list of kernels
 
 	physx::PxParticleBase* particleBase;//The particle base, whether fluid or particles, so majority of functionality can be stored in this class
@@ -51,6 +43,8 @@ protected:
 
 	Ogre::HardwareVertexBufferSharedPtr mVertexBufferPosition;//The ogre GL buffer to hold the positions
 
+	bool infiniteLifetime;
+
 	size_t maximumParticles; ///The maximum number of particles allowed in the particle system
 	bool onGPU; ///Whether or not the particle system is used on the GPU
 	ParticleKernel* cudaKernel; //Kernel used to update particles through cuda
@@ -60,6 +54,8 @@ protected:
 	typedef std::pair<BufferMap::iterator, bool> BufferMapInsertResult;
 
 	BufferMap bufferMap;//list of buffers organized by semantic 
+
+	ParticleSystemMaterial particleMaterial;
 
 	float initialLifetime;//Starting lifetime for particles
 	float* lifetimes;//array of lifetimes for particles
@@ -132,8 +128,10 @@ protected:
 	///<returns>True to remove, false if valid</returns>
 	virtual inline bool QueryParticleRemoval(const unsigned int particleIndex, const physx::PxParticleReadData* const readData)
 	{
+		if( readData->flagsBuffer[particleIndex] & physx::PxParticleFlag::eSPATIAL_DATA_STRUCTURE_OVERFLOW)
+			printf("Overflow");
 		return readData->flagsBuffer[particleIndex] & physx::PxParticleFlag::eSPATIAL_DATA_STRUCTURE_OVERFLOW ||
-			!(readData->flagsBuffer[particleIndex] & physx::PxParticleFlag::eVALID) || lifetimes[particleIndex] <= 0.0f;
+			!(readData->flagsBuffer[particleIndex] & physx::PxParticleFlag::eVALID) || (lifetimes[particleIndex] <= 0.0f && !infiniteLifetime);
 	}
 
 	///<summary>Called after updating to allow children to unlock extra buffers, or other post-update actions</summary>
@@ -148,6 +146,12 @@ public:
 	virtual ~FluidAndParticleBase();
 
 #pragma region Getters and Setters
+
+	void inline SetInfiniteLifetime(const bool val){infiniteLifetime = true;}
+
+	inline bool GetInfiniteLifetime()const{return infiniteLifetime;}
+
+	inline ParticleSystemMaterial* GetMaterial(){return &particleMaterial;}
 
 	///<summary>Gets the maximum number of particles allowed to be managed by the particle system at a time</summary>
 	///<returns>The maximum number of particles, as declared when constructing the particle system</returns>
@@ -166,11 +170,6 @@ public:
 	///<summary>Sets the kernel to the specified one</summary>
 	///<param name="newKernel">The new kernel to use</param>
 	virtual bool AssignAffectorKernel(ParticleKernel* newKernel);
-	
-	///<summary>Finds the best matching shader according to the passed flag</summary>
-	///<param name="combination">Combination of affector types to check for</param>
-	///<returns>The name of the best matching shader, or DefaultParticleShader if not found</returns>
-	static std::string FindBestShader(ParticleAffectorType::ParticleAffectorFlag combination);
 	
 	///<summary>Finds the kernel that matches the specified combination</summary>
 	///<param name="combination">The combination of Affector Types</param>

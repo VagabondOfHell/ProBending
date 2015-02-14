@@ -113,6 +113,7 @@ void ParticleSystemBase::UpdateParticleSystemCPU(const float time, const physx::
 						lockedBufferData.positions[index].x = position.x;
 						lockedBufferData.positions[index].y = position.y;
 						lockedBufferData.positions[index].z = position.z;
+						lockedBufferData.positions[index].w = 1.0f;
 					}
 					
 					if(affectors.hostAffector)
@@ -168,6 +169,8 @@ bool ParticleSystemBase::AddAffector(std::shared_ptr<ParticleAffector> affectorT
 			affectorToAdd->onGPU = false;
 		}
 
+		particleMaterial.AddAffector(result.first->first);
+
 		affectorToAdd->Initialize(this);
 	}
 	return result.second;
@@ -185,7 +188,9 @@ std::shared_ptr<ParticleAffector> ParticleSystemBase::RemoveAndGetAffector(Parti
 	if(result != affectors.GetMapEnd())
 	{
 		//Update flag for CPU and GPU
-		affectors.allTypesCombination &= result->first;
+		affectors.allTypesCombination &= ~result->first;
+
+		particleMaterial.RemoveAffector(result->first);
 
 		//Update flag for GPU if system and affector are on GPU
 		if(onGPU && result->second->GetOnGPU())
@@ -242,20 +247,3 @@ bool ParticleSystemBase::AssignAffectorKernel(ParticleKernel* newKernel)
 
 	return false;
 }
-
-std::string ParticleSystemBase::FindBestShader()
-{
-	ParticleMaterialMap::MaterialMap::iterator iter = materialsMap.materialMap.find(affectors.allTypesCombination);
-
-	if(iter != materialsMap.materialMap.end())
-		return iter->second;
-	else
-	{
-		iter = materialsMap.materialMap.find(affectors.gpuTypeCombination);
-		if(iter != materialsMap.materialMap.end())
-			return iter->second;
-	}
-
-	return "DefaultParticleShader";
-}
-

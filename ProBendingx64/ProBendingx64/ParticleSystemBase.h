@@ -58,10 +58,6 @@ public:
 	///<param name="newKernel">The new kernel to use</param>
 	virtual bool AssignAffectorKernel(ParticleKernel* newKernel);
 
-	///<summary>Finds the best matching shader for the current collection of affectors</summary>
-	///<returns>The name of the best matching shader, or DefaultParticleShader if not found</returns>
-	virtual std::string FindBestShader();
-
 	///<summary>Finds the best kernel suited to the current combination of GPU affectors</summary>
 	///<returns>The best suited Kernel, or NULL if none exist</returns>
 	virtual inline ParticleKernel* FindBestKernel(){return FluidAndParticleBase::FindBestKernel(affectors.gpuTypeCombination);}

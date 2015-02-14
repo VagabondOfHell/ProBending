@@ -49,6 +49,22 @@ struct GPUScaleAffectorParams:public GPUParticleAffectorParams
 	}
 };
 
+struct GPUTextureAffectorParams: public GPUParticleAffectorParams
+{
+	bool animated;
+	float timePassed;
+	float timeToSwitch;
+	unsigned short textureIndex;
+	unsigned short maxTextures;
+
+	GPUTextureAffectorParams(bool _animated = false, float _timeToSwitch = 0.0f, 
+		unsigned short _startTextureIndex = 0, unsigned short _maxTextures = 0)
+		: animated(_animated), timeToSwitch(_timeToSwitch), textureIndex(_startTextureIndex), maxTextures(_maxTextures)
+	{
+		
+	}
+};
+
 struct GPUColourFaderAffectorParams: public GPUParticleAffectorParams
 {
 	physx::PxVec4 startColour;
@@ -80,10 +96,12 @@ struct GPUParamsCollection
 {
 	GPUScaleAffectorParams* scaleParameters;
 	GPUColourFaderAffectorParams* colourFadeParams;
+	GPUTextureAffectorParams* textureParameters;
 
 	GPUParamsCollection(){
 		scaleParameters = NULL;
 		colourFadeParams = NULL;
+		textureParameters = NULL;
 	}
 
 	~GPUParamsCollection(){}

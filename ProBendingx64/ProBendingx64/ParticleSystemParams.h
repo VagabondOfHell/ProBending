@@ -23,6 +23,10 @@ struct ParticleSystemParams
 	physx::PxCudaContextManager* cudaContext;
 	physx::PxFilterData filterData;
 
+	physx::PxReal viscosity;
+	physx::PxReal stiffness;
+	physx::PxReal restParticleDistance;
+
 	///<summary>Constructor used to set all values</summary>
 	///<param name="_gridSize">The size of the grid between 0 and 1000</param>
 	///<param name="_maxMotionDistance">The maximum distance the particle is allowed to travel in a frame</param>
@@ -51,5 +55,12 @@ struct ParticleSystemParams
 		staticFriction(_staticFriction), dynamicFriction(_dynamicFriction), 
 		restitution(_restitution), contactOffset(_contactOffset), damping(_damping), filterData(_filterData)
 	{
+	}
+
+	void SetFluidParameters(physx::PxReal _viscosity, physx::PxReal _stiffness, physx::PxReal _restParticleDistance)
+	{
+		viscosity = _viscosity;
+		stiffness = _stiffness;
+		restParticleDistance = _restParticleDistance;
 	}
 };

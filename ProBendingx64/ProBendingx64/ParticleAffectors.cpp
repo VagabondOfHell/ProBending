@@ -22,6 +22,7 @@ ScaleParticleAffector::ScaleParticleAffector(const bool _enlarge, const float _m
 	{
 		affectorAttributes.maxScale = _minScale;
 		affectorAttributes.minScale = _maxScale;
+
 		affectorAttributes.scaleDiff = affectorAttributes.maxScale - affectorAttributes.minScale;
 	}
 }

@@ -8,6 +8,8 @@
 #include "ParticlePointEmitter.h"
 #include "ParticleAffectors.h"
 #include "ColourFadeParticleAffector.h"
+#include "TextureParticleAffector.h"
+
 #include "MeshRenderComponent.h"
 #include "RigidBodyComponent.h"
 #include "PhysXDataManager.h"
@@ -97,24 +99,41 @@ SharedProjectile ProjectileFactory::CreateProjectile(IScene* const scene,const E
 		{
 			newProjectile = std::make_shared<Projectile>(scene, "Fire Jab", nullptr);
 			std::shared_ptr<ParticlePointEmitter> emitter = std::make_shared<ParticlePointEmitter>
+			(ParticlePointEmitter(50, physx::PxVec3(0.0f, 0.0f, 0.0f), 
+			physx::PxVec3(0.0f, 1.0f, 0.0f).getNormalized(), physx::PxVec3(0.0f, 1.0f, 1.0f).getNormalized(),
+			true, 2.0f, 1.0f, 5.0f));
+			/*std::shared_ptr<ParticlePointEmitter> emitter = std::make_shared<ParticlePointEmitter>
 				(ParticlePointEmitter(50, physx::PxVec3(0.0f, 0.0f, 0.0f), 
-				physx::PxVec3(-1.0f, -1.0f, 0.0f).getNormalized(), physx::PxVec3(1.0f, 1.0f, 0.0f).getNormalized(),
-				true, 2.0f, 10.0f, 20.0f));
+				physx::PxVec3(0.0f, 0.0f, -1.0f).getNormalized(), physx::PxVec3(0.0f, 0.0f, 1.0f).getNormalized(),
+				true, 2.0f, 10.0f, 50.0f));*/
 
-			ParticleSystemParams params = ParticleSystemParams(40.0f, 2.0f, scene->GetCudaContextManager(),
-				physx::PxVec3(0.0f, 0.0f, 0.0f),1.0f, false);
+			ParticleSystemParams params = ParticleSystemParams(1.0f, 2.0f, scene->GetCudaContextManager(),
+				physx::PxVec3(0.0f, 0.0f, 0.0f),1.0f, true, physx::PxParticleBaseFlag::eENABLED,
+				0.50f, 0.0f, 0.0f, 0.30f, 0.3f, 0.0f);
+
+			params.SetFluidParameters(100.0f, 5.0f, 3.0f);
 
 			ParticleSystemBase* particles = new ParticleSystemBase(emitter, 500, 2.0f,params);
-			
+			//FluidAndParticleBase* particles = new ParticleSystemBase(emitter, 500, 2.0f,params);
+			//particles->SetInfiniteLifetime(true);
+
 			ParticleComponent* particleComponent = new ParticleComponent(particles, false);
 
 			newProjectile->AttachComponent(particleComponent);
-
-			particles->AddAffector(std::make_shared<ScaleParticleAffector>(ScaleParticleAffector(false, 0, 10, true)));
+						
+			particles->AddAffector(std::make_shared<ScaleParticleAffector>(ScaleParticleAffector(false, 0.0f, 20.0f, true)));
 			particles->AddAffector(std::make_shared<ColourFadeParticleAffector>(ColourFadeParticleAffector(physx::PxVec4(1, 0.5, 0, 1.0f), 
 				physx::PxVec4(0, 0, 1.0, 0.20f), true)));/**/
+
+			std::shared_ptr<TextureParticleAffector> texShared = std::make_shared<TextureParticleAffector>(particles);
+
+			particles->AddAffector(texShared);
+
+			particles->GetMaterial()->CreateMaterial();
+			texShared->AddTextureToMaterial("smoke.png");
+						
 			particles->AssignAffectorKernel(particles->FindBestKernel());
-			particles->setMaterial(particles->FindBestShader());
+			particles->setMaterial(particles->GetMaterial()->GetMaterialName());
 			
 			RigidBodyComponent* rigidBody = new RigidBodyComponent();
 			newProjectile->AttachComponent(rigidBody);
@@ -127,7 +146,7 @@ SharedProjectile ProjectileFactory::CreateProjectile(IScene* const scene,const E
 			renderComponent->LoadModel("Rock_01.mesh");*/
 
 			newProjectile->SetScale(0.1f, 0.1f, 0.1f);
-
+			newProjectile->SetWorldPosition(0.0f, 2.5f, 0.0f);
 			scene->AddGameObject(newProjectile);
 
 			//SharedProjectile newProjectile2 = std::make_shared<Projectile>(scene, nullptr);

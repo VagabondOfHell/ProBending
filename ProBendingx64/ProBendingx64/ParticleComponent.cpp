@@ -12,7 +12,7 @@
 Ogre::SceneNode* ParticleComponent::WORLD_PARTICLES_NODE = NULL;
 int ParticleComponent::NUM_INSTANCES = 0;
 
-ParticleComponent::ParticleComponent(ParticleSystemBase* _particleSystem, bool _useLocalSpace)
+ParticleComponent::ParticleComponent(FluidAndParticleBase* _particleSystem, bool _useLocalSpace)
 	:Component(), particleSystem(_particleSystem), useLocalSpace(_useLocalSpace)
 {
 	++NUM_INSTANCES;
