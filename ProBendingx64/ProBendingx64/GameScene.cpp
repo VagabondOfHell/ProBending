@@ -129,7 +129,10 @@ void GameScene::Initialize()
 
 void GameScene::Start()
 {
+	guiManager->AddScheme("ProbendArenaGUIScheme.scheme");
+	guiManager->LoadLayout("ProbendArenaGUILayout.layout", false);
 	battleArena->Start();
+	ogreSceneManager->setSkyDome(true, "CloudySkyBox");
 }
 
 ///<summary>Updates the game scene</summary>

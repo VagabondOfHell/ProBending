@@ -121,7 +121,7 @@ SharedProjectile ProjectileFactory::CreateProjectile(IScene* const scene,const E
 
 			newProjectile->AttachComponent(particleComponent);
 						
-			particles->AddAffector(std::make_shared<ScaleParticleAffector>(ScaleParticleAffector(false, 0.0f, 20.0f, true)));
+			particles->AddAffector(std::make_shared<ScaleParticleAffector>(ScaleParticleAffector(false, 0.0f, 1.0f, true)));
 			particles->AddAffector(std::make_shared<ColourFadeParticleAffector>(ColourFadeParticleAffector(physx::PxVec4(1, 0.5, 0, 1.0f), 
 				physx::PxVec4(0, 0, 1.0, 0.20f), true)));/**/
 
@@ -132,6 +132,13 @@ SharedProjectile ProjectileFactory::CreateProjectile(IScene* const scene,const E
 			particles->GetMaterial()->CreateMaterial();
 			texShared->AddTextureToMaterial("smoke.png");
 						
+			//particles->GetMaterial().Recompile();
+			/*//particles->GetMaterial().AddAffector(ParticleAffectorType::Scale);*/
+		//	particles->GetMaterial().AddAffector(ParticleAffectorType::Texture);
+			//particles->GetMaterial().AddAffector(ParticleAffectorType::ColourToColour);
+			
+			//particles->GetMaterial().AddTextureUnit("smoke.png");
+
 			particles->AssignAffectorKernel(particles->FindBestKernel());
 			particles->setMaterial(particles->GetMaterial()->GetMaterialName());
 			

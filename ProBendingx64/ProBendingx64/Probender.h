@@ -4,6 +4,7 @@
 #include "ProbenderStateManager.h"
 #include "ProbenderData.h"
 #include "Projectile.h"
+#include "GUIProgressTracker.h"
 
 #include <memory>
 
@@ -53,6 +54,8 @@ private:
 	physx::PxReal dodgeDistanceTravelled;//how far moved so far (avoids sqrt every frame)
 
 	std::string GetMeshAndMaterialName();
+
+	GUIProgressTracker progressTracker;
 
 	void HandleJump();
 

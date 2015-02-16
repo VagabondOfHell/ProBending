@@ -1,8 +1,13 @@
 #pragma once
-#include <CEGUI\CEGUI.h>
 #include <CEGUI\RendererModules\Ogre\Renderer.h>
-
+#include "CEGUI\InputEvent.h"
 #include "InputObserver.h"
+
+namespace CEGUI
+{
+	class GUIContext;
+	class Window;
+}
 
 class GUIManager: public InputObserver
 {
@@ -11,7 +16,11 @@ private:
 
 	CEGUI::MouseButton ConvertButton(OIS::MouseButtonID buttonID);
 
+	CEGUI::GUIContext* defaultContext;
+
 	CEGUI::Window* rootWindow;
+
+	CEGUI::Window* LoadLayoutFile(const CEGUI::String& layoutFileName);
 
 public:
 	////////////////////////TODO///////////////////////////////////
@@ -42,6 +51,17 @@ public:
 	///<returns>True if successful, false if not</returns>
 	bool LoadLayout(const CEGUI::String& layoutFileName, const CEGUI::String& windowName = "", const CEGUI::String& schemeFileName = "");
 	
+	///<summary>Loads a layout and attaches the result to the root or sets it as root</summary>
+	///<param name="layoutFileName">The name of the layout file to load</param>
+	///<param name="setAsRoot">True to set it as the root window, false to add it to the root window</param>
+	///<returns>True if successful, false if not</returns>
+	bool LoadLayout(const CEGUI::String& layoutFileName, bool setAsRoot = true);
+
+	///<summary>Loads a layout and attaches the result to the specified window</summary>
+	///<param name="layoutFileName">The name of the layout file to load</param>
+	///<param name="parentWindow">The window to attach the new window to, or NULL to add to Root window</param>
+	///<returns>True if successful, false if not</returns>
+	bool LoadLayout(const CEGUI::String& layoutFileName, CEGUI::Window* parentWindow);
 
 	///<summary>Creates a push button as a child of the root window</summary>
 	///<param name="style">The style to use. An Example is "TaharezLook/Button". This is passed to the CEGUI Window Factory</param>

@@ -100,6 +100,34 @@ struct TeamData
 {
 	enum ContestantColour{INVALID_COLOUR, RED, BLUE, GREEN, YELLOW, PURPLE, ORANGE};
 
+	inline static std::string EnumToString(const ContestantColour colour)
+	{
+		switch (colour)
+		{
+		case TeamData::RED:
+			return "Red";
+			break;
+		case TeamData::BLUE:
+			return "Blue";
+			break;
+		case TeamData::GREEN:
+			return "Green";
+			break;
+		case TeamData::YELLOW:
+			return "Yellow";
+			break;
+		case TeamData::PURPLE:
+			return "Purple";
+			break;
+		case TeamData::ORANGE:
+			return "Orange";
+			break;
+		default:
+			return "";
+			break;
+		}
+	}
+
 	ArenaData::Team StartTeam;
 	ArenaData::Zones StartZone;
 	ContestantColour PlayerColour;

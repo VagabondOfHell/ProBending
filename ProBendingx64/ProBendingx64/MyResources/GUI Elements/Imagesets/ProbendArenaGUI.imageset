@@ -1,0 +1,11 @@
+<Imageset autoScaled="true" imagefile="InGameGUI.png" name="ProbendArenaGUI" nativeHorzRes="1920" nativeVertRes="1080" version="2">
+    <Image height="19" name="RedZoneBar" width="119" xPos="0" yPos="0" />
+    <Image height="19" name="BlueZoneBar" width="119" xPos="0" yPos="20" />
+    <Image height="58" name="ZoneSeparatorBar" width="19" xPos="121" yPos="0" />
+    <Image height="58" name="RedCharacterBar" width="19" xPos="141" yPos="0" />
+    <Image height="58" name="BlueCharacterBar" width="19" xPos="161" yPos="0" />
+    <Image height="58" name="YellowCharacterBar" width="19" xPos="181" yPos="0" />
+    <Image height="58" name="GreenCharacterBar" width="19" xPos="201" yPos="0" />
+    <Image height="58" name="PurpleCharacterBar" width="19" xPos="221" yPos="0" />
+    <Image height="58" name="OrangeCharacterBar" width="19" xPos="241" yPos="0" />
+</Imageset>

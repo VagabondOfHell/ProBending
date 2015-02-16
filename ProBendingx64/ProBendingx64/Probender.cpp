@@ -77,6 +77,8 @@ void Probender::Start()
 	GameObject::Start();
 
 	stateManager = ProbenderStateManager(this);
+
+	progressTracker.Initialize(this);
 }
 
 void Probender::Update(float gameTime)
@@ -85,6 +87,7 @@ void Probender::Update(float gameTime)
 
 	inputHandler.Update(gameTime);
 	stateManager.Update(gameTime);	
+	progressTracker.Update(gameTime);
 
 	/*std::string message = "Current Zone for " + std::to_string(contestantID) + 
 		" : " + ArenaData::GetStringFromZone(CurrentZone) + "\n";
@@ -241,34 +244,11 @@ void Probender::CreateContestantMeshes(Ogre::SceneManager* sceneMan, bool red,
 
 std::string Probender::GetMeshAndMaterialName()
 {
-	switch (playerColour)
+	if(playerColour != TeamData::INVALID_COLOUR)
 	{
-	case TeamData::BLUE:
-		return "BlueProbender";
-		break;
+		std::string colourString = TeamData::EnumToString(playerColour);
 
-	case TeamData::GREEN:
-		return "GreenProbender";
-		break;
-
-	case TeamData::ORANGE:
-		return "OrangeProbender";
-		break;
-
-	case TeamData::PURPLE:
-		return "PurpleProbender";
-		break;
-
-	case TeamData::RED:
-		return "RedProbender";
-		break;
-
-	case TeamData::YELLOW:
-		return "YellowProbender";
-		break;
-	default:
-		return "";
-		break;
+		return colourString + "Probender";
 	}
 }
 

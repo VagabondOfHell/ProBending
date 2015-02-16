@@ -119,7 +119,7 @@ void Arena::Start()
 
 	label = owningScene->GetGUIManager()->CreateGUIButton("TaharezLook/Button", "ElementDisplay", 
 		ElementEnum::EnumToString(contestants[0]->GetInGameData().GetMainElement()), 
-		UVector2(UDim(0.0f, 0.0f), UDim(0.0f, 0.0f)), USize(UDim(0.1f, 0.0f), UDim(0.05f, 0.0f)));
+		UVector2(UDim(0.0f, 0.0f), UDim(0.9f, 0.0f)), USize(UDim(0.1f, 0.0f), UDim(0.05f, 0.0f)));
 }
 
 void Arena::PlaceContestants()
