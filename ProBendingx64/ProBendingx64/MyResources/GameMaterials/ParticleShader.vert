@@ -5,10 +5,10 @@ uniform vec3 camPos;
 
 in vec4 vertex;
 
-#if USE_TEXTURE==1
+#if USE_TEXTURE>=1
 //These will be used for animated textures
-	in vec2 uv0;
-	out vec2 oUV0;
+	in vec4 uv0;
+	flat out int imageIndex;
 #endif
 
 #if PER_PARTICLE_COLOUR==1
@@ -26,8 +26,8 @@ void main() {
 	
 	Color = colour;
 	
-	#if USE_TEXTURE==1
-	 oUV0 = uv0;
+	#if USE_TEXTURE>=1
+	 imageIndex = int(uv0.x);
 	 #endif
 	 
 	 float particleSize = 1.0;
