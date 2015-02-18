@@ -24,6 +24,8 @@
 
 const physx::PxVec3 Probender::HALF_EXTENTS = physx::PxVec3(0.250f, 0.60f, 0.040f);
 
+const float Probender::DODGE_DISTANCE = 1.0f;
+
 Probender::Probender()
 	: GameObject(NULL), leftHandAttack(NULL), rightHandAttack(NULL), currentTarget(NULL), 
 		CurrentZone(ArenaData::INVALID_ZONE), currentTeam(ArenaData::INVALID_TEAM)
@@ -301,9 +303,7 @@ void Probender::StateExitted(StateFlags::PossibleStates exittedState)
 		rigidBody->SetVelocity(physx::PxVec3(0.0f));
 		SetWorldPosition(dodgeTargetPos.x, dodgeTargetPos.y, dodgeTargetPos.z);
 		dodgeTargetPos = physx::PxVec3(0.0f);
-		dodgeMagnitude = 0.0f;
 		dodgeDirection = dodgeTargetPos;
-		dodgeDistanceTravelled = 0.0f;
 		break;
 	case StateFlags::REELING_STATE:
 		break;

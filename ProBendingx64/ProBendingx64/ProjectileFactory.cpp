@@ -113,7 +113,7 @@ SharedProjectile ProjectileFactory::CreateProjectile(IScene* const scene,const E
 
 			params.SetFluidParameters(100.0f, 5.0f, 3.0f);
 
-			ParticleSystemBase* particles = new ParticleSystemBase(emitter, 1, 2.0f,params);
+			ParticleSystemBase* particles = new ParticleSystemBase(emitter, 200, 2.0f,params);
 			//FluidAndParticleBase* particles = new ParticleSystemBase(emitter, 500, 2.0f,params);
 			//particles->SetInfiniteLifetime(true);
 
@@ -121,7 +121,7 @@ SharedProjectile ProjectileFactory::CreateProjectile(IScene* const scene,const E
 
 			newProjectile->AttachComponent(particleComponent);
 						
-			particles->AddAffector(std::make_shared<ScaleParticleAffector>(ScaleParticleAffector(false, 1.0f, 1.0f, true)));
+			particles->AddAffector(std::make_shared<ScaleParticleAffector>(ScaleParticleAffector(false, 0.0f, 1.0f, true)));
 			particles->AddAffector(std::make_shared<ColourFadeParticleAffector>(ColourFadeParticleAffector(physx::PxVec4(1, 0.5, 0, 1.0f), 
 				physx::PxVec4(0, 0, 1.0, 0.20f), true)));/**/
 
@@ -129,14 +129,14 @@ SharedProjectile ProjectileFactory::CreateProjectile(IScene* const scene,const E
 			
 			particles->AddAffector(texShared);
 
-			particles->GetMaterial()->CreateMaterial(particles, 5);
+			particles->GetMaterial()->CreateMaterial(particles, 0);
 			
-			//texShared->AddTextureToMaterial("smoke.png");
-			texShared->AddTextureToMaterial("Flame_1.jpg");
+			texShared->AddTextureToMaterial("smoke.png");
+			/*texShared->AddTextureToMaterial("Flame_1.jpg");
 			texShared->AddTextureToMaterial("Flame_2.jpg");
 			texShared->AddTextureToMaterial("Flame_3.jpg");
 			texShared->AddTextureToMaterial("Flame_4.jpg");
-			texShared->AddTextureToMaterial("Flame_5.jpg");
+			texShared->AddTextureToMaterial("Flame_5.jpg");*/
 
 			texShared->CalculateFrameStep(2.0f);
 

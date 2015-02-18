@@ -27,6 +27,7 @@ private:
 	unsigned short contestantID;//The ID the contestant is stored in the arena with
 	
 	static const physx::PxVec3 HALF_EXTENTS;
+	static const float DODGE_DISTANCE;
 
 	TeamData::ContestantColour playerColour;
 	ArenaData::Team currentTeam;
@@ -50,8 +51,6 @@ private:
 
 	physx::PxVec3 dodgeTargetPos;//The final position
 	physx::PxVec3 dodgeDirection;//direction to move towards
-	physx::PxReal dodgeMagnitude;//the total distance that should be travelled. 
-	physx::PxReal dodgeDistanceTravelled;//how far moved so far (avoids sqrt every frame)
 
 	std::string GetMeshAndMaterialName();
 
@@ -68,6 +67,7 @@ public:
 	ProbenderStateManager stateManager;//The state manager for probenders
 	
 	enum InputState{Listen, Pause, Stop};
+	enum DodgeDirection{DD_INVALID, DD_RIGHT, DD_LEFT};
 
 	Probender();
 	Probender(const unsigned short _contestantID, Arena* _owningArena);
@@ -138,14 +138,17 @@ public:
 
 	inline void Jump(){stateManager.SetState(StateFlags::JUMP_STATE, 0.0f);}
 	
-	inline void Dodge(const physx::PxVec3& targetPos){
+	inline void Dodge(DodgeDirection direction)
+	{
 		if(stateManager.SetState(StateFlags::DODGE_STATE, 0.0f))
 		{
-			//dodgeTarget->SetWorldPosition(targetPos.x, targetPos.y, targetPos.z);
-			dodgeTargetPos = targetPos;
+			float dirAndDist = DODGE_DISTANCE;
+						
+			if(direction == DD_LEFT)
+				dirAndDist = -dirAndDist;
+
+			dodgeTargetPos = HelperFunctions::OgreToPhysXVec3(GetWorldPosition() + (dirAndDist * Right()));
 			dodgeDirection = dodgeTargetPos - HelperFunctions::OgreToPhysXVec3(GetWorldPosition());
-			dodgeMagnitude = dodgeDirection.normalize();
-			dodgeDistanceTravelled = 1.0f;
 		}
 	}
 

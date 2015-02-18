@@ -5,6 +5,7 @@
 #include "InputNotifier.h"
 #include "GestureCollection.h"
 #include "ProbenderFlags.h"
+#include "ProbenderOptions.h"
 
 class Probender;
 
@@ -29,9 +30,13 @@ public:
 	enum ProbenderStances{UnknownStance, OffenseStance, DefenceStance};
 
 private:
+	static const float LEAN_RESET_DISTANCE;
+
 	Probender* probender;
 	ProbenderStances currentStance;
 	
+	bool canLean;
+
 	std::vector<GestureChain> mainElementGestures;
 	std::vector<GestureChain> subElementGestures;
 
@@ -39,11 +44,17 @@ private:
 
 	void PopulateWithGestures(std::vector<GestureChain>& elementVector, ElementEnum::Element element);
 
+	///<summary>Checks current and previous lean values and fires the Dodge Movement on the probender if valid</summary>
+	///<param name="currentData">Data of the current body frame</param>
+	///<param name="previousData">Data of the last body frame</param>
+	void CheckLean(const CompleteData& currentData, const CompleteData& previousData);
+
 public:
 	ConfigurationLayout keysLayout;
+	ProbenderOptions controlOptions;
 
 	bool ManageStance; //True to allow the input handler to set Stances based on foot position. False to require input on stances
-
+	
 	ProbenderInputHandler(Probender* _probenderToHandle = NULL, bool manageStance = true,
 		ConfigurationLayout keyLayout = ConfigurationLayout());
 
@@ -117,8 +128,6 @@ protected:
 
 #pragma region Kinect Input
 
-	virtual void LeanTrackingStateChanged(const CompleteData& currentData, const CompleteData& previousData);
-	
 	virtual void HandTrackingStateChanged(const Hand hand, const CompleteData& currentData, const CompleteData& previousData);
 	virtual void HandConfidenceChanged(const Hand hand, const CompleteData& currentData, const CompleteData& previousData);
 

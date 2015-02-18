@@ -15,12 +15,16 @@
 #include "PxRigidDynamic.h"
 #include "foundation/PxVec2.h"
 
+const float ProbenderInputHandler::LEAN_RESET_DISTANCE = 0.15f;
+
 ProbenderInputHandler::ProbenderInputHandler(Probender* _probenderToHandle, bool manageStance, 
 					ConfigurationLayout keyLayout/* = ConfigurationLayout()*/)
 					:keysLayout(keyLayout)
 {
 	SetProbenderToHandle(_probenderToHandle);
 	ManageStance = manageStance;
+	canLean = true;
+
 }
 
 
@@ -143,11 +147,6 @@ void ProbenderInputHandler::BodyLost(const CompleteData& currentData, const Comp
 {
 	InputManager::GetInstance()->UnregisterBodyListener(this);
 }
-
-void ProbenderInputHandler::LeanTrackingStateChanged(const CompleteData& currentData, const CompleteData& previousData)
-{
-
-}
 	
 void ProbenderInputHandler::HandTrackingStateChanged(const Hand hand, const CompleteData& currentData, const CompleteData& previousData)
 {
@@ -179,9 +178,37 @@ void ProbenderInputHandler::BodyFrameAcquired(const CompleteData& currentData, c
 
 	probender->meshRenderComponent->UpdateMesh(meshData, 0, Ogre::VES_POSITION);
 
-	if(!IsListening())
-		printf("Data Recieved while not listening!\n");
+	CheckLean(currentData, previousData);
 }
+
+void ProbenderInputHandler::CheckLean(const CompleteData& currentData, const CompleteData& previousData)
+{
+	if(!canLean)
+	{
+		if(Ogre::Math::Abs(currentData.LeanAmount.X ) < LEAN_RESET_DISTANCE)
+			canLean = true;
+	}
+
+	//if current and previous leans are tracked, check for the beginning of a lean by checking that if we are leaning right
+	//that current data exceeds previous data or if we are leaning left that current data is less than previous data. If 
+	//opposite, that means we are returning from a lean
+	if(canLean && (currentData.LeanTrackState == TrackingState::TrackingState_Tracked && previousData.LeanTrackState == TrackingState::TrackingState_Tracked)
+		&& ((currentData.LeanAmount.X > 0.0f && previousData.LeanAmount.X > 0.0f && currentData.LeanAmount.X > previousData.LeanAmount.X) ||
+		currentData.LeanAmount.X < 0.0f && previousData.LeanAmount.X < 0.0f && currentData.LeanAmount.X < previousData.LeanAmount.X))
+	{
+		if(Ogre::Math::Abs(currentData.LeanAmount.X - previousData.LeanAmount.X) > controlOptions.LeanThreshold)
+		{
+			Probender::DodgeDirection dir = Probender::DD_RIGHT;
+
+			if(currentData.LeanAmount.X < 0.0f)
+				dir = Probender::DD_LEFT;
+
+			probender->Dodge(dir);
+			canLean = false;
+		}
+	}
+}
+
 bool created = false;
 
 void ProbenderInputHandler::DiscreteGesturesAcquired(const std::vector<KinectGestureResult>discreteGestureResults)
@@ -337,7 +364,7 @@ bool ProbenderInputHandler::keyPressed( const OIS::KeyEvent &arg )
 		}
 		else
 		{
-			probender->Dodge(HelperFunctions::OgreToPhysXVec3(probender->GetWorldPosition()) - physx::PxVec3(0.0f, 0.0f, 1.0f));
+			probender->Dodge(Probender::DD_LEFT);
 			/*Ogre::Vector3 newPos = probender->GetWorldPosition();
 			newPos.z -= 1;
 			probender->rigidBody->SetPosition(HelperFunctions::OgreToPhysXVec3(newPos));
@@ -355,7 +382,7 @@ bool ProbenderInputHandler::keyPressed( const OIS::KeyEvent &arg )
 		}
 		else
 		{
-			probender->Dodge(HelperFunctions::OgreToPhysXVec3(probender->GetWorldPosition()) + physx::PxVec3(0.0f, 0.0f, 1.0f));
+			probender->Dodge(Probender::DD_RIGHT);
 			/*Ogre::Vector3 newPos = probender->GetWorldPosition();
 			newPos.z += 1;
 			probender->rigidBody->SetPosition(HelperFunctions::OgreToPhysXVec3(newPos));

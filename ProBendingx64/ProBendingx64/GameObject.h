@@ -113,6 +113,12 @@ public:
 
 	void SetInheritOrientation(const bool val);
 
+	Ogre::Vector3 Forward(){return GetWorldOrientation() * Ogre::Vector3::UNIT_Z;}
+
+	Ogre::Vector3 Up(){return GetWorldOrientation() * Ogre::Vector3::UNIT_Y;}
+
+	Ogre::Vector3 Right(){return GetWorldOrientation() * Ogre::Vector3::UNIT_X;}
+
 	Ogre::Vector3 GetLocalScale()const;
 
 	void SetScale(const Ogre::Vector3& newScale);

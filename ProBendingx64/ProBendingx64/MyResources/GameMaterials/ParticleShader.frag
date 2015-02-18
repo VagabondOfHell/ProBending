@@ -25,29 +25,33 @@ uniform sampler2D tex0;
 
 void main ()
 {
-	#if USE_TEXTURE>=1 
-	if(imageIndex == 0)
-		colour = texture2D(tex0, gl_PointCoord);
-	#if USE_TEXTURE>=2
-	else if(imageIndex == 1)
-		colour = texture2D(tex1, gl_PointCoord);
-	#if USE_TEXTURE>=3
-	else if(imageIndex == 2)
-		colour = texture2D(tex2, gl_PointCoord);
-	#if USE_TEXTURE>=4
-	else if(imageIndex == 3)
-		colour = texture2D(tex3, gl_PointCoord);
-	#if USE_TEXTURE>=5
-	else if(imageIndex == 4)
-		colour = texture2D(tex4, gl_PointCoord);	
-		#if PER_PARTICLE_COLOUR==1
-			colour *= Color;			
-		#endif
-	#else 
+	#if USE_TEXTURE==0
 		colour = Color;
 	#endif
-	#endif
-	#endif
-	#endif
+	
+	#if USE_TEXTURE>=1 
+		if(imageIndex == 0)
+			colour = texture2D(tex0, gl_PointCoord);
+			#if USE_TEXTURE>=2
+			else if(imageIndex == 1)
+				colour = texture2D(tex1, gl_PointCoord);
+				#if USE_TEXTURE>=3
+				else if(imageIndex == 2)
+					colour = texture2D(tex2, gl_PointCoord);
+					#if USE_TEXTURE>=4
+					else if(imageIndex == 3)
+						colour = texture2D(tex3, gl_PointCoord);
+						#if USE_TEXTURE>=5
+						else if(imageIndex == 4)
+							colour = texture2D(tex4, gl_PointCoord);	
+						#endif
+					#endif
+				#endif
+			#endif
+			
+		#if PER_PARTICLE_COLOUR==1
+				colour *= Color;			
+		#endif
+	
 	#endif
 }
