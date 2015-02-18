@@ -37,6 +37,8 @@ public:
 	///<returns>The physx Particle system</returns>
 	inline physx::PxParticleSystem* const GetPhysXParticleSystem()const{return pxParticleSystem;}
 	
+	AffectorData* const GetAffectorData(){return &affectors;}
+
 	///<summary>Adds an affector to the particle system. The system claims ownership of the pointer</summary>
 	///<param name="affectorToAdd">The affector to add</param>
 	///<returns>True if added, false if an identical type exists (uses Affector.GetType())</returns>

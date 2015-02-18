@@ -48,6 +48,9 @@ public:
 	///Also maps CUDA buffers if they are not already. Remember to call UnmapBuffers though.</summary>
 	///<returns>Derived structure representing the derived affectors necessary data</returns>
 	virtual GPUParticleAffectorParams* const GetGPUParamaters() = 0;
+
+	virtual GPUParticleAffectorParams* const GetParameters() = 0;
+
 };
 
 class ScaleParticleAffector : public ParticleAffector
@@ -94,4 +97,6 @@ public:
 	virtual void Update(const float gameTime, GPUResourcePointers& pointers, const float percentile, const unsigned int particleIndex) ;
 
 	virtual GPUScaleAffectorParams* const GetGPUParamaters() ;
+
+	virtual GPUScaleAffectorParams* const GetParameters(){return &affectorAttributes;}
 };

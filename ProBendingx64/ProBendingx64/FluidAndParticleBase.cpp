@@ -457,6 +457,16 @@ Ogre::HardwareVertexBufferSharedPtr FluidAndParticleBase::CreateVertexBuffer(Ogr
 			false);
 
 		success = true;
+
+		lockedData = (physx::PxVec4*)returnVal->lock(Ogre::HardwareBuffer::HBL_WRITE_ONLY);
+		for (int i = 0; i < maximumParticles; i++)
+		{
+			lockedData[i].x = 0.0f;
+			lockedData[i].y = 1.0f;
+			lockedData[i].z = 0.0f;
+			lockedData[i].w = 0.0f;
+		}
+		returnVal->unlock();
 		break;
 
 

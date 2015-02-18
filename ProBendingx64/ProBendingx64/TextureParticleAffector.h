@@ -15,7 +15,7 @@ protected:
 	ParticleSystemMaterial* mat;
 
 public:
-	TextureParticleAffector(FluidAndParticleBase* partBase, bool animated = false, bool onGPU = false);
+	TextureParticleAffector(FluidAndParticleBase* partBase, bool animated = false, float animationTime = 0.0f, bool onGPU = false);
 
 	virtual ~TextureParticleAffector(void);
 
@@ -26,6 +26,8 @@ public:
 	///<returns>True if successful, false if not</returns>
 	virtual bool AddTextureToMaterial(const std::string& textureName);
 
+	void CalculateFrameStep(float initialLifetime){affectorParams.CalculatePercentStep(initialLifetime);}
+
 	virtual bool Initialize(ParticleSystemBase* owningSystem);
 
 	virtual void Update(const float gameTime, GPUResourcePointers& pointers, const float percentile, const unsigned int particleIndex);
@@ -35,5 +37,6 @@ public:
 
 	virtual GPUParticleAffectorParams* const GetGPUParamaters();
 
+	virtual GPUTextureAffectorParams* const GetParameters(){return &affectorParams;}
 };
 

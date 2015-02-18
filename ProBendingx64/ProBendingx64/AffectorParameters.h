@@ -52,16 +52,23 @@ struct GPUScaleAffectorParams:public GPUParticleAffectorParams
 struct GPUTextureAffectorParams: public GPUParticleAffectorParams
 {
 	bool animated;
-	float timePassed;
-	float timeToSwitch;
-	unsigned short textureIndex;
+	float animationTime;
+	float percentStep;
 	unsigned short maxTextures;
 
-	GPUTextureAffectorParams(bool _animated = false, float _timeToSwitch = 0.0f, 
-		unsigned short _startTextureIndex = 0, unsigned short _maxTextures = 0)
-		: animated(_animated), timeToSwitch(_timeToSwitch), textureIndex(_startTextureIndex), maxTextures(_maxTextures)
+	GPUTextureAffectorParams(bool _animated = false, float _animationTime = 0.0f, unsigned short _maxTextures = 0)
+		: animated(_animated), percentStep(0), maxTextures(_maxTextures), animationTime(_animationTime)
 	{
 		
+	}
+
+	void CalculatePercentStep(float initialLifetime)
+	{
+		float loops = initialLifetime / animationTime;
+
+		float timePerFrame = animationTime / maxTextures;
+
+		percentStep = timePerFrame / loops;
 	}
 };
 

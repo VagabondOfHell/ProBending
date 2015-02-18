@@ -28,5 +28,7 @@ public:
 	virtual void Update(const float gameTime, GPUResourcePointers& pointers, const float percentile, const unsigned int particleIndex);
 
 	virtual GPUColourFaderAffectorParams* const GetGPUParamaters();
+
+	virtual GPUColourFaderAffectorParams* const GetParameters(){return &affectorAttributes;}
 };
 

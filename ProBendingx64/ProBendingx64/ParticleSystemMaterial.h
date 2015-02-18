@@ -1,7 +1,13 @@
 #pragma once
 #include "ParticleAffectorEnum.h"
+
+#include "OgreGpuProgramParams.h"
 #include "OgreMaterial.h"
 #include "OgreNameGenerator.h"
+
+#include "AffectorData.h"
+
+class ParticleSystemBase;
 
 class ParticleSystemMaterial
 {
@@ -14,13 +20,14 @@ protected:
 
 	static Ogre::NameGenerator gen;
 
-	ParticleAffectorType::ParticleAffectorFlag affectorFlags;
-
 	Ogre::MaterialPtr material;
 
 	///<summary>Converts the set flags to their Preprocessor Directive Equivalents</summary>
 	///<returns>string representing the parameters to pass to the material</returns>
-	std::string GetPreprocessorParameters();
+	std::string GetPreprocessorParameters(ParticleAffectorType::ParticleAffectorFlag affectorFlags, unsigned int textureSlots = 0);
+
+	void GetShaderProgramParameters(AffectorData* affectors,
+		Ogre::GpuProgramParameters& vertexParameters, Ogre::GpuProgramParameters& fragParameters);
 
 public:
 	ParticleSystemMaterial(void);
@@ -30,26 +37,9 @@ public:
 	///<param name="matName">Name that the material will be stored under in the Ogre::MaterialManager. Must be Unique. If
 	///empty, a name is generated for you</param>
 	///<returns>The name of the material that was created, or blank if failure</returns>
-	std::string CreateMaterial(const std::string& matName = "");
+	std::string CreateMaterial(ParticleSystemBase* system, unsigned int textureSlots = 0, const std::string& matName = "");
 
 	inline const std::string& GetMaterialName()const{return material->getName();}
-
-	inline void AddAffector(ParticleAffectorType::ParticleAffectorType newAffector)
-	{
-		if(newAffector != ParticleAffectorType::None)
-			affectorFlags |= newAffector;
-	}
-
-	inline void RemoveAffector(ParticleAffectorType::ParticleAffectorFlag affectorToRemove)
-	{
-		if(affectorToRemove != ParticleAffectorType::None)
-			affectorFlags &= ~affectorToRemove;
-	}
-
-	inline void ClearAffectors()
-	{
-		affectorFlags = ParticleAffectorType::None;
-	}
 
 	///<summary>Recompiles the shaders to use the appropriate data based on the attached affectors.
 	///Should be called after affectors are added or removed</summary>

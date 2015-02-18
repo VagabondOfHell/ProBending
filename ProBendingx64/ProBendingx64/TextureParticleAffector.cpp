@@ -1,10 +1,14 @@
 #include "TextureParticleAffector.h"
 
-#include "FluidAndParticleBase.h"
+#include "ParticleSystemBase.h"
 
-TextureParticleAffector::TextureParticleAffector(FluidAndParticleBase* partBase, bool animated /*= false*/, bool onGPU /*= false*/)
+TextureParticleAffector::TextureParticleAffector(FluidAndParticleBase* partBase, bool animated /*= false*/, 
+		float animationTime /*= 0.0f*/, bool onGPU /*= false*/)
 	:ParticleAffector(onGPU), affectorParams()
 {
+	affectorParams.animationTime = animationTime;
+	affectorParams.animated = animated;
+
 	mat = partBase->GetMaterial();
 }
 
@@ -14,23 +18,39 @@ TextureParticleAffector::~TextureParticleAffector(void)
 
 bool TextureParticleAffector::AddTextureToMaterial(const std::string& textureName)
 {
-	return mat->AddTextureUnit(textureName);
+	bool result = mat->AddTextureUnit(textureName);
+
+	if(result)
+	{
+		affectorParams.maxTextures++;
+		//affectorParams.animationTime = 1.0f / affectorParams.maxTextures;//1.0f / (affectorParams.maxTextures / affectorParams.animationTime);
+	}
+	return result;
 }
 
 bool TextureParticleAffector::Initialize(ParticleSystemBase* owningSystem)
 {
+	owningSystem->CreateVertexBuffer(GetDesiredBuffer());
 	return true;
 }
 
 void TextureParticleAffector::Update(const float gameTime, GPUResourcePointers& pointers, 
 			const float percentile, const unsigned int particleIndex)
 {
-	affectorParams.timePassed += gameTime;
+	//Check for reset
+	if(percentile <= 0.0f || percentile >= 0.99f)
+		pointers.uv0[particleIndex].y = 1.0f - affectorParams.percentStep;
 
-	if(affectorParams.timePassed >= affectorParams.timeToSwitch)
+	//Using .y as our target, check if the percentile is less than the target
+	if(percentile <= pointers.uv0[particleIndex].y)
 	{
-		affectorParams.timePassed = 0.0f;
-		affectorParams.textureIndex = (affectorParams.textureIndex + 1) % affectorParams.maxTextures;
+		//Update the target
+		pointers.uv0[particleIndex].y -= affectorParams.percentStep;
+		if(pointers.uv0[particleIndex].y < 0.0f)
+			pointers.uv0[particleIndex].y = 0.0f;
+		//Update the image
+		pointers.uv0[particleIndex].x = ((int)pointers.uv0[particleIndex].x + 1) % affectorParams.maxTextures;
+
 	}
 }
 

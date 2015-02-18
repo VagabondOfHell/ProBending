@@ -950,7 +950,6 @@ bool SceneSerializer::DeserializeParticleComponent(XMLReader& reader, SharedGame
 			for (int i = 0; i < affectorList.size(); ++i)
 			{
 				particleSystem->AddAffector(affectorList[i]);
-				particleSystem->GetMaterial()->AddAffector(affectorList[i]->GetAffectorType());
 			}
 			if(onGPU)
 			{
@@ -964,7 +963,7 @@ bool SceneSerializer::DeserializeParticleComponent(XMLReader& reader, SharedGame
 				}
 			}
 
-			particleSystem->GetMaterial()->CreateMaterial();
+			particleSystem->GetMaterial()->CreateMaterial(particleSystem);
 			particleSystem->setMaterial(particleSystem->GetMaterial()->GetMaterialName());
 
 			return true;

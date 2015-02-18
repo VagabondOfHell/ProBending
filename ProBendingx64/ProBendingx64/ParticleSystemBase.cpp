@@ -169,8 +169,6 @@ bool ParticleSystemBase::AddAffector(std::shared_ptr<ParticleAffector> affectorT
 			affectorToAdd->onGPU = false;
 		}
 
-		particleMaterial.AddAffector(result.first->first);
-
 		affectorToAdd->Initialize(this);
 	}
 	return result.second;
@@ -189,8 +187,6 @@ std::shared_ptr<ParticleAffector> ParticleSystemBase::RemoveAndGetAffector(Parti
 	{
 		//Update flag for CPU and GPU
 		affectors.allTypesCombination &= ~result->first;
-
-		particleMaterial.RemoveAffector(result->first);
 
 		//Update flag for GPU if system and affector are on GPU
 		if(onGPU && result->second->GetOnGPU())
