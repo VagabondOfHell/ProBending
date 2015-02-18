@@ -44,10 +44,16 @@ private:
 
 	void PopulateWithGestures(std::vector<GestureChain>& elementVector, ElementEnum::Element element);
 
+	///<summary>Updates the Probender Mesh to match the Kinect Input</summary>
+	///<param name="currentData">The current data of the frame</param>
+	void UpdateDisplay(const CompleteData& currentData);
+
 	///<summary>Checks current and previous lean values and fires the Dodge Movement on the probender if valid</summary>
 	///<param name="currentData">Data of the current body frame</param>
 	///<param name="previousData">Data of the last body frame</param>
 	void CheckLean(const CompleteData& currentData, const CompleteData& previousData);
+
+	void CheckJump(const CompleteData& currentData, const CompleteData& previousData);
 
 public:
 	ConfigurationLayout keysLayout;

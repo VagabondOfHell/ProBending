@@ -161,9 +161,18 @@ void ProbenderInputHandler::HandConfidenceChanged(const Hand hand, const Complet
 
 void ProbenderInputHandler::BodyFrameAcquired(const CompleteData& currentData, const CompleteData& previousData)
 {
+	UpdateDisplay(currentData);
+
+	CheckLean(currentData, previousData);
+
+	CheckJump(currentData, previousData);
+}
+
+void ProbenderInputHandler::UpdateDisplay(const CompleteData& currentData)
+{
 	std::vector<Ogre::Vector3> meshData = std::vector<Ogre::Vector3>();
 	meshData.reserve(JointType::JointType_Count);
-	
+
 	CameraSpacePoint spineBasePoint = currentData.JointData[JointType_SpineBase].Position;
 	Ogre::Vector3 spineBasePosition = Ogre::Vector3(spineBasePoint.X, spineBasePoint.Y, 1.0f);
 
@@ -178,7 +187,6 @@ void ProbenderInputHandler::BodyFrameAcquired(const CompleteData& currentData, c
 
 	probender->meshRenderComponent->UpdateMesh(meshData, 0, Ogre::VES_POSITION);
 
-	CheckLean(currentData, previousData);
 }
 
 void ProbenderInputHandler::CheckLean(const CompleteData& currentData, const CompleteData& previousData)
@@ -208,6 +216,23 @@ void ProbenderInputHandler::CheckLean(const CompleteData& currentData, const Com
 		}
 	}
 }
+
+void ProbenderInputHandler::CheckJump(const CompleteData& currentData, const CompleteData& previousData)
+{
+	if(currentData.JointData[JointType::JointType_FootLeft].TrackingState != TrackingState::TrackingState_NotTracked &&
+		currentData.JointData[JointType::JointType_FootRight].TrackingState != TrackingState::TrackingState_NotTracked)
+	{
+		printf("Diff: %f\n", currentData.JointData[JointType_FootLeft].Position.Y - previousData.JointData[JointType_FootLeft].Position.Y);
+		if((currentData.JointData[JointType_FootLeft].Position.Y - previousData.JointData[JointType_FootLeft].Position.Y)
+			>= controlOptions.JumpThreshold &&
+			(currentData.JointData[JointType_FootRight].Position.Y - previousData.JointData[JointType_FootRight].Position.Y)
+			>= controlOptions.JumpThreshold)
+		{
+			probender->Jump();
+		}
+	}
+}
+
 
 bool created = false;
 
@@ -523,6 +548,5 @@ void ProbenderInputHandler::GestureReset(const GestureChain& gestureReset)
 {
 	throw std::logic_error("The method or operation is not implemented.");
 }
-
 
 #pragma endregion

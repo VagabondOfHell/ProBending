@@ -5,7 +5,8 @@ struct ProbenderOptions
 	float LeanThreshold; //Amount a lean must surpass to be registered as true
 	float JumpThreshold; //Amount a jump must surpass to be registered as true
 
-	ProbenderOptions(float leanThreshold = 0.1f, float jumpThreshold = 1.0f)
+	float d;
+	ProbenderOptions(float leanThreshold = 0.1f, float jumpThreshold = 0.050f)
 		:LeanThreshold(leanThreshold), JumpThreshold(jumpThreshold)
 	{
 
