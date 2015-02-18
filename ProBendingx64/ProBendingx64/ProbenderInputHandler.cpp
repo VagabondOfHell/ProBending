@@ -219,10 +219,9 @@ void ProbenderInputHandler::CheckLean(const CompleteData& currentData, const Com
 
 void ProbenderInputHandler::CheckJump(const CompleteData& currentData, const CompleteData& previousData)
 {
-	if(currentData.JointData[JointType::JointType_FootLeft].TrackingState != TrackingState::TrackingState_NotTracked &&
-		currentData.JointData[JointType::JointType_FootRight].TrackingState != TrackingState::TrackingState_NotTracked)
+	if(currentData.JointData[JointType::JointType_FootLeft].TrackingState == TrackingState::TrackingState_Tracked &&
+		currentData.JointData[JointType::JointType_FootRight].TrackingState == TrackingState::TrackingState_Tracked)
 	{
-		printf("Diff: %f\n", currentData.JointData[JointType_FootLeft].Position.Y - previousData.JointData[JointType_FootLeft].Position.Y);
 		if((currentData.JointData[JointType_FootLeft].Position.Y - previousData.JointData[JointType_FootLeft].Position.Y)
 			>= controlOptions.JumpThreshold &&
 			(currentData.JointData[JointType_FootRight].Position.Y - previousData.JointData[JointType_FootRight].Position.Y)

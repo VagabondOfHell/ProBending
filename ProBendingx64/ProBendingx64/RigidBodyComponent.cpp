@@ -643,4 +643,36 @@ void RigidBodyComponent::SetKinematicTarget(const physx::PxTransform& target)
 	}
 }
 
+void RigidBodyComponent::SetLinearDamping(const float damping)
+{
+	if(bodyType == DYNAMIC)
+	{
+		bodyStorage.dynamicActor->setLinearDamping(damping);
+	}
+}
+
+void RigidBodyComponent::SetAngularDamping(const float damping)
+{
+	if(bodyType == DYNAMIC)
+	{
+		bodyStorage.dynamicActor->setAngularDamping(damping);
+	}
+}
+
+float RigidBodyComponent::GetLinearDamping() const
+{
+	if(bodyType == DYNAMIC)
+		return bodyStorage.dynamicActor->getLinearDamping();
+
+	return 0.0f;
+}
+
+float RigidBodyComponent::GetAngularDamping() const
+{
+	if(bodyType == DYNAMIC)
+		return bodyStorage.dynamicActor->getAngularDamping();
+
+	return 0.0f;
+}
+
 

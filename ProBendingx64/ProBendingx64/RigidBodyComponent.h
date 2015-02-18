@@ -227,6 +227,14 @@ public:
 		SetKinematicTarget(targetPos, GetOrientation());
 	}
 
+	void SetLinearDamping(const float damping);
+
+	void SetAngularDamping(const float damping);
+
+	float GetLinearDamping()const;
+
+	float GetAngularDamping()const;
+
 	///<summary>Use this to only set rotation for a kinematic actor</summary>
 	///<param name="targetRot">The target orientation</param>
 	inline void SetKinematicTarget(const physx::PxQuat& targetRot)

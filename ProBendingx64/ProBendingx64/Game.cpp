@@ -360,6 +360,7 @@ void Game::Run()
 	player1Data.TeamDatas.PlayerColour = TeamData::RED;
 
 	player1Data.Skills.Dodge = 100;
+	player1Data.Skills.Jump = 100;
 
 	ProbenderData player2Data = ProbenderData();
 	player2Data.Attributes.MainElement = ElementEnum::Element::Fire;
@@ -368,6 +369,7 @@ void Game::Run()
 	player2Data.TeamDatas.PlayerColour = TeamData::BLUE;
 
 	player2Data.Skills.Dodge = 0;
+	player2Data.Skills.Jump = 0;
 
 	contestantData.push_back(player1Data);
 	contestantData.push_back(player2Data);

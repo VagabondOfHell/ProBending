@@ -87,8 +87,14 @@ struct ProbenderInGameData
 	void FillFromProbenderData(const ProbenderData& data);
 
 private:
-	static const float MAX_DODGE_SPEED;//The number of frames until a dodge maneuver is completed
+	static const float MAX_DODGE_SPEED;//The max allowed speed bonus to the Dodge Movement
 	static const float MIN_DODGE_SPEED;
 
+	static const float MAX_JUMP_SPEED;//The max allowed speed bonus to the Jump Movement
+	static const float MIN_JUMP_SPEED;
+
 	float CalculateDodgeSpeed(const short dodgeSkill);
+
+	float CalculateJumpSpeed(const short jumpSkill);
+
 };

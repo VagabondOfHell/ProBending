@@ -28,6 +28,7 @@ private:
 	
 	static const physx::PxVec3 HALF_EXTENTS;
 	static const float DODGE_DISTANCE;
+	static const float FALL_FORCE;
 
 	TeamData::ContestantColour playerColour;
 	ArenaData::Team currentTeam;
@@ -46,8 +47,6 @@ private:
 	Arena* owningArena;//The arena the contestant is part of
 
 	MeshRenderComponent* meshRenderComponent;
-
-	Ogre::Vector3 jumpOrigin;
 
 	physx::PxVec3 dodgeTargetPos;//The final position
 	physx::PxVec3 dodgeDirection;//direction to move towards

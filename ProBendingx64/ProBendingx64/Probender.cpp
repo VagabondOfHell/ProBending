@@ -26,6 +26,8 @@ const physx::PxVec3 Probender::HALF_EXTENTS = physx::PxVec3(0.250f, 0.60f, 0.040
 
 const float Probender::DODGE_DISTANCE = 1.0f;
 
+const float Probender::FALL_FORCE = -350.0f;
+
 Probender::Probender()
 	: GameObject(NULL), leftHandAttack(NULL), rightHandAttack(NULL), currentTarget(NULL), 
 		CurrentZone(ArenaData::INVALID_ZONE), currentTeam(ArenaData::INVALID_TEAM)
@@ -71,8 +73,9 @@ void Probender::Start()
 	shapeDef.SetFilterFlags(ArenaData::CONTESTANT);
 	PhysXDataManager::GetSingletonPtr()->CreateShape(shapeDef, "ProbenderShape");
 	rigid->AttachShape("ProbenderShape");
-	rigid->CalculateCenterOfMass(1000.0f);
+	rigid->SetMass(150.0f);
 	rigid->FreezeAllRotation();
+	//rigid->SetUseGravity(false);
 
 	rigid->CreateDebugDraw();
 	
@@ -96,6 +99,11 @@ void Probender::Update(float gameTime)
 	printf(message.c_str());*/
 
 	StateFlags::PossibleStates ps = stateManager.GetCurrentState();
+
+	if(!stateManager.GetOnGround())
+	{
+		rigidBody->ApplyForce(physx::PxVec3(0.0f, characterData.SkillsBonus.JumpHeight * FALL_FORCE, 0.0f));
+	}
 
 	switch (stateManager.GetCurrentState())
 	{
@@ -252,6 +260,8 @@ std::string Probender::GetMeshAndMaterialName()
 
 		return colourString + "Probender";
 	}
+
+	return "";
 }
 
 void Probender::OnCollisionEnter(const CollisionReport& collision)
@@ -319,12 +329,12 @@ void Probender::StateEntered(StateFlags::PossibleStates enteredState)
 	switch (enteredState)
 	{
 	case StateFlags::IDLE_STATE:
+		rigidBody->SetVelocity(physx::PxVec3(0.0f));
 		break;
 	case StateFlags::JUMP_STATE:
-		jumpOrigin = GetWorldPosition();
-		rigidBody->ApplyImpulse(physx::PxVec3(0.0f, 5000.0f, 0.0f));
+		rigidBody->SetVelocity(physx::PxVec3(0.0f, characterData.SkillsBonus.JumpHeight, 0.0f));
 		break;
-	case StateFlags::FALLING_STATE:
+	case StateFlags::FALLING_STATE:	
 		break;
 	case StateFlags::BLOCK_STATE:
 		break;
@@ -355,7 +365,7 @@ void Probender::HandleDodge(const float gameTime)
 
 void Probender::HandleJump()
 {
-	if(rigidBody->GetVelocity().y < 0.0f)
+	if(rigidBody->GetVelocity().y < -0.0f && !stateManager.GetOnGround())
 		stateManager.SetState(StateFlags::FALLING_STATE, 0.0f);
 }
 
