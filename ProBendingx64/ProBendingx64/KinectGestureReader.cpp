@@ -286,5 +286,7 @@ bool KinectGestureReader::Capture()
 	
 		return true;
 	}
+
+	return false;
 }
 

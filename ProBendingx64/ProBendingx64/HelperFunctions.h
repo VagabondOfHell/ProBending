@@ -28,6 +28,51 @@ public:
 		return Ogre::Vector3(physxVector.x, physxVector.y, physxVector.z);
 	}
 
+	///<summary>Calculates the magnitude of the passed values.
+	///Useful for structures such as CameraSpacePoint</summary>
+	///<param name="x">The X Value of the 3 dimensional coordinate</param>
+	///<param name="y">The Y Value of the 3 dimensional coordinate</param>
+	///<param name="z">The Z Value of the 3 dimensional coordinate</param>
+	///<returns>Number representing the length of the vector after square root</returns>
+	static inline float CalculateMagnitude(float x, float y, float z)
+	{
+		return Ogre::Math::Sqrt(x * x + y * y + z * z);
+	}
+
+	///<summary>!AVOIDS CALLING SQUARE ROOT! Calculates the magnitude of the passed values.
+	///Useful for structures such as CameraSpacePoint</summary>
+	///<param name="x">The X Value of the 3 dimensional coordinate</param>
+	///<param name="y">The Y Value of the 3 dimensional coordinate</param>
+	///<param name="z">The Z Value of the 3 dimensional coordinate</param>
+	///<returns>Number representing the length of the vector before square root</returns>
+	static inline float CalculateMagnitudeSqrd(float x, float y, float z)
+	{
+		return x * x + y * y + z * z;
+	}
+
+	///<summary>Gets the decimal percentage of the values position between the min and max</summary>
+	///<param name="minVal">The minimum allowed value</param>
+	///<param name="maxVal">The maximum allowed value</param>
+	///<param name="value">The value being converted to a percentage</param>
+	///<returns>Decimal representing the percentage across the values</returns>
+	static inline float CalculatePercentage(float minVal, float maxVal, float value)
+	{
+		//Bring all the values between 0 and positive #, then perform normal percentage equation (val/max)
+		return (value - minVal) / (maxVal - minVal);
+	}
+
+	///<summary>Inverse of Calculate Percentage, calculates the actual value between a range given a percent</summary>
+	///<param name="minVal">The lowest value allowed</param>
+	///<param name="maxVal">The highest value allowed</param>
+	///<param name="percentile">The percentile of the value to retrieve, in decimal form</param>
+	///<returns>The value according to the given percentage</returns>
+	static inline float CalculateValue(float minVal, float maxVal, float percentile)
+	{
+		//Bring the values between 0 and positive # (max - min) and multiply that by the percentile,
+		//adding the result to the minimum to get the actual position
+		return minVal + (percentile * (maxVal - minVal));
+	}
+
 	///<summary>Fills the manual object with the vertices required to render a box around 
 	///a physX box</summary>
 	///<param name="shapePosition">The position of the physX shape/object</param>

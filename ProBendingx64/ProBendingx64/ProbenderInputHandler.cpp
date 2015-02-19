@@ -8,6 +8,7 @@
 #include "RigidBodyComponent.h"
 #include "ParticleComponent.h"
 #include "MeshRenderComponent.h"
+#include "ProjectileController.h"
 
 #include "IScene.h"
 #include "OgreCamera.h"
@@ -166,6 +167,14 @@ void ProbenderInputHandler::BodyFrameAcquired(const CompleteData& currentData, c
 	CheckLean(currentData, previousData);
 
 	CheckJump(currentData, previousData);
+
+	if(probender->rightHandAttack)
+	{
+		ProjectileController* controller = probender->rightHandAttack->GetController();
+
+		if(controller)
+			controller->ControlProjectile(probender, bodyDimensions, currentData, previousData);
+	}
 }
 
 void ProbenderInputHandler::UpdateDisplay(const CompleteData& currentData)
@@ -446,13 +455,18 @@ bool ProbenderInputHandler::keyPressed( const OIS::KeyEvent &arg )
 
 				if(attack)
 				{
-					attack->AttachAbility(ability);
-					attack->SetWorldPosition(probender->owningArena->GetOwningScene()->GetCamera()->getPosition());
-
+					//attack->AttachAbility(ability);
 					Ogre::Vector3 camDir = probender->owningArena->GetOwningScene()->GetCamera()->getDirection();
+					attack->SetWorldPosition(probender->owningArena->GetOwningScene()->GetCamera()->getPosition()
+						+ (camDir * 2.0f));
 
-					((RigidBodyComponent*)attack->GetComponent(Component::RIGID_BODY_COMPONENT))->ApplyImpulse(
-						physx::PxVec3(camDir.x, camDir.y, camDir.z) * 20.0f);
+					attack->GetController()->ProjectileOrigin = HelperFunctions::OgreToPhysXVec3(attack->GetWorldPosition());
+					attack->GetController()->ProbenderForward = HelperFunctions::OgreToPhysXVec3(probender->Forward());
+					attack->GetController()->ProbenderRight = HelperFunctions::OgreToPhysXVec3(probender->Right());
+					attack->GetController()->ProbenderUp = HelperFunctions::OgreToPhysXVec3(probender->Up());
+
+					/*((RigidBodyComponent*)attack->GetComponent(Component::RIGID_BODY_COMPONENT))->ApplyImpulse(
+						physx::PxVec3(camDir.x, camDir.y, camDir.z) * 20.0f);*/
 
 					probender->rightHandAttack = attack;
 				}

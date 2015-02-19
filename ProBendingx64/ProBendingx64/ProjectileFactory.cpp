@@ -10,6 +10,8 @@
 #include "ColourFadeParticleAffector.h"
 #include "TextureParticleAffector.h"
 
+#include "Controllers.h"
+
 #include "MeshRenderComponent.h"
 #include "RigidBodyComponent.h"
 #include "PhysXDataManager.h"
@@ -43,6 +45,12 @@ SharedProjectile ProjectileFactory::CreateProjectile(IScene* const scene,const E
 		if(abilityID == AbilityIDs::EARTH_BOULDER)
 		{
 			newProjectile = std::make_shared<Projectile>(scene, "EarthBoulder", nullptr);
+
+			HandMoveController* controller = new HandMoveController(newProjectile.get(), HandMoveController::CH_BOTH, 
+					physx::PxVec3(-2.0f, -2.0f, -2.0f), physx::PxVec3(2.0f, 2.0f, 2.0f));
+
+			newProjectile->AttachController(controller);
+
 			MeshRenderComponent* renderComponent = new MeshRenderComponent();
 		//	newProjectile->SetWorldPosition(-80, 0, 0);
 			
@@ -84,7 +92,7 @@ SharedProjectile ProjectileFactory::CreateProjectile(IScene* const scene,const E
 					rigidBody->AttachShape(*shape);
 					rigidBody->GetDynamicActor()->setRigidBodyFlag(physx::PxRigidBodyFlag::eENABLE_CCD, true);
 					rigidBody->CreateDebugDraw();
-					//rigidBody->SetUseGravity(false);
+					rigidBody->SetUseGravity(false);
 				}
 				//rigidBody->CreateAndAttachNewShape(shapeDef);
 				
@@ -98,6 +106,12 @@ SharedProjectile ProjectileFactory::CreateProjectile(IScene* const scene,const E
 		if(abilityID == AbilityIDs::FIRE_JAB)
 		{
 			newProjectile = std::make_shared<Projectile>(scene, "Fire Jab", nullptr);
+
+			HandMoveController* controller = new HandMoveController(newProjectile.get(), HandMoveController::CH_RIGHT, 
+				physx::PxVec3(0.0f, 2.0f, 0.0f), physx::PxVec3(0.0f, -2.0f, 0.0f));
+
+			newProjectile->AttachController(controller);
+
 			std::shared_ptr<ParticlePointEmitter> emitter = std::make_shared<ParticlePointEmitter>
 			(ParticlePointEmitter(50, physx::PxVec3(0.0f, 0.0f, 0.0f), 
 			physx::PxVec3(0.0f, 1.0f, 0.0f).getNormalized(), physx::PxVec3(0.0f, 1.0f, 1.0f).getNormalized(),

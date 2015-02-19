@@ -383,7 +383,6 @@ void Probender::OnTriggerEnter(GameObject* trigger, GameObject* other)
 		if(newZone != CurrentZone)
 		{
 			CurrentZone = newZone;
-
 			/*std::string message = "Trigger Entered with: " + trigger->GetName() + "For " + std::to_string(contestantID) + 
 			" : "+ "\n";
 			printf(message.c_str());*/

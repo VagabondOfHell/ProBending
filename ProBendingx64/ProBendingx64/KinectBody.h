@@ -7,39 +7,61 @@ typedef _FrameEdges ClippedEdges;
 
 struct CompleteData
 {
-		UINT64 BodyTrackingID;
+	UINT64 BodyTrackingID;
 
-		BOOLEAN IsTracked;
-		BOOLEAN IsRestricted;
-		DetectionResult IsEngaged;
+	BOOLEAN IsTracked;
+	BOOLEAN IsRestricted;
+	DetectionResult IsEngaged;
 
-		ClippedEdges ClippedEdge;
+	ClippedEdges ClippedEdge;
 
-		Joint JointData[JointType_Count];
-		JointOrientation JointOrientations[JointType_Count];
+	Joint JointData[JointType_Count];
+	JointOrientation JointOrientations[JointType_Count];
 
-		PointF LeanAmount;
-		TrackingState LeanTrackState;
+	PointF LeanAmount;
+	TrackingState LeanTrackState;
 
-		HandState LeftHandState;
-		HandState RightHandState;
-		TrackingConfidence LeftHandConfidence;
-		TrackingConfidence RightHandConfidence;
+	HandState LeftHandState;
+	HandState RightHandState;
+	TrackingConfidence LeftHandConfidence;
+	TrackingConfidence RightHandConfidence;
 
-		CompleteData()
+	CompleteData()
+	{
+		BodyTrackingID = 0;
+		IsTracked = 0;
+		IsRestricted = 0;
+		IsEngaged = DetectionResult_Unknown;
+		ClippedEdge = ClippedEdges::FrameEdge_None;
+		std::fill(JointData, JointData + JointType_Count, Joint());
+		std::fill(JointOrientations, JointOrientations + JointType_Count, JointOrientation());
+		LeanAmount = PointF();
+		LeanTrackState = TrackingState::TrackingState_NotTracked;
+		LeftHandState = RightHandState = HandState_NotTracked;
+		LeftHandConfidence = RightHandConfidence = TrackingConfidence_Low;
+	}
+
+	inline bool GetTrackedPosition(const JointType jointType, CameraSpacePoint& outVal)const
+	{
+		if(JointData[jointType].TrackingState == TrackingState::TrackingState_Tracked)
 		{
-			BodyTrackingID = 0;
-			IsTracked = 0;
-			IsRestricted = 0;
-			IsEngaged = DetectionResult_Unknown;
-			ClippedEdge = ClippedEdges::FrameEdge_None;
-			std::fill(JointData, JointData + JointType_Count, Joint());
-			std::fill(JointOrientations, JointOrientations + JointType_Count, JointOrientation());
-			LeanAmount = PointF();
-			LeanTrackState = TrackingState::TrackingState_NotTracked;
-			LeftHandState = RightHandState = HandState_NotTracked;
-			LeftHandConfidence = RightHandConfidence = TrackingConfidence_Low;
+			outVal = JointData[jointType].Position;
+			return true;
 		}
+
+		return false;
+	}
+
+	inline bool GetTrackedOrInferredPosition(const JointType jointType, CameraSpacePoint& outVal)const
+	{
+		if(JointData[jointType].TrackingState != TrackingState_NotTracked)
+		{
+			outVal = JointData[jointType].Position;
+			return true;
+		}
+
+		return false;
+	}
 };
 
 enum Hand

@@ -542,7 +542,7 @@ void RigidBodyComponent::SetMass(const float newMass)
 		bodyStorage.dynamicActor->setMass(newMass);
 }
 
-void RigidBodyComponent::SetVelocity(physx::PxVec3& newVel)
+void RigidBodyComponent::SetVelocity(const physx::PxVec3& newVel)
 {
 	if(bodyType == DYNAMIC)
 	{

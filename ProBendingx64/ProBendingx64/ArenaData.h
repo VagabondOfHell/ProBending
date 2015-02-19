@@ -17,7 +17,8 @@ namespace ArenaData
 		WALL = 1 << 6,
 		ARENA_SURFACE = 1 << 7,
 		GUARD_RAIL = 1 << 8,
-		ALL = GROUND + WATER + ZONE_TRIGGER + CONTESTANT + PLATFORM + PILLAR + WALL + ARENA_SURFACE + GUARD_RAIL
+		PROJECTILE = 1 << 9,
+		ALL = GROUND + WATER + ZONE_TRIGGER + CONTESTANT + PLATFORM + PILLAR + WALL + ARENA_SURFACE + GUARD_RAIL + PROJECTILE
 	};
 
 	///<summary>Gets the zone enum from the specified string</summary>

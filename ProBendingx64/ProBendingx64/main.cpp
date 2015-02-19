@@ -1,4 +1,9 @@
 #pragma once
+#define MEMORY_LEAK_DETECT 0
+
+#if(MEMORY_LEAK_DETECT)
+#include "vld.h"
+#endif
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 #define WIN32_LEAN_AND_MEAN

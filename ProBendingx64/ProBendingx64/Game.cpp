@@ -1,8 +1,4 @@
-#define MEMORY_LEAK_DETECT 0
 
-#if(MEMORY_LEAK_DETECT)
-#include "vld.h"
-#endif
 
 #include "Game.h"
 #include "InputManager.h"

@@ -163,6 +163,7 @@ physx::PxShape* PhysXDataManager::CreateShape(const ShapeDefinition& shapeDefini
 		shape->setLocalPose(shapeDefinition.Transform);
 		shapeMap.insert(hint, ShapeMap::value_type(name, shape));
 		shape->setQueryFilterData(physx::PxFilterData(shapeDefinition.FilterFlags, 0, 0, 0));
+		shape->setSimulationFilterData(physx::PxFilterData(shapeDefinition.FilterFlags, 0, 0, 0));
 	}
 
 	return shape;

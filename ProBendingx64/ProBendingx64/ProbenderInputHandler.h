@@ -4,6 +4,7 @@
 #include "InputManager.h"
 #include "InputNotifier.h"
 #include "GestureCollection.h"
+#include "ProbenderData.h"
 #include "ProbenderFlags.h"
 #include "ProbenderOptions.h"
 
@@ -28,7 +29,8 @@ class ProbenderInputHandler :
 {
 public:
 	enum ProbenderStances{UnknownStance, OffenseStance, DefenceStance};
-
+	BodyDimensions bodyDimensions;
+	
 private:
 	static const float LEAN_RESET_DISTANCE;
 

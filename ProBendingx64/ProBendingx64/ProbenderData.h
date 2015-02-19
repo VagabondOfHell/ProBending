@@ -4,6 +4,20 @@
 #include "StatusEffectModifiers.h"
 #include <array>
 
+struct BodyDimensions
+{
+	float RightArmLength;
+	float LeftArmLength;
+	float RightLegLength;
+	float LeftLegLength;
+
+	BodyDimensions(float rightArmLength = 0.4f, float leftArmLength = 0.4f, float rightLegLength = 0.6f, float leftLegLength = 0.6f)
+		:RightArmLength(rightArmLength), LeftArmLength(leftArmLength), RightLegLength(rightLegLength), LeftLegLength(leftLegLength)
+	{
+
+	}
+};
+
 struct CharacterAttributes
 {
 	ElementEnum::Element MainElement;

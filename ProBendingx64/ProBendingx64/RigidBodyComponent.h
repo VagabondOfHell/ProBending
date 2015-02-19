@@ -191,7 +191,7 @@ public:
 
 	void SetKinematic(const bool kinematicOn);
 
-	void SetVelocity(physx::PxVec3& newVel);
+	void SetVelocity(const physx::PxVec3& newVel);
 
 	void SetPosition(physx::PxVec3& position);
 

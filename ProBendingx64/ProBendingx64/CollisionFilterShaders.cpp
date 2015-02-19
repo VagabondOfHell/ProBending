@@ -1,4 +1,6 @@
 #include "CollisionFilterShaders.h"
+#include "ArenaData.h"
+
 #include <stdio.h>
 
 using namespace physx;
@@ -11,6 +13,11 @@ physx::PxFilterFlags CollisionFilterShaders::GameSceneFilterShader
 	// let triggers through
 	if(physx::PxFilterObjectIsTrigger(attributes0) || physx::PxFilterObjectIsTrigger(attributes1))
 	{
+		//Check if trigger collision is between contestant and zone. If it isn't ignore the Zone Trigger
+		if((filterData0.word0 == ArenaData::ZONE_TRIGGER || filterData1.word0 == ArenaData::ZONE_TRIGGER) 
+			&& (filterData0.word0 != ArenaData::CONTESTANT && filterData1.word0 != ArenaData::CONTESTANT))
+			return physx::PxFilterFlag::eKILL;
+
 		pairFlags = physx::PxPairFlag::eTRIGGER_DEFAULT;
 		return physx::PxFilterFlag::eDEFAULT;
 	}

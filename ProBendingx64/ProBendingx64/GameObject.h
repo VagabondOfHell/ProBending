@@ -155,6 +155,8 @@ public:
 			return NULL;
 	}
 
+	inline RigidBodyComponent* GetRigidBody(){return rigidBody;}
+
 	SharedGameObject Clone();
 
 	virtual void OnCollisionEnter(const CollisionReport& collision){}

@@ -52,7 +52,7 @@ void GUIProgressTracker::Update(const float gameTime)
 	{
 		Ogre::Vector3 pos = benderToTrack->GetWorldPosition();
 		
-		float trackerPosX = 0.5f * (pos.x / ARENA_HALF_LENGTH);
+		float trackerPosX = 0.5f * (-pos.x / ARENA_HALF_LENGTH);
 	
 		trackerWindow->setXPosition(CEGUI::UDim(trackerPosX, 0.0f));
 	}
