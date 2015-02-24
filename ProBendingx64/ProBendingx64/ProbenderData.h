@@ -10,9 +10,13 @@ struct BodyDimensions
 	float LeftArmLength;
 	float RightLegLength;
 	float LeftLegLength;
+	float RightHipToKnee;
+	float LeftHipToKnee;
 
-	BodyDimensions(float rightArmLength = 0.4f, float leftArmLength = 0.4f, float rightLegLength = 0.6f, float leftLegLength = 0.6f)
-		:RightArmLength(rightArmLength), LeftArmLength(leftArmLength), RightLegLength(rightLegLength), LeftLegLength(leftLegLength)
+	BodyDimensions(float rightArmLength = 0.4f, float leftArmLength = 0.4f, float rightLegLength = 0.6f, float leftLegLength = 0.6f,
+		float rightHipToKnee = 0.3f, float leftHipToKnee = 0.3f )
+		:RightArmLength(rightArmLength), LeftArmLength(leftArmLength), RightLegLength(rightLegLength), LeftLegLength(leftLegLength),
+		RightHipToKnee(rightHipToKnee), LeftHipToKnee(leftHipToKnee)
 	{
 
 	}

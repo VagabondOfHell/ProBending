@@ -35,7 +35,7 @@ Probender::Probender()
 }
 
 Probender::Probender(const unsigned short _contestantID, Arena* _owningArena)
-	: GameObject(_owningArena->GetOwningScene(), "Probender" + _contestantID), contestantID(_contestantID), owningArena(_owningArena), 
+	: GameObject(_owningArena->GetOwningScene(), "Probender" + std::to_string(_contestantID)), contestantID(_contestantID), owningArena(_owningArena), 
 		leftHandAttack(NULL), rightHandAttack(NULL), currentTarget(NULL), playerColour(TeamData::INVALID_COLOUR), 
 		CurrentZone(ArenaData::INVALID_ZONE), currentTeam(ArenaData::Team::INVALID_TEAM)
 {

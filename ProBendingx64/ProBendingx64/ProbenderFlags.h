@@ -223,8 +223,34 @@ namespace ProbenderAbilities
 namespace AbilityIDs
 {
 	typedef unsigned short AbilityID;
-	enum FireAbilities{FIRE_JAB, FIRE_ABILITIES_COUNT};
-	enum EarthAbilities{EARTH_BOULDER, EARTH_ABILITIES_COUNT};
+	enum FireAbilities{FIRE_BLAST, FIRE_ABILITIES_COUNT};
+	enum EarthAbilities{EARTH_COIN, EARTH_ABILITIES_COUNT};
 	enum AirAbilities{AIR_ABILITIES_COUNT};
 	enum WaterAbilities{WATER_ABILITIES_COUNT};
+
+	static std::string FireEnumToString(const FireAbilities fireAbilities)
+	{
+		switch (fireAbilities)
+		{
+		case FIRE_BLAST:
+			return "Fire_Blast";
+			break;
+		default:
+			return "";
+			break;
+		}
+	}
+
+	static std::string EarthEnumToString(const EarthAbilities earthAbilities)
+	{
+		switch (earthAbilities)
+		{
+		case EARTH_COIN:
+			return "Earth_Coin";
+			break;
+		default:
+			return "";
+			break;
+		}
+	}
 }

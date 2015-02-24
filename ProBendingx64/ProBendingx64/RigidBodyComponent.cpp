@@ -593,13 +593,11 @@ RigidBodyComponent* RigidBodyComponent::Clone(GameObject* gameObject)
 {
 	RigidBodyComponent* clone = new RigidBodyComponent();
 
-	clone->enabled = enabled;
 	clone->owningGameObject = gameObject;
 
 	if(bodyType != NONE)
 	{
 		physx::PxRigidActor* actor = NULL;
-
 		if(bodyType == DYNAMIC)
 			actor = bodyStorage.dynamicActor;
 		else if(bodyType == STATIC)
@@ -623,6 +621,9 @@ RigidBodyComponent* RigidBodyComponent::Clone(GameObject* gameObject)
 
 			if(physxDebugNode)
 				clone->CreateDebugDraw();
+
+			if(!enabled)
+				clone->Disable();
 		}
 	}
 
@@ -673,6 +674,34 @@ float RigidBodyComponent::GetAngularDamping() const
 		return bodyStorage.dynamicActor->getAngularDamping();
 
 	return 0.0f;
+}
+
+void RigidBodyComponent::Enable()
+{
+	if(bodyType == DYNAMIC)
+		//bodyStorage.dynamicActor->wakeUp();
+		bodyStorage.dynamicActor->setActorFlag(physx::PxActorFlag::eDISABLE_SIMULATION, false);
+	else if(bodyType == STATIC)
+		bodyStorage.staticActor->setActorFlag(physx::PxActorFlag::eDISABLE_SIMULATION, false);
+
+#if _DEBUG
+	if(physxDebugNode)
+		physxDebugNode->setVisible(true);
+#endif
+	enabled = true;
+}
+
+void RigidBodyComponent::Disable()
+{
+	if(bodyType == DYNAMIC)
+		bodyStorage.dynamicActor->setActorFlag(physx::PxActorFlag::eDISABLE_SIMULATION, true);
+	else if(bodyType == STATIC)
+		bodyStorage.staticActor->setActorFlag(physx::PxActorFlag::eDISABLE_SIMULATION, true);
+#if _DEBUG
+	if(physxDebugNode)
+		physxDebugNode->setVisible(false);
+#endif
+	enabled = false;
 }
 
 

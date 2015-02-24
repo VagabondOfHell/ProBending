@@ -1,9 +1,12 @@
 #pragma once
 #include "KinectAudioListener.h"
 #include "KinectBodyListener.h"
+
 #include "InputManager.h"
 #include "InputNotifier.h"
-#include "GestureCollection.h"
+
+#include "Attack.h"
+
 #include "ProbenderData.h"
 #include "ProbenderFlags.h"
 #include "ProbenderOptions.h"
@@ -25,7 +28,7 @@ struct ConfigurationLayout
 };
 
 class ProbenderInputHandler :
-	public KinectBodyListener, public GestureObserver, public InputObserver, public KinectAudioListener
+	public KinectBodyListener, public InputObserver, public KinectAudioListener
 {
 public:
 	enum ProbenderStances{UnknownStance, OffenseStance, DefenceStance};
@@ -39,12 +42,12 @@ private:
 	
 	bool canLean;
 
-	std::vector<GestureChain> mainElementGestures;
-	std::vector<GestureChain> subElementGestures;
+	std::vector<Attack> mainElementGestures;
+	std::vector<Attack> subElementGestures;
 
 	void GenerateGestures();
 
-	void PopulateWithGestures(std::vector<GestureChain>& elementVector, ElementEnum::Element element);
+	void PopulateWithGestures(std::vector<Attack>& elementVector, ElementEnum::Element element);
 
 	///<summary>Updates the Probender Mesh to match the Kinect Input</summary>
 	///<param name="currentData">The current data of the frame</param>
@@ -160,10 +163,6 @@ protected:
 	virtual void BodyAcquired();
 
 	virtual void BodyLost(const CompleteData& currentData, const CompleteData& previousData);
-
-	virtual void GestureCompleted(const GestureChain& gestureCompleted);
-
-	virtual void GestureReset(const GestureChain& gestureReset);
 
 #pragma endregion
 };

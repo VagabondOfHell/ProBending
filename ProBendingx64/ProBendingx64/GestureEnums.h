@@ -1,0 +1,7 @@
+#pragma once
+
+namespace GestureEnums
+{
+	enum TransitionRules{TRANRULE_NONE, TRANRULE_SAME, TRANRULE_OPPOSITE};
+	enum BodySide{BODYSIDE_INVALID, BODYSIDE_LEFT, BODYSIDE_RIGHT, BODYSIDE_EITHER, BODYSIDE_BOTH};
+};

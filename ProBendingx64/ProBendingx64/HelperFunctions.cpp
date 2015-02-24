@@ -4,6 +4,8 @@
 #include "OgreMesh.h"
 #include "OgreSubMesh.h"
 
+#include <codecvt>
+
 void HelperFunctions::DrawBoxGeometry(const physx::PxVec3 shapePosition, 
 			const physx::PxBoxGeometry* const boxGeometry, Ogre::ManualObject* manualObject)
 {
@@ -186,4 +188,20 @@ void HelperFunctions::GetMeshInformation(const Ogre::Mesh* const mesh, MeshInfo&
 	meshInfo.aaBB.scale(scale);
 
 	meshInfo.sphereRadius = Ogre::Math::Abs(position.distance(position - meshInfo.aaBB.getMaximum()));
+}
+
+std::wstring HelperFunctions::StringToWideString(const std::string& stringToConvert)
+{
+	typedef std::codecvt_utf8<wchar_t> convert_typeX;
+	std::wstring_convert<convert_typeX, wchar_t> converterX;
+
+	return converterX.from_bytes(stringToConvert);
+}
+
+std::string HelperFunctions::WideStringToString(const std::wstring& stringToConvert)
+{
+	typedef std::codecvt_utf8<wchar_t> convert_typeX;
+	std::wstring_convert<convert_typeX, wchar_t> converterX;
+
+	return converterX.to_bytes(stringToConvert);
 }

@@ -3,7 +3,6 @@
 #include "InputManager.h"
 #include "Probender.h"
 #include "Arena.h"
-#include "AbilityManager.h"
 #include "ProjectileManager.h"
 #include "RigidBodyComponent.h"
 #include "ParticleComponent.h"
@@ -15,6 +14,7 @@
 
 #include "PxRigidDynamic.h"
 #include "foundation/PxVec2.h"
+#include "AttackDatabase.h"
 
 const float ProbenderInputHandler::LEAN_RESET_DISTANCE = 0.15f;
 
@@ -63,19 +63,23 @@ void ProbenderInputHandler::GenerateGestures()
 	}
 }
 
-void ProbenderInputHandler::PopulateWithGestures(std::vector<GestureChain>& elementVector, ElementEnum::Element element)
+void ProbenderInputHandler::PopulateWithGestures(std::vector<Attack>& elementVector, ElementEnum::Element element)
 {
 	elementVector.clear();
 
 	switch (element)
 	{
 	case ElementEnum::Earth:
-		elementVector.push_back(GestureChain(AttackEnum::EarthAttackToString(AttackEnum::STOMP_BLAST),
-			2.0f, AttackEnum::STOMP_BLAST_PROGRESS_COUNT, this));
+		AttackDatabase::GetEarthAttacks(elementVector);
 		break;
 	case ElementEnum::Fire:
+		AttackDatabase::GetFireAttacks(elementVector);
 		break;
 	case ElementEnum::Water:
+		AttackDatabase::GetWaterAttacks(elementVector);
+		break;
+	case ElementEnum::Air:
+		AttackDatabase::GetAirAttacks(elementVector);
 		break;
 	default:
 		break;
@@ -168,13 +172,13 @@ void ProbenderInputHandler::BodyFrameAcquired(const CompleteData& currentData, c
 
 	CheckJump(currentData, previousData);
 
-	if(probender->rightHandAttack)
+	/*if(probender->rightHandAttack)
 	{
 		ProjectileController* controller = probender->rightHandAttack->GetController();
 
 		if(controller)
 			controller->ControlProjectile(probender, bodyDimensions, currentData, previousData);
-	}
+	}*/
 }
 
 void ProbenderInputHandler::UpdateDisplay(const CompleteData& currentData)
@@ -258,19 +262,13 @@ void ProbenderInputHandler::DiscreteGesturesAcquired(const std::vector<KinectGes
 			else if(discreteGestureResults[i].gestureName == L"Fire_Blast_Begin" && discreteGestureResults[i].discreteConfidence >= 0.7f)
 				if(!created && probender->GetCurrentElement() == ElementEnum::Fire)
 				{
-					AbilityManager::SharedAbilityDescriptor ability =
-						probender->GetOwningArena()->GetAbilityManager()->CreateAbility(ElementEnum::Fire, AbilityIDs::FIRE_JAB, probender);
+					SharedProjectile attack = probender->GetOwningArena()->
+						GetProjectileManager()->CreateProjectile(ElementEnum::Fire, AbilityIDs::FIRE_BLAST);
 
-					if(ability->abilityType == AbilityDescriptor::Offensive)
-					{
-						SharedProjectile attack = probender->GetOwningArena()->
-							GetProjectileManager()->CreateProjectile(ElementEnum::Fire, AbilityIDs::FIRE_JAB);
+					//attack->AttachAbility(ability);
 
-						attack->AttachAbility(ability);
-
-						probender->rightHandAttack = attack;
-						created = true;
-					}
+					probender->rightHandAttack = attack;
+					created = true;
 				}
 			else if(discreteGestureResults[i].gestureName == L"Fire_Blast_Release")
 			{
@@ -430,46 +428,37 @@ bool ProbenderInputHandler::keyPressed( const OIS::KeyEvent &arg )
 	{
 		if(probender->GetCurrentElement() == ElementEnum::Fire)
 		{
-			AbilityManager::SharedAbilityDescriptor ability =
-				probender->GetOwningArena()->GetAbilityManager()->CreateAbility(ElementEnum::Fire, AbilityIDs::FIRE_JAB, probender);
+			SharedProjectile attack = probender->GetOwningArena()->
+				GetProjectileManager()->CreateProjectile(ElementEnum::Fire, AbilityIDs::FIRE_BLAST);
 
-			if(ability->abilityType == AbilityDescriptor::Offensive)
-			{
-				SharedProjectile attack = probender->GetOwningArena()->
-					GetProjectileManager()->CreateProjectile(ElementEnum::Fire, AbilityIDs::FIRE_JAB);
+			//attack->AttachAbility(ability);
 
-				attack->AttachAbility(ability);
-
-				probender->rightHandAttack = attack;
-			}
+			probender->rightHandAttack = attack;
+			
 		}
 		else if(probender->GetCurrentElement() == ElementEnum::Earth)
 		{
-			AbilityManager::SharedAbilityDescriptor ability =
-				probender->GetOwningArena()->GetAbilityManager()->CreateAbility(ElementEnum::Earth, AbilityIDs::EARTH_BOULDER, probender);
+			SharedProjectile attack = probender->GetOwningArena()->
+				GetProjectileManager()->CreateProjectile(ElementEnum::Earth, AbilityIDs::EARTH_COIN);
 
-			if(ability->abilityType == AbilityDescriptor::Offensive)
+			if(attack)
 			{
-				SharedProjectile attack = probender->GetOwningArena()->
-					GetProjectileManager()->CreateProjectile(ElementEnum::Earth, AbilityIDs::EARTH_BOULDER);
+				attack->Enable();
+				attack->GetRigidBody()->SetUseGravity(true);
+				//attack->AttachAbility(ability);
+				Ogre::Vector3 camDir = probender->owningArena->GetOwningScene()->GetCamera()->getDirection();
+				attack->SetWorldPosition(probender->owningArena->GetOwningScene()->GetCamera()->getPosition()
+					+ (camDir * 2.0f));
 
-				if(attack)
-				{
-					//attack->AttachAbility(ability);
-					Ogre::Vector3 camDir = probender->owningArena->GetOwningScene()->GetCamera()->getDirection();
-					attack->SetWorldPosition(probender->owningArena->GetOwningScene()->GetCamera()->getPosition()
-						+ (camDir * 2.0f));
+				/*attack->GetController()->ProjectileOrigin = HelperFunctions::OgreToPhysXVec3(attack->GetWorldPosition());
+				attack->GetController()->ProbenderForward = HelperFunctions::OgreToPhysXVec3(probender->Forward());
+				attack->GetController()->ProbenderRight = HelperFunctions::OgreToPhysXVec3(probender->Right());
+				attack->GetController()->ProbenderUp = HelperFunctions::OgreToPhysXVec3(probender->Up());*/
 
-					attack->GetController()->ProjectileOrigin = HelperFunctions::OgreToPhysXVec3(attack->GetWorldPosition());
-					attack->GetController()->ProbenderForward = HelperFunctions::OgreToPhysXVec3(probender->Forward());
-					attack->GetController()->ProbenderRight = HelperFunctions::OgreToPhysXVec3(probender->Right());
-					attack->GetController()->ProbenderUp = HelperFunctions::OgreToPhysXVec3(probender->Up());
+				((RigidBodyComponent*)attack->GetComponent(Component::RIGID_BODY_COMPONENT))->ApplyImpulse(
+					physx::PxVec3(camDir.x, camDir.y, camDir.z) * 20.0f);/**/
 
-					/*((RigidBodyComponent*)attack->GetComponent(Component::RIGID_BODY_COMPONENT))->ApplyImpulse(
-						physx::PxVec3(camDir.x, camDir.y, camDir.z) * 20.0f);*/
-
-					probender->rightHandAttack = attack;
-				}
+				probender->rightHandAttack = attack;
 			}
 		}
 		
@@ -491,8 +480,6 @@ std::vector<Ogre::Vector3> bodyPoints = std::vector<Ogre::Vector3>();
 	}
 	else if (arg.key == OIS::KC_BACK)
 	{
-		if(probender->rightHandAttack)
-			probender->GetOwningArena()->GetProjectileManager()->DestroyProjectile(probender->rightHandAttack);
 	}
 	else if(arg.key == OIS::KC_B)
 	{
@@ -550,16 +537,6 @@ bool ProbenderInputHandler::mousePressed( const OIS::MouseEvent &arg, OIS::Mouse
 bool ProbenderInputHandler::mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id )
 {
 	return true;
-}
-
-void ProbenderInputHandler::GestureCompleted(const GestureChain& gestureCompleted)
-{
-	throw std::logic_error("The method or operation is not implemented.");
-}
-
-void ProbenderInputHandler::GestureReset(const GestureChain& gestureReset)
-{
-	throw std::logic_error("The method or operation is not implemented.");
 }
 
 #pragma endregion

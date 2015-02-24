@@ -27,6 +27,10 @@ public:
 	{
 		return Ogre::Vector3(physxVector.x, physxVector.y, physxVector.z);
 	}
+	
+	static std::wstring StringToWideString(const std::string& stringToConvert);
+
+	static std::string WideStringToString(const std::wstring& stringToConvert);
 
 	///<summary>Calculates the magnitude of the passed values.
 	///Useful for structures such as CameraSpacePoint</summary>

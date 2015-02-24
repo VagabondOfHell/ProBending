@@ -42,14 +42,14 @@ SharedProjectile ProjectileFactory::CreateProjectile(IScene* const scene,const E
 	case ElementEnum::Air:
 		break;
 	case ElementEnum::Earth:
-		if(abilityID == AbilityIDs::EARTH_BOULDER)
+		if(abilityID == AbilityIDs::EARTH_COIN)
 		{
 			newProjectile = std::make_shared<Projectile>(scene, "EarthBoulder", nullptr);
 
 			HandMoveController* controller = new HandMoveController(newProjectile.get(), HandMoveController::CH_BOTH, 
 					physx::PxVec3(-2.0f, -2.0f, -2.0f), physx::PxVec3(2.0f, 2.0f, 2.0f));
 
-			newProjectile->AttachController(controller);
+			//newProjectile->AttachController(controller);
 
 			MeshRenderComponent* renderComponent = new MeshRenderComponent();
 		//	newProjectile->SetWorldPosition(-80, 0, 0);
@@ -103,14 +103,14 @@ SharedProjectile ProjectileFactory::CreateProjectile(IScene* const scene,const E
 		}
 		break;
 	case ElementEnum::Fire:
-		if(abilityID == AbilityIDs::FIRE_JAB)
+		if(abilityID == AbilityIDs::FIRE_BLAST)
 		{
 			newProjectile = std::make_shared<Projectile>(scene, "Fire Jab", nullptr);
 
 			HandMoveController* controller = new HandMoveController(newProjectile.get(), HandMoveController::CH_RIGHT, 
 				physx::PxVec3(0.0f, 2.0f, 0.0f), physx::PxVec3(0.0f, -2.0f, 0.0f));
 
-			newProjectile->AttachController(controller);
+			//newProjectile->AttachController(controller);
 
 			std::shared_ptr<ParticlePointEmitter> emitter = std::make_shared<ParticlePointEmitter>
 			(ParticlePointEmitter(50, physx::PxVec3(0.0f, 0.0f, 0.0f), 

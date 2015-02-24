@@ -27,7 +27,8 @@ public:
 	float DualHandThreshold;
 
 	HandMoveController(Projectile* projectileToControl, ControllingHand handToUse, 
-		const physx::PxVec3& minOffset, const physx::PxVec3& maxOffset);
+		const physx::PxVec3& minOffset, const physx::PxVec3& maxOffset, 
+		GestureEnums::TransitionRules transitionFromPrevious = GestureEnums::TRANRULE_NONE);
 
 	virtual ~HandMoveController(void);
 
@@ -36,5 +37,8 @@ public:
 
 	virtual void ControlProjectile(Probender* bender, const BodyDimensions& bodyDimensions,
 		const CompleteData& currentData, const CompleteData& previousData);
+
+	virtual void ReceivePreviousResults(GestureEnums::BodySide prevResults);
+
 };
 

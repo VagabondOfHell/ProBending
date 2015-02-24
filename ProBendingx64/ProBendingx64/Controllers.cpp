@@ -6,8 +6,10 @@
 
 
 HandMoveController::HandMoveController(Projectile* projectileToControl, ControllingHand handToUse, 
-						const physx::PxVec3& _minOffset, const physx::PxVec3& _maxOffset)
-	:ProjectileController(projectileToControl), HandUsed(handToUse), minOffset(_minOffset), maxOffset(_maxOffset), handAxis(0)
+						const physx::PxVec3& _minOffset, const physx::PxVec3& _maxOffset,
+						GestureEnums::TransitionRules transitionFromPrevious/* = GestureEnums::TRANRULE_NONE*/)
+	:ProjectileController(projectileToControl, transitionFromPrevious), HandUsed(handToUse), 
+		minOffset(_minOffset), maxOffset(_maxOffset), handAxis(0)
 {
 	DualHandThreshold = 1.0f;
 	UpdateHandAxis();
@@ -155,4 +157,28 @@ void HandMoveController::UpdateProjectilePosition(float armLength, const CameraS
 	newPos = ProjectileOrigin + xPos + yPos + zPos;
 
 	projectile->SetWorldPosition(newPos.x, newPos.y, newPos.z);
+}
+
+void HandMoveController::ReceivePreviousResults(GestureEnums::BodySide prevResults)
+{
+	switch (TransitionFromPrevious)
+	{
+	case GestureEnums::TRANRULE_NONE:
+		return;
+		break;
+	case GestureEnums::TRANRULE_SAME:
+		if(prevResults == GestureEnums::BODYSIDE_LEFT)
+			HandUsed = CH_LEFT;
+		else if(prevResults == GestureEnums::BODYSIDE_RIGHT)
+			HandUsed = CH_RIGHT;
+		break;
+	case GestureEnums::TRANRULE_OPPOSITE:
+		if(prevResults == GestureEnums::BODYSIDE_LEFT)
+			HandUsed = CH_RIGHT;
+		else if(prevResults == GestureEnums::BODYSIDE_RIGHT)
+			HandUsed = CH_LEFT;
+		break;
+	default:
+		break;
+	}
 }

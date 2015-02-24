@@ -350,7 +350,7 @@ void Game::Run()
 	
 	std::vector<ProbenderData> contestantData;
 	ProbenderData player1Data = ProbenderData();
-	player1Data.Attributes.MainElement = ElementEnum::Element::Fire;
+	player1Data.Attributes.MainElement = ElementEnum::Element::Earth;
 	player1Data.TeamDatas.StartTeam = ArenaData::BLUE_TEAM;
 	player1Data.TeamDatas.StartZone = ArenaData::BLUE_ZONE_1;
 	player1Data.TeamDatas.PlayerColour = TeamData::RED;

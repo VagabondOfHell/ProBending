@@ -45,6 +45,28 @@ GameObject::~GameObject(void)
 	}
 }
 
+void GameObject::Enable()
+{
+	auto componentIter = components.begin();
+	while (componentIter != components.end())
+	{
+		componentIter->second->Enable();
+		++componentIter;
+	}
+	enabled = true;
+}
+
+void GameObject::Disable()
+{
+	auto componentIter = components.begin();
+	while (componentIter != components.end())
+	{
+		componentIter->second->Disable();
+		++componentIter;
+	}
+	enabled = false;
+}
+
 void GameObject::Start()
 {
 	//Children and Components have their start called upon Addition. 
@@ -289,7 +311,7 @@ void GameObject::SetInheritScale(const bool val)
 
 #pragma endregion
 
-SharedGameObject GameObject::Clone()
+SharedGameObject GameObject::Clone()const
 {
 	SharedGameObject clone = std::make_shared<GameObject>(owningScene);
 

@@ -1,5 +1,5 @@
 #pragma once
-#include "Projectile.h"
+#include "ProjectilePool.h"
 #include "ProbenderFlags.h"
 #include <map>
 
@@ -10,16 +10,30 @@ typedef std::shared_ptr<Projectile> SharedProjectile;
 class ProjectileManager
 {
 private:
-	IScene* owningScene;//The scene that owns this manager
+	static const unsigned short BASE_NUM_EARTH_PROJECTILES;
+	static const unsigned short BASE_NUM_FIRE_PROJECTILES;
+	static const unsigned short BASE_NUM_WATER_PROJECTILES;
+	static const unsigned short BASE_NUM_AIR_PROJECTILES;
 
-	unsigned int NEXT_PROJECTILE_ID;//The next projectile ID that will be used for the next created projectile
-	typedef std::map<unsigned int, SharedProjectile> ProjectileMap;//Typedef for the projectile map
-	
-	ProjectileMap projectileMap;//The projectile map
+	typedef std::map<AbilityIDs::AbilityID, ProjectilePool> AbilityPool;
+	typedef std::map<ElementEnum::Element, AbilityPool> ProjectileMap;
+
+	ProjectileMap projectileMap;
+
+	inline bool FindExistingWithHint(const ElementEnum::Element e, ProjectileMap::iterator& outVal)
+	{
+		outVal = projectileMap.lower_bound(e);
+		//returns true if existing
+		return (outVal != projectileMap.end() && !(projectileMap.key_comp()(e, outVal->first)));
+	}
+
+	IScene* owningScene;//The scene that owns this manager
 
 public:
 	ProjectileManager(IScene* _owningScene);
 	~ProjectileManager(void);
+
+	void CreatePool(ElementEnum::Element elementPool, unsigned short numberOfElement);
 
 	///<summary>Creates a new projectile based on the element and ability id given</summary>
 	///<param name="element">The element that the ability belongs to</param>
@@ -27,10 +41,9 @@ public:
 	///<returns>A pointer to the newly created projectile, or NULL if failed</returns>
 	SharedProjectile const CreateProjectile(const ElementEnum::Element element,const AbilityIDs::AbilityID abilityID);
 	
-	///<summary>Destroys the specified projectile</summary>
-	///<param name="projectile">The projectile to be destroyed</param>
-	///<returns>True if found and successful, false if not</returns>
-	bool DestroyProjectile(SharedProjectile projectile);
+	///<summary>Removes the projectile from the manager</summary>
+	///<param name="projectile">The projectile to remove</param>
+	void RemoveProjectile(SharedProjectile projectile);
 
 	void Update(const float gameTime);
 };

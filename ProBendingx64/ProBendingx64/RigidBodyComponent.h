@@ -261,5 +261,10 @@ public:
 	}
 
 	RigidBodyComponent* Clone(GameObject* gameObject);
+
+	virtual void Enable();
+
+	virtual void Disable();
+
 };
 

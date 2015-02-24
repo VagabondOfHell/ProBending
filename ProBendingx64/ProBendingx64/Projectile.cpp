@@ -13,19 +13,15 @@
 #include "PxRigidDynamic.h"
 #include "PxScene.h"
 
-#include "ProjectileController.h"
-
 #include "OgreSceneNode.h"
 
 Projectile::Projectile(IScene* _owningScene, const std::string& objectName, SharedAbilityDescriptor _attachedAbility)
-	:GameObject(_owningScene, objectName), attachedAbility(_attachedAbility), controller(nullptr)
+	:GameObject(_owningScene, objectName), attachedAbility(_attachedAbility)
 {
 }
 
 Projectile::~Projectile(void)
 {
-	if(controller)
-		delete controller;
 }
 
 void Projectile::Start()
@@ -74,6 +70,11 @@ void Projectile::OnTriggerEnter(GameObject* trigger, GameObject* other)
 {
 	std::string message = "Trigger Entered with: " + trigger->GetName() + "\n";
 
+	if(trigger->tag == TagsAndLayersManager::WaterTag)
+	{
+		Disable();
+	}
+
 	printf(message.c_str());
 }
 
@@ -82,4 +83,29 @@ void Projectile::OnTriggerLeave(GameObject* trigger, GameObject* other)
 	std::string message = "Trigger Left with: " + trigger->GetName() + "\n";
 
 	printf(message.c_str());
+}
+
+std::shared_ptr<Projectile> Projectile::Clone()const
+{
+	///NEED TO CLONE ATTACHED ABILITY
+	std::shared_ptr<Projectile> clone = std::make_shared<Projectile>(owningScene, name, attachedAbility);
+
+	clone->SetWorldTransform(gameObjectNode->_getDerivedPosition(), gameObjectNode->_getDerivedOrientation(), gameObjectNode->_getDerivedScale());
+	clone->SetInheritOrientation(GetInheritOrientation());
+	clone->SetInheritScale(GetInheritScale());
+
+	for (auto start = components.begin(); start != components.end(); ++start)
+	{
+		clone->AttachComponent(start->second->Clone(clone.get()));
+	}
+
+	for (auto start = children.begin(); start != children.end(); ++start)
+	{
+		clone->AddChild(start->get()->Clone());
+	}
+
+	if(!enabled)
+		clone->Disable();
+
+	return clone;
 }

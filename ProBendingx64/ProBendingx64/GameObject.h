@@ -46,7 +46,8 @@ protected:
 	RigidBodyComponent* rigidBody;
 
 	bool started;
-	
+	bool enabled;
+
 public:
 	std::string tag;
 
@@ -59,6 +60,12 @@ public:
 	virtual void Start();
 
 	virtual void Update(float gameTime);
+
+	void Enable();
+
+	void Disable();
+
+	inline bool GetEnabled(){return enabled;}
 
 	///<summary>At the moment this is used to differentiate between standard Game Objects and Projectiles and Probenders
 	///Eventually may move the serialization into Game Objects, but at the moment this is easier, since Projectiles
@@ -157,7 +164,7 @@ public:
 
 	inline RigidBodyComponent* GetRigidBody(){return rigidBody;}
 
-	SharedGameObject Clone();
+	SharedGameObject Clone()const;
 
 	virtual void OnCollisionEnter(const CollisionReport& collision){}
 

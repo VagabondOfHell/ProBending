@@ -1,16 +1,16 @@
 #pragma once
 #include "ArenaData.h"
 
+#include "GameObject.h"
+
 #include <map>
 #include <vector>
 #include "CEGUI/widgets/PushButton.h"
-#include "GameObject.h"
 
 class IScene;
 //class GameObject;
 class Probender;
 struct ProbenderData;
-class AbilityManager;
 class ProjectileManager;
 
 class Arena
@@ -24,7 +24,7 @@ protected:
 	bool loaded;//true if resources have already been loaded for this arena
 
 	IScene* owningScene;//The scene that owns the arena
-	AbilityManager* abilityManager;//The manager of all abilities in the scene
+
 	ProjectileManager* projectileManager;//The manager of the projectiles in the scene
 
 	unsigned short contestantCount;//Number of Probenders in the arena
@@ -49,10 +49,6 @@ public:
 	///<summary>Gets the name of the resource group that contains this arena's render resources</summary>
 	///<returns>The string representing the group resource name</returns>
 	inline std::string GetResourceGroupName()const{return resourceGroupName;}
-
-	///<summary>Gets the ability manager that oversees the current games' abilities</summary>
-	///<returns>Pointer to the ability manager</returns>
-	inline AbilityManager* const GetAbilityManager()const{return abilityManager;}
 
 	///<summary>Gets the projectile manager of the scene</summary>
 	///<returns>A pointer to the projectile manager, or NULL if not initialized yet</returns>

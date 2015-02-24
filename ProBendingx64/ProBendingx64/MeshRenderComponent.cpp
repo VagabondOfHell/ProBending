@@ -16,6 +16,7 @@
 MeshRenderComponent::MeshRenderComponent()
 	:Component()
 {
+
 }
 
 MeshRenderComponent::~MeshRenderComponent(void)
@@ -102,16 +103,13 @@ std::shared_ptr<MeshInfo> const MeshRenderComponent::GetMeshInfo() const
 
 void MeshRenderComponent::Enable()
 {
-	if(!enabled)
-		owningGameObject->gameObjectNode->attachObject(entity);
-
+	owningGameObject->gameObjectNode->setVisible(true);
 	enabled = true;
 }
 
 void MeshRenderComponent::Disable()
 {
-	if(enabled)
-		owningGameObject->gameObjectNode->detachObject(entity);
+	owningGameObject->gameObjectNode->setVisible(false);
 	
 	enabled = false;
 }
@@ -138,6 +136,9 @@ MeshRenderComponent* MeshRenderComponent::Clone(GameObject* gameObject)
 			//entity->clone(nameGenerator.generate());
 	}
 	
+	if(!enabled)
+		clone->Disable();
+
 	return clone;
 }
 

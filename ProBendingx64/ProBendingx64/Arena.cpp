@@ -2,8 +2,7 @@
 #include "Probender.h"
 #include "GUIManager.h"
 #include "IScene.h"
-#include "AbilityPrototypeDatabase.h"
-#include "AbilityManager.h"
+
 #include "ProjectileManager.h"
 #include "PhysXDataManager.h"
 #include "PhysXSerializerWrapper.h"
@@ -23,9 +22,6 @@ Arena::~Arena(void)
 {
 	if(projectileManager)
 		delete projectileManager;
-
-	if(abilityManager)
-		delete abilityManager;
 }
 
 void Arena::Initialize(const std::vector<ProbenderData> contestantData)
@@ -33,26 +29,12 @@ void Arena::Initialize(const std::vector<ProbenderData> contestantData)
 	contestantCount = (unsigned short)contestantData.size();
 	contestants.reserve(contestantData.size());
 	
-	ElementFlags::ElementFlag elementsToLoad = 0; 
-
 	//Loop and initialize each character
 	for (int i = 0; i < contestantCount; i++)
 	{
 		contestants.push_back(std::make_shared<Probender>(i, this));
 		contestants[i]->CreateInGameData(contestantData[i]);
-
-		elementsToLoad |= ElementFlags::EnumToFlags(contestantData[i].Attributes.MainElement);
 	}
-
-	elementsToLoad |= ElementFlags::Earth;//Add for prototype demo
-
-	projectileManager = new ProjectileManager(owningScene);
-	
-	abilityManager = new AbilityManager();
-
-	//Load all required element abilities for the database
-	abilityManager->Initialize(elementsToLoad);
-
 }
 
 bool Arena::SavePhysXData(const std::string& fileName, const std::string& collectionName)
@@ -114,6 +96,38 @@ bool Arena::LoadPhysXData(const std::string& fileName, const std::string& collec
 void Arena::Start()
 {
 	PlaceContestants();
+
+	short earthCount, fireCount, waterCount, airCount;
+	earthCount = fireCount = waterCount = airCount = 0;
+
+	//Loop and initialize each character
+	for (int i = 0; i < contestantCount; i++)
+	{
+		switch (contestants[i]->GetInGameData().GetMainElement())
+		{
+		case ElementEnum::Earth:
+			earthCount++;
+			break;
+		case ElementEnum::Air:
+			airCount++;
+			break;
+		case ElementEnum::Fire:
+			fireCount++;
+			break;
+		case ElementEnum::Water:
+			waterCount++;
+			break;
+		default:
+			break;
+		}
+	}
+
+	projectileManager = new ProjectileManager(owningScene);
+
+	projectileManager->CreatePool(ElementEnum::Earth, earthCount);
+	projectileManager->CreatePool(ElementEnum::Fire, fireCount);
+	projectileManager->CreatePool(ElementEnum::Air, airCount);
+	projectileManager->CreatePool(ElementEnum::Water, waterCount);
 
 	using namespace CEGUI;
 
@@ -238,10 +252,7 @@ bool Arena::Update(const float gameTime)
 
 	//Update the projectile manager
 	projectileManager->Update(gameTime);
-
-	//Update the ability manager
-	abilityManager->Update(gameTime);
-
+	
 	return true;
 }
 
