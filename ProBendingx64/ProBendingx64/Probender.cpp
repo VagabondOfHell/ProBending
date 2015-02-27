@@ -29,13 +29,14 @@ const float Probender::DODGE_DISTANCE = 1.0f;
 const float Probender::FALL_FORCE = -350.0f;
 
 Probender::Probender()
-	: GameObject(NULL), leftHandAttack(NULL), rightHandAttack(NULL), currentTarget(NULL), 
+	: GameObject(NULL), owningArena(NULL), leftHandAttack(NULL), rightHandAttack(NULL), currentTarget(NULL), 
 		CurrentZone(ArenaData::INVALID_ZONE), currentTeam(ArenaData::INVALID_TEAM)
 {
 }
 
 Probender::Probender(const unsigned short _contestantID, Arena* _owningArena)
-	: GameObject(_owningArena->GetOwningScene(), "Probender" + std::to_string(_contestantID)), contestantID(_contestantID), owningArena(_owningArena), 
+	: GameObject(_owningArena->GetOwningScene(), "Probender" + std::to_string(_contestantID)), 
+		contestantID(_contestantID), owningArena(_owningArena), 
 		leftHandAttack(NULL), rightHandAttack(NULL), currentTarget(NULL), playerColour(TeamData::INVALID_COLOUR), 
 		CurrentZone(ArenaData::INVALID_ZONE), currentTeam(ArenaData::Team::INVALID_TEAM)
 {

@@ -26,6 +26,9 @@ Arena::~Arena(void)
 
 void Arena::Initialize(const std::vector<ProbenderData> contestantData)
 {
+	
+	projectileManager = new ProjectileManager(owningScene);
+
 	contestantCount = (unsigned short)contestantData.size();
 	contestants.reserve(contestantData.size());
 	
@@ -122,8 +125,6 @@ void Arena::Start()
 		}
 	}
 
-	projectileManager = new ProjectileManager(owningScene);
-
 	projectileManager->CreatePool(ElementEnum::Earth, earthCount);
 	projectileManager->CreatePool(ElementEnum::Fire, fireCount);
 	projectileManager->CreatePool(ElementEnum::Air, airCount);
@@ -184,6 +185,7 @@ void Arena::PlaceContestants()
 				contestants[i]->SetWorldPosition(rz1Obj->GetWorldPosition() + leftShift);
 			else if(rz1 == 2)
 				contestants[i]->SetWorldPosition(rz1Obj->GetWorldPosition() + rightShift);
+			contestants[i]->SetWorldOrientation(Ogre::Quaternion(Ogre::Radian(Ogre::Degree(-90.0f)), Ogre::Vector3::UNIT_Y));
 			++rz1;
 			break;
 		case ArenaData::RED_ZONE_2:
@@ -193,6 +195,7 @@ void Arena::PlaceContestants()
 				contestants[i]->SetWorldPosition(rz2Obj->GetWorldPosition() + leftShift);
 			else if(rz2 == 2)
 				contestants[i]->SetWorldPosition(rz2Obj->GetWorldPosition() + rightShift);
+			contestants[i]->SetWorldOrientation(Ogre::Quaternion(Ogre::Radian(Ogre::Degree(-90.0f)), Ogre::Vector3::UNIT_Y));
 			++rz2;
 			break;
 		case ArenaData::RED_ZONE_3:
@@ -202,6 +205,7 @@ void Arena::PlaceContestants()
 				contestants[i]->SetWorldPosition(rz3Obj->GetWorldPosition() + leftShift);
 			else if(rz3 == 2)
 				contestants[i]->SetWorldPosition(rz3Obj->GetWorldPosition() + rightShift);
+			contestants[i]->SetWorldOrientation(Ogre::Quaternion(Ogre::Radian(Ogre::Degree(-90.0f)), Ogre::Vector3::UNIT_Y));
 			++rz3;
 			break;
 		case ArenaData::BLUE_ZONE_1:
@@ -211,6 +215,7 @@ void Arena::PlaceContestants()
 				contestants[i]->SetWorldPosition(bz1Obj->GetWorldPosition() + leftShift);
 			else if(bz1 == 2)
 				contestants[i]->SetWorldPosition(bz1Obj->GetWorldPosition() + rightShift);
+			contestants[i]->SetWorldOrientation(Ogre::Quaternion(Ogre::Radian(Ogre::Degree(90.0f)), Ogre::Vector3::UNIT_Y));
 			++bz1;
 			break;
 		case ArenaData::BLUE_ZONE_2:
@@ -220,6 +225,7 @@ void Arena::PlaceContestants()
 				contestants[i]->SetWorldPosition(bz2Obj->GetWorldPosition() + leftShift);
 			else if(bz2 == 2)
 				contestants[i]->SetWorldPosition(bz2Obj->GetWorldPosition() + rightShift);
+			contestants[i]->SetWorldOrientation(Ogre::Quaternion(Ogre::Radian(Ogre::Degree(90.0f)), Ogre::Vector3::UNIT_Y));
 			++bz2;
 			break;
 		case ArenaData::BLUE_ZONE_3:
@@ -229,12 +235,11 @@ void Arena::PlaceContestants()
 				contestants[i]->SetWorldPosition(bz3Obj->GetWorldPosition() + leftShift);
 			else if(bz3 == 2)
 				contestants[i]->SetWorldPosition(bz3Obj->GetWorldPosition() + rightShift);
+			contestants[i]->SetWorldOrientation(Ogre::Quaternion(Ogre::Radian(Ogre::Degree(90.0f)), Ogre::Vector3::UNIT_Y));
 			++bz3;
 			break;
 		}
 
-		contestants[i]->SetWorldOrientation(Ogre::Quaternion(Ogre::Radian(Ogre::Degree(-90.0f)), Ogre::Vector3::UNIT_Y));
-		
 		owningScene->AddGameObject(contestants[i]);
 	}
 

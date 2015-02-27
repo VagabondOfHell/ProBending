@@ -11,6 +11,7 @@ namespace StateFlags
 		HEAL_STATE, 
 		DODGE_STATE,
 		REELING_STATE,
+		ATTACKING_STATE,
 		COUNT
 	};
 
@@ -25,8 +26,10 @@ namespace StateFlags
 		HEAL_STATE_FLAG = 1 << 5, 
 		DODGE_STATE_FLAG = 1 << 6,
 		REELING_STATE_FLAG = 1 << 7,
+		ATTACKING_STATE_FLAG = 1 << 8,
 		ALL_STATES = IDLE_STATE_FLAG | JUMP_STATE_FLAG | FALLING_STATE_FLAG | BLOCK_STATE_FLAG | 
-						CATCH_STATE_FLAG | HEAL_STATE_FLAG | DODGE_STATE_FLAG | REELING_STATE_FLAG
+						CATCH_STATE_FLAG | HEAL_STATE_FLAG | DODGE_STATE_FLAG | REELING_STATE_FLAG |
+						ATTACKING_STATE_FLAG
 	};
 
 	typedef unsigned int StateFlagCombo;
@@ -62,6 +65,9 @@ namespace StateFlags
 			break;
 		case StateFlags::REELING_STATE:
 			return StateFlags::REELING_STATE_FLAG;
+			break;
+		case StateFlags::ATTACKING_STATE:
+			return StateFlags::ATTACKING_STATE_FLAG;
 			break;
 		default://if count or invalid, return invalid
 			return StateFlags::INVALID_STATE_FLAG;

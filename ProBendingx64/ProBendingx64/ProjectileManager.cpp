@@ -39,8 +39,13 @@ SharedProjectile const ProjectileManager::CreateProjectile(const ElementEnum::El
 	if(abilityResult == elementResult->second.end())
 		return NULL;
 
+	SharedProjectile retVal = abilityResult->second.GetSharedProjectile();
+
+	if(retVal.get() != NULL)
+		retVal->Enable();
+
 	//if we reach this point, ask the Pool if it has one available for us
-	return abilityResult->second.GetSharedProjectile();
+	return retVal;
 }
 
 void ProjectileManager::RemoveProjectile(SharedProjectile projectile)

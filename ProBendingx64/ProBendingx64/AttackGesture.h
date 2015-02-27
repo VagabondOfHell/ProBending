@@ -12,12 +12,19 @@ class Probender;
 
 struct AttackData
 {
-	Probender* const _Probender;
-	const BodyDimensions& _BodyDimensions;
-	const CompleteData* const CurrentData;
-	const CompleteData* const PreviousData;
-	const std::vector<KinectGestureResult>* const DiscreteGestureResults;
-	const std::vector<KinectGestureResult>* const ContinuousGestureResults;
+	Probender*  _Probender;
+	const BodyDimensions* _BodyDimensions;
+	const CompleteData* CurrentData;
+	const CompleteData* PreviousData;
+	std::vector<KinectGestureResult>* DiscreteGestureResults;
+	std::vector<KinectGestureResult>* ContinuousGestureResults;
+
+	AttackData()
+		:_Probender(NULL), _BodyDimensions(NULL), CurrentData(NULL), PreviousData(NULL),
+		DiscreteGestureResults(NULL), ContinuousGestureResults(NULL)
+	{
+
+	}
 };
 
 static const unsigned short MAX_GESTURE_NAME_LENGTH = 31;
@@ -202,7 +209,7 @@ public:
 			if(attackData.CurrentData == NULL || attackData.PreviousData == NULL)
 				return GestureEnums::BODYSIDE_INVALID;
 			return evaluator.CustomEvaluator(attackData._Probender, 
-				attackData._BodyDimensions, *attackData.CurrentData, *attackData.PreviousData, extraCustomData);
+				*attackData._BodyDimensions, *attackData.CurrentData, *attackData.PreviousData, extraCustomData);
 			break;
 		case GestureEvaluator::ET_DISCRETE:
 			if(attackData.DiscreteGestureResults == NULL)
@@ -249,7 +256,8 @@ public:
 	{
 		GestureEvaluator eval = GestureEvaluator(timeToComplete);
 		eval.SetCustomEvaluator(CustomEvaluator, bodySide, extraData);
-
+		eval.TransitionFromLast = transitionFromPrevious;
+		
 		gestureEvaluators.push_back(eval);
 	}
 
@@ -284,6 +292,11 @@ public:
 	///<param name="attackData">The attack data to evaluate with</param>
 	///<returns>True if completed the last requirement, false if not</returns>
 	GestureEnums::BodySide Evaluate(const AttackData& attackData);
+
+	///<summary>Use this to transition from another gesture. It sets the appropriate side for the first
+	///evaluator of this gesture based on the evaluators rules for transition</summary>
+	///<param name="result">The result of the previous gesture</param>
+	void TransitionFromGesture(GestureEnums::BodySide result);
 
 	inline void Reset(){currentIndex = 0; timePassed = 0.0f;}
 };

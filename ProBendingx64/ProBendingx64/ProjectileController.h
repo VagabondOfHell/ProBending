@@ -11,17 +11,12 @@ class Probender;
 
 class ProjectileController
 {
-protected:
-	Projectile* projectile;
-
 public:
-
+	Projectile* projectile;
+	
 	GestureEnums::TransitionRules TransitionFromPrevious;
 
 	physx::PxVec3 ProjectileOrigin;
-	physx::PxVec3 ProbenderForward;
-	physx::PxVec3 ProbenderRight;
-	physx::PxVec3 ProbenderUp;
 
 	ProjectileController(GestureEnums::TransitionRules transitionFromPrevious = GestureEnums::TRANRULE_NONE)
 		:projectile(nullptr), TransitionFromPrevious(transitionFromPrevious)
@@ -34,8 +29,6 @@ public:
 	}
 
 	virtual ~ProjectileController(){}
-
-	void SetProjectileToControl(Projectile* newProjectile){projectile = newProjectile;}
 
 	virtual void ControlProjectile(Probender* bender, const BodyDimensions& bodyDimensions,
 		const CompleteData& currentData, const CompleteData& previousData) = 0;

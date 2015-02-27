@@ -71,3 +71,28 @@ void AttackGesture::SetNextTransitionData(GestureEnums::BodySide result, unsigne
 		break;
 	}
 }
+
+void AttackGesture::TransitionFromGesture(GestureEnums::BodySide result)
+{
+	if(gestureEvaluators.size() == 0)
+		return;
+
+	//Get how to transition from the last gesture
+	GestureEnums::TransitionRules tranRule = gestureEvaluators[0].TransitionFromLast;
+
+	switch (tranRule)
+	{
+	case GestureEnums::TRANRULE_SAME:
+		gestureEvaluators[0].extraCustomData.Side = result;
+		break;
+	case GestureEnums::TRANRULE_OPPOSITE:
+		if(result == GestureEnums::BODYSIDE_LEFT)
+			gestureEvaluators[0].extraCustomData.Side = GestureEnums::BODYSIDE_RIGHT;
+		else if(result == GestureEnums::BODYSIDE_RIGHT)
+			gestureEvaluators[0].extraCustomData.Side = GestureEnums::BODYSIDE_LEFT;
+		break;
+	default:
+		return;
+		break;
+	}
+}

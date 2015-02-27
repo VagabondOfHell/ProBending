@@ -41,6 +41,9 @@ ProbenderStateManager::ProbenderStateManager(Probender* bender)
 
 	States[StateFlags::REELING_STATE - 1] = State(StateFlags::REELING_STATE, StateFlags::IDLE_STATE_FLAG, 1.0f, StateFlags::INVALID_STATE_FLAG);
 
+	States[StateFlags::ATTACKING_STATE - 1] = State(StateFlags::PossibleStates::ATTACKING_STATE,
+		StateFlags::IDLE_STATE_FLAG, 0.0f, StateFlags::REELING_STATE_FLAG);
+
 	currentState = StateFlags::IDLE_STATE;
 }
 

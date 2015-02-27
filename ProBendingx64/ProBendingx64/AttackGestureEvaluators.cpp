@@ -10,7 +10,10 @@ GestureEnums::BodySide AttackGestureEvaluators::KneeRaiseGesture(const Probender
 	if(customData.Side == GestureEnums::BODYSIDE_RIGHT || customData.Side == GestureEnums::BODYSIDE_EITHER)
 	{
 		if(currData.JointData[JointType_KneeRight].Position.Y >= currData.JointData[JointType_SpineBase].Position.Y)
+		{
+			printf("Knee Raised\n");
 			return GestureEnums::BODYSIDE_RIGHT;
+		}
 	}
 	
 	if(customData.Side == GestureEnums::BODYSIDE_LEFT || customData.Side == GestureEnums::BODYSIDE_EITHER)
@@ -41,7 +44,8 @@ GestureEnums::BodySide AttackGestureEvaluators::KneeDownGesture(const Probender*
 	{ 
 		if(currData.JointData[JointType_KneeRight].Position.Y < currData.JointData[JointType_HipRight].Position.Y)
 		{
-			float yDiff = currData.JointData[JointType_KneeRight].Position.Y - currData.JointData[JointType_HipRight].Position.Y;
+			float yDiff = Ogre::Math::Abs(
+				currData.JointData[JointType_KneeRight].Position.Y - currData.JointData[JointType_HipRight].Position.Y);
 
 			if(yDiff >= bodyDimensions.RightHipToKnee)
 				return GestureEnums::BODYSIDE_RIGHT;
@@ -52,7 +56,8 @@ GestureEnums::BodySide AttackGestureEvaluators::KneeDownGesture(const Probender*
 	{
 		if(currData.JointData[JointType_KneeLeft].Position.Y < currData.JointData[JointType_HipLeft].Position.Y)
 		{
-			float yDiff = currData.JointData[JointType_KneeLeft].Position.Y - currData.JointData[JointType_HipLeft].Position.Y;
+			float yDiff = Ogre::Math::Abs(
+				currData.JointData[JointType_KneeLeft].Position.Y - currData.JointData[JointType_HipLeft].Position.Y);
 
 			if(yDiff >= bodyDimensions.LeftHipToKnee)
 				return GestureEnums::BODYSIDE_LEFT;
@@ -84,22 +89,36 @@ GestureEnums::BodySide AttackGestureEvaluators::ArmPunchGesture(const Probender*
 
 	if(customData.Side == GestureEnums::BODYSIDE_RIGHT || customData.Side == GestureEnums::BODYSIDE_EITHER)
 	{
+		if(currData.JointData[JointType_HandRight].TrackingState != TrackingState::TrackingState_Tracked ||
+			prevData.JointData[JointType_HandRight].TrackingState != TrackingState::TrackingState_Tracked )
+			return GestureEnums::BODYSIDE_INVALID;
+
 		float zDiff = currData.JointData[JointType_HandRight].Position.Z - prevData.JointData[JointType_HandRight].Position.Z;
 		//Check if the right hand has moved over half the length of the arm towards the sensor
-		if(zDiff >= 0.5f * bodyDimensions.RightArmLength)
+		if(-zDiff >= 0.08f)//0.5f * bodyDimensions.RightArmLength)
 			return GestureEnums::BODYSIDE_RIGHT;
 	}
 
 	if(customData.Side == GestureEnums::BODYSIDE_LEFT || customData.Side == GestureEnums::BODYSIDE_EITHER)
 	{
+		if(currData.JointData[JointType_HandLeft].TrackingState != TrackingState::TrackingState_Tracked ||
+			prevData.JointData[JointType_HandLeft].TrackingState != TrackingState::TrackingState_Tracked )
+			return GestureEnums::BODYSIDE_INVALID;
+
 		float zDiff = currData.JointData[JointType_HandLeft].Position.Z - prevData.JointData[JointType_HandLeft].Position.Z;
 		//Check if the right hand has moved over half the length of the arm towards the sensor
-		if(zDiff >= 0.5f * bodyDimensions.LeftArmLength)
+		if(-zDiff >= 0.08f)// 0.15f * bodyDimensions.LeftArmLength)
 			return GestureEnums::BODYSIDE_LEFT;
 	}
 
 	if (customData.Side == GestureEnums::BODYSIDE_BOTH)
 	{
+		if(currData.JointData[JointType_HandRight].TrackingState != TrackingState::TrackingState_Tracked ||
+			prevData.JointData[JointType_HandRight].TrackingState != TrackingState::TrackingState_Tracked ||
+			currData.JointData[JointType_HandLeft].TrackingState != TrackingState::TrackingState_Tracked ||
+			prevData.JointData[JointType_HandLeft].TrackingState != TrackingState::TrackingState_Tracked)
+			return GestureEnums::BODYSIDE_INVALID;
+
 		float rightZDiff = currData.JointData[JointType_HandRight].Position.Z - prevData.JointData[JointType_HandRight].Position.Z;
 		float leftZDiff = currData.JointData[JointType_HandLeft].Position.Z - prevData.JointData[JointType_HandLeft].Position.Z;
 

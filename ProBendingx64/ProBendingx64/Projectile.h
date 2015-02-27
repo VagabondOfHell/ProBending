@@ -16,6 +16,18 @@ namespace physx
 	class PxRigidDynamic;
 };
 
+struct ProjectileIdentifier
+{
+	ElementEnum::Element Element;
+	AbilityIDs::AbilityID AbilityID;
+
+	ProjectileIdentifier()
+		:Element(ElementEnum::InvalidElement), AbilityID(0)
+	{
+
+	}
+};
+
 typedef std::shared_ptr<AbilityDescriptor> SharedAbilityDescriptor;
 
 class Projectile : public GameObject

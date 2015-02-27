@@ -8,7 +8,8 @@ class HandMoveController: public ProjectileController
 private:
 	void UpdateHandAxis();
 
-	void UpdateProjectilePosition(float armLength, const CameraSpacePoint& shoulderPos, const CameraSpacePoint& handPos);
+	void UpdateProjectilePosition(Probender* probender, float armLength, 
+		const CameraSpacePoint& shoulderPos, const CameraSpacePoint& handPos);
 
 protected:
 	enum HandAxis{HA_INVALID = 0, HA_X = 1, HA_Y = 2, HA_Z = 4};

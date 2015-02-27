@@ -3,6 +3,7 @@
 #include "Projectile.h"
 #include "RigidBodyComponent.h"
 #include "HelperFunctions.h"
+#include "Probender.h"
 
 
 HandMoveController::HandMoveController(Projectile* projectileToControl, ControllingHand handToUse, 
@@ -47,7 +48,7 @@ void HandMoveController::ControlProjectile(Probender* bender, const BodyDimensio
 			if(!previousData.GetTrackedOrInferredPosition(JointType_HandRight, r_hand))
 				return;
 
-		UpdateProjectilePosition(bodyDimensions.RightArmLength, r_shoulder, r_hand);
+		UpdateProjectilePosition(bender, bodyDimensions.RightArmLength, r_shoulder, r_hand);
 	}
 	else if(HandUsed == CH_LEFT)
 	{
@@ -64,7 +65,7 @@ void HandMoveController::ControlProjectile(Probender* bender, const BodyDimensio
 			if(!previousData.GetTrackedOrInferredPosition(JointType_HandLeft, l_hand))
 				return;
 
-		UpdateProjectilePosition(bodyDimensions.LeftArmLength, l_shoulder, l_hand);
+		UpdateProjectilePosition(bender, bodyDimensions.LeftArmLength, l_shoulder, l_hand);
 	}
 	else if(HandUsed == CH_BOTH)
 	{
@@ -111,28 +112,32 @@ void HandMoveController::ControlProjectile(Probender* bender, const BodyDimensio
 		//Calculate the arm length average
 		float armLenAvg = (bodyDimensions.LeftArmLength + bodyDimensions.RightArmLength) * 0.5f;
 
-		UpdateProjectilePosition(armLenAvg, shoulderAvg, handAvg);
+		UpdateProjectilePosition(bender, armLenAvg, shoulderAvg, handAvg);
 	}
 }
 
-void HandMoveController::UpdateProjectilePosition(float armLength, const CameraSpacePoint& shoulderPos, const CameraSpacePoint& handPos)
+void HandMoveController::UpdateProjectilePosition(Probender* probender, float armLength, 
+		const CameraSpacePoint& shoulderPos, const CameraSpacePoint& handPos)
 {
+	if(!projectile)
+		return;
+
 	physx::PxVec3 newPos = projectile->GetRigidBody()->GetPosition();
 
 	float maxVal = 0.0f;
 	float minVal = 0.0f;
 	float handPercentage = 0.0f;
 
-	physx::PxVec3 xPos = physx::PxVec3(0.0f);
-	physx::PxVec3 yPos = xPos, zPos = xPos;
+	Ogre::Vector3 xPos = Ogre::Vector3(0.0f);
+	Ogre::Vector3 yPos = xPos, zPos = xPos;
 	
 	if(handAxis & HA_X)
 	{
-		maxVal = shoulderPos.X + armLength;
-		minVal = shoulderPos.X - armLength;
+		maxVal = shoulderPos.X - armLength;
+		minVal = shoulderPos.X + armLength;
 		handPercentage = HelperFunctions::CalculatePercentage(minVal, maxVal, handPos.X);
 		
-		xPos = ProbenderRight * HelperFunctions::CalculateValue(minOffset.x, maxOffset.x, handPercentage);
+		xPos = probender->Right() * HelperFunctions::CalculateValue(minOffset.x, maxOffset.x, handPercentage);
 		//newPos = ProjectileOrigin + ProbenderRight * HelperFunctions::CalculateValue(minOffset.x, maxOffset.x, handPercentage);
 	}
 	if(handAxis & HA_Y)
@@ -141,22 +146,25 @@ void HandMoveController::UpdateProjectilePosition(float armLength, const CameraS
 		minVal = shoulderPos.Y - armLength;
 		handPercentage = HelperFunctions::CalculatePercentage(minVal, maxVal, handPos.Y);
 		
-		yPos = ProbenderUp * HelperFunctions::CalculateValue(minOffset.y, maxOffset.y, handPercentage);
+		yPos = probender->Up() * HelperFunctions::CalculateValue(minOffset.y, maxOffset.y, handPercentage);
 		//newPos.y = ProjectileOrigin.y + HelperFunctions::CalculateValue(minOffset.y, maxOffset.y, handPercentage);
 	}
 	if(handAxis & HA_Z)
 	{
-		maxVal = shoulderPos.Z + armLength;
-		minVal = shoulderPos.Z - armLength;
+		maxVal = shoulderPos.Z - armLength;
+		minVal = shoulderPos.Z + armLength;
 		handPercentage = HelperFunctions::CalculatePercentage(minVal, maxVal, handPos.Z);
 
-		zPos = ProbenderForward * HelperFunctions::CalculateValue(minOffset.z, maxOffset.z, handPercentage);
+		zPos = probender->Forward() * HelperFunctions::CalculateValue(minOffset.z, maxOffset.z, handPercentage);
 		//newPos.z = ProjectileOrigin.z + HelperFunctions::CalculateValue(minOffset.z, maxOffset.z, handPercentage);
 	}
 
-	newPos = ProjectileOrigin + xPos + yPos + zPos;
+	Ogre::Vector3 result = xPos + yPos + zPos;
+
+	newPos = ProjectileOrigin + HelperFunctions::OgreToPhysXVec3(result);
 
 	projectile->SetWorldPosition(newPos.x, newPos.y, newPos.z);
+
 }
 
 void HandMoveController::ReceivePreviousResults(GestureEnums::BodySide prevResults)

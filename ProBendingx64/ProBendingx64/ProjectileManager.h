@@ -41,6 +41,11 @@ public:
 	///<returns>A pointer to the newly created projectile, or NULL if failed</returns>
 	SharedProjectile const CreateProjectile(const ElementEnum::Element element,const AbilityIDs::AbilityID abilityID);
 	
+	inline SharedProjectile const CreateProjectile(const ProjectileIdentifier& projID)
+	{
+		return CreateProjectile(projID.Element, projID.AbilityID);
+	}
+
 	///<summary>Removes the projectile from the manager</summary>
 	///<param name="projectile">The projectile to remove</param>
 	void RemoveProjectile(SharedProjectile projectile);

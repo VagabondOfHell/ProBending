@@ -13,8 +13,8 @@ private:
 
 	StateFlags::PossibleStates currentState;//The current state held by the state manager
 
-	//7 States allowed in total. Don't like having the 7 there but no choice
-	std::array<State, 8> States;
+	//8 States allowed in total. Don't like having the 8 there but no choice
+	std::array<State, StateFlags::PossibleStates::COUNT> States;
 
 	float timeInCurrentState;//The amount of time that has been spent in the current state
 

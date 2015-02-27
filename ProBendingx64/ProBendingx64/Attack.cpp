@@ -1,9 +1,24 @@
 #include "Attack.h"
+#include "Probender.h"
+#include "ProjectileManager.h"
+#include "Projectile.h"
+#include "RigidBodyComponent.h"
 
-Attack::Attack(float attackCooldown /*= 0.0f*/, ProjectileIdentifier projID /*= ProjectileIdentifier()*/, AttackGesture* _creationGesture /*= NULL*/,
+Attack::Attack(float attackCooldown /*= 0.0f*/, ProjectileManager* projManager/* = NULL*/,
+			   ProjectileIdentifier projID /*= ProjectileIdentifier()*/, AttackGesture* _creationGesture /*= NULL*/,
 			   ProjectileController* controller /*= NULL*/, AttackGesture* _launchGesture /*= NULL*/)
 	:creationGesture(_creationGesture), launchGesture(_launchGesture), currentState(AS_NONE), projectileController(controller),
-		AttackCooldown(attackCooldown), cooldownTimePassed(0.0f), projectileIdentifier(projID)
+		AttackCooldown(attackCooldown), cooldownTimePassed(0.0f), projectileIdentifier(projID),
+		projectileManager(projManager)
+{
+}
+
+Attack::Attack(float attackCooldown /*= 0.0f*/, ProjectileManager* projManager /*= NULL*/, 
+		ProjectileIdentifier projID /*= ProjectileIdentifier()*/, AttackParams params /*= AttackParams()*/)
+		:creationGesture(params.CreationGesture), launchGesture(params.LaunchGesture), currentState(AS_NONE), 
+		projectileController(params.ProjController),
+		AttackCooldown(attackCooldown), cooldownTimePassed(0.0f), projectileIdentifier(projID),
+		projectileManager(projManager)
 {
 }
 
@@ -17,11 +32,6 @@ Attack::~Attack(void)
 
 	if(launchGesture)
 		delete launchGesture;
-}
-
-void Attack::GetProjectileInstance()
-{
-
 }
 
 void Attack::Update(float gameTime)
@@ -64,12 +74,13 @@ Attack::AttackState Attack::Evaluate(const AttackData& bodyData)
 			GestureEnums::BodySide result = creationGesture->Evaluate(bodyData);
 			if(result != GestureEnums::BODYSIDE_INVALID)
 			{
-				//Create projectile
 				currentState = AS_CREATED;
 
 				//Let the controller update which side it should process based on the results
 				if(projectileController)
 					projectileController->ReceivePreviousResults(result);
+
+				launchGesture->TransitionFromGesture(result);
 			}
 		}
 		
@@ -81,16 +92,15 @@ Attack::AttackState Attack::Evaluate(const AttackData& bodyData)
 		if(projectileController)
 		{
 			if(bodyData.CurrentData && bodyData.PreviousData)
-				projectileController->ControlProjectile(bodyData._Probender, bodyData._BodyDimensions, 
+				projectileController->ControlProjectile(bodyData._Probender, *bodyData._BodyDimensions, 
 					*bodyData.CurrentData, *bodyData.PreviousData);
 		}
 
 		if(launchGesture)
 		{
-			if(launchGesture->Evaluate(bodyData))
+			GestureEnums::BodySide result = launchGesture->Evaluate(bodyData);
+			if(result != GestureEnums::BODYSIDE_INVALID)
 			{
-				//Launch the Projectile
-
 				currentState = AS_LAUNCHED;
 			}
 		}
@@ -113,7 +123,11 @@ void Attack::Reset()
 {
 	cooldownTimePassed = 0.0f;
 
-	//Destroy the projectile instance
+	creationGesture->Reset();
+	launchGesture->Reset();
 
+	projectileController->projectile = NULL;
+
+	//Destroy the projectile instance
 	currentState = AS_NONE;
 }

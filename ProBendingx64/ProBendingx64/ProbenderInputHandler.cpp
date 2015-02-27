@@ -20,7 +20,7 @@ const float ProbenderInputHandler::LEAN_RESET_DISTANCE = 0.15f;
 
 ProbenderInputHandler::ProbenderInputHandler(Probender* _probenderToHandle, bool manageStance, 
 					ConfigurationLayout keyLayout/* = ConfigurationLayout()*/)
-					:keysLayout(keyLayout)
+					:keysLayout(keyLayout), activeAttack(NULL)
 {
 	SetProbenderToHandle(_probenderToHandle);
 	ManageStance = manageStance;
@@ -34,11 +34,14 @@ ProbenderInputHandler::~ProbenderInputHandler(void)
 	//On destruction, indicate we want to stop listening to events.
 	//We assume this will be destroyed before the input manager (which it should be)
 	StopListeningToAll();
+
+	//Dont delete current attack because it is only a reference to an attack in the list
 }
 
 void ProbenderInputHandler::SetProbenderToHandle(Probender* _probenderToHandle)
 {
 	probender = _probenderToHandle;
+	//Arena* arena = probender->GetOwningArena();
 
 	if(probender)
 		GenerateGestures();
@@ -47,6 +50,8 @@ void ProbenderInputHandler::SetProbenderToHandle(Probender* _probenderToHandle)
 #pragma region GestureDatabase
 void ProbenderInputHandler::GenerateGestures()
 {
+	mainElementGestures.clear();
+
 	switch (probender->characterData.GetMainElement())
 	{
 	case ElementEnum::Element::Earth:
@@ -70,16 +75,16 @@ void ProbenderInputHandler::PopulateWithGestures(std::vector<Attack>& elementVec
 	switch (element)
 	{
 	case ElementEnum::Earth:
-		AttackDatabase::GetEarthAttacks(elementVector);
+		AttackDatabase::GetEarthAttacks(probender->GetOwningArena()->GetProjectileManager(), elementVector);
 		break;
 	case ElementEnum::Fire:
-		AttackDatabase::GetFireAttacks(elementVector);
+		AttackDatabase::GetFireAttacks(probender->GetOwningArena()->GetProjectileManager(), elementVector);
 		break;
 	case ElementEnum::Water:
-		AttackDatabase::GetWaterAttacks(elementVector);
+		AttackDatabase::GetWaterAttacks(probender->GetOwningArena()->GetProjectileManager(), elementVector);
 		break;
 	case ElementEnum::Air:
-		AttackDatabase::GetAirAttacks(elementVector);
+		AttackDatabase::GetAirAttacks(probender->GetOwningArena()->GetProjectileManager(), elementVector);
 		break;
 	default:
 		break;
@@ -130,16 +135,23 @@ void ProbenderInputHandler::Update(const float gameTime)
 			printf("Registered!\n");
 	}
 
-	for (unsigned int i = 0; i < mainElementGestures.size(); i++)
+	//if no active attack, proceed through updating each gesture
+	if(!activeAttack)
 	{
-		mainElementGestures[i].Update(gameTime);
-	}
+		for (unsigned int i = 0; i < mainElementGestures.size(); i++)
+		{
+			mainElementGestures[i].Update(gameTime);
+		}
 
-	for (int i = 0; i < subElementGestures.size(); i++)
+		for (int i = 0; i < subElementGestures.size(); i++)
+		{
+			subElementGestures[i].Update(gameTime);
+		}
+	}
+	else//otherwise only update the active
 	{
-		subElementGestures[i].Update(gameTime);
+		activeAttack->Update(gameTime);
 	}
-
 }
 
 #pragma region Kinect Input
@@ -172,6 +184,14 @@ void ProbenderInputHandler::BodyFrameAcquired(const CompleteData& currentData, c
 
 	CheckJump(currentData, previousData);
 
+	AttackData frameData = AttackData();
+	frameData.CurrentData = &currentData;
+	frameData.PreviousData = &previousData;
+	frameData._BodyDimensions = &bodyDimensions;
+	frameData._Probender = probender;
+
+	HandleAttacks(frameData);
+	
 	/*if(probender->rightHandAttack)
 	{
 		ProjectileController* controller = probender->rightHandAttack->GetController();
@@ -187,27 +207,27 @@ void ProbenderInputHandler::UpdateDisplay(const CompleteData& currentData)
 	meshData.reserve(JointType::JointType_Count);
 
 	CameraSpacePoint spineBasePoint = currentData.JointData[JointType_SpineBase].Position;
-	Ogre::Vector3 spineBasePosition = Ogre::Vector3(spineBasePoint.X, spineBasePoint.Y, 1.0f);
+	Ogre::Vector3 spineBasePosition = Ogre::Vector3(-spineBasePoint.X, spineBasePoint.Y, 1.0f);
 
 	for (int i = 0; i < RenderableJointType::Count; i++)
 	{
 		if(currentData.JointData->TrackingState != TrackingState::TrackingState_NotTracked)
 		{
 			CameraSpacePoint point = currentData.JointData[i].Position;
-			meshData.push_back(Ogre::Vector3(point.X, point.Y, 1.0f) - spineBasePosition);
+			meshData.push_back(Ogre::Vector3(-point.X, point.Y, 1.0f) - spineBasePosition);
 		}
 	}
 
 	probender->meshRenderComponent->UpdateMesh(meshData, 0, Ogre::VES_POSITION);
-
 }
 
 void ProbenderInputHandler::CheckLean(const CompleteData& currentData, const CompleteData& previousData)
 {
 	if(!canLean)
 	{
-		if(Ogre::Math::Abs(currentData.LeanAmount.X ) < LEAN_RESET_DISTANCE)
-			canLean = true;
+		if(currentData.LeanTrackState == TrackingState::TrackingState_Tracked)
+			if(Ogre::Math::Abs(currentData.LeanAmount.X ) < LEAN_RESET_DISTANCE)
+				canLean = true;
 	}
 
 	//if current and previous leans are tracked, check for the beginning of a lean by checking that if we are leaning right
@@ -221,7 +241,7 @@ void ProbenderInputHandler::CheckLean(const CompleteData& currentData, const Com
 		{
 			Probender::DodgeDirection dir = Probender::DD_RIGHT;
 
-			if(currentData.LeanAmount.X < 0.0f)
+			if(currentData.LeanAmount.X > 0.0f)
 				dir = Probender::DD_LEFT;
 
 			probender->Dodge(dir);
@@ -232,8 +252,11 @@ void ProbenderInputHandler::CheckLean(const CompleteData& currentData, const Com
 
 void ProbenderInputHandler::CheckJump(const CompleteData& currentData, const CompleteData& previousData)
 {
+	//ensure all data is currently tracked (in order to try to avoid ghost jumps)
 	if(currentData.JointData[JointType::JointType_FootLeft].TrackingState == TrackingState::TrackingState_Tracked &&
-		currentData.JointData[JointType::JointType_FootRight].TrackingState == TrackingState::TrackingState_Tracked)
+		currentData.JointData[JointType::JointType_FootRight].TrackingState == TrackingState::TrackingState_Tracked &&
+		previousData.JointData[JointType::JointType_FootLeft].TrackingState == TrackingState::TrackingState_Tracked &&
+		previousData.JointData[JointType::JointType_FootRight].TrackingState == TrackingState::TrackingState_Tracked)
 	{
 		if((currentData.JointData[JointType_FootLeft].Position.Y - previousData.JointData[JointType_FootLeft].Position.Y)
 			>= controlOptions.JumpThreshold &&
@@ -245,6 +268,66 @@ void ProbenderInputHandler::CheckJump(const CompleteData& currentData, const Com
 	}
 }
 
+void ProbenderInputHandler::HandleAttacks(const AttackData& attackData)
+{
+	StateFlags::PossibleStates currState = probender->stateManager.GetCurrentState();
+
+	if(currState == StateFlags::IDLE_STATE)
+	{
+		if(!activeAttack)
+		{
+			for (auto start = mainElementGestures.begin(); start != mainElementGestures.end(); ++start)
+			{
+				Attack::AttackState result = start->Evaluate(attackData);
+
+				if(result == Attack::AS_CREATED)
+				{
+					activeAttack = &(*start);
+
+					ProjectileManager* projectileManager = probender->GetOwningArena()->GetProjectileManager();
+
+					SharedProjectile proj = projectileManager->
+						CreateProjectile(activeAttack->GetProjectileID());
+
+					if(proj.get() == NULL ||
+						!probender->stateManager.SetState(StateFlags::ATTACKING_STATE, 0.0f))
+					{
+						activeAttack->Reset();
+						activeAttack = NULL;
+						break;
+					}
+
+					proj->SetWorldPosition(probender->GetWorldPosition() +
+						probender->Forward() * 2.0f);
+					proj->GetRigidBody()->SetUseGravity(false);
+					proj->GetRigidBody()->PutToSleep();
+
+					activeAttack->SetActiveProjectile(proj.get(), true);
+
+					break;
+				}
+			}
+		}
+	}
+	else if(currState == StateFlags::ATTACKING_STATE)
+	{
+		Attack::AttackState result = activeAttack->Evaluate(attackData);
+
+		if(result == Attack::AS_LAUNCHED)
+		{
+			Projectile* proj = activeAttack->GetProjectile();
+
+			proj->GetRigidBody()->WakeUp();
+			proj->GetRigidBody()->SetUseGravity(true);
+			//Launch the Projectile
+			proj->LaunchProjectile(HelperFunctions::OgreToPhysXVec3(probender->Forward()), 30.0f);
+			
+			activeAttack->Reset();
+			activeAttack = NULL;
+			probender->stateManager.SetState(StateFlags::IDLE_STATE, 0.0f);
+		}
+	}
+}
 
 bool created = false;
 
@@ -446,9 +529,13 @@ bool ProbenderInputHandler::keyPressed( const OIS::KeyEvent &arg )
 				attack->Enable();
 				attack->GetRigidBody()->SetUseGravity(true);
 				//attack->AttachAbility(ability);
-				Ogre::Vector3 camDir = probender->owningArena->GetOwningScene()->GetCamera()->getDirection();
-				attack->SetWorldPosition(probender->owningArena->GetOwningScene()->GetCamera()->getPosition()
-					+ (camDir * 2.0f));
+				//Ogre::Vector3 camDir = probender->owningArena->GetOwningScene()->GetCamera()->getDirection();
+				Ogre::Vector3 camDir = probender->Forward();
+
+				attack->SetWorldPosition((probender->GetWorldPosition() +
+					probender->Forward() * 2.0f));
+				/*attack->SetWorldPosition(probender->owningArena->GetOwningScene()->GetCamera()->getPosition()
+					+ (camDir * 2.0f));*/
 
 				/*attack->GetController()->ProjectileOrigin = HelperFunctions::OgreToPhysXVec3(attack->GetWorldPosition());
 				attack->GetController()->ProbenderForward = HelperFunctions::OgreToPhysXVec3(probender->Forward());

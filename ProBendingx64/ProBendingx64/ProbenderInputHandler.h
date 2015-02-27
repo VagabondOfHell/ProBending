@@ -45,6 +45,8 @@ private:
 	std::vector<Attack> mainElementGestures;
 	std::vector<Attack> subElementGestures;
 
+	Attack* activeAttack;
+
 	void GenerateGestures();
 
 	void PopulateWithGestures(std::vector<Attack>& elementVector, ElementEnum::Element element);
@@ -59,6 +61,8 @@ private:
 	void CheckLean(const CompleteData& currentData, const CompleteData& previousData);
 
 	void CheckJump(const CompleteData& currentData, const CompleteData& previousData);
+
+	void HandleAttacks(const AttackData& attackData);
 
 public:
 	ConfigurationLayout keysLayout;

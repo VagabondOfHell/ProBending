@@ -242,6 +242,10 @@ public:
 		SetKinematicTarget(GetPosition(), targetRot);
 	}
 
+	void PutToSleep();
+
+	void WakeUp();
+
 #if _DEBUG
 	void CreateDebugDraw();
 

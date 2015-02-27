@@ -704,4 +704,16 @@ void RigidBodyComponent::Disable()
 	enabled = false;
 }
 
+void RigidBodyComponent::PutToSleep()
+{
+	if(bodyType == DYNAMIC)
+		bodyStorage.dynamicActor->putToSleep();
+}
+
+void RigidBodyComponent::WakeUp()
+{
+	if(bodyType == DYNAMIC)
+		bodyStorage.dynamicActor->wakeUp();
+}
+
 

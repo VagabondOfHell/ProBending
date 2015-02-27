@@ -1,14 +1,17 @@
 #pragma once
 #include "AttackGesture.h"
 #include "ProjectileController.h"
+#include "Projectile.h"
 
-struct ProjectileIdentifier
+class ProjectileManager;
+
+struct AttackParams
 {
-	ElementEnum::Element Element;
-	AbilityIDs::AbilityID AbilityID;
+	AttackGesture* CreationGesture;
+	ProjectileController* ProjController;
+	AttackGesture* LaunchGesture;
 
-	ProjectileIdentifier()
-		:Element(ElementEnum::InvalidElement), AbilityID(0)
+	AttackParams():CreationGesture(NULL), ProjController(NULL), LaunchGesture(NULL)
 	{
 
 	}
@@ -28,17 +31,20 @@ private:
 
 	ProjectileIdentifier projectileIdentifier;
 
+	ProjectileManager* projectileManager;
+
 	float cooldownTimePassed;
-
-	///<summary>Gets an instance of the projectile from the Projectile Pool and places it under the projectile Controller</summary>
-	void GetProjectileInstance();
-
+	
 public:
 	
 	float AttackCooldown;
 
-	Attack( float attackCooldown = 0.0f, ProjectileIdentifier projID = ProjectileIdentifier(),
+	Attack( float attackCooldown = 0.0f, ProjectileManager* projManager = NULL,
+		ProjectileIdentifier projID = ProjectileIdentifier(),
 		AttackGesture* creationGesture = NULL, ProjectileController* controller = NULL, AttackGesture* launchGesture = NULL);
+
+	Attack(float attackCooldown, ProjectileManager* projManager,
+		ProjectileIdentifier projID = ProjectileIdentifier(), AttackParams params = AttackParams());
 
 	~Attack(void);
 
@@ -50,6 +56,17 @@ public:
 	///<param name="bodyData">The body data to evaluate</param>
 	///<returns>The new state if there was a state change, or AS_NONE if no state change</returns>
 	AttackState Evaluate(const AttackData& bodyData);
+
+	inline ProjectileIdentifier GetProjectileID()const{return projectileIdentifier;}
+
+	inline void SetActiveProjectile(Projectile* proj, bool calcOrigin = false)
+	{
+		projectileController->projectile = proj;
+		if(calcOrigin && proj)
+			projectileController->ProjectileOrigin = HelperFunctions::OgreToPhysXVec3(proj->GetWorldPosition());
+	}
+
+	inline Projectile* GetProjectile()const{return projectileController->projectile;}
 
 	///NOT FINISHED
 	void Reset();

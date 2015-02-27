@@ -359,7 +359,7 @@ void Game::Run()
 	player1Data.Skills.Jump = 100;
 
 	ProbenderData player2Data = ProbenderData();
-	player2Data.Attributes.MainElement = ElementEnum::Element::Fire;
+	player2Data.Attributes.MainElement = ElementEnum::Element::Earth;
 	player2Data.TeamDatas.StartTeam = ArenaData::RED_TEAM;
 	player2Data.TeamDatas.StartZone = ArenaData::RED_ZONE_1;
 	player2Data.TeamDatas.PlayerColour = TeamData::BLUE;
