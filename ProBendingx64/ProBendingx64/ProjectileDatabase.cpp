@@ -22,12 +22,12 @@ ProjectileDatabase::ProjectileDictionary ProjectileDatabase::GetEarthProjectiles
 
 ProjectileDatabase::SharedProjectile ProjectileDatabase::CreateEarthCoin(IScene* scene)
 {
-	/*HandMoveController* controller = new HandMoveController(projectile, HandMoveController::CH_BOTH, 
-		physx::PxVec3(-2.0f, -2.0f, -2.0f), physx::PxVec3(2.0f, 2.0f, 2.0f));*/
-
 	std::string projName = AbilityIDs::EarthEnumToString(AbilityIDs::EARTH_COIN);
+	
+	ProjectileAttributes earthCoinAttributes = ProjectileAttributes(1.0f, 2.0f, 150.0f, 150.0f);
 
-	SharedProjectile projectile = std::make_shared<Projectile>(scene, projName, nullptr);
+	SharedProjectile projectile = std::make_shared<Projectile>(scene, earthCoinAttributes, projName);
+	projectile->tag = TagsAndLayersManager::ProjectileTag;
 
 	MeshRenderComponent* renderComponent = new MeshRenderComponent();
 	projectile->AttachComponent(renderComponent);
@@ -63,7 +63,9 @@ ProjectileDatabase::ProjectileDictionary ProjectileDatabase::GetFireProjectiles(
 
 ProjectileDatabase::SharedProjectile ProjectileDatabase::CreateFireBlast(IScene* scene)
 {
-	return std::make_shared<Projectile>(Projectile(scene, AbilityIDs::FireEnumToString(AbilityIDs::FIRE_BLAST), nullptr));
+	ProjectileAttributes attributes = ProjectileAttributes();
+
+	return std::make_shared<Projectile>(Projectile(scene, attributes, AbilityIDs::FireEnumToString(AbilityIDs::FIRE_BLAST)));
 }
 
 ProjectileDatabase::ProjectileDictionary ProjectileDatabase::GetWaterProjectiles(IScene* scene)

@@ -35,8 +35,7 @@ void Arena::Initialize(const std::vector<ProbenderData> contestantData)
 	//Loop and initialize each character
 	for (int i = 0; i < contestantCount; i++)
 	{
-		contestants.push_back(std::make_shared<Probender>(i, this));
-		contestants[i]->CreateInGameData(contestantData[i]);
+		contestants.push_back(std::make_shared<Probender>(i, contestantData[i], this));
 	}
 }
 
@@ -106,7 +105,7 @@ void Arena::Start()
 	//Loop and initialize each character
 	for (int i = 0; i < contestantCount; i++)
 	{
-		switch (contestants[i]->GetInGameData().GetMainElement())
+		switch (contestants[i]->GetInGameData().MainElement)
 		{
 		case ElementEnum::Earth:
 			earthCount++;
@@ -133,7 +132,7 @@ void Arena::Start()
 	using namespace CEGUI;
 
 	label = owningScene->GetGUIManager()->CreateGUIButton("TaharezLook/Button", "ElementDisplay", 
-		ElementEnum::EnumToString(contestants[0]->GetInGameData().GetMainElement()), 
+		ElementEnum::EnumToString(contestants[0]->GetInGameData().MainElement), 
 		UVector2(UDim(0.0f, 0.0f), UDim(0.9f, 0.0f)), USize(UDim(0.1f, 0.0f), UDim(0.05f, 0.0f)));
 }
 

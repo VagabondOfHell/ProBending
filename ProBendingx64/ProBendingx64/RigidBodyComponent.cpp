@@ -679,7 +679,6 @@ float RigidBodyComponent::GetAngularDamping() const
 void RigidBodyComponent::Enable()
 {
 	if(bodyType == DYNAMIC)
-		//bodyStorage.dynamicActor->wakeUp();
 		bodyStorage.dynamicActor->setActorFlag(physx::PxActorFlag::eDISABLE_SIMULATION, false);
 	else if(bodyType == STATIC)
 		bodyStorage.staticActor->setActorFlag(physx::PxActorFlag::eDISABLE_SIMULATION, false);
@@ -716,4 +715,8 @@ void RigidBodyComponent::WakeUp()
 		bodyStorage.dynamicActor->wakeUp();
 }
 
-
+void RigidBodyComponent::SetCCD(const bool val)
+{
+	if(bodyType == DYNAMIC)
+		bodyStorage.dynamicActor->setRigidBodyFlag(physx::PxRigidBodyFlag::eENABLE_CCD, val);
+}

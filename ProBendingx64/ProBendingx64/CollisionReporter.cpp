@@ -48,7 +48,7 @@ void CollisionReporter::onContact(const PxContactPairHeader& pairHeader, const P
 
 		if(!pairHeader.flags.isSet(PxContactPairHeaderFlag::eDELETED_ACTOR_1))
 			otherActor = static_cast<GameObject*>(pairHeader.actors[1]->userData);
-
+		
 		CollisionReport report;
 		/*PxU32 nbContacts = pairs[i].extractContacts(contacts, bufferSize);
 		for(PxU32 j=0; j < nbContacts; j++)
@@ -58,14 +58,10 @@ void CollisionReporter::onContact(const PxContactPairHeader& pairHeader, const P
 */
 		if(cp.events & PxPairFlag::eNOTIFY_TOUCH_FOUND)
 		{
-			if(thisActor)
+			if(thisActor && otherActor)
 			{
 				report.Collider = otherActor;
 				thisActor->OnCollisionEnter(report);
-			}
-
-			if(otherActor)
-			{
 				report.Collider = thisActor;
 				otherActor->OnCollisionEnter(report);
 			}
@@ -73,14 +69,10 @@ void CollisionReporter::onContact(const PxContactPairHeader& pairHeader, const P
 		
 		if(cp.events & PxPairFlag::eNOTIFY_TOUCH_LOST)
 		{
-			if(thisActor)
+			if(thisActor && otherActor)
 			{
 				report.Collider = otherActor;
 				thisActor->OnCollisionLeave(report);
-			}
-
-			if(otherActor)
-			{
 				report.Collider = thisActor;
 				otherActor->OnCollisionLeave(report);
 			}
@@ -88,14 +80,10 @@ void CollisionReporter::onContact(const PxContactPairHeader& pairHeader, const P
 
 		if(cp.events & PxPairFlag::eNOTIFY_TOUCH_PERSISTS)
 		{
-			if(thisActor)
+			if(thisActor && otherActor)
 			{
 				report.Collider = otherActor;
 				thisActor->OnCollisionStay(report);
-			}
-
-			if(otherActor)
-			{
 				report.Collider = thisActor;
 				otherActor->OnCollisionStay(report);
 			}

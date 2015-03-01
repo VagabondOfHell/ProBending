@@ -1,9 +1,9 @@
 #pragma once
+#include "ProbenderFlags.h"
+#include "ProjectileAttributes.h"
 
 #define NOMINMAX
 #include "GameObject.h"
-
-#include "AbilityDescriptor.h"
 
 namespace Ogre
 {
@@ -28,20 +28,24 @@ struct ProjectileIdentifier
 	}
 };
 
-typedef std::shared_ptr<AbilityDescriptor> SharedAbilityDescriptor;
-
 class Projectile : public GameObject
 {
 	friend class ProjectileManager;
-
-private:
-	SharedAbilityDescriptor attachedAbility;
-	unsigned int projectileID;
+	const ProjectileAttributes baseAttributes;
 
 public:
-	
-	Projectile(IScene* owningScene, const std::string& objectName, SharedAbilityDescriptor _attachedAbility);
+	ProjectileAttributes Attributes;
+
+	unsigned short CasterContestantID;
+
+	Projectile(IScene* owningScene, ProjectileAttributes baseAttributes, const std::string& objectName);
 	virtual ~Projectile(void);
+
+	inline float GetBaseMinDamage()const{return baseAttributes.MinDamage;}
+	inline float GetBaseMaxDamage()const{return baseAttributes.MaxDamage;}
+
+	inline float GetBaseMinKnockback()const{return baseAttributes.MinKnockback;}
+	inline float GetBaseMaxKnockback()const{return baseAttributes.MaxKnockback;}
 
 	///<summary>At the moment this is used to differentiate between standard Game Objects and Projectiles and Probenders</summary>
 	///<returns>True if serializable, false if not</returns>
@@ -51,10 +55,6 @@ public:
 
 	virtual void Update(float gameTime);
 
-	///<summary>Attaches an ability if there isn't one already</summary>
-	///<param name="abilityToAttach">The new ability to be attached to the projectile</param>
-	void AttachAbility(SharedAbilityDescriptor abilityToAttach);
-	
 	std::shared_ptr<Projectile> Clone()const;
 
 	void LaunchProjectile(const physx::PxVec3& direction, const float speed){LaunchProjectile(direction * speed);}

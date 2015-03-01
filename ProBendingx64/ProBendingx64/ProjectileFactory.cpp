@@ -44,7 +44,7 @@ SharedProjectile ProjectileFactory::CreateProjectile(IScene* const scene,const E
 	case ElementEnum::Earth:
 		if(abilityID == AbilityIDs::EARTH_COIN)
 		{
-			newProjectile = std::make_shared<Projectile>(scene, "EarthBoulder", nullptr);
+			newProjectile = std::make_shared<Projectile>(scene, ProjectileAttributes(), "EarthBoulder");
 
 			HandMoveController* controller = new HandMoveController(newProjectile.get(), HandMoveController::CH_BOTH, 
 					physx::PxVec3(-2.0f, -2.0f, -2.0f), physx::PxVec3(2.0f, 2.0f, 2.0f));
@@ -105,7 +105,7 @@ SharedProjectile ProjectileFactory::CreateProjectile(IScene* const scene,const E
 	case ElementEnum::Fire:
 		if(abilityID == AbilityIDs::FIRE_BLAST)
 		{
-			newProjectile = std::make_shared<Projectile>(scene, "Fire Jab", nullptr);
+			newProjectile = std::make_shared<Projectile>(scene,ProjectileAttributes(), "Fire Jab");
 
 			HandMoveController* controller = new HandMoveController(newProjectile.get(), HandMoveController::CH_RIGHT, 
 				physx::PxVec3(0.0f, 2.0f, 0.0f), physx::PxVec3(0.0f, -2.0f, 0.0f));

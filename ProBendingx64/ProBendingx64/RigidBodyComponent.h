@@ -242,6 +242,8 @@ public:
 		SetKinematicTarget(GetPosition(), targetRot);
 	}
 
+	void SetCCD(const bool val);
+
 	void PutToSleep();
 
 	void WakeUp();

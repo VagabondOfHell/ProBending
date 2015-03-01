@@ -196,28 +196,7 @@ namespace ProbenderAttributes
 	///The maximum allowed skill points for attributes
 	static const short MAX_ATTRIBUTE_POINTS_ALLOWED = 100;
 
-	enum Attributes{InvalidAttribute, Health, Focus, OffensiveStrength, DefensiveStrength, Agility, Luck};
-};
-
-namespace ProbenderGeneralSkills
-{
-	///The maximum allowed skill points for skills
-	static const short MAX_SKILL_POINTS_ALLOWED = 100;
-	enum Skills{InvalidSkill, Dodge, Jump, Fly, SameElementCatch, Block, CounterAttack, ArenaInteraction, Healing};
-};
-
-namespace ProbenderStatusModifiers
-{
-	enum Modifiers{InvalidModifier, Damage, Burn, Stun, Poison, Immobilization, Distraction, Electrocution, Knockback,
-		BloodControl, Freeze, AirAttack, GroundAttack, FallingMiniGame};
-};
-
-namespace ProbenderAbilities
-{
-	///The number of modifiers for abilities (where points are placed in)
-	static const short NUM_ABILITY_MODIFIERS = 3;
-	//Maximum for skill point application to special abilities
-	static const short MAX_SKILL_POINTS_ALLOWED = 100;
+	enum Attributes{InvalidAttribute, Endurance, Spirit, Strength, Defense, Agility, Luck};
 };
 
 namespace AbilityIDs

@@ -1,9 +1,9 @@
 #pragma once
 #include "ProbenderInputHandler.h"
-#include "ProbenderInGameData.h"
 #include "ProbenderStateManager.h"
 #include "ProbenderData.h"
 #include "Projectile.h"
+
 #include "GUIProgressTracker.h"
 
 #include <memory>
@@ -30,13 +30,8 @@ private:
 	static const float DODGE_DISTANCE;
 	static const float FALL_FORCE;
 
-	TeamData::ContestantColour playerColour;
-	ArenaData::Team currentTeam;
-
-	ElementEnum::Element currentElement;//The current element used
-
-	ProbenderInGameData characterData;//The characters game stats
-
+	ProbenderData characterData;//The characters game stats
+	
 	ProbenderInputHandler inputHandler;//The component handling input
 
 	SharedProjectile leftHandAttack;//The projectile in the left hand
@@ -59,40 +54,33 @@ private:
 
 	void HandleDodge(const float gameTime);
 
-	void HandleFall();
-
 public:
-	ArenaData::Zones CurrentZone;
 	ProbenderStateManager stateManager;//The state manager for probenders
 	
 	enum InputState{Listen, Pause, Stop};
 	enum DodgeDirection{DD_INVALID, DD_RIGHT, DD_LEFT};
 
 	Probender();
-	Probender(const unsigned short _contestantID, Arena* _owningArena);
+	Probender(const unsigned short _contestantID, const ProbenderData charData, Arena* _owningArena);
 	~Probender(void);
 
 	///<summary>At the moment this is used to differentiate between standard Game Objects and Projectiles and Probenders</summary>
 	///<returns>True if serializable, false if not</returns>
 	virtual inline bool IsSerializable()const{return false;}
 
-	inline ArenaData::Team GetTeam()const{return currentTeam;}
+	inline ArenaData::Team GetTeam()const{return characterData.TeamDatas.Team;}
 
-	inline TeamData::ContestantColour GetColour()const {return playerColour;}
+	inline TeamData::ContestantColour GetColour()const {return characterData.TeamDatas.PlayerColour;}
 
-	inline ArenaData::Zones GetCurrentZone()const{return CurrentZone;}
+	inline ArenaData::Zones GetCurrentZone()const{return characterData.TeamDatas.CurrentZone;}
 	
-	///<summary>Takes the menu created data of the probender and converts it to usable in-game data</summary>
-	///<param name="data">The menu data to convert</param>
-	void CreateInGameData(const ProbenderData& data);
-
 	void Start();
 
 	void Update(float gameTime);
 	
 	///<summary>Gets a read-only copy of the Probender Data</summary>
 	///<returns>A read-only version of Probender In-Game Data</returns>
-	const ProbenderInGameData GetInGameData(){return characterData;}
+	const ProbenderData& GetInGameData(){return characterData;}
 
 	///<summary>Has the probender acquire a new target</summary>
 	///<param name="toRight">True to look to the right for the target, false to look to the left</param>
@@ -114,11 +102,14 @@ public:
 	
 	///<summary>Gets a read-only copy of the current element equipped</summary>
 	///<returns>Read-only current element equipped</returns>
-	inline const ElementEnum::Element GetCurrentElement()const{return currentElement;}
+	inline const ElementEnum::Element GetCurrentElement()const{return characterData.CurrentElement;}
 
 	///<summary>Sets the element that the probender has currently equipped</summary>
 	///<param name="elementToSet">The element to set to</param>
-	virtual void SetCurrentElement(const ElementEnum::Element elementToSet);
+	inline void SetCurrentElement(const ElementEnum::Element elementToSet)
+	{
+		characterData.CurrentElement = elementToSet;
+	}
 
 	///<summary>Creates the mesh for the specified colours</summary>
 	///<param name="sceneMan">The Ogre Scene Manager used to create the Manual Object with</param>
@@ -151,6 +142,8 @@ public:
 		}
 	}
 
+	void ApplyProjectileCollision(float damage, float knockback);
+
 	virtual void OnCollisionEnter(const CollisionReport& collision);
 
 	virtual void OnCollisionLeave(const CollisionReport& collision);
@@ -158,6 +151,8 @@ public:
 	virtual void OnTriggerEnter(GameObject* trigger, GameObject* other);
 
 	virtual void OnTriggerLeave(GameObject* trigger, GameObject* other);
+
+	virtual void OnCollisionStay(const CollisionReport& collision);
 
 };
 

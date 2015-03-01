@@ -7,6 +7,7 @@
 #include "MeshRenderComponent.h"
 #include "RigidBodyComponent.h"
 #include "TagsAndLayersManager.h"
+#include "ProjectileManager.h"
 
 #include "PxScene.h"
 #include "PxRigidDynamic.h"
@@ -29,17 +30,17 @@ const float Probender::DODGE_DISTANCE = 1.0f;
 const float Probender::FALL_FORCE = -350.0f;
 
 Probender::Probender()
-	: GameObject(NULL), owningArena(NULL), leftHandAttack(NULL), rightHandAttack(NULL), currentTarget(NULL), 
-		CurrentZone(ArenaData::INVALID_ZONE), currentTeam(ArenaData::INVALID_TEAM)
+	: GameObject(NULL), owningArena(NULL), leftHandAttack(NULL), rightHandAttack(NULL), currentTarget(NULL)
 {
 }
 
-Probender::Probender(const unsigned short _contestantID, Arena* _owningArena)
+Probender::Probender(const unsigned short _contestantID, const ProbenderData charData, Arena* _owningArena)
 	: GameObject(_owningArena->GetOwningScene(), "Probender" + std::to_string(_contestantID)), 
-		contestantID(_contestantID), owningArena(_owningArena), 
-		leftHandAttack(NULL), rightHandAttack(NULL), currentTarget(NULL), playerColour(TeamData::INVALID_COLOUR), 
-		CurrentZone(ArenaData::INVALID_ZONE), currentTeam(ArenaData::Team::INVALID_TEAM)
+		contestantID(_contestantID), owningArena(_owningArena), characterData(charData), 
+		leftHandAttack(NULL), rightHandAttack(NULL), currentTarget(NULL)
 {
+	characterData.CurrentAttributes = characterData.BaseAttributes;
+
 	tag = TagsAndLayersManager::ContestantTag;
 }
 
@@ -58,7 +59,9 @@ void Probender::Start()
 	std::string entityToLoad = GetMeshAndMaterialName();
 
 	//Try loading required model
-	renderComponent->LoadModel(entityToLoad);
+	if(!renderComponent->LoadModel(entityToLoad))
+		printf("AFA");
+
 	renderComponent->SetMaterial(entityToLoad);
 	
 	meshRenderComponent = renderComponent;
@@ -103,7 +106,7 @@ void Probender::Update(float gameTime)
 
 	if(!stateManager.GetOnGround())
 	{
-		rigidBody->ApplyForce(physx::PxVec3(0.0f, characterData.SkillsBonus.JumpHeight * FALL_FORCE, 0.0f));
+		rigidBody->ApplyForce(physx::PxVec3(0.0f, characterData.CurrentAttributes.GetJumpHeight() * FALL_FORCE, 0.0f));
 	}
 
 	switch (stateManager.GetCurrentState())
@@ -114,7 +117,6 @@ void Probender::Update(float gameTime)
 		HandleJump();
 		break;
 	case StateFlags::FALLING_STATE:
-		HandleFall();
 		break;
 	case StateFlags::BLOCK_STATE:
 		break;
@@ -139,17 +141,6 @@ void Probender::AcquireNewTarget(bool toRight)
 	throw NotImplementedException();
 }
 
-void Probender::CreateInGameData(const ProbenderData& data)
-{
-	currentTeam = data.TeamDatas.StartTeam;
-	CurrentZone = data.TeamDatas.StartZone;
-	playerColour = data.TeamDatas.PlayerColour;
-
-	characterData.FillFromProbenderData(data);
-
-	currentElement = characterData.GetMainElement();
-}
-
 void Probender::SetInputState(const InputState newState)
 {
 	switch (newState)
@@ -163,19 +154,6 @@ void Probender::SetInputState(const InputState newState)
 	case Probender::Stop:
 		inputHandler.StopListeningToAll();
 		break;
-	}
-}
-
-void Probender::SetCurrentElement(const ElementEnum::Element elementToSet)
-{
-	if(currentElement != elementToSet)
-	{
-		//If the element is one of the elements available to the bender
-		/*if(elementToSet == characterData.GetMainElement() ||
-		elementToSet == characterData.GetSubElement())*/
-		{
-			currentElement = elementToSet;
-		}
 	}
 }
 
@@ -255,9 +233,9 @@ void Probender::CreateContestantMeshes(Ogre::SceneManager* sceneMan, bool red,
 
 std::string Probender::GetMeshAndMaterialName()
 {
-	if(playerColour != TeamData::INVALID_COLOUR)
+	if(characterData.TeamDatas.PlayerColour != TeamData::INVALID_COLOUR)
 	{
-		std::string colourString = TeamData::EnumToString(playerColour);
+		std::string colourString = TeamData::EnumToString(characterData.TeamDatas.PlayerColour);
 
 		return colourString + "Probender";
 	}
@@ -269,28 +247,38 @@ void Probender::OnCollisionEnter(const CollisionReport& collision)
 {
 	/*std::string message = "Collision Entered with: " + collision.Collider->GetName() + "\n";
 
-	printf(message.c_str());
-	*/
+	printf(message.c_str());*/
+	
 	if(collision.Collider->tag == TagsAndLayersManager::GroundTag)
 	{
 		stateManager.SetOnGround(true);
 	}
 	else if(collision.Collider->tag == TagsAndLayersManager::ProjectileTag)
 	{
+		//std::string message = "Collision Entered with: " + collision.Collider->GetName() + "\n";
+
+		//printf(message.c_str());
+
 		//Change to use knockback resistance instead of 1.0f
 		stateManager.SetState(StateFlags::REELING_STATE, 1.0f);
+		
+		collision.Collider->Disable();
 	}
 }
 
 void Probender::OnCollisionLeave(const CollisionReport& collision)
 {
-	/*std::string message = "Collision Leave with: " + collision.Collider->GetName() + "\n";
+	std::string message = "Collision Leave with: " + collision.Collider->GetName() + "\n";
 
-	printf(message.c_str());*/
-
+	printf(message.c_str());
+	//if(collision.Collider)
 	if(collision.Collider->tag == TagsAndLayersManager::GroundTag)
 	{
 		stateManager.SetOnGround(false);
+	}
+	else if(collision.Collider->tag == TagsAndLayersManager::ProjectileTag)
+	{
+		
 	}
 }
 
@@ -333,7 +321,7 @@ void Probender::StateEntered(StateFlags::PossibleStates enteredState)
 		rigidBody->SetVelocity(physx::PxVec3(0.0f));
 		break;
 	case StateFlags::JUMP_STATE:
-		rigidBody->SetVelocity(physx::PxVec3(0.0f, characterData.SkillsBonus.JumpHeight, 0.0f));
+		rigidBody->SetVelocity(physx::PxVec3(0.0f, characterData.CurrentAttributes.GetJumpHeight(), 0.0f));
 		break;
 	case StateFlags::FALLING_STATE:	
 		break;
@@ -359,7 +347,7 @@ void Probender::HandleDodge(const float gameTime)
 	float distanceAway = (HelperFunctions::OgreToPhysXVec3(GetWorldPosition()) - dodgeTargetPos).magnitude();
 
 	if(distanceAway > 0.1f)
-		rigidBody->SetVelocity(dodgeDirection * characterData.SkillsBonus.DodgeSpeed);
+		rigidBody->SetVelocity(dodgeDirection * characterData.CurrentAttributes.GetDodgeSpeed());
 	else
 		stateManager.SetState(StateFlags::IDLE_STATE, 0.0f);
 }
@@ -370,20 +358,15 @@ void Probender::HandleJump()
 		stateManager.SetState(StateFlags::FALLING_STATE, 0.0f);
 }
 
-void Probender::HandleFall()
-{
-	//rigidBody->SetKinematicTarget(HelperFunctions::OgreToPhysXVec3(GetWorldPosition()) + physx::PxVec3(0, -0.05f, 0.0f));
-}
-
 void Probender::OnTriggerEnter(GameObject* trigger, GameObject* other)
 {
 	if(trigger->tag == TagsAndLayersManager::ArenaZoneTag)
 	{
 		ArenaData::Zones newZone = ArenaData::GetZoneFromString(trigger->GetName());
 
-		if(newZone != CurrentZone)
+		if(newZone != GetCurrentZone())
 		{
-			CurrentZone = newZone;
+			characterData.TeamDatas.CurrentZone = newZone;
 			/*std::string message = "Trigger Entered with: " + trigger->GetName() + "For " + std::to_string(contestantID) + 
 			" : "+ "\n";
 			printf(message.c_str());*/
@@ -397,12 +380,22 @@ void Probender::OnTriggerLeave(GameObject* trigger, GameObject* other)
 	{
 		ArenaData::Zones currZone = ArenaData::GetZoneFromString(trigger->GetName());
 
-		if((currZone == ArenaData::BLUE_ZONE_3 || currZone == ArenaData::RED_ZONE_3) && currZone == CurrentZone)
+		if((currZone == ArenaData::BLUE_ZONE_3 || currZone == ArenaData::RED_ZONE_3) && currZone == GetCurrentZone())
 		{
-			CurrentZone = ArenaData::INVALID_ZONE;
-			/*std::string message = "Trigger Left with: " + trigger->GetName() + " For: " + std::to_string(contestantID) + 
-				" : " + "\n";
-			printf(message.c_str());*/
+			characterData.TeamDatas.CurrentZone = ArenaData::INVALID_ZONE;
 		}
 	}
+}
+
+void Probender::OnCollisionStay(const CollisionReport& collision)
+{
+	/*if(collision.Collider->tag == TagsAndLayersManager::ProjectileTag)
+	collision.Collider->Disable();*/
+}
+
+void Probender::ApplyProjectileCollision(float damage, float knockback)
+{
+	characterData.CurrentAttributes.Health -= damage;
+
+	rigidBody->ApplyImpulse(-HelperFunctions::OgreToPhysXVec3(Forward()) * knockback);
 }

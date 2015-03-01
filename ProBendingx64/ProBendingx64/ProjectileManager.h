@@ -2,7 +2,7 @@
 #include "ProjectilePool.h"
 #include "ProbenderFlags.h"
 #include <map>
-
+#include <vector>
 class IScene;
 
 typedef std::shared_ptr<Projectile> SharedProjectile;
@@ -19,6 +19,8 @@ private:
 	typedef std::map<ElementEnum::Element, AbilityPool> ProjectileMap;
 
 	ProjectileMap projectileMap;
+
+	std::vector<Projectile*> projectilesToDisable;
 
 	inline bool FindExistingWithHint(const ElementEnum::Element e, ProjectileMap::iterator& outVal)
 	{
@@ -49,6 +51,11 @@ public:
 	///<summary>Removes the projectile from the manager</summary>
 	///<param name="projectile">The projectile to remove</param>
 	void RemoveProjectile(SharedProjectile projectile);
+
+	inline void RemoveProjectile(Projectile* projectile)
+	{
+		projectilesToDisable.push_back(projectile);
+	}
 
 	void Update(const float gameTime);
 };

@@ -19,6 +19,7 @@
 #include <OgreViewport.h>
 #include <OgreSceneManager.h>
 #include <OgreRenderWindow.h>
+#include "RandomNumberGenerator.h"
 
 SpeechController speechController = SpeechController(NULL);
 
@@ -288,6 +289,8 @@ void Game::CloseGame()
 	InputNotifier::DestroySingleton();
 	InputManager::GetInstance()->DestroySingleton();
 
+	RandomNumberGenerator::DestroyInstance();
+
 	///Release Physx Systems
 	if(mProfileZoneManager)
 	{
@@ -349,23 +352,21 @@ void Game::Run()
 	printf("Debugging Window:\n");
 	
 	std::vector<ProbenderData> contestantData;
-	ProbenderData player1Data = ProbenderData();
-	player1Data.Attributes.MainElement = ElementEnum::Element::Earth;
-	player1Data.TeamDatas.StartTeam = ArenaData::BLUE_TEAM;
-	player1Data.TeamDatas.StartZone = ArenaData::BLUE_ZONE_1;
+	ProbenderData player1Data = ProbenderData(ElementEnum::Earth);
+	player1Data.TeamDatas.Team = ArenaData::BLUE_TEAM;
+	player1Data.TeamDatas.CurrentZone = ArenaData::BLUE_ZONE_1;
 	player1Data.TeamDatas.PlayerColour = TeamData::RED;
 
-	player1Data.Skills.Dodge = 100;
-	player1Data.Skills.Jump = 100;
+	player1Data.BaseAttributes.SetAttribute(ProbenderAttributes::Agility, 100);
+	
 
-	ProbenderData player2Data = ProbenderData();
-	player2Data.Attributes.MainElement = ElementEnum::Element::Earth;
-	player2Data.TeamDatas.StartTeam = ArenaData::RED_TEAM;
-	player2Data.TeamDatas.StartZone = ArenaData::RED_ZONE_1;
+	ProbenderData player2Data = ProbenderData(ElementEnum::Earth);
+	player2Data.TeamDatas.Team = ArenaData::RED_TEAM;
+	player2Data.TeamDatas.CurrentZone = ArenaData::RED_ZONE_1;
 	player2Data.TeamDatas.PlayerColour = TeamData::BLUE;
 
-	player2Data.Skills.Dodge = 0;
-	player2Data.Skills.Jump = 0;
+	player2Data.BaseAttributes.SetAttribute(ProbenderAttributes::Agility, 0);
+
 
 	contestantData.push_back(player1Data);
 	contestantData.push_back(player2Data);

@@ -52,7 +52,7 @@ void ProbenderInputHandler::GenerateGestures()
 {
 	mainElementGestures.clear();
 
-	switch (probender->characterData.GetMainElement())
+	switch (probender->characterData.MainElement)
 	{
 	case ElementEnum::Element::Earth:
 		PopulateWithGestures(mainElementGestures, ElementEnum::Earth);
@@ -300,7 +300,7 @@ void ProbenderInputHandler::HandleAttacks(const AttackData& attackData)
 					proj->SetWorldPosition(probender->GetWorldPosition() +
 						probender->Forward() * 2.0f);
 					proj->GetRigidBody()->SetUseGravity(false);
-					proj->GetRigidBody()->PutToSleep();
+					//proj->GetRigidBody()->PutToSleep();
 
 					activeAttack->SetActiveProjectile(proj.get(), true);
 
@@ -320,7 +320,7 @@ void ProbenderInputHandler::HandleAttacks(const AttackData& attackData)
 			proj->GetRigidBody()->WakeUp();
 			proj->GetRigidBody()->SetUseGravity(true);
 			//Launch the Projectile
-			proj->LaunchProjectile(HelperFunctions::OgreToPhysXVec3(probender->Forward()), 30.0f);
+			proj->LaunchProjectile(HelperFunctions::OgreToPhysXVec3(probender->Forward()), 15.0f);
 			
 			activeAttack->Reset();
 			activeAttack = NULL;

@@ -1,7 +1,7 @@
 #include "ProjectileManager.h"
 #include "ProjectileFactory.h"
 #include "Probender.h"
-#include "AbilityDescriptor.h"
+
 #include "RigidBodyComponent.h"
 #include "ProjectileDatabase.h"
 ///When a projectile gets removed, check its ability data for the caster
@@ -50,11 +50,18 @@ SharedProjectile const ProjectileManager::CreateProjectile(const ElementEnum::El
 
 void ProjectileManager::RemoveProjectile(SharedProjectile projectile)
 {
-	projectile->Disable();
+	projectilesToDisable.push_back(projectile.get());
 }
 
 void ProjectileManager::Update(const float gameTime)
 {
+	for (int i = 0; i < projectilesToDisable.size(); i++)
+	{
+		projectilesToDisable[i]->Disable();
+	}
+
+	projectilesToDisable.clear();
+
 	//Loop through projectile pool collection
 	for (auto start = projectileMap.begin(); start != projectileMap.end(); ++start)
 	{

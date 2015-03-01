@@ -12,6 +12,23 @@ namespace physx
 class HelperFunctions
 {
 public:
+	static inline float ClampFloat(const float valueToClamp, const float minVal, const float maxVal)
+	{
+		//Ternary that checks if the value is less then the min. If it is, sets the min
+		//If it isn't, checks if value is greater than maxVal. If it is, sets max, otherwise returns unmodified
+		float valToClamp = valueToClamp < minVal ? minVal : 
+			(valueToClamp > maxVal ? maxVal : valueToClamp);
+
+		return valToClamp;
+	}
+
+	static inline void ValidateMinMax(float& minValue, float& maxValue)
+	{
+		float temp = minValue;
+		minValue = maxValue;
+		maxValue = temp;
+	}
+
 	///<summary>Convenience function for converting an Ogre Vector3 to a physx Vector3</summary>
 	///<param name="ogreVector">The ogre vector to convert</param>
 	///<returns>The physX vector3 representation</returns>

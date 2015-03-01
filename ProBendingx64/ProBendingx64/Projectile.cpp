@@ -14,10 +14,13 @@
 #include "PxScene.h"
 
 #include "OgreSceneNode.h"
+#include "Probender.h"
+#include "RandomNumberGenerator.h"
 
-Projectile::Projectile(IScene* _owningScene, const std::string& objectName, SharedAbilityDescriptor _attachedAbility)
-	:GameObject(_owningScene, objectName), attachedAbility(_attachedAbility)
+Projectile::Projectile(IScene* _owningScene,  ProjectileAttributes _baseAttributes, const std::string& objectName)
+	:GameObject(_owningScene, objectName), baseAttributes(_baseAttributes), Attributes(_baseAttributes)
 {
+
 }
 
 Projectile::~Projectile(void)
@@ -34,12 +37,6 @@ void Projectile::Update(float gameTime)
 	GameObject::Update(gameTime);
 }
 
-void Projectile::AttachAbility(SharedAbilityDescriptor abilityToAttach)
-{
-	if(!attachedAbility.get())
-		attachedAbility = abilityToAttach;
-}
-
 void Projectile::LaunchProjectile(const physx::PxVec3& velocity)
 {
 	rigidBody->SetVelocity(velocity);
@@ -47,23 +44,35 @@ void Projectile::LaunchProjectile(const physx::PxVec3& velocity)
 
 void Projectile::OnCollisionEnter(const CollisionReport& collision)
 {
-	std::string message = "Collision Entered with: " + collision.Collider->GetName() + "\n";
+	if(collision.Collider->tag == TagsAndLayersManager::ContestantTag)
+	{
+		/*std::string message = "Collision Entered with: " + collision.Collider->GetName() + "\n";
 
-	printf(message.c_str());
+		printf(message.c_str());*/
+		Probender* bender = (Probender*)collision.Collider;
+
+		float damage = RandomNumberGenerator::GetInstance()->GenerateRandom(Attributes.MinDamage, Attributes.MaxDamage);
+		float knockback = RandomNumberGenerator::GetInstance()->
+			GenerateRandom(Attributes.MinKnockback, Attributes.MaxKnockback);
+
+		bender->ApplyProjectileCollision(damage, knockback);
+
+		Disable();
+	}
 }
 
 void Projectile::OnCollisionStay(const CollisionReport& collision)
 {
-	std::string message = "Collision Stayed with: " + collision.Collider->GetName() + "\n";
+	/*std::string message = "Collision Stayed with: " + collision.Collider->GetName() + "\n";
 
-	printf(message.c_str());
+	printf(message.c_str());*/
 }
 
 void Projectile::OnCollisionLeave(const CollisionReport& collision)
 {
-	std::string message = "Collision Left with: " + collision.Collider->GetName() + "\n";
+	/*std::string message = "Collision Left with: " + collision.Collider->GetName() + "\n";
 
-	printf(message.c_str());
+	printf(message.c_str());*/
 }
 
 void Projectile::OnTriggerEnter(GameObject* trigger, GameObject* other)
@@ -88,7 +97,8 @@ void Projectile::OnTriggerLeave(GameObject* trigger, GameObject* other)
 std::shared_ptr<Projectile> Projectile::Clone()const
 {
 	///NEED TO CLONE ATTACHED ABILITY
-	std::shared_ptr<Projectile> clone = std::make_shared<Projectile>(owningScene, name, attachedAbility);
+	std::shared_ptr<Projectile> clone = std::make_shared<Projectile>(owningScene, baseAttributes, name);
+	clone->Attributes = Attributes;
 
 	clone->SetWorldTransform(gameObjectNode->_getDerivedPosition(), gameObjectNode->_getDerivedOrientation(), gameObjectNode->_getDerivedScale());
 	clone->SetInheritOrientation(GetInheritOrientation());
