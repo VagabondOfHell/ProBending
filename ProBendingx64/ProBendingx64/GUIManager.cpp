@@ -158,6 +158,25 @@ bool GUIManager::DestroyWindow(const CEGUI::String& windowName)
 	return false;
 }
 
+CEGUI::Window* GUIManager::GetChildWindow(const CEGUI::String& windowPath)
+{
+	CEGUI::Window* returnElement = NULL;
+
+	try
+	{
+		returnElement = rootWindow->getChild(windowPath);
+	}
+	catch(CEGUI::Exception e)
+	{
+		printf(e.what());
+		printf(e.getMessage().c_str());
+
+		returnElement = NULL;
+	}
+
+	return returnElement;
+}
+
 CEGUI::NamedElement* GUIManager::GetChildItem(const CEGUI::String& elementPath)
 {
 	CEGUI::NamedElement* returnElement = NULL;

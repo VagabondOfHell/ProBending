@@ -16,6 +16,8 @@
 #include "RigidBodyComponent.h"
 #include "MeshRenderComponent.h"
 
+#include "CEGUI/WindowManager.h"
+
 #include "OgreMeshManager.h"
 #include "OgreSceneManager.h"
 #include "OgreRenderWindow.h"
@@ -40,14 +42,15 @@ bool savePhysX = false;
 bool raycast = false;
 
 GameScene::GameScene(void)
-	:IScene(NULL, NULL, "", "")
+	:IScene(NULL, NULL, "", ""), horizontalScreens(false), Camera2(nullptr)
 {
 }
 
  //empty string for resources. We fill this in with arena 
 GameScene::GameScene(SceneManager* _owningManager, Ogre::Root* root, 
 					 std::string _arenaNameToLoad, std::vector<ProbenderData> contestantData)
-	:IScene(_owningManager, root, _arenaNameToLoad, "CommonArenaResources")
+	:IScene(_owningManager, root, _arenaNameToLoad, "CommonArenaResources"), horizontalScreens(false),
+	Camera2(nullptr)
 {
 	 battleArena = new Arena(this, _arenaNameToLoad);
 	 battleArena->Initialize(contestantData);
@@ -78,6 +81,79 @@ physx::PxSceneDesc* GameScene::GetSceneDescription(physx::PxVec3& gravity, bool 
 	return sceneDescriptor;
 }
 
+void GameScene::SetUpCameras()
+{
+	//Create the camera with the name MainCamera
+	mainOgreCamera = ogreSceneManager->createCamera("MainCamera");
+	Camera2 = ogreSceneManager->createCamera("Camera2");
+
+	mainOgreCamera->setPosition(Ogre::Vector3(-10.0f, 1.0f, 0.0f));
+	Camera2->setPosition(Ogre::Vector3(10.0f, 1.0f, 0.0f));
+
+	mainOgreCamera->lookAt(Ogre::Vector3(0.0f, 0.0f, 0.0f));
+	Camera2->lookAt(Ogre::Vector3(0.0f, 0.0f, 0.0f));
+
+	mainOgreCamera->setNearClipDistance(0.1f);
+	mainOgreCamera->setFarClipDistance(10000.0f);
+
+	Camera2->setNearClipDistance(0.1f);
+	Camera2->setFarClipDistance(10000.0f);
+
+	ChangeScreenSplit();
+}
+
+void GameScene::ChangeScreenSplit()
+{
+	unsigned short viewPortCount = owningManager->GetRenderWindow()->getNumViewports();
+
+	for (int i = 0; i < viewPortCount; i++)
+	{
+		owningManager->GetRenderWindow()->getViewport(i)->clear();
+	}
+
+	//Remove any viewports from before
+	owningManager->GetRenderWindow()->removeAllViewports();
+	
+	float width = 1.0f;
+	float height = 1.0f;
+	float cam2XPos = 0.0f;
+	float cam2YPos = 0.0f;
+
+	if(horizontalScreens)
+	{
+		height = 0.5f;
+		cam2YPos = 0.5f;
+
+		screenSeparator->setPosition(CEGUI::UVector2(CEGUI::UDim(0.0f, 0.0f), CEGUI::UDim(0.49f, 0.0f)));
+		screenSeparator->setSize(CEGUI::USize(CEGUI::UDim(1.0f, 0.0f), CEGUI::UDim(0.01f, 0.0f)));
+	}
+	else
+	{
+		width = 0.5f;
+		cam2XPos = 0.5f;
+
+		screenSeparator->setPosition(CEGUI::UVector2(CEGUI::UDim(0.495f, 0.0f), CEGUI::UDim(0.0f, 0.0f)));
+		screenSeparator->setSize(CEGUI::USize(CEGUI::UDim(0.01f, 0.0f), CEGUI::UDim(1.0f, 0.0f)));
+	}
+
+	//Add a viewport for the specified camera
+	Ogre::Viewport* viewport1 = owningManager->
+		GetRenderWindow()->addViewport(mainOgreCamera, 0, 0.0f, 0.0f, width, height);
+	Ogre::Viewport* viewport2 = owningManager->
+		GetRenderWindow()->addViewport(Camera2, 1, cam2XPos, cam2YPos, width, height);
+
+	viewport1->setBackgroundColour(Ogre::ColourValue(0.0f, 0.0f, 0.0f, 0.0f));
+	viewport2->setBackgroundColour(Ogre::ColourValue(0.0f, 0.0f, 0.0f, 0.0f));
+
+	mainOgreCamera->setAspectRatio(Ogre::Real(viewport1->getActualWidth()) / 
+		Ogre::Real(viewport1->getActualHeight()));
+	
+	Camera2->setAspectRatio(Ogre::Real(viewport2->getActualWidth()) / 
+		Ogre::Real(viewport2->getActualHeight()));
+
+	
+}
+
 void GameScene::Initialize()
 {
 	///Create the arena first, then initialize resources
@@ -86,7 +162,18 @@ void GameScene::Initialize()
 
 	ogreSceneManager->setAmbientLight(Ogre::ColourValue(1.0f, 1.0f, 1.0f, 1.0f));
 
-	CreateCameraAndViewport(Ogre::ColourValue(0.0f, 0.0f, 0.0f, 0.0f), Ogre::Vector3(-10.0f, 1.0f, 0.0f));
+	//CreateCameraAndViewport(Ogre::ColourValue(0.0f, 0.0f, 0.0f, 0.0f), Ogre::Vector3(-10.0f, 1.0f, 0.0f));
+
+	guiManager->AddScheme("ProbendArenaGUIScheme.scheme");
+	guiManager->LoadLayout("ProbendArenaGUILayout.layout", false);
+
+	screenSeparator = CEGUI::WindowManager::getSingleton().createWindow("Generic/Image", "ScreenSeparator");
+	screenSeparator->setProperty("Image", "ProbendArenaGUI/ZoneSeparatorBar");
+	screenSeparator->moveBehind(guiManager->GetChildWindow("InGameGUIRoot"));
+
+	guiManager->GetRootWindow()->addChild(screenSeparator);
+
+	SetUpCameras();
 
 	InputNotifier::GetInstance()->AddObserver(this);
 
@@ -129,8 +216,6 @@ void GameScene::Initialize()
 
 void GameScene::Start()
 {
-	guiManager->AddScheme("ProbendArenaGUIScheme.scheme");
-	guiManager->LoadLayout("ProbendArenaGUILayout.layout", false);
 	battleArena->Start();
 	ogreSceneManager->setSkyDome(true, "CloudySkyBox");
 }
@@ -301,7 +386,11 @@ bool GameScene::keyPressed( const OIS::KeyEvent &arg )
 		savePhysX = true;
 
 	if(arg.key == OIS::KC_R)
-		raycast = true;
+	{
+		horizontalScreens = !horizontalScreens;
+		ChangeScreenSplit();
+	}
+	//	raycast = true;
 
 	return true;
 }

@@ -83,6 +83,8 @@ public:
 	///<returns>The element if found, NULL if not</returns>
 	CEGUI::NamedElement* GetChildItem(const CEGUI::String& elementPath);
 
+	CEGUI::Window* GetChildWindow(const CEGUI::String& windowPath);
+
 	///<summary>Removes a scheme from CEGUI. Unfortunately there is no way to know if this 
 	///was successful or not from CEGUI's end. Though there aren't too many instances that it would
 	///be necessary to call this function anyways</summary>

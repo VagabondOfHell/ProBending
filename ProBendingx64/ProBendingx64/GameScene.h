@@ -5,6 +5,7 @@
 #include "InputObserver.h"
 #include "CollisionReporter.h"
 #include "PxBatchQuery.h"
+#include "CEGUI/Window.h"
 
 class Arena;
 
@@ -13,6 +14,16 @@ class GameScene:public IScene, public InputObserver
 protected:
 	Arena* battleArena;
 	CollisionReporter collisionReporter;
+
+	CEGUI::Window* screenSeparator;
+
+	Ogre::Camera* Camera2;
+	
+	bool horizontalScreens;
+
+	void SetUpCameras();
+	void ChangeScreenSplit();
+
 public:
 
 	GameScene(void);
