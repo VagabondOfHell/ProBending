@@ -52,6 +52,15 @@ public:
 
 	virtual void Close();
 
+	void ChangeScreenOrientation(bool horizontal)
+	{
+		if(horizontal != horizontalScreens)
+		{
+			horizontalScreens = horizontal;
+			ChangeScreenSplit();
+		}
+	}
+
 	virtual bool keyPressed( const OIS::KeyEvent &arg );
 	virtual bool keyReleased( const OIS::KeyEvent &arg ){return true;}
 	virtual bool mouseMoved( const OIS::MouseEvent &arg ) {return true;}

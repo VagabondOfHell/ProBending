@@ -387,8 +387,7 @@ bool GameScene::keyPressed( const OIS::KeyEvent &arg )
 
 	if(arg.key == OIS::KC_R)
 	{
-		horizontalScreens = !horizontalScreens;
-		ChangeScreenSplit();
+		ChangeScreenOrientation(!horizontalScreens);
 	}
 	//	raycast = true;
 
