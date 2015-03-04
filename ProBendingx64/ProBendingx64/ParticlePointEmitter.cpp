@@ -3,10 +3,10 @@
 using namespace physx;
 
 ParticlePointEmitter::ParticlePointEmitter(float _particlesPerSecond, physx::PxVec3 emitterPosition, 
-		 physx::PxVec3 minEmissionDirection, physx::PxVec3 maxEmissionDirection, 
-		bool _loop, float _duration, float minParticleSpeed, float maxParticleSpeed )
+		 physx::PxVec3 minEmissionDirection, physx::PxVec3 maxEmissionDirection, float _duration, 
+		 float minParticleSpeed, float maxParticleSpeed )
 		: AbstractParticleEmitter(emitterPosition, _particlesPerSecond, minEmissionDirection, 
-		maxEmissionDirection, _loop, _duration, minParticleSpeed, maxParticleSpeed)
+		maxEmissionDirection, _duration, minParticleSpeed, maxParticleSpeed)
 {
 	eng = std::mt19937_64(rd());
 }
@@ -25,13 +25,13 @@ void ParticlePointEmitter::Emit(const float gameTime, const unsigned int availab
 {
 	unsigned int emissionCount(0);
 
-	if(!loop)
-		timePassed += gameTime;
-	
 	bool infiniteEmission = duration <= 0.0f;
 
-	if((loop && timePassed <= duration && !infiniteEmission) || (!loop && infiniteEmission)
-		|| (timePassed <= duration && !infiniteEmission))
+	if(!infiniteEmission)
+		timePassed += gameTime;
+	
+	//if time passed has not exceeded system duration or there should be infinite emission
+	if((timePassed <= duration && !infiniteEmission) || (infiniteEmission))
 	{
 		//Check amount of particles available
 		if(availableIndiceCount > 0)
@@ -70,4 +70,12 @@ void ParticlePointEmitter::Emit(const float gameTime, const unsigned int availab
 		creationData.positionBuffer = physx::PxStrideIterator<PxVec3>(&position, 0);
 		creationData.velocityBuffer = PxStrideIterator<PxVec3>(&forces[0]);
 	}
+}
+
+ParticlePointEmitter* ParticlePointEmitter::Clone()
+{
+	ParticlePointEmitter* clone = new ParticlePointEmitter(particlesPerSecond, position, 
+		minimumDirection, maximumDirection, duration, minSpeed, maxSpeed);
+
+	return clone;
 }

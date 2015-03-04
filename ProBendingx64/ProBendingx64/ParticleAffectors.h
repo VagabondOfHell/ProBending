@@ -51,6 +51,8 @@ public:
 
 	virtual GPUParticleAffectorParams* const GetParameters() = 0;
 
+	virtual ParticleAffector* Clone() = 0;
+
 };
 
 class ScaleParticleAffector : public ParticleAffector
@@ -99,4 +101,7 @@ public:
 	virtual GPUScaleAffectorParams* const GetGPUParamaters() ;
 
 	virtual GPUScaleAffectorParams* const GetParameters(){return &affectorAttributes;}
+
+	virtual ParticleAffector* Clone();
+
 };

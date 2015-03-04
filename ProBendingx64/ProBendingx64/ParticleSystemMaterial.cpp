@@ -21,7 +21,8 @@ ParticleSystemMaterial::~ParticleSystemMaterial(void)
 {
 }
 
-std::string ParticleSystemMaterial::CreateMaterial(ParticleSystemBase* system,unsigned int textureSlots /*= 0*/, const std::string& matName)
+std::string ParticleSystemMaterial::CreateMaterial(ParticleSystemBase* system,
+		unsigned int textureSlots /*= 0*/, const std::string& matName)
 {
 	AffectorData* affectors = system->GetAffectorData();
 
@@ -39,7 +40,7 @@ std::string ParticleSystemMaterial::CreateMaterial(ParticleSystemBase* system,un
 
 	newMatPass->setLightingEnabled(false);
 	newMatPass->setDepthWriteEnabled(false);
-	newMatPass->setSceneBlending(Ogre::SBF_ONE, Ogre::SBF_ONE_MINUS_SOURCE_ALPHA);
+	newMatPass->setSceneBlending(Ogre::SBF_SOURCE_ALPHA, Ogre::SBF_ONE_MINUS_SOURCE_ALPHA);
 	newMatPass->setPointAttenuation(true);
 	newMatPass->setPointSpritesEnabled(true);	
 	newMatPass->setPointSize(1.0f);

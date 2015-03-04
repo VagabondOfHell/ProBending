@@ -11,11 +11,17 @@ private:
 
 	float timeSelectable;//Amount of time that must pass until the state can be selected again
 	float timePassed; //Time passed since state was last selected
-
+	
 public:
+
+	StateFlags::PossibleStates autoSwitchState;//State to auto-switch to
+	float timeToAutoSwitch;
+
 	State(void)
 		:thisState(StateFlags::PossibleStates::COUNT), allowableTransitions(StateFlags::PossibleStateFlags::INVALID_STATE_FLAG), 
-		timeSelectable(0.0f), timePassed(0.0f), interruptingTransitions(StateFlags::PossibleStateFlags::INVALID_STATE_FLAG)
+		timeSelectable(0.0f), timePassed(0.0f), 
+		interruptingTransitions(StateFlags::PossibleStateFlags::INVALID_STATE_FLAG),
+		autoSwitchState(StateFlags::PossibleStates::INVALID_STATE), timeToAutoSwitch(0.0f)
 	{
 
 	}
@@ -23,7 +29,8 @@ public:
 	State(StateFlags::PossibleStates _thisState, StateFlags::StateFlagCombo _allowableTransitions, float cooldownTimer = 0.0f,
 		StateFlags::StateFlagCombo _interruptingTransitions = StateFlags::PossibleStateFlags::INVALID_STATE_FLAG)
 		:thisState(_thisState), allowableTransitions(_allowableTransitions), 
-		timeSelectable(cooldownTimer), timePassed(0.0f), interruptingTransitions(_interruptingTransitions)
+		timeSelectable(cooldownTimer), timePassed(0.0f), interruptingTransitions(_interruptingTransitions),
+		autoSwitchState(StateFlags::PossibleStates::INVALID_STATE), timeToAutoSwitch(0.0f)
 	{
 
 	}
@@ -31,6 +38,12 @@ public:
 	~State(void){}
 
 	inline StateFlags::PossibleStates GetStateID()const {return thisState;}
+
+	inline void SetAutoSwitch(StateFlags::PossibleStates stateToSwitchTo, float timeTillSwitch)
+	{
+		autoSwitchState = stateToSwitchTo;
+		timeToAutoSwitch = timeTillSwitch;
+	}
 
 	///<summary>Checks if the specified value is a permitted transition</summary>
 	///<param name="newState">The new state to attempt to transition to</param>

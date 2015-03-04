@@ -45,3 +45,20 @@ FluidBase::FluidBase(physx::PxParticleFluid* physxFluidSystem,
 FluidBase::~FluidBase(void)
 {
 }
+
+FluidBase* FluidBase::Clone()
+{
+	ParticleSystemParams params = ParticleSystemParams(particleBase->getGridSize(), particleBase->getMaxMotionDistance(),
+		cudaContextManager, particleBase->getExternalAcceleration(), particleBase->getParticleMass(), 
+		!particleBase->getActorFlags().isSet(PxActorFlag::eDISABLE_GRAVITY), particleBase->getParticleBaseFlags(), 
+		particleBase->getRestOffset(), particleBase->getStaticFriction(), particleBase->getDynamicFriction(), 
+		particleBase->getRestitution(), particleBase->getContactOffset(), particleBase->getDamping(),
+		particleBase->getSimulationFilterData());
+
+	params.SetFluidParameters(pxFluidBase->getViscosity(), pxFluidBase->getStiffness(), 
+		pxFluidBase->getRestParticleDistance());
+
+	FluidBase* clone = new FluidBase(emitter, maximumParticles, initialLifetime, params);
+
+	return clone;
+}

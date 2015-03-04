@@ -53,14 +53,16 @@ void Probender::Start()
 	SetInputState(Probender::Listen);
 	inputHandler.SetProbenderToHandle(this);
 
+	characterData.BaseAttributes.Energy = characterData.CurrentAttributes.Energy = 
+		characterData.BaseAttributes.GetMaxEnergy();
+
 	MeshRenderComponent* renderComponent = new MeshRenderComponent();
 	AttachComponent(renderComponent);
 	
 	std::string entityToLoad = GetMeshAndMaterialName();
 
 	//Try loading required model
-	if(!renderComponent->LoadModel(entityToLoad))
-		printf("AFA");
+	renderComponent->LoadModel(entityToLoad);
 
 	renderComponent->SetMaterial(entityToLoad);
 	
@@ -97,6 +99,9 @@ void Probender::Update(float gameTime)
 	inputHandler.Update(gameTime);
 	stateManager.Update(gameTime);	
 	progressTracker.Update(gameTime);
+
+	if(stateManager.GetCurrentState() == StateFlags::IDLE_STATE)
+		characterData.CurrentAttributes.AddEnergy(characterData.CurrentAttributes.GetEnergyRegen() * gameTime);
 
 	/*std::string message = "Current Zone for " + std::to_string(contestantID) + 
 		" : " + ArenaData::GetStringFromZone(CurrentZone) + "\n";
@@ -245,24 +250,13 @@ std::string Probender::GetMeshAndMaterialName()
 
 void Probender::OnCollisionEnter(const CollisionReport& collision)
 {
-	/*std::string message = "Collision Entered with: " + collision.Collider->GetName() + "\n";
+	std::string message = "Collision Entered with: " + collision.Collider->GetName() + "\n";
 
-	printf(message.c_str());*/
+	printf(message.c_str());
 	
 	if(collision.Collider->tag == TagsAndLayersManager::GroundTag)
 	{
 		stateManager.SetOnGround(true);
-	}
-	else if(collision.Collider->tag == TagsAndLayersManager::ProjectileTag)
-	{
-		//std::string message = "Collision Entered with: " + collision.Collider->GetName() + "\n";
-
-		//printf(message.c_str());
-
-		//Change to use knockback resistance instead of 1.0f
-		stateManager.SetState(StateFlags::REELING_STATE, 1.0f);
-		
-		collision.Collider->Disable();
 	}
 }
 
@@ -389,13 +383,18 @@ void Probender::OnTriggerLeave(GameObject* trigger, GameObject* other)
 
 void Probender::OnCollisionStay(const CollisionReport& collision)
 {
-	/*if(collision.Collider->tag == TagsAndLayersManager::ProjectileTag)
-	collision.Collider->Disable();*/
 }
 
 void Probender::ApplyProjectileCollision(float damage, float knockback)
 {
-	characterData.CurrentAttributes.Health -= damage;
+	characterData.CurrentAttributes.Energy -= damage;
+
+	if(!stateManager.SetState(StateFlags::REELING_STATE, characterData.CurrentAttributes.GetRecoveryRate()))
+	{
+		stateManager.ResetCurrentState();
+	}
 
 	rigidBody->ApplyImpulse(-HelperFunctions::OgreToPhysXVec3(Forward()) * knockback);
+
+	
 }

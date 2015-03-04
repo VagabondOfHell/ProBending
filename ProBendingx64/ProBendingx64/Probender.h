@@ -68,6 +68,8 @@ public:
 	///<returns>True if serializable, false if not</returns>
 	virtual inline bool IsSerializable()const{return false;}
 
+	inline unsigned short GetContestantID()const {return contestantID;}
+
 	inline ArenaData::Team GetTeam()const{return characterData.TeamDatas.Team;}
 
 	inline TeamData::ContestantColour GetColour()const {return characterData.TeamDatas.PlayerColour;}

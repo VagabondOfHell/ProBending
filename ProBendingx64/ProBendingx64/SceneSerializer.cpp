@@ -351,7 +351,6 @@ bool SceneSerializer::SerializeParticleEmitter(XMLWriter& writer, const Particle
 		writer.AddAttribute(MinEmitSpeed, emitter->minSpeed);
 		writer.AddAttribute(MaxEmitSpeed, emitter->maxSpeed);
 		writer.AddAttribute(Duration, emitter->duration);
-		writer.AddAttribute(EmitLoop, emitter->loop);
 		writer.CreateNode(Position);
 		AddVector3Attribute(writer, emitter->position);
 		writer.PopNode();
@@ -1044,7 +1043,7 @@ bool SceneSerializer::DeserializeParticleEmitter(XMLReader& reader,
 		if (nodeName == PointEmitter)
 		{
 			outEmitter = std::make_shared<ParticlePointEmitter>(ParticlePointEmitter(pps, position, 
-				minDirection, maxDirection, emitLoop, duration, minSpeed, maxSpeed));
+				minDirection, maxDirection, duration, minSpeed, maxSpeed));
 			emitterCreated = true;
 		}
 	}

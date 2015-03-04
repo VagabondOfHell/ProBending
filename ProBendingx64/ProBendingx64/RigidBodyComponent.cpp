@@ -622,8 +622,14 @@ RigidBodyComponent* RigidBodyComponent::Clone(GameObject* gameObject)
 			if(physxDebugNode)
 				clone->CreateDebugDraw();
 
-			if(!enabled)
-				clone->Disable();
+		}
+
+		if(!enabled)
+			clone->Disable();
+
+		if(bodyType == DYNAMIC)
+		{
+			clone->SetUseGravity(!bodyStorage.dynamicActor->getActorFlags().isSet(PxActorFlag::eDISABLE_GRAVITY));
 		}
 	}
 

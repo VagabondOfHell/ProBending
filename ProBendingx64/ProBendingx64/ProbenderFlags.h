@@ -194,9 +194,9 @@ namespace ElementFlags
 namespace ProbenderAttributes
 {
 	///The maximum allowed skill points for attributes
-	static const short MAX_ATTRIBUTE_POINTS_ALLOWED = 100;
+	static const short MAX_ATTRIBUTE_POINTS_ALLOWED = 10;
 
-	enum Attributes{InvalidAttribute, Endurance, Spirit, Strength, Defense, Agility, Luck};
+	enum Attributes{InvalidAttribute, Endurance, Recovery, Strength, Defense, Agility, Luck};
 };
 
 namespace AbilityIDs

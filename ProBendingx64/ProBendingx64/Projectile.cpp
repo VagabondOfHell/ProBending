@@ -37,26 +37,43 @@ void Projectile::Update(float gameTime)
 	GameObject::Update(gameTime);
 }
 
-void Projectile::LaunchProjectile(const physx::PxVec3& velocity)
+void Projectile::LaunchProjectile(const physx::PxVec3& direction, float attackSpeedBonus, float attackBonus)
 {
-	rigidBody->SetVelocity(velocity);
+	float speed = RandomNumberGenerator::GetInstance()->GenerateRandom(Attributes.MinSpeed, Attributes.MaxSpeed);
+	speed *= attackSpeedBonus;
+	
+	Attributes.AttackBonus = attackBonus;
+
+	rigidBody->SetVelocity(direction * speed);
 }
 
 void Projectile::OnCollisionEnter(const CollisionReport& collision)
 {
+	std::string message = "Collision Entered with: " + collision.Collider->GetName() + "\n";
+
+		printf(message.c_str());
 	if(collision.Collider->tag == TagsAndLayersManager::ContestantTag)
 	{
-		/*std::string message = "Collision Entered with: " + collision.Collider->GetName() + "\n";
-
-		printf(message.c_str());*/
+		
 		Probender* bender = (Probender*)collision.Collider;
 
-		float damage = RandomNumberGenerator::GetInstance()->GenerateRandom(Attributes.MinDamage, Attributes.MaxDamage);
-		float knockback = RandomNumberGenerator::GetInstance()->
-			GenerateRandom(Attributes.MinKnockback, Attributes.MaxKnockback);
+		if(bender->GetContestantID() != CasterContestantID)
+		{
+			float damage = RandomNumberGenerator::GetInstance()->GenerateRandom(Attributes.MinDamage, Attributes.MaxDamage);
+			float knockback = RandomNumberGenerator::GetInstance()->
+				GenerateRandom(Attributes.MinKnockback, Attributes.MaxKnockback);
 
-		bender->ApplyProjectileCollision(damage, knockback);
-
+			bender->ApplyProjectileCollision(damage, knockback);	
+		}
+		Disable();
+	}
+	else if(collision.Collider->tag == TagsAndLayersManager::ProjectileTag)
+	{
+		Disable();
+		collision.Collider->Disable();
+	}
+	else if(collision.Collider->tag == TagsAndLayersManager::WallTag)
+	{
 		Disable();
 	}
 }

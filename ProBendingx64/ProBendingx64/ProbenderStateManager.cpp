@@ -40,6 +40,8 @@ ProbenderStateManager::ProbenderStateManager(Probender* bender)
 	States[StateFlags::DODGE_STATE - 1] = State(StateFlags::DODGE_STATE, StateFlags::IDLE_STATE_FLAG, 0.0f, StateFlags::INVALID_STATE_FLAG);
 
 	States[StateFlags::REELING_STATE - 1] = State(StateFlags::REELING_STATE, StateFlags::IDLE_STATE_FLAG, 1.0f, StateFlags::INVALID_STATE_FLAG);
+	States[StateFlags::REELING_STATE - 1].SetAutoSwitch(StateFlags::IDLE_STATE, 
+		probender->GetInGameData().CurrentAttributes.GetRecoveryRate());
 
 	States[StateFlags::ATTACKING_STATE - 1] = State(StateFlags::PossibleStates::ATTACKING_STATE,
 		StateFlags::IDLE_STATE_FLAG, 0.0f, StateFlags::REELING_STATE_FLAG);
@@ -74,7 +76,8 @@ bool ProbenderStateManager::SetState(StateFlags::PossibleStates newState, float 
 		//Set the new state then call Reset on it
 		currentState = newState;
 		stateChangedThisFrame = true;
-
+		timeInCurrentState = 0.0f;
+	
 		probender->StateEntered(currentState);
 
 		return true;
@@ -88,19 +91,20 @@ bool ProbenderStateManager::SetStateImmediate(StateFlags::PossibleStates newStat
 	if(disallowStateChange)
 		return false;
 	
-	if(States[currentState].GetStateID() == newState)
+	if(States[currentState - 1].GetStateID() == newState)
 		return false;
 
 	if(newState == StateFlags::COUNT)
 		return false;
 
-	States[currentState].ExitState();
+	States[currentState - 1].ExitState();
 
 	probender->StateExitted(currentState);
 
 	//Set the new state then call Reset on it
 	currentState = newState;
 	stateChangedThisFrame = true;
+	timeInCurrentState = 0.0f;
 
 	probender->StateEntered(currentState);
 
@@ -111,13 +115,19 @@ void ProbenderStateManager::Update(float gameTime)
 {
 	//Increment the amount of time we have spent in the current state
 	timeInCurrentState += gameTime;
-
+	
 	for (int i = 0; i < States.size(); i++)
 	{
 		States[i].Update(gameTime);
 	}
 
 	stateChangedThisFrame = false;
+
+	if(States[currentState - 1].autoSwitchState != StateFlags::INVALID_STATE)
+	{
+		if(timeInCurrentState >= States[currentState - 1].timeToAutoSwitch)
+			SetState(States[currentState - 1].autoSwitchState, 0.0f);
+	}
 }
 
 void ProbenderStateManager::SetOnGround(bool val)

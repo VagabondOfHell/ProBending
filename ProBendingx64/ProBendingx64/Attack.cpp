@@ -55,7 +55,7 @@ void Attack::Update(float gameTime)
 		cooldownTimePassed += gameTime;
 
 		if(cooldownTimePassed >= AttackCooldown)
-			currentState = AS_NONE;
+			Reset();
 
 		break;
 	default:

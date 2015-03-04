@@ -25,15 +25,21 @@ struct BodyDimensions
 struct CharacterAttributes
 {
 private:
-	static const float MAX_DODGE_SPEED;
-	static const float MIN_DODGE_SPEED;
-	static const float MIN_JUMP_HEIGHT;
-	static const float MAX_JUMP_HEIGHT;
+	static const float MAX_DODGE_SPEED, MIN_DODGE_SPEED;
+	static const float MIN_JUMP_HEIGHT, MAX_JUMP_HEIGHT;
 
-	unsigned short Endurance, Spirit, Strength, Defense, Agility, Luck;
+	static const float MIN_ENERGY_VAL, MAX_ENERGY_VAL;
+	static const float MIN_ENERGY_REGEN_RATE, MAX_ENERGY_REGEN_RATE;
+	static const float MIN_RECOVERY_TIME, MAX_RECOVERY_TIME;
 
-	float MaxHealth, MaxFocus;
-	float HealthRegenRate, FocusRegenRate;
+	static const float MIN_ATTACK_SPEED_BONUS, MAX_ATTACK_SPEED_BONUS;
+	static const float MIN_ATTACK_BONUS, MAX_ATTACK_BONUS;
+
+	unsigned short Endurance, Recovery, Strength, Defense, Agility, Luck;
+
+	float MaxEnergy;
+	float EnergyRegenRate; //Energy Regeneration per second
+	float RecoveryRate;
 	float AttackBonus, AttackSpeed;
 	float DefenseBonus, AgilityBonus;
 	float DodgeSpeed, JumpHeight;
@@ -42,21 +48,20 @@ private:
 	void CalculateStats();
 
 public:
-	float Health, Focus;
+	float Energy;
 
 	CharacterAttributes(ElementEnum::Element _mainElement = ElementEnum::InvalidElement, 
 		ElementEnum::Element _subElement = ElementEnum::InvalidElement,
-			unsigned short _endurance = 0, unsigned short _spirit = 0, short _strength = 0,
+			unsigned short _endurance = 0, unsigned short _recovery = 0, unsigned short _strength = 0,
 			unsigned short _defense = 0, unsigned short _agility = 0, short _luck = 0)
-			:Endurance(_endurance), Spirit(_spirit), 
-			Strength(_strength), Defense(_defense), Agility(_agility), 
-			Luck(_luck)
+			:Endurance(_endurance), Recovery(_recovery), Strength(_strength), Defense(_defense), Agility(_agility), 
+			Luck(_luck), Energy(0)
 	{
 		//Check to make sure attributes aren't too high
 		if(Endurance > ProbenderAttributes::MAX_ATTRIBUTE_POINTS_ALLOWED)
 			Endurance = ProbenderAttributes::MAX_ATTRIBUTE_POINTS_ALLOWED;
-		if(Spirit > ProbenderAttributes::MAX_ATTRIBUTE_POINTS_ALLOWED)
-			Spirit = ProbenderAttributes::MAX_ATTRIBUTE_POINTS_ALLOWED;
+		if(Recovery > ProbenderAttributes::MAX_ATTRIBUTE_POINTS_ALLOWED)
+			Recovery = ProbenderAttributes::MAX_ATTRIBUTE_POINTS_ALLOWED;
 		if(Strength > ProbenderAttributes::MAX_ATTRIBUTE_POINTS_ALLOWED)
 			Strength = ProbenderAttributes::MAX_ATTRIBUTE_POINTS_ALLOWED;
 		if(Defense > ProbenderAttributes::MAX_ATTRIBUTE_POINTS_ALLOWED)
@@ -71,16 +76,19 @@ public:
 
 	inline void SetAttribute(ProbenderAttributes::Attributes attribute, unsigned short value)
 	{
+		if(value > ProbenderAttributes::MAX_ATTRIBUTE_POINTS_ALLOWED)
+			value = ProbenderAttributes::MAX_ATTRIBUTE_POINTS_ALLOWED;
+
 		switch (attribute)
 		{
 		case ProbenderAttributes::Endurance:
 			Endurance = value;
 			break;
-		case ProbenderAttributes::Spirit:
-			Spirit = value;
-			break;
 		case ProbenderAttributes::Strength:
 			Strength = value;
+			break;
+		case ProbenderAttributes::Recovery:
+			Recovery = value;
 			break;
 		case ProbenderAttributes::Defense:
 			Defense = value;
@@ -97,6 +105,20 @@ public:
 		}
 		CalculateStats();
 	}
+
+	inline void AddEnergy(const float val)
+	{
+		Energy += val;
+
+		if(Energy > MaxEnergy)
+			Energy = MaxEnergy;
+	}
+
+	inline float GetMaxEnergy()const{return MaxEnergy;}
+	inline float GetEnergyRegen()const{return EnergyRegenRate;}
+	inline float GetRecoveryRate()const{return RecoveryRate;}
+	inline float GetBonusAttackSpeed()const{return AttackSpeed;}
+	inline float GetBonusAttackDamage()const{return AttackBonus;}
 
 	inline float GetDodgeSpeed()const{return DodgeSpeed;}
 	inline float GetJumpHeight()const{return JumpHeight;}

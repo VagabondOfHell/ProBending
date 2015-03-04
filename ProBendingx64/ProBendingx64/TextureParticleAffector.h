@@ -16,6 +16,9 @@ protected:
 
 public:
 	TextureParticleAffector(FluidAndParticleBase* partBase, bool animated = false, float animationTime = 0.0f, bool onGPU = false);
+	
+	TextureParticleAffector(ParticleSystemMaterial* partMat, bool animated = false, 
+		float animationTime = 0.0f, bool onGPU = false);
 
 	virtual ~TextureParticleAffector(void);
 
@@ -38,5 +41,8 @@ public:
 	virtual GPUParticleAffectorParams* const GetGPUParamaters();
 
 	virtual GPUTextureAffectorParams* const GetParameters(){return &affectorParams;}
+
+	virtual TextureParticleAffector* Clone();
+
 };
 

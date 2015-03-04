@@ -145,6 +145,8 @@ void ParticleSystemBase::UpdateParticleSystemCPU(const float time, const physx::
 		
 		if(onGPU)
 			mRenderOp.vertexData->vertexCount = numParticles;
+
+
 	}//end if valid range > 0
 }
 
@@ -242,4 +244,26 @@ bool ParticleSystemBase::AssignAffectorKernel(ParticleKernel* newKernel)
 	}
 
 	return false;
+}
+
+ParticleSystemBase* ParticleSystemBase::Clone()
+{
+	ParticleSystemParams params = ParticleSystemParams(particleBase->getGridSize(), particleBase->getMaxMotionDistance(),
+		cudaContextManager, particleBase->getExternalAcceleration(), particleBase->getParticleMass(), 
+		!particleBase->getActorFlags().isSet(PxActorFlag::eDISABLE_GRAVITY), particleBase->getParticleBaseFlags(), 
+		particleBase->getRestOffset(), particleBase->getStaticFriction(), particleBase->getDynamicFriction(), 
+		particleBase->getRestitution(), particleBase->getContactOffset(), particleBase->getDamping(),
+		particleBase->getSimulationFilterData());
+
+	ParticleSystemBase* clone = new ParticleSystemBase(emitter, maximumParticles, 
+		initialLifetime, params);
+
+	clone->setMaterial(particleMaterial.GetMaterialName());
+
+	for (auto start = affectors.GetMapBegin(); start != affectors.GetMapEnd(); ++start)
+	{
+		clone->AddAffector(std::shared_ptr<ParticleAffector>(start->second->Clone()));
+	}
+	
+	return clone;
 }

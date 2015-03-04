@@ -24,9 +24,13 @@ public:
 
 	static inline void ValidateMinMax(float& minValue, float& maxValue)
 	{
-		float temp = minValue;
-		minValue = maxValue;
-		maxValue = temp;
+		if(minValue > maxValue)
+		{
+			float temp = minValue;
+			minValue = maxValue;
+			maxValue = temp;
+		}
+		
 	}
 
 	///<summary>Convenience function for converting an Ogre Vector3 to a physx Vector3</summary>

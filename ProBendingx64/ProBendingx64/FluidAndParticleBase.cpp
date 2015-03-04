@@ -26,7 +26,8 @@ ParticleKernelMap::ParticleKernelMap()
 
 FluidAndParticleBase::FluidAndParticleBase(std::shared_ptr<AbstractParticleEmitter> _emitter, 
 	size_t _maximumParticles, float _initialLifetime, physx::PxCudaContextManager* _cudaMan)
-	: emitter(_emitter), maximumParticles(_maximumParticles), initialLifetime(_initialLifetime), cudaContextManager(_cudaMan), cudaKernel(NULL)
+	: emitter(_emitter), maximumParticles(_maximumParticles), 
+	initialLifetime(_initialLifetime), cudaContextManager(_cudaMan), cudaKernel(NULL)
 {
 	// our vertices are just points
 	mRenderOp.operationType = Ogre::RenderOperation::OT_POINT_LIST;
@@ -350,8 +351,8 @@ void FluidAndParticleBase::UpdateParticleSystemCPU(const float time, const physx
 		if(onGPU)
 			mRenderOp.vertexData->vertexCount = numParticles;
 	}//end if valid range > 0
-}
 
+}
 
 #pragma endregion
 
@@ -527,6 +528,20 @@ Ogre::Real FluidAndParticleBase::getSquaredViewDepth(const Ogre::Camera* cam)con
 	mid = ((max - min) * 0.5) + min;
 	dist = cam->getDerivedPosition() - mid;
 	return dist.squaredLength();
+}
+
+void FluidAndParticleBase::EnableSimulation()
+{
+	if(particleBase)
+		particleBase->setActorFlag(physx::PxActorFlag::eDISABLE_SIMULATION, false);
+	setVisible(true);
+}
+
+void FluidAndParticleBase::DisableSimulation()
+{
+	if(particleBase)
+		particleBase->setActorFlag(physx::PxActorFlag::eDISABLE_SIMULATION, true);
+	setVisible(false);
 }
 
 #pragma endregion

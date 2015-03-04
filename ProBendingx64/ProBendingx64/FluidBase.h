@@ -17,5 +17,8 @@ public:
 		ParticleSystemParams& paramsStruct = ParticleSystemParams());
 
 	virtual ~FluidBase(void);
+
+	virtual FluidBase* Clone();
+
 };
 

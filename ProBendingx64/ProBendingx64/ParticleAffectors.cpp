@@ -60,5 +60,11 @@ GPUScaleAffectorParams* const ScaleParticleAffector::GetGPUParamaters()
 	return &affectorAttributes;
 }
 
+ParticleAffector* ScaleParticleAffector::Clone()
+{
+	return new ScaleParticleAffector(affectorAttributes.enlarge, 
+		affectorAttributes.minScale, affectorAttributes.maxScale, affectorAttributes.onGPU);
+}
+
 #pragma endregion
 

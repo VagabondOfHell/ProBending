@@ -106,7 +106,19 @@ void ProjectileManager::CreatePool(ElementEnum::Element elementPool, unsigned sh
 		
 		break;
 	case ElementEnum::Fire:
-		return;
+		{
+			ProjectileDatabase::ProjectileDictionary fireDictionary = ProjectileDatabase::GetFireProjectiles(owningScene);
+
+			AbilityPool abilityPool;
+
+			for (auto start = fireDictionary.begin(); start != fireDictionary.end(); ++start)
+			{
+				ProjectilePool pool = ProjectilePool(BASE_NUM_FIRE_PROJECTILES * numberOfElement, start->second);
+				abilityPool.insert(AbilityPool::value_type(start->first, pool));
+			}
+
+			projectileMap.insert(ProjectileMap::value_type(ElementEnum::Fire, abilityPool));
+		}
 		break;
 	case ElementEnum::Water:
 		return;

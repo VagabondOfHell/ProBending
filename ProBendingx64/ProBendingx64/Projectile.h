@@ -57,9 +57,11 @@ public:
 
 	std::shared_ptr<Projectile> Clone()const;
 
-	void LaunchProjectile(const physx::PxVec3& direction, const float speed){LaunchProjectile(direction * speed);}
+	/*void LaunchProjectile(const physx::PxVec3& direction, const float speed){LaunchProjectile(direction * speed);}
 
-	void LaunchProjectile(const physx::PxVec3& velocity);
+	void LaunchProjectile(const physx::PxVec3& velocity);*/
+
+	void LaunchProjectile(const physx::PxVec3& direction, float attackSpeedBonus, float attackBonus);
 
 	virtual void OnCollisionEnter(const CollisionReport& collision);
 

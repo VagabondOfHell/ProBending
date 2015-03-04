@@ -128,8 +128,6 @@ protected:
 	///<returns>True to remove, false if valid</returns>
 	virtual inline bool QueryParticleRemoval(const unsigned int particleIndex, const physx::PxParticleReadData* const readData)
 	{
-		if( readData->flagsBuffer[particleIndex] & physx::PxParticleFlag::eSPATIAL_DATA_STRUCTURE_OVERFLOW)
-			printf("Overflow");
 		return readData->flagsBuffer[particleIndex] & physx::PxParticleFlag::eSPATIAL_DATA_STRUCTURE_OVERFLOW ||
 			!(readData->flagsBuffer[particleIndex] & physx::PxParticleFlag::eVALID) || (lifetimes[particleIndex] <= 0.0f && !infiniteLifetime);
 	}
@@ -165,6 +163,13 @@ public:
 	///<returns>The cuda context manager, or NULL if none set</returns>
 	inline physx::PxCudaContextManager* const GetPhysXCudaManager()const{return cudaContextManager;}
 
+	inline ParticleKernel* const GetParticleKernel()const{return cudaKernel;}
+
+	void EnableSimulation();
+	void DisableSimulation();
+
+	inline physx::PxParticleBase* const GetPxParticleSystem()const{return particleBase;}
+
 	inline void SetPhysXCudaManager(physx::PxCudaContextManager* manager){cudaContextManager = manager;}
 
 	///<summary>Sets the kernel to the specified one</summary>
@@ -175,6 +180,8 @@ public:
 	///<param name="combination">The combination of Affector Types</param>
 	///<returns>The found Kernel, or NULL if none were found</returns>
 	static ParticleKernel* FindBestKernel(ParticleAffectorType::ParticleAffectorFlag combination);
+
+	virtual FluidAndParticleBase* Clone() = 0;
 
 #pragma endregion
 

@@ -133,7 +133,7 @@ void Arena::Start()
 
 	label = owningScene->GetGUIManager()->CreateGUIButton("TaharezLook/Button", "ElementDisplay", 
 		ElementEnum::EnumToString(contestants[0]->GetInGameData().MainElement), 
-		UVector2(UDim(0.0f, 0.0f), UDim(0.9f, 0.0f)), USize(UDim(0.1f, 0.0f), UDim(0.05f, 0.0f)));
+		UVector2(UDim(0.0f, 0.0f), UDim(0.9f, 0.0f)), USize(UDim(0.3f, 0.0f), UDim(0.05f, 0.0f)));
 }
 
 void Arena::PlaceContestants()
@@ -252,8 +252,8 @@ bool Arena::Update(const float gameTime)
 		contestants[i]->Update(gameTime);
 	}
 
-	label->setText(ElementEnum::EnumToString(contestants[0]->GetCurrentElement()));
-
+	label->setText(std::to_string(contestants[0]->GetInGameData().CurrentAttributes.Energy));
+	
 	//Update the projectile manager
 	projectileManager->Update(gameTime);
 	

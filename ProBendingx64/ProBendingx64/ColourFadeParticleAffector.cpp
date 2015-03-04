@@ -48,3 +48,10 @@ GPUColourFaderAffectorParams* const ColourFadeParticleAffector::GetGPUParamaters
 	return &affectorAttributes;
 }
 
+ColourFadeParticleAffector* ColourFadeParticleAffector::Clone()
+{
+	return new ColourFadeParticleAffector(affectorAttributes.startColour, affectorAttributes.endColour,
+		affectorAttributes.onGPU);
+
+}
+

@@ -62,9 +62,16 @@ void CollisionReporter::onContact(const PxContactPairHeader& pairHeader, const P
 			{
 				report.Collider = otherActor;
 				thisActor->OnCollisionEnter(report);
+
 				report.Collider = thisActor;
 				otherActor->OnCollisionEnter(report);
 			}
+
+			/*if(otherActor)
+			{
+				report.Collider = thisActor;
+				otherActor->OnCollisionEnter(report);
+			}*/
 		}
 		
 		if(cp.events & PxPairFlag::eNOTIFY_TOUCH_LOST)

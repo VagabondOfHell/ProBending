@@ -63,5 +63,8 @@ public:
 	///<summary>Finds the best kernel suited to the current combination of GPU affectors</summary>
 	///<returns>The best suited Kernel, or NULL if none exist</returns>
 	virtual inline ParticleKernel* FindBestKernel(){return FluidAndParticleBase::FindBestKernel(affectors.gpuTypeCombination);}
+
+	virtual ParticleSystemBase* Clone();
+
 };
 

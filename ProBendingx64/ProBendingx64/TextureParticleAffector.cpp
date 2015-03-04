@@ -12,6 +12,16 @@ TextureParticleAffector::TextureParticleAffector(FluidAndParticleBase* partBase,
 	mat = partBase->GetMaterial();
 }
 
+TextureParticleAffector::TextureParticleAffector(ParticleSystemMaterial* partMat, 
+		bool animated /*= false*/, float animationTime /*= 0.0f*/, bool onGPU /*= false*/)
+	:ParticleAffector(onGPU), affectorParams()
+{
+	affectorParams.animationTime = animationTime;
+	affectorParams.animated = animated;
+
+	mat = partMat;
+}
+
 TextureParticleAffector::~TextureParticleAffector(void)
 {
 }
@@ -60,4 +70,17 @@ GPUParticleAffectorParams* const TextureParticleAffector::GetGPUParamaters()
 		return NULL;
 
 	return &affectorParams;
+}
+
+TextureParticleAffector* TextureParticleAffector::Clone()
+{
+	TextureParticleAffector* clone = new TextureParticleAffector(mat, 
+		affectorParams.animated, affectorParams.animationTime, affectorParams.onGPU);
+
+	clone->onGPU = onGPU;
+
+	clone->affectorParams = affectorParams;
+	clone->affectorParams.onGPU = onGPU;
+
+	return clone;
 }

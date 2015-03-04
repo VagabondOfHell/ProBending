@@ -51,6 +51,14 @@ void ParticleComponent::OnAttach()
 	CreateSceneNode();
 
 	particleSystem->Initialize(owningGameObject->GetOwningScene()->GetPhysXScene());
+
+	ParticleSystemBase* cast = dynamic_cast<ParticleSystemBase*>(particleSystem);
+
+	if(cast != NULL)
+	{
+		if(cast->GetParticleKernel() == NULL)
+			cast->AssignAffectorKernel(cast->FindBestKernel());
+	}
 }
 
 void ParticleComponent::CreateSceneNode()
@@ -122,5 +130,19 @@ void ParticleComponent::SetTransformationSpace(const bool _useLocalSpace)
 
 ParticleComponent* ParticleComponent::Clone(GameObject* gameObject)
 {
-	throw NotImplementedException("Particle Component Clone Not Implemented");
+	ParticleComponent* clone = new ParticleComponent(particleSystem->Clone(), useLocalSpace);
+	
+	return clone;
+}
+
+void ParticleComponent::Enable()
+{
+	particleSystem->EnableSimulation();
+	enabled = true;
+}
+
+void ParticleComponent::Disable()
+{
+	particleSystem->DisableSimulation();
+	enabled = false;
 }

@@ -30,5 +30,8 @@ public:
 	virtual GPUColourFaderAffectorParams* const GetGPUParamaters();
 
 	virtual GPUColourFaderAffectorParams* const GetParameters(){return &affectorAttributes;}
+
+	virtual ColourFadeParticleAffector* Clone();
+
 };
 
