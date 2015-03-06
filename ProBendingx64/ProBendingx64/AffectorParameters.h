@@ -99,16 +99,42 @@ struct GPUColourFaderAffectorParams: public GPUParticleAffectorParams
 	}
 };
 
+struct GPURotationAffectorParams: public GPUParticleAffectorParams
+{
+	float minRotation, maxRotation;
+	bool increase;
+	float rotSpeed;
+
+	float difference;
+
+	GPURotationAffectorParams(float _minRotationDegrees = 0.0f, float _maxRotationDegrees = 0.0f)
+	{
+		minRotation = DegreesToRadians(_minRotationDegrees);
+		maxRotation = DegreesToRadians(_maxRotationDegrees);
+		rotSpeed = DegreesToRadians(_minRotationDegrees);
+
+
+		difference = maxRotation - minRotation;
+	}
+	
+	float DegreesToRadians(float val)
+	{
+		return val * (3.14159265359f / 180.0f);
+	}
+};
+
 struct GPUParamsCollection
 {
 	GPUScaleAffectorParams* scaleParameters;
 	GPUColourFaderAffectorParams* colourFadeParams;
 	GPUTextureAffectorParams* textureParameters;
+	GPURotationAffectorParams* rotationParameters;
 
 	GPUParamsCollection(){
 		scaleParameters = NULL;
 		colourFadeParams = NULL;
 		textureParameters = NULL;
+		rotationParameters = NULL;
 	}
 
 	~GPUParamsCollection(){}

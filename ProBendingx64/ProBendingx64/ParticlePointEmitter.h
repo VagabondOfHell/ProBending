@@ -1,7 +1,6 @@
 #pragma once
 #include "AbstractParticleEmitter.h"
 #include <vector>
-#include <random>
 
 class ParticlePointEmitter :
 	public AbstractParticleEmitter
@@ -9,8 +8,6 @@ class ParticlePointEmitter :
 protected:
 	std::vector<physx::PxVec3>forces;//The forces to apply to newly created particles
 
-	std::random_device rd;
-	std::mt19937_64 eng;
 public:
 	///<summary>Constructor of the abstract class to fill common values</summary>
 	///<param name="emitterPosition">The position of the emitter</param>

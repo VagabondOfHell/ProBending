@@ -36,6 +36,8 @@ class Projectile : public GameObject
 public:
 	ProjectileAttributes Attributes;
 
+	ArenaData::RaycastFilter DestructionTriggers;
+
 	unsigned short CasterContestantID;
 
 	Projectile(IScene* owningScene, ProjectileAttributes baseAttributes, const std::string& objectName);

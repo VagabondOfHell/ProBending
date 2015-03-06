@@ -18,7 +18,8 @@
 #include "RandomNumberGenerator.h"
 
 Projectile::Projectile(IScene* _owningScene,  ProjectileAttributes _baseAttributes, const std::string& objectName)
-	:GameObject(_owningScene, objectName), baseAttributes(_baseAttributes), Attributes(_baseAttributes)
+	:GameObject(_owningScene, objectName), baseAttributes(_baseAttributes), Attributes(_baseAttributes),
+	DestructionTriggers(0)
 {
 
 }
@@ -54,7 +55,6 @@ void Projectile::OnCollisionEnter(const CollisionReport& collision)
 		printf(message.c_str());
 	if(collision.Collider->tag == TagsAndLayersManager::ContestantTag)
 	{
-		
 		Probender* bender = (Probender*)collision.Collider;
 
 		if(bender->GetContestantID() != CasterContestantID)
@@ -67,14 +67,20 @@ void Projectile::OnCollisionEnter(const CollisionReport& collision)
 		}
 		Disable();
 	}
-	else if(collision.Collider->tag == TagsAndLayersManager::ProjectileTag)
+
+	if(DestructionTriggers > 0)
 	{
-		Disable();
-		collision.Collider->Disable();
-	}
-	else if(collision.Collider->tag == TagsAndLayersManager::WallTag)
-	{
-		Disable();
+		if(DestructionTriggers & ArenaData::PROJECTILE && collision.OtherFilterData & ArenaData::PROJECTILE
+			&&((Projectile*)collision.Collider)->DestructionTriggers)
+			collision.Collider->Disable();
+
+		for (unsigned int i = 1; i < 9; i++)
+		{
+			unsigned int val = 1 << i;
+
+			if((DestructionTriggers & val) && (collision.OtherFilterData & val))
+				Disable();
+		}
 	}
 }
 
@@ -116,6 +122,8 @@ std::shared_ptr<Projectile> Projectile::Clone()const
 	///NEED TO CLONE ATTACHED ABILITY
 	std::shared_ptr<Projectile> clone = std::make_shared<Projectile>(owningScene, baseAttributes, name);
 	clone->Attributes = Attributes;
+
+	clone->DestructionTriggers = DestructionTriggers;
 
 	clone->SetWorldTransform(gameObjectNode->_getDerivedPosition(), gameObjectNode->_getDerivedOrientation(), gameObjectNode->_getDerivedScale());
 	clone->SetInheritOrientation(GetInheritOrientation());

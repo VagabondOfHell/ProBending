@@ -1,4 +1,5 @@
 #include "ParticlePointEmitter.h"
+#include "RandomNumberGenerator.h"
 
 using namespace physx;
 
@@ -8,13 +9,11 @@ ParticlePointEmitter::ParticlePointEmitter(float _particlesPerSecond, physx::PxV
 		: AbstractParticleEmitter(emitterPosition, _particlesPerSecond, minEmissionDirection, 
 		maxEmissionDirection, _duration, minParticleSpeed, maxParticleSpeed)
 {
-	eng = std::mt19937_64(rd());
 }
 
 ParticlePointEmitter::ParticlePointEmitter(const ParticlePointEmitter& emitter)
 	: AbstractParticleEmitter(emitter)
 {
-	eng = std::mt19937_64(rd());
 }
 
 ParticlePointEmitter::~ParticlePointEmitter(void)
@@ -56,13 +55,14 @@ void ParticlePointEmitter::Emit(const float gameTime, const unsigned int availab
 		//Generate initial force and update available indices
 		for (unsigned int i = 0; i < emissionCount; i++)
 		{
-			std::uniform_real_distribution<float> x(minimumDirection.x, maximumDirection.x); 
-			std::uniform_real_distribution<float> y(minimumDirection.y, maximumDirection.y); 
-			std::uniform_real_distribution<float> z(minimumDirection.z, maximumDirection.z); 
-			
-			std::uniform_real_distribution<float> speed(minSpeed, maxSpeed);
+			RandomNumberGenerator* random = RandomNumberGenerator::GetInstance();
 
-			forces.push_back(PxVec3(x(eng), y(eng), z(eng)) * speed(eng));
+			float ranSpeed = random->GenerateRandom(minSpeed, maxSpeed);
+
+			forces.push_back(PxVec3(
+				random->GenerateRandom(minimumDirection.x, maximumDirection.x),
+				random->GenerateRandom(minimumDirection.y, maximumDirection.y),
+				random->GenerateRandom(minimumDirection.z, maximumDirection.z)) * ranSpeed);
 		}
 		
 		//set creation data parameters

@@ -61,9 +61,16 @@ void CollisionReporter::onContact(const PxContactPairHeader& pairHeader, const P
 			if(thisActor && otherActor)
 			{
 				report.Collider = otherActor;
+
+				report.ThisFilterData = cp.shapes[0]->getSimulationFilterData().word0;
+				report.OtherFilterData = cp.shapes[1]->getSimulationFilterData().word0;
+
 				thisActor->OnCollisionEnter(report);
 
 				report.Collider = thisActor;
+				report.ThisFilterData = cp.shapes[1]->getSimulationFilterData().word0;
+				report.OtherFilterData = cp.shapes[0]->getSimulationFilterData().word0;
+
 				otherActor->OnCollisionEnter(report);
 			}
 

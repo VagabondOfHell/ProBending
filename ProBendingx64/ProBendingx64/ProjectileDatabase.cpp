@@ -13,6 +13,9 @@
 #include "PhysXDataManager.h"
 #include "ColourFadeParticleAffector.h"
 #include "TextureParticleAffector.h"
+#include "RotationAffector.h"
+
+#include "ParticleFactory.h"
 
 const std::string ProjectileDatabase::ShapeString = "Shape";
 
@@ -38,6 +41,7 @@ ProjectileDatabase::SharedProjectile ProjectileDatabase::CreateEarthCoin(IScene*
 
 	SharedProjectile projectile = std::make_shared<Projectile>(scene, earthCoinAttributes, projName);
 	projectile->tag = TagsAndLayersManager::ProjectileTag;
+	projectile->DestructionTriggers = ArenaData::PROJECTILE | ArenaData::WATER;
 
 	MeshRenderComponent* renderComponent = new MeshRenderComponent();
 	projectile->AttachComponent(renderComponent);
@@ -52,6 +56,8 @@ ProjectileDatabase::SharedProjectile ProjectileDatabase::CreateEarthCoin(IScene*
 	ShapeDefinition shapeDef = ShapeDefinition();
 	//shapeDef.SetSphereGeometry(entityHalfSize.magnitude() * 0.5f);
 	shapeDef.SetBoxGeometry(entityHalfSize);
+	shapeDef.SetFilterFlags(ArenaData::PROJECTILE);
+
 	shapeDef.AddMaterial(PhysXDataManager::GetSingletonPtr()->CreateMaterial(1.0f, 1.0f, 0.0f, "101000"));
 	physx::PxShape* shape = PhysXDataManager::GetSingletonPtr()->CreateShape(shapeDef, projName + ShapeString);
 	if(shape)
@@ -80,64 +86,33 @@ ProjectileDatabase::SharedProjectile ProjectileDatabase::CreateFireBlast(IScene*
 	ProjectileAttributes attributes = ProjectileAttributes();
 
 	SharedProjectile newProjectile = std::make_shared<Projectile>(scene, ProjectileAttributes(), projName);
+	newProjectile->tag = TagsAndLayersManager::ProjectileTag;
+	newProjectile->DestructionTriggers = ArenaData::PROJECTILE | ArenaData::WATER | ArenaData::WALL;
 
-	std::shared_ptr<ParticlePointEmitter> emitter = std::make_shared<ParticlePointEmitter>
-	(ParticlePointEmitter(70, physx::PxVec3(0.0f, 0.0f, 0.0f), 
-	physx::PxVec3(0.0f, 1.0f, -0.50f).getNormalized(), physx::PxVec3(0.0f, 1.0f, 0.50f).getNormalized(),
-		0.0f, 0.50f, 1.0f));
+	ParticleComponent* fireEffect = ParticleFactory::CreateParticleSystem(ParticleFactory::Fire, 
+		newProjectile.get(), scene);
 
-	ParticleSystemParams params = ParticleSystemParams(1.0f, 2.0f, scene->GetCudaContextManager(),
-		physx::PxVec3(0.0f, 0.0f, 0.0f),1.0f, false, physx::PxParticleBaseFlag::eENABLED,
-		0.50f, 0.0f, 0.0f, 0.30f, 0.3f, 0.0f);
-
-	params.SetFluidParameters(100.0f, 5.0f, 3.0f);
-
-	ParticleSystemBase* particles = new ParticleSystemBase(emitter, 50, 0.750f,params);
-
-	ParticleComponent* particleComponent = new ParticleComponent(particles, false);
-
-	newProjectile->AttachComponent(particleComponent);
-						
-	particles->AddAffector(std::make_shared<ScaleParticleAffector>(ScaleParticleAffector(false, 0.0f, 1.0f, true)));
-	particles->AddAffector(std::make_shared<ColourFadeParticleAffector>(
-		ColourFadeParticleAffector(physx::PxVec4(1.0f, 0.8f, 0.0f, 1.0f), 
-		physx::PxVec4(1.0f, 0.2f, 0.1f, 0.20f), 
-		true)));/**/
-
-	std::shared_ptr<TextureParticleAffector> texShared = 
-		std::make_shared<TextureParticleAffector>(particles, true, 0.750f, false);
-			
-	particles->AddAffector(texShared);
-
-	particles->GetMaterial()->CreateMaterial(particles, 5);
-			
-	texShared->AddTextureToMaterial("Flame1.png");
-	texShared->AddTextureToMaterial("Flame2.png");
-	texShared->AddTextureToMaterial("Flame3.png");
-	texShared->AddTextureToMaterial("Flame4.png");
-	texShared->AddTextureToMaterial("Flame5.png");
-
-	texShared->CalculateFrameStep(0.7500f);
-
-	particles->AssignAffectorKernel(particles->FindBestKernel());
-	particles->setMaterial(particles->GetMaterial()->GetMaterialName());
+	ParticleComponent* smokeEffect = ParticleFactory::CreateParticleSystem(ParticleFactory::Smoke,
+		newProjectile.get(), scene);
 			
 	RigidBodyComponent* rigidBody = new RigidBodyComponent();
 	newProjectile->AttachComponent(rigidBody);
 	rigidBody->CreateRigidBody(RigidBodyComponent::DYNAMIC);
 
 	ShapeDefinition shapeDef = ShapeDefinition();
-	//shapeDef.SetSphereGeometry(entityHalfSize.magnitude() * 0.5f);
 	shapeDef.SetSphereGeometry(0.15f);
+	shapeDef.SetFilterFlags(ArenaData::PROJECTILE);
+
 	shapeDef.AddMaterial(PhysXDataManager::GetSingletonPtr()->CreateMaterial(1.0f, 1.0f, 0.0f, "101000"));
 	physx::PxShape* shape = PhysXDataManager::GetSingletonPtr()->CreateShape(shapeDef, projName + ShapeString);
+	
 	if(shape)
 	{
 		rigidBody->AttachShape(*shape);
 		rigidBody->CreateDebugDraw();
 		rigidBody->SetUseGravity(false);
 	}
-	newProjectile->tag = TagsAndLayersManager::ProjectileTag;
+
 	newProjectile->SetScale(0.1f, 0.1f, 0.1f);
 
 	return newProjectile;

@@ -21,6 +21,8 @@ namespace ArenaData
 		ALL = GROUND + WATER + ZONE_TRIGGER + CONTESTANT + PLATFORM + PILLAR + WALL + ARENA_SURFACE + GUARD_RAIL + PROJECTILE
 	};
 
+	typedef unsigned int RaycastFilter;
+
 	///<summary>Gets the zone enum from the specified string</summary>
 	///<param name="objectName">The name of the object to check</param>
 	///<returns>The specified zone, or INVALID_ZONE if not found. Must be one of the 6 options

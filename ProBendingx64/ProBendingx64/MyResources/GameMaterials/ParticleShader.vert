@@ -5,10 +5,15 @@ uniform vec3 camPos;
 
 in vec4 vertex;
 
+
 #if USE_TEXTURE>=1
-//These will be used for animated textures
-	in vec4 uv0;
-	flat out int imageIndex;
+
+	in vec3 normal;
+	out float Rotation;
+
+	//These will be used for animated textures
+		in vec4 uv0;
+		flat out int imageIndex;
 #endif
 
 #if PER_PARTICLE_COLOUR==1
@@ -27,6 +32,9 @@ void main() {
 	Color = colour;
 	
 	#if USE_TEXTURE>=1
+	
+	 Rotation = normal.x;
+	
 	 imageIndex = int(uv0.x);
 	 #endif
 	 

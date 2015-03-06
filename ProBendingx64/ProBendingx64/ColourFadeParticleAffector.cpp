@@ -37,6 +37,10 @@ void ColourFadeParticleAffector::Update(const float gameTime, GPUResourcePointer
 		pointers.primaryColour[particleIndex].x = newColour.x;
 		pointers.primaryColour[particleIndex].y = newColour.y;
 		pointers.primaryColour[particleIndex].z = newColour.z;
+		if(percentile >= 0.0f)
+			pointers.primaryColour[particleIndex].w = newColour.w;
+		else
+			pointers.primaryColour[particleIndex].w = 0.0f;
 	}
 }
 

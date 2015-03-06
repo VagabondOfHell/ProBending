@@ -11,6 +11,7 @@ class ParticleAffector;
 class ScaleParticleAffector;
 class ColourFadeParticleAffector;
 class TextureParticleAffector;
+class RotationAffector;
 
 class FluidAndParticleBase;
 
@@ -50,6 +51,9 @@ protected:
 
 	std::shared_ptr<TextureParticleAffector> textureParticleAffector;
 	MappedGPUData* textureMappedData;
+
+	std::shared_ptr<RotationAffector> rotationParticleAffector;
+	MappedGPUData* rotationMappedData;
 
 	virtual void PrepareAffectorData(FluidAndParticleBase* particleSystem, AffectorMap::iterator affector);
 

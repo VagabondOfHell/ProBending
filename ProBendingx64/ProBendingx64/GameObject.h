@@ -1,13 +1,13 @@
 #pragma once
 #include "OgreVector3.h"
 #include "HelperFunctions.h"
-#include <map>
-#include <unordered_set>
-
 #include "Component.h"
+#include "ArenaData.h"
 
 #include "PxSimulationEventCallback.h"
 
+#include <map>
+#include <unordered_set>
 #include <vector>
 #include <memory>
 
@@ -27,6 +27,9 @@ class RigidBodyComponent;
 struct CollisionReport
 {
 	GameObject* Collider;
+
+	ArenaData::RaycastFilter ThisFilterData;
+	ArenaData::RaycastFilter OtherFilterData;
 
 	std::vector<physx::PxContactPairPoint> ContactPoints;
 

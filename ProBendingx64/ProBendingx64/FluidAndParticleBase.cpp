@@ -22,6 +22,12 @@ ParticleKernelMap::ParticleKernelMap()
 	kernelMap.insert(KernelMap::value_type(ParticleAffectorType::Scale, mainKernel));
 	kernelMap.insert(KernelMap::value_type(ParticleAffectorType::ColourToColour, mainKernel));
 	kernelMap.insert(KernelMap::value_type(ParticleAffectorType::Scale | ParticleAffectorType::ColourToColour, mainKernel));
+	kernelMap.insert(KernelMap::value_type(ParticleAffectorType::Scale | ParticleAffectorType::ColourToColour |
+		ParticleAffectorType::Texture | ParticleAffectorType::Rotation, mainKernel));
+	kernelMap.insert(KernelMap::value_type(ParticleAffectorType::Scale | ParticleAffectorType::ColourToColour |
+		ParticleAffectorType::Rotation, mainKernel));
+	kernelMap.insert(KernelMap::value_type(ParticleAffectorType::Scale | ParticleAffectorType::ColourToColour |
+		ParticleAffectorType::Texture, mainKernel));
 }
 
 FluidAndParticleBase::FluidAndParticleBase(std::shared_ptr<AbstractParticleEmitter> _emitter, 

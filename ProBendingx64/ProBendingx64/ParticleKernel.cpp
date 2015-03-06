@@ -3,6 +3,7 @@
 #include "ParticleAffectors.h"
 #include "ColourFadeParticleAffector.h"
 #include "TextureParticleAffector.h"
+#include "RotationAffector.h"
 
 #include "FluidAndParticleBase.h"
 #include "CudaModuleManager.h"
@@ -20,6 +21,7 @@ ParticleKernel::ParticleKernel(void)
 	colourMappedData = NULL;
 	scaleMappedData = NULL;
 	textureMappedData = NULL;
+	rotationMappedData = NULL;
 }
 
 ParticleKernel::~ParticleKernel(void)
@@ -116,6 +118,12 @@ void ParticleKernel::PrepareAffectorData(FluidAndParticleBase* particleSystem, A
 		allocationResult = CudaGPUData::AllocateGPUMemory(*textureMappedData, sizeof(GPUTextureAffectorParams));
 		if(allocationResult == CUDA_SUCCESS)
 			textureParticleAffector = std::dynamic_pointer_cast<TextureParticleAffector>(affector->second);
+		break;
+	case ParticleAffectorType::Rotation:
+		rotationMappedData = new MappedGPUData();
+		allocationResult = CudaGPUData::AllocateGPUMemory(*rotationMappedData, sizeof(GPURotationAffectorParams));
+		if(allocationResult == CUDA_SUCCESS)
+			rotationParticleAffector = std::dynamic_pointer_cast<RotationAffector>(affector->second);
 		break;
 	default:
 		break;
@@ -314,6 +322,13 @@ GPUParamsCollection ParticleKernel::GetAffectorDevices()
 			devPtrCollection.textureParameters = reinterpret_cast<GPUTextureAffectorParams*>(textureMappedData->devicePointer);
 	}
 
+	if(rotationMappedData)
+	{
+		copyResult = CudaGPUData::CopyHostToDevice(*rotationMappedData, rotationParticleAffector->GetGPUParamaters());
+		if(copyResult == CUDA_SUCCESS)
+			devPtrCollection.rotationParameters = reinterpret_cast<GPURotationAffectorParams*>(rotationMappedData->devicePointer);
+	}
+
 	return devPtrCollection;
 }
 
@@ -323,6 +338,7 @@ ParticleKernel* ParticleKernel::Clone()
 	clone->colourFadeAffector = NULL;
 	clone->scaleParticleAffector = NULL;
 	clone->textureParticleAffector = NULL;
+	clone->rotationParticleAffector = NULL;
 	clone->gpuData = NULL;
 
 	return clone;
@@ -346,5 +362,11 @@ void ParticleKernel::FreeAndDestroyGPUAffectorMemory()
 	{
 		CudaGPUData::FreeGPUMemory(*textureMappedData);
 		delete textureMappedData;
+	}
+
+	if(rotationMappedData)
+	{
+		CudaGPUData::FreeGPUMemory(*rotationMappedData);
+		delete rotationMappedData;
 	}
 }
