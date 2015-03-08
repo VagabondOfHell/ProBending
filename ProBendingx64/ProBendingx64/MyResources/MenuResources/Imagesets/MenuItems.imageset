@@ -1,0 +1,5 @@
+<Imageset autoScaled="" imagefile="MainMenuGUI.png" name="MenuItems" nativeHorzRes="800" nativeVertRes="600" version="2">
+    <Image autoScaled="true" height="66" name="Title_Probending" width="620" xPos="0" yPos="0" />
+    <Image height="70" name="Title_Tournament" width="620" xPos="0" yPos="69" />
+    <Image height="204" name="ProbendArenaThumbnail" width="245" xPos="0" yPos="158" />
+</Imageset>

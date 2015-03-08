@@ -1,0 +1,3 @@
+<Imageset autoScaled="" imagefile="Pro-bending_gym.png" name="GymBackground" nativeHorzRes="800" nativeVertRes="600" version="2">
+    <Image height="250" name="GymBackground" width="444" xPos="0" yPos="0" />
+</Imageset>

@@ -1,0 +1,3 @@
+<Imageset autoScaled="false" imagefile="ProbendArenaOuter.png" name="MainMenuBackgrounds" nativeHorzRes="444" nativeVertRes="250" version="2">
+    <Image autoScaled="true" height="250" name="ProbendArenaOuter" width="444" xPos="0" yPos="0" />
+</Imageset>

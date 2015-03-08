@@ -201,30 +201,6 @@ void GUIManager::RemoveScheme(const CEGUI::String& schemeName)
 	CEGUI::SchemeManager::getSingleton().destroy(schemeName);
 }
 
-bool GUIManager::mouseMoved( const OIS::MouseEvent &arg )
-{
-	defaultContext->injectMouseMove(arg.state.X.rel, arg.state.Y.rel);
-
-	if(arg.state.Z.rel)
-		defaultContext->injectMouseWheelChange(arg.state.Z.rel / 120.0f);
-	
-	return true;
-}
-
-bool GUIManager::mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID id )
-{
-	defaultContext->injectMouseButtonDown(ConvertButton(id));
-	
-	return true;
-}
-
-bool GUIManager::mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id )
-{
-	defaultContext->injectMouseButtonUp(ConvertButton(id));
-
-	return true;
-}
-
 CEGUI::MouseButton GUIManager::ConvertButton(OIS::MouseButtonID buttonID)
 {
 	switch(buttonID)
@@ -259,4 +235,19 @@ CEGUI::PushButton* const GUIManager::CreateGUIButton(const CEGUI::String& style,
 	}
 	
 	return NULL;
+}
+
+void GUIManager::InjectMouseMove(float x, float y)
+{
+	defaultContext->injectMouseMove(x, y);
+}
+
+void GUIManager::InjectMouseButtonDown(OIS::MouseButtonID button)
+{
+	defaultContext->injectMouseButtonDown(ConvertButton(button));
+}
+
+void GUIManager::InjectMouseButtonUp(OIS::MouseButtonID button)
+{
+	defaultContext->injectMouseButtonUp(ConvertButton(button));
 }

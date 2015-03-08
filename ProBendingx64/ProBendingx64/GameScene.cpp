@@ -162,8 +162,6 @@ void GameScene::Initialize()
 
 	ogreSceneManager->setAmbientLight(Ogre::ColourValue(1.0f, 1.0f, 1.0f, 1.0f));
 
-	//CreateCameraAndViewport(Ogre::ColourValue(0.0f, 0.0f, 0.0f, 0.0f), Ogre::Vector3(-10.0f, 1.0f, 0.0f));
-
 	guiManager->AddScheme("ProbendArenaGUIScheme.scheme");
 	guiManager->LoadLayout("ProbendArenaGUILayout.layout", false);
 
@@ -313,7 +311,7 @@ void GameScene::Close()
 		}
 }
 
-bool GameScene::keyPressed( const OIS::KeyEvent &arg )
+void GameScene::keyPressed( const OIS::KeyEvent &arg )
 {
 	if(arg.key == OIS::KC_W)
 	{
@@ -377,19 +375,22 @@ bool GameScene::keyPressed( const OIS::KeyEvent &arg )
 	}
 
 	if(arg.key == OIS::KC_F11)
-		save = true;
-
+	{
+			//save = true;
+	}
 	if(arg.key == OIS::KC_F2)
-		load = true;
+	{
+	//	load = true;
+	}
 
 	if(arg.key == OIS::KC_F9)
-		savePhysX = true;
+	{
+		//savePhysX = true;
+	}
 
 	if(arg.key == OIS::KC_R)
 	{
 		ChangeScreenOrientation(!horizontalScreens);
 	}
 	//	raycast = true;
-
-	return true;
 }

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<GUILayout version="4" >
+    <Window type="DefaultWindow" name="MainMenuRoot" >
+        <Property name="Area" value="{{0,0},{0,0},{1,0},{1,0}}" />
+        <Property name="MaxSize" value="{{1,0},{1,0}}" />
+        <Property name="MousePassThroughEnabled" value="true" />
+        <Property name="DistributeCapturedInputs" value="true" />
+        <Window type="Generic/Image" name="Background" >
+            <Property name="Area" value="{{0,0},{0,0},{1,0},{1,0}}" />
+            <Property name="Image" value="MainMenuBackgrounds/ProbendArenaOuter" />
+            <Property name="MaxSize" value="{{1,0},{1,0}}" />
+            <Property name="RiseOnClickEnabled" value="false" />
+        </Window>
+        <Window type="Generic/Image" name="Probending" >
+            <Property name="Area" value="{{0,0},{0.2,0},{0.45,0},{0.4,0}}" />
+            <Property name="Image" value="MenuItems/Title_Probending" />
+            <Property name="MaxSize" value="{{1,0},{1,0}}" />
+            <Property name="Rotation" value="w:0.965926 x:0 y:0 z:-0.258819" />
+            <Property name="AutoRenderingSurface" value="true" />
+        </Window>
+        <Window type="Generic/Image" name="Tournament" >
+            <Property name="Area" value="{{0,0},{0.2,0},{0.45,0},{0.4,0}}" />
+            <Property name="Image" value="MenuItems/Title_Tournament" />
+            <Property name="MaxSize" value="{{1,0},{1,0}}" />
+            <Property name="Rotation" value="w:0.965926 x:0 y:0 z:0.258819" />
+            <Property name="HorizontalAlignment" value="Right" />
+            <Property name="AutoRenderingSurface" value="true" />
+        </Window>
+        <Window type="Generic/ImageButton" name="EnterTournamentButton" >
+            <Property name="Area" value="{{0,0},{0.8,0},{0.35,0},{0.95,0}}" />
+            <Property name="Font" value="slayer11" />
+            <Property name="Text" value="Enter" />
+            <Property name="HoverImage" value="MenuControls/W_Btn_Hover" />
+            <Property name="NormalImage" value="MenuControls/W_Btn_Normal" />
+            <Property name="PushedImage" value="MenuControls/W_Btn_Click" />
+            <Property name="DisabledImage" value="MenuControls/W_Btn_Disabled" />
+            <Property name="HorizontalAlignment" value="Centre" />
+            <Window type="Generic/Label" name="EnterText" >
+                <Property name="Area" value="{{0,0},{0,0},{1,0},{0.6,0}}" />
+                <Property name="Font" value="slayer11" />
+                <Property name="Text" value="Enter" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="AlwaysOnTop" value="true" />
+                <Property name="DisabledTextColour" value="FF000000" />
+                <Property name="HorizontalAlignment" value="Centre" />
+                <Property name="WantsMultiClickEvents" value="false" />
+                <Property name="MousePassThroughEnabled" value="true" />
+                <Property name="DistributeCapturedInputs" value="true" />
+                <Property name="MouseInputPropagationEnabled" value="true" />
+            </Window>
+            <Window type="Generic/Label" name="TournamentText" >
+                <Property name="Area" value="{{0,0},{0.4,0},{1,0},{0.9,0}}" />
+                <Property name="Font" value="slayer11" />
+                <Property name="Text" value="Tournament" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="AlwaysOnTop" value="true" />
+                <Property name="DisabledTextColour" value="FF000000" />
+                <Property name="HorizontalAlignment" value="Centre" />
+                <Property name="MousePassThroughEnabled" value="true" />
+                <Property name="DistributeCapturedInputs" value="true" />
+                <Property name="MouseInputPropagationEnabled" value="true" />
+            </Window>
+        </Window>
+    </Window>
+</GUILayout>

@@ -18,10 +18,10 @@
 
 IScene::IScene(SceneManager* _owningManager, Ogre::Root* root, std::string _sceneName, std::string _resourceGroupName)
 	: physicsWorld(NULL), physxSimulating(false), physxEnabled(false), cudaContextManager(NULL), guiManager(new GUIManager()), started(false),
-	owningManager(_owningManager), resourceGroupName(_resourceGroupName), mainOgreCamera(NULL)
+	mCpuDispatcher(NULL), owningManager(_owningManager), resourceGroupName(_resourceGroupName), mainOgreCamera(NULL)
 {
 	guiManager->InitializeGUI();
-
+	
 	ogreSceneManager = root->createSceneManager(Ogre::SceneType::ST_GENERIC, _sceneName);
 }
 
@@ -234,4 +234,3 @@ bool IScene::GeometryCast(const physx::PxGeometry& geo, const physx::PxTransform
 	return physicsWorld->sweep(geo,origin, unitDir, maxDistance, outValHitResult, hitFlags,
 		physx::PxQueryFilterData(filterData, queryFlags));
 }
-

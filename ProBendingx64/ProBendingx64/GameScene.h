@@ -61,11 +61,11 @@ public:
 		}
 	}
 
-	virtual bool keyPressed( const OIS::KeyEvent &arg );
-	virtual bool keyReleased( const OIS::KeyEvent &arg ){return true;}
-	virtual bool mouseMoved( const OIS::MouseEvent &arg ) {return true;}
-	virtual bool mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID id ) {return true;}
-	virtual bool mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id ){return true;}
+	virtual void keyPressed( const OIS::KeyEvent &arg );
+	virtual void keyReleased( const OIS::KeyEvent &arg ){}
+	virtual void mouseMoved( const OIS::MouseEvent &arg ) {}
+	virtual void mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID id ) {}
+	virtual void mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id ){}
 
 
 };

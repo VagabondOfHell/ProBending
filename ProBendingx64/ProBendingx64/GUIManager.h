@@ -9,7 +9,7 @@ namespace CEGUI
 	class Window;
 }
 
-class GUIManager: public InputObserver
+class GUIManager
 {
 private:
 	static CEGUI::OgreRenderer* mRenderer;
@@ -91,8 +91,9 @@ public:
 	///<param name="schemeName">The name of the scheme to remove</param>
 	void RemoveScheme(const CEGUI::String& schemeName);
 
-	virtual bool mouseMoved( const OIS::MouseEvent &arg );
-	virtual bool mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID id );
-	virtual bool mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id );
+	void InjectMouseMove(float x, float y);
+	void InjectMouseButtonDown(OIS::MouseButtonID button);
+	void InjectMouseButtonUp(OIS::MouseButtonID button);
+
 };
 

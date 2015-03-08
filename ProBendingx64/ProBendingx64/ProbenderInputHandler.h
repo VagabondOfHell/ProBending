@@ -157,12 +157,12 @@ protected:
 #pragma endregion
 
 #pragma region Mouse and Key Input
-	virtual bool keyDown(const OIS::KeyEvent &arg);
-	virtual bool keyPressed( const OIS::KeyEvent &arg );
-	virtual bool keyReleased( const OIS::KeyEvent &arg );
-	virtual bool mouseMoved( const OIS::MouseEvent &arg );
-	virtual bool mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID id );
-	virtual bool mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id );
+	virtual void keyDown(const OIS::KeyEvent &arg);
+	virtual void keyPressed( const OIS::KeyEvent &arg );
+	virtual void keyReleased( const OIS::KeyEvent &arg );
+	virtual void mouseMoved( const OIS::MouseEvent &arg );
+	virtual void mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID id );
+	virtual void mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id );
 
 	virtual void BodyAcquired();
 

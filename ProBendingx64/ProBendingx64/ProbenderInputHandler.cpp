@@ -418,12 +418,11 @@ void ProbenderInputHandler::AudioDataReceived(AudioData* audioData)
 
 #pragma region Mouse and Keyboard Input
 
-bool ProbenderInputHandler::keyDown(const OIS::KeyEvent &arg)
+void ProbenderInputHandler::keyDown(const OIS::KeyEvent &arg)
 {
-	return true;
 }
 
-bool ProbenderInputHandler::keyPressed( const OIS::KeyEvent &arg )
+void ProbenderInputHandler::keyPressed( const OIS::KeyEvent &arg )
 {
 	if(arg.key == OIS::KC_F)
 	{
@@ -563,18 +562,15 @@ bool ProbenderInputHandler::keyPressed( const OIS::KeyEvent &arg )
 			}
 		}
 	}
-
-	return true;
 }
 
-bool ProbenderInputHandler::keyReleased( const OIS::KeyEvent &arg )
+void ProbenderInputHandler::keyReleased( const OIS::KeyEvent &arg )
 {
-	return true;
 }
 
 physx::PxVec2 prev = physx::PxVec2(0.0f, 0.0f);
 
-bool ProbenderInputHandler::mouseMoved( const OIS::MouseEvent &arg )
+void ProbenderInputHandler::mouseMoved( const OIS::MouseEvent &arg )
 {
 	using namespace physx;
 
@@ -593,19 +589,14 @@ bool ProbenderInputHandler::mouseMoved( const OIS::MouseEvent &arg )
 	}
 	
 	prev = curr;
-
-	return true;
 }
 
-bool ProbenderInputHandler::mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID id )
+void ProbenderInputHandler::mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID id )
 {
-	
-	return true;
 }
 
-bool ProbenderInputHandler::mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id )
+void ProbenderInputHandler::mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id )
 {
-	return true;
 }
 
 #pragma endregion
