@@ -228,4 +228,17 @@
     <Image height="29" name="Wood_Up_Sel_Normal" width="28" xPos="1324" yPos="315" />
     <Image height="29" name="Wood_Left_Sel_Normal" width="28" xPos="1190" yPos="315" />
     <Image height="29" name="Wood_Left_Sel_Hover" width="28" xPos="1190" yPos="418" />
+    <Image height="20" name="Dbl_Line_T_Bar" width="31" xPos="1108" yPos="554" />
+    <Image height="8" name="Dbl_Line_End_Cap" width="11" xPos="1186" yPos="543" />
+    <Image height="20" name="Dbl_Line_Corner_D_R" width="20" xPos="1193" yPos="576" />
+    <Image height="55" name="Dbl_Line_Bar" width="9" xPos="1193" yPos="610" />
+    <Image height="15" name="Sng_Line_T_Bar" width="26" xPos="1246" yPos="569" />
+    <Image height="4" name="Sng_Line_End_Cap" width="11" xPos="1315" yPos="551" />
+    <Image height="15" name="Sng_Line_Corner" width="15" xPos="1335" yPos="586" />
+    <Image height="59" name="Sng_Line_Bar" width="4" xPos="1335" yPos="612" />
+    <Image height="9" name="Dbl_Line_Bar_Horz" width="54" xPos="1215" yPos="726" />
+    <Image height="20" name="Dbl_Line_Corner_D_L" width="20" xPos="1160" yPos="576" />
+    <Image height="20" name="Dbl_Line_Corner_U_L" width="20" xPos="1161" yPos="612" />
+    <Image height="20" name="Dbl_Line_Corner_U_R" width="20" xPos="1193" yPos="677" />
+    <Image height="5" name="Sng_Line_Horz" width="59" xPos="1332" yPos="565" />
 </Imageset>

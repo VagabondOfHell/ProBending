@@ -24,13 +24,53 @@ ProjectileDatabase::ProjectileDictionary ProjectileDatabase::GetAirProjectiles(I
 	return ProjectileDictionary();
 }
 
+#pragma region Earth Element
+
 ProjectileDatabase::ProjectileDictionary ProjectileDatabase::GetEarthProjectiles(IScene* scene)
 {
 	ProjectileDictionary earthDictionary = ProjectileDictionary();
 
 	earthDictionary.insert(ProjectileDictionary::value_type(AbilityIDs::EARTH_COIN, CreateEarthCoin(scene)));
+	earthDictionary.insert(ProjectileDictionary::value_type(AbilityIDs::EARTH_JAB, CreateEarthJab(scene)));
 
 	return earthDictionary;
+}
+
+ProjectileDatabase::SharedProjectile ProjectileDatabase::CreateEarthJab(IScene* scene)
+{
+	std::string projName = AbilityIDs::EarthEnumToString(AbilityIDs::EARTH_JAB);
+
+	ProjectileAttributes earthJabAttributes = ProjectileAttributes(0.2f, 1.0f, 0.0f, 30.0f, 20.0f, 30.0f);
+
+	SharedProjectile projectile = std::make_shared<Projectile>(scene, earthJabAttributes, projName);
+	projectile->tag = TagsAndLayersManager::ProjectileTag;
+	projectile->DestructionTriggers = ArenaData::PROJECTILE | ArenaData::WATER;
+
+	MeshRenderComponent* renderComponent = new MeshRenderComponent();
+	projectile->AttachComponent(renderComponent);
+	renderComponent->LoadModel("Rock_01.mesh");
+	projectile->SetScale(0.0025f, 0.0025f, 0.0025f);
+
+	RigidBodyComponent* rigidBody = new RigidBodyComponent();
+	projectile->AttachComponent(rigidBody);
+	rigidBody->CreateRigidBody(RigidBodyComponent::DYNAMIC); //Create dynamic body at 0,0,0 with 0 rotation
+	physx::PxVec3 entityHalfSize = HelperFunctions::OgreToPhysXVec3(renderComponent->GetHalfExtents());
+
+	ShapeDefinition shapeDef = ShapeDefinition();
+	shapeDef.SetSphereGeometry(entityHalfSize.magnitude() * 0.5f);
+	//shapeDef.SetBoxGeometry(entityHalfSize);
+	shapeDef.SetFilterFlags(ArenaData::PROJECTILE);
+
+	shapeDef.AddMaterial(PhysXDataManager::GetSingletonPtr()->CreateMaterial(1.0f, 1.0f, 0.0f, "101000"));
+	physx::PxShape* shape = PhysXDataManager::GetSingletonPtr()->CreateShape(shapeDef, projName + ShapeString);
+	if(shape)
+	{
+		rigidBody->AttachShape(*shape);
+		rigidBody->CreateDebugDraw();
+		rigidBody->SetUseGravity(false);
+	}
+
+	return projectile;
 }
 
 ProjectileDatabase::SharedProjectile ProjectileDatabase::CreateEarthCoin(IScene* scene)
@@ -69,6 +109,8 @@ ProjectileDatabase::SharedProjectile ProjectileDatabase::CreateEarthCoin(IScene*
 
 	return projectile;
 }
+
+#pragma endregion
 
 ProjectileDatabase::ProjectileDictionary ProjectileDatabase::GetFireProjectiles(IScene* scene)
 {

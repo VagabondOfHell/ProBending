@@ -18,6 +18,8 @@
 
 const float ProbenderInputHandler::LEAN_RESET_DISTANCE = 0.15f;
 
+const float ProbenderInputHandler::ATTACK_PAUSE = 0.1f;
+
 ProbenderInputHandler::ProbenderInputHandler(Probender* _probenderToHandle, bool manageStance, 
 					ConfigurationLayout keyLayout/* = ConfigurationLayout()*/)
 					:keysLayout(keyLayout), activeAttack(NULL)
@@ -25,7 +27,7 @@ ProbenderInputHandler::ProbenderInputHandler(Probender* _probenderToHandle, bool
 	SetProbenderToHandle(_probenderToHandle);
 	ManageStance = manageStance;
 	canLean = true;
-
+	attackBreather = 0.0f;
 }
 
 
@@ -134,6 +136,9 @@ void ProbenderInputHandler::Update(const float gameTime)
 		if(inputManager->RegisterListenerToNewBody(this))
 			printf("Registered!\n");
 	}
+
+	if(attackBreather > 0.0f)
+		attackBreather -= gameTime;
 
 	//if no active attack, proceed through updating each gesture
 	if(!activeAttack)
@@ -266,7 +271,7 @@ void ProbenderInputHandler::HandleAttacks(const AttackData& attackData)
 
 	if(currState == StateFlags::IDLE_STATE)
 	{
-		if(!activeAttack)
+		if(!activeAttack && attackBreather <= 0.0f)
 		{
 			for (auto start = mainElementGestures.begin(); start != mainElementGestures.end(); ++start)
 			{
@@ -289,15 +294,40 @@ void ProbenderInputHandler::HandleAttacks(const AttackData& attackData)
 						break;
 					}
 					proj->CasterContestantID = probender->contestantID;
+					
+					MeshRenderComponent* renderComp = (MeshRenderComponent*)proj->GetComponent(Component::MESH_RENDER_COMPONENT);
 
-					proj->SetWorldPosition(probender->GetWorldPosition() +
-						probender->Forward() * 2.0f);
+					Ogre::Vector3 spawnPos = activeAttack->GetSpawnPosition();
+					float val = spawnPos.x;
+					spawnPos.x = spawnPos.z;
+					spawnPos.z = val;
+
+					printf("%f, %f, %f\n", spawnPos.x, spawnPos.y, spawnPos.z);
+
+					proj->SetWorldPosition(probender->GetWorldPosition() + spawnPos
+						+ (probender->Forward() * renderComp->GetHalfExtents().x ));
+						//probender->Forward() * 2.0f);
+
 					proj->SetWorldOrientation(1.0f, 0.0f, 0.0f, 0.0f);
 
 					proj->GetRigidBody()->SetUseGravity(false);
 					//proj->GetRigidBody()->PutToSleep();
 
-					activeAttack->SetActiveProjectile(proj.get(), true);
+					if(activeAttack->LaunchOnCreate)
+					{
+						proj->GetRigidBody()->WakeUp();
+						proj->GetRigidBody()->SetUseGravity(true);
+						//Launch the Projectile
+						proj->LaunchProjectile(HelperFunctions::OgreToPhysXVec3(probender->Forward()), 
+							probender->GetInGameData().CurrentAttributes.GetBonusAttackSpeed(),
+							probender->GetInGameData().CurrentAttributes.GetBonusAttackDamage());
+
+						activeAttack = NULL;
+						probender->stateManager.SetStateImmediate(StateFlags::IDLE_STATE, 0.0f);
+						attackBreather = ATTACK_PAUSE;
+					}
+					else
+						activeAttack->SetActiveProjectile(proj.get(), true);
 
 					break;
 				}
@@ -312,15 +342,21 @@ void ProbenderInputHandler::HandleAttacks(const AttackData& attackData)
 		{
 			Projectile* proj = activeAttack->GetProjectile();
 
-			proj->GetRigidBody()->WakeUp();
-			proj->GetRigidBody()->SetUseGravity(true);
-			//Launch the Projectile
-			proj->LaunchProjectile(HelperFunctions::OgreToPhysXVec3(probender->Forward()), 
-				probender->GetInGameData().CurrentAttributes.GetBonusAttackSpeed(),
-				probender->GetInGameData().CurrentAttributes.GetBonusAttackDamage());
+			if(proj)
+			{
+				proj->GetRigidBody()->WakeUp();
+				proj->GetRigidBody()->SetUseGravity(true);
+				//Launch the Projectile
+				proj->LaunchProjectile(HelperFunctions::OgreToPhysXVec3(probender->Forward()), 
+					probender->GetInGameData().CurrentAttributes.GetBonusAttackSpeed(),
+					probender->GetInGameData().CurrentAttributes.GetBonusAttackDamage());
 			
-			activeAttack = NULL;
-			probender->stateManager.SetState(StateFlags::IDLE_STATE, 0.0f);
+				activeAttack = NULL;
+				attackBreather = ATTACK_PAUSE;
+
+				probender->stateManager.SetState(StateFlags::IDLE_STATE, 0.0f);
+			}
+			
 		}
 	}
 }
@@ -520,7 +556,7 @@ void ProbenderInputHandler::keyPressed( const OIS::KeyEvent &arg )
 		else if(probender->GetCurrentElement() == ElementEnum::Earth)
 		{
 			SharedProjectile attack = probender->GetOwningArena()->
-				GetProjectileManager()->CreateProjectile(ElementEnum::Earth, AbilityIDs::EARTH_COIN);
+				GetProjectileManager()->CreateProjectile(ElementEnum::Earth, AbilityIDs::EARTH_JAB);
 
 			if(attack)
 			{
@@ -529,10 +565,12 @@ void ProbenderInputHandler::keyPressed( const OIS::KeyEvent &arg )
 				attack->Enable();
 				attack->GetRigidBody()->SetUseGravity(true);
 
+				MeshRenderComponent* renderComp = (MeshRenderComponent*)attack->GetComponent(Component::MESH_RENDER_COMPONENT);
+
 				Ogre::Vector3 camDir = probender->Forward();
 
-				attack->SetWorldPosition((probender->GetWorldPosition() +
-					probender->Forward() * 2.0f));
+				attack->SetWorldPosition(probender->GetWorldPosition() + 
+					(probender->Forward() * (renderComp->GetHalfExtents().x * 2)));
 				attack->SetWorldOrientation(1.0f, 0.0f, 0.0f, 0.0f);
 
 				/*((RigidBodyComponent*)attack->GetComponent(Component::RIGID_BODY_COMPONENT))->ApplyImpulse(

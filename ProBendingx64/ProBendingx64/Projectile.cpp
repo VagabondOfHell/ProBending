@@ -64,8 +64,8 @@ void Projectile::OnCollisionEnter(const CollisionReport& collision)
 				GenerateRandom(Attributes.MinKnockback, Attributes.MaxKnockback);
 
 			bender->ApplyProjectileCollision(damage, knockback);	
+			Disable();
 		}
-		Disable();
 	}
 
 	if(DestructionTriggers > 0)

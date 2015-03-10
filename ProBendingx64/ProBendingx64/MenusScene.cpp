@@ -10,16 +10,30 @@
 MenusScene::MenusScene(void)
 	:IScene(NULL, NULL, "MenusScene", "MenusResources")
 {
+	for (unsigned int i = 0; i < Screens::Count; ++i)
+	{
+		handlers[i] = NULL;
+	}
 }
 
 MenusScene::MenusScene(SceneManager* _owningManager, Ogre::Root* root, Screens screenToSet)
 	:IScene(_owningManager, root, "MenusScene", "MenusResources"), currentScreen(screenToSet)
 {
-
+	for (unsigned int i = 0; i < Screens::Count; ++i)
+	{
+		handlers[i] = NULL;
+	}
 }
 
 MenusScene::~MenusScene(void)
 {
+	for (unsigned int i = 0; i < Screens::Count; ++i)
+	{
+		if(handlers[i])
+		{
+			delete handlers[i];
+		}
+	}
 }
 
 void MenusScene::Initialize()
@@ -29,12 +43,16 @@ void MenusScene::Initialize()
 	player1Nav = MenuNavigator(this);
 	player2Nav = MenuNavigator(this);
 
+	Player1Data.MainElement = ElementEnum::Air;
+	Player2Data.MainElement = ElementEnum::Air;
+
 	InputNotifier::GetInstance()->AddObserver(&player1Nav);
 	InputNotifier::GetInstance()->AddObserver(&player2Nav);
 
 	guiManager->AddScheme("MainMenu.scheme");
 	guiManager->LoadLayout("MainMenuLayout.layout", nullptr);
 	guiManager->LoadLayout("GameSetupMenu.layout", nullptr);
+	guiManager->LoadLayout("CharacterSetupMenu.layout", nullptr);
 
 	handlers[Screens::MainMenu] = new MainMenuHandler(this);
 	handlers[Screens::CharacterSetup] = new CharacterMenuHandler(this);
@@ -73,10 +91,12 @@ void MenusScene::SetScreen(Screens screenToSet)
 		return;
 
 	handlers[currentScreen]->Hide();
+	//handlers[currentScreen]->Disable();
 
 	currentScreen = screenToSet;
 
 	handlers[currentScreen]->Show();
+	//handlers[currentScreen]->Enable();
 
 	switch (screenToSet)
 	{
@@ -89,4 +109,9 @@ void MenusScene::SetScreen(Screens screenToSet)
 	default:
 		break;
 	}
+}
+
+void MenusScene::SwitchToGame()
+{
+
 }

@@ -24,13 +24,31 @@ bool MenuHandler::IsVisible()
 void MenuHandler::Show()
 {
 	if(rootWindow)
+	{
 		rootWindow->setVisible(true);
+		rootWindow->activate();
+	}
 }
 
 void MenuHandler::Hide()
 {
 	if(rootWindow)
+	{
 		rootWindow->setVisible(false);
+		rootWindow->deactivate();
+	}
+}
+
+void MenuHandler::Disable()
+{
+	if(rootWindow)
+		rootWindow->disable();
+}
+
+void MenuHandler::Enable()
+{
+	if(rootWindow)
+		rootWindow->enable();
 }
 
 MainMenuHandler::MainMenuHandler(IScene* _scene)
@@ -49,7 +67,7 @@ MainMenuHandler::~MainMenuHandler()
 
 bool MainMenuHandler::StartButtonClickEvent(const CEGUI::EventArgs& e)
 {
-	((MenusScene*)scene)->SetScreen(MenusScene::GameSetup);
+	((MenusScene*)scene)->SetScreen(MenusScene::CharacterSetup);
 
 	return true;
 }

@@ -36,10 +36,13 @@ public:
 	
 private:
 	static const float LEAN_RESET_DISTANCE;
+	static const float ATTACK_PAUSE; //A very short pause to prevent multiple gestures from acting at the same time
 
 	Probender* probender;
 	ProbenderStances currentStance;
 	
+	float attackBreather;
+
 	bool canLean;
 
 	std::vector<Attack> mainElementGestures;

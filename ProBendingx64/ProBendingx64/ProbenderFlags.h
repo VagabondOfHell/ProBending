@@ -203,7 +203,7 @@ namespace AbilityIDs
 {
 	typedef unsigned short AbilityID;
 	enum FireAbilities{FIRE_BLAST, FIRE_ABILITIES_COUNT};
-	enum EarthAbilities{EARTH_COIN, EARTH_ABILITIES_COUNT};
+	enum EarthAbilities{EARTH_JAB, EARTH_COIN, EARTH_ABILITIES_COUNT};
 	enum AirAbilities{AIR_ABILITIES_COUNT};
 	enum WaterAbilities{WATER_ABILITIES_COUNT};
 
@@ -224,6 +224,9 @@ namespace AbilityIDs
 	{
 		switch (earthAbilities)
 		{
+		case EARTH_JAB:
+			return "Earth_Jab";
+			break;
 		case EARTH_COIN:
 			return "Earth_Coin";
 			break;

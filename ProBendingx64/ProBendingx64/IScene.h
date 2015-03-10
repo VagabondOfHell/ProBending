@@ -186,6 +186,8 @@ public:
 	///<returns>The Ogre Scene Node used as the Root</returns>
 	Ogre::SceneNode* GetSceneRootNode()const;
 
+	inline SceneManager* const GetSceneManager()const{return owningManager;}
+
 	///<summary>Returns the Ogre Scene Manager associated with this scene</summary>
 	///<returns>The Ogre Scene Manager</returns>
 	inline Ogre::SceneManager* GetOgreSceneManager()const{return ogreSceneManager;}

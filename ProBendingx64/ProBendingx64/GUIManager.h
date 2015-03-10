@@ -85,6 +85,8 @@ public:
 
 	CEGUI::Window* GetChildWindow(const CEGUI::String& windowPath);
 
+	CEGUI::Window* GetChildWindow(const CEGUI::Window* const searchStartWindow, const CEGUI::String& pathFromPassedWindow);
+
 	///<summary>Removes a scheme from CEGUI. Unfortunately there is no way to know if this 
 	///was successful or not from CEGUI's end. Though there aren't too many instances that it would
 	///be necessary to call this function anyways</summary>

@@ -177,6 +177,25 @@ CEGUI::Window* GUIManager::GetChildWindow(const CEGUI::String& windowPath)
 	return returnElement;
 }
 
+CEGUI::Window* GUIManager::GetChildWindow(const CEGUI::Window* const searchStartWindow, const CEGUI::String& pathFromPassedWindow)
+{
+	CEGUI::Window* returnElement = NULL;
+
+	try
+	{
+		returnElement = searchStartWindow->getChild(pathFromPassedWindow);
+	}
+	catch(CEGUI::Exception e)
+	{
+		printf(e.what());
+		printf(e.getMessage().c_str());
+
+		returnElement = NULL;
+	}
+
+	return returnElement;
+}
+
 CEGUI::NamedElement* GUIManager::GetChildItem(const CEGUI::String& elementPath)
 {
 	CEGUI::NamedElement* returnElement = NULL;

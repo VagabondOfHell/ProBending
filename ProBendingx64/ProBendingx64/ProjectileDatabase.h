@@ -13,7 +13,11 @@ class ProjectileDatabase
 
 	static const std::string ShapeString;
 
+	static SharedProjectile CreateEarthJab(IScene* scene);
 	static SharedProjectile CreateEarthCoin(IScene* scene);
+
+
+
 	static SharedProjectile CreateFireBlast(IScene* scene);
 
 public:

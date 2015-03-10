@@ -5,6 +5,25 @@
 
 void AttackDatabase::GetEarthAttacks(ProjectileManager* projManager, std::vector<Attack>& outVal)
 {
+	outVal.reserve(5);
+
+	AttackParams earthJabParams = AttackParams();
+
+	AttackGesture* earthJabCreateGesture = new AttackGesture();
+	earthJabCreateGesture->AddCustomEvaluator(0.0f, &AttackGestureEvaluators::ArmPunchGesture, GestureEnums::BODYSIDE_EITHER);
+
+	ProjectileIdentifier earthJabID = ProjectileIdentifier();
+	earthJabID.Element = ElementEnum::Earth; earthJabID.AbilityID = AbilityIDs::EARTH_JAB;
+
+	earthJabParams.CreationGesture = earthJabCreateGesture;
+	earthJabParams.LaunchGesture = NULL;
+	earthJabParams.ProjController = NULL;
+	earthJabParams.PositionCalculator = SpawnPositionCalculator(GestureEnums::TRANRULE_SAME, GestureEnums::BODYSIDE_EITHER,
+		SpawnPositionCalculator::LIMB_HANDS, SpawnPositionCalculator::CALC_OPTIONS_JOINT_POSITION);
+	earthJabParams.LaunchOnCreate = true;
+
+	outVal.emplace_back(0.20f, projManager, earthJabID, earthJabParams);
+
 	AttackParams earthCoinParams = AttackParams();
 
 	AttackGesture* earthCoinCreateGesture = new AttackGesture();
@@ -14,7 +33,7 @@ void AttackDatabase::GetEarthAttacks(ProjectileManager* projManager, std::vector
 	
 	//Controller that uses the same hand of the knee to control
 	HandMoveController* earthCoinController = new HandMoveController(NULL, HandMoveController::CH_RIGHT,
-		physx::PxVec3(-2.0f, 0.0f, 0.0f), physx::PxVec3(2.0f, 2.0f, 2.0f), GestureEnums::TRANRULE_SAME);
+		physx::PxVec3(-0.50f, -0.20f, 0.0f), physx::PxVec3(0.50f, 0.50f, 0.50f), GestureEnums::TRANRULE_SAME);
 
 	//Punch with opposite to the controlling hand to launch the rock
 	AttackGesture* earthCoinLaunchGesture = new AttackGesture();
@@ -27,10 +46,13 @@ void AttackDatabase::GetEarthAttacks(ProjectileManager* projManager, std::vector
 	earthCoinParams.CreationGesture = earthCoinCreateGesture;
 	earthCoinParams.LaunchGesture = earthCoinLaunchGesture;
 	earthCoinParams.ProjController = earthCoinController;
+	earthCoinParams.PositionCalculator = SpawnPositionCalculator(GestureEnums::TRANRULE_SAME, GestureEnums::BODYSIDE_EITHER,
+		SpawnPositionCalculator::LIMB_HANDS, SpawnPositionCalculator::CALC_OPTIONS_JOINT_POSITION);
 
 	//Use emplace to avoid the destructor being called (we could implement move or copy semantics to do deep copies,
 	//but it's more efficient this way). May have to change this if problems in the future
 	outVal.emplace_back(1.0f, projManager, earthCoinID, earthCoinParams);
+
 }
 
 void AttackDatabase::GetFireAttacks(ProjectileManager* projManager, std::vector<Attack>& outVal)

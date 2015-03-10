@@ -9,7 +9,7 @@ Attack::Attack(float attackCooldown /*= 0.0f*/, ProjectileManager* projManager/*
 			   ProjectileController* controller /*= NULL*/, AttackGesture* _launchGesture /*= NULL*/)
 	:creationGesture(_creationGesture), launchGesture(_launchGesture), currentState(AS_NONE), projectileController(controller),
 		AttackCooldown(attackCooldown), cooldownTimePassed(0.0f), projectileIdentifier(projID),
-		projectileManager(projManager)
+		projectileManager(projManager), LaunchOnCreate(false)
 {
 }
 
@@ -18,7 +18,8 @@ Attack::Attack(float attackCooldown /*= 0.0f*/, ProjectileManager* projManager /
 		:creationGesture(params.CreationGesture), launchGesture(params.LaunchGesture), currentState(AS_NONE), 
 		projectileController(params.ProjController),
 		AttackCooldown(attackCooldown), cooldownTimePassed(0.0f), projectileIdentifier(projID),
-		projectileManager(projManager)
+		projectileManager(projManager), spawnPositionCalculator(params.PositionCalculator), spawnPosition(0.0f),
+		LaunchOnCreate(params.LaunchOnCreate)
 {
 }
 
@@ -48,7 +49,8 @@ void Attack::Update(float gameTime)
 		break;
 		//If in the control state, check if the projectile should be launched
 	case Attack::AS_CONTROLLED:
-		launchGesture->Update(gameTime);
+		if(launchGesture)
+			launchGesture->Update(gameTime);
 		break;
 		//If in the launched state, do nothing
 	case Attack::AS_LAUNCHED:
@@ -76,11 +78,17 @@ Attack::AttackState Attack::Evaluate(const AttackData& bodyData)
 			{
 				currentState = AS_CREATED;
 
+				if(bodyData.CurrentData)
+					spawnPosition = spawnPositionCalculator.CalculateSpawnPoint(result, bodyData);
+				else
+					spawnPosition = Ogre::Vector3(0.0f);
+
 				//Let the controller update which side it should process based on the results
 				if(projectileController)
 					projectileController->ReceivePreviousResults(result);
 
-				launchGesture->TransitionFromGesture(result);
+				if(launchGesture)
+					launchGesture->TransitionFromGesture(result);
 			}
 		}
 		
@@ -104,6 +112,9 @@ Attack::AttackState Attack::Evaluate(const AttackData& bodyData)
 				currentState = AS_LAUNCHED;
 			}
 		}
+		else
+			currentState = AS_LAUNCHED;
+
 		break;
 	case Attack::AS_LAUNCHED:
 
@@ -124,9 +135,12 @@ void Attack::Reset()
 	cooldownTimePassed = 0.0f;
 
 	creationGesture->Reset();
-	launchGesture->Reset();
 
-	projectileController->projectile = NULL;
+	if(launchGesture)
+		launchGesture->Reset();
+
+	if(projectileController)
+		projectileController->projectile = NULL;
 
 	//Destroy the projectile instance
 	currentState = AS_NONE;

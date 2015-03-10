@@ -1,0 +1,1360 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<GUILayout version="4" >
+    <Window type="DefaultWindow" name="CharacterSetupRoot" >
+        <Property name="Area" value="{{0,0},{0,0},{1,0},{1,0}}" />
+        <Property name="MaxSize" value="{{1,0},{1,0}}" />
+        <Window type="Generic/Image" name="Background" >
+            <Property name="Area" value="{{0,0},{0,0},{1,0},{1,0}}" />
+            <Property name="Image" value="GymBackground/GymBackground" />
+            <Property name="MaxSize" value="{{1,0},{1,0}}" />
+            <Property name="ZOrderingEnabled" value="false" />
+            <Property name="RiseOnClickEnabled" value="false" />
+        </Window>
+        <Window type="Generic/Image" name="CenterSplit" >
+            <Property name="Area" value="{{0,0},{0,0},{0.01,0},{0.8,0}}" />
+            <Property name="Image" value="MenuControls/Dbl_Line_Bar" />
+            <Property name="MaxSize" value="{{1,0},{1,0}}" />
+            <Property name="HorzFormatting" value="LeftAligned" />
+            <Property name="VerticalAlignment" value="Bottom" />
+            <Property name="HorizontalAlignment" value="Centre" />
+        </Window>
+        <Window type="DefaultWindow" name="P2StatsRootWindow" >
+            <Property name="Area" value="{{0.51,0},{0.38,0},{1,0},{0.88,0}}" />
+            <Property name="MaxSize" value="{{1,0},{1,0}}" />
+            <Window type="Generic/Image" name="Background" >
+                <Property name="Area" value="{{0,0},{0,0},{1,0},{1,0}}" />
+                <Property name="Image" value="PaperBackground/PaperBackground" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="RiseOnClickEnabled" value="false" />
+            </Window>
+            <Window type="Generic/Image" name="FrameTop" >
+                <Property name="Area" value="{{0,0},{0,0},{1,0},{0,10}}" />
+                <Property name="Image" value="MenuControls/Dbl_Line_Bar_Horz" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="VertFormatting" value="TopAligned" />
+                <Property name="AutoRenderingSurface" value="true" />
+            </Window>
+            <Window type="Generic/Image" name="FrameRight" >
+                <Property name="Area" value="{{0,0},{0,0},{0,10},{1,0}}" />
+                <Property name="Image" value="MenuControls/Dbl_Line_Bar" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="AlwaysOnTop" value="true" />
+                <Property name="HorzFormatting" value="LeftAligned" />
+                <Property name="HorizontalAlignment" value="Right" />
+                <Property name="AutoRenderingSurface" value="true" />
+            </Window>
+            <Window type="Generic/Image" name="FrameBottom" >
+                <Property name="Area" value="{{0,0},{0,0},{1,0},{0,9}}" />
+                <Property name="Image" value="MenuControls/Dbl_Line_Bar_Horz" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="VertFormatting" value="TopAligned" />
+                <Property name="VerticalAlignment" value="Bottom" />
+                <Property name="AutoRenderingSurface" value="true" />
+            </Window>
+            <Window type="Generic/Image" name="FrameLeft" >
+                <Property name="Area" value="{{0,0},{0,0},{0,10},{1,0}}" />
+                <Property name="Image" value="MenuControls/Dbl_Line_Bar" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="HorzFormatting" value="LeftAligned" />
+                <Property name="AutoRenderingSurface" value="true" />
+            </Window>
+            <Window type="Generic/ImageButton" name="OKButton" >
+                <Property name="Area" value="{{-0.254,0},{0.2,0},{0.196,0},{0.38,0}}" />
+                <Property name="HoverImage" value="MenuControls/A_Btn_Hover" />
+                <Property name="AlwaysOnTop" value="true" />
+                <Property name="NormalImage" value="MenuControls/A_Btn_Normal" />
+                <Property name="PushedImage" value="MenuControls/A_Btn_Click" />
+                <Property name="DisabledImage" value="MenuControls/A_Btn_Disabled" />
+                <Property name="ClippedByParent" value="false" />
+                <Property name="VerticalAlignment" value="Bottom" />
+                <Property name="HorizontalAlignment" value="Centre" />
+                <Window type="Generic/Label" name="Text" >
+                    <Property name="Area" value="{{0,0},{0,0},{1,0},{1,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="OK" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="MousePassThroughEnabled" value="true" />
+                    <Property name="MouseInputPropagationEnabled" value="true" />
+                </Window>
+            </Window>
+            <Window type="Generic/ImageButton" name="CancelButton" >
+                <Property name="Area" value="{{0.254,0},{0.2,0},{0.704,0},{0.38,0}}" />
+                <Property name="HoverImage" value="MenuControls/A_Btn_Hover" />
+                <Property name="AlwaysOnTop" value="true" />
+                <Property name="NormalImage" value="MenuControls/A_Btn_Normal" />
+                <Property name="PushedImage" value="MenuControls/A_Btn_Click" />
+                <Property name="DisabledImage" value="MenuControls/A_Btn_Disabled" />
+                <Property name="ClippedByParent" value="false" />
+                <Property name="VerticalAlignment" value="Bottom" />
+                <Property name="HorizontalAlignment" value="Centre" />
+                <Window type="Generic/Label" name="Text" >
+                    <Property name="Area" value="{{0,0},{0,0},{1,0},{1,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="Cancel" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="MousePassThroughEnabled" value="true" />
+                    <Property name="MouseInputPropagationEnabled" value="true" />
+                </Window>
+            </Window>
+            <Window type="DefaultWindow" name="LuckAttributeRoot" >
+                <Property name="Area" value="{{0,0},{0.85,0},{0.97,0},{0.95,0}}" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="AlwaysOnTop" value="true" />
+                <Property name="HorizontalAlignment" value="Centre" />
+                <Window type="Generic/Label" name="Name" >
+                    <Property name="Area" value="{{-0.572,0},{0,0},{-0.142,0},{1,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="Luck:" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="HorizontalAlignment" value="Right" />
+                </Window>
+                <Window type="Generic/Label" name="Value" >
+                    <Property name="Area" value="{{0.2,0},{0,0},{0.4,0},{1,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="100" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                </Window>
+                <Window type="Generic/ImageButton" name="MinusButton" >
+                    <Property name="Area" value="{{0,0},{0,0},{0.1,0},{1,0}}" />
+                    <Property name="HoverImage" value="MenuControls/A_Hor_Minus_Hover" />
+                    <Property name="NormalImage" value="MenuControls/A_Hor_Minus_Normal" />
+                    <Property name="PushedImage" value="MenuControls/A_Hor_Minus_Click" />
+                    <Property name="DisabledImage" value="MenuControls/A_Hor_Minus_Disabled" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                </Window>
+                <Window type="Generic/ImageButton" name="AddButton" >
+                    <Property name="Area" value="{{0.4,0},{0,0},{0.5,0},{1,0}}" />
+                    <Property name="HoverImage" value="MenuControls/A_Hor_Add_Hover" />
+                    <Property name="NormalImage" value="MenuControls/A_Hor_Add_Normal" />
+                    <Property name="PushedImage" value="MenuControls/A_Hor_Add_Click" />
+                    <Property name="DisabledImage" value="MenuControls/A_Hor_Add_Disabled" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                </Window>
+            </Window>
+            <Window type="DefaultWindow" name="AvailablePointsRoot" >
+                <Property name="Area" value="{{0,0},{0.06,0},{1,0},{0.16,0}}" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="AlwaysOnTop" value="true" />
+                <Window type="Generic/Label" name="Label" >
+                    <Property name="Area" value="{{-0.25,0},{0.02,0},{0.4,0},{1.02,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="Available Points:" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="HorizontalAlignment" value="Right" />
+                </Window>
+                <Window type="Generic/Label" name="Value" >
+                    <Property name="Area" value="{{-0.03,0},{0,0},{0.17,0},{1,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="100" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="HorizontalAlignment" value="Right" />
+                </Window>
+            </Window>
+            <Window type="DefaultWindow" name="EnduranceAttributeRoot" >
+                <Property name="Area" value="{{0,0},{0.21,0},{0.97,0},{0.31,0}}" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="AlwaysOnTop" value="true" />
+                <Property name="HorizontalAlignment" value="Centre" />
+                <Window type="Generic/Label" name="Name" >
+                    <Property name="Area" value="{{-0.275,0},{0,0},{0.155,0},{1,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="Endurance:" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                </Window>
+                <Window type="Generic/Label" name="Value" >
+                    <Property name="Area" value="{{0.2,0},{0,0},{0.4,0},{1,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="100" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                </Window>
+                <Window type="Generic/ImageButton" name="MinusButton" >
+                    <Property name="Area" value="{{0,0},{0,0},{0.1,0},{1,0}}" />
+                    <Property name="HoverImage" value="MenuControls/A_Hor_Minus_Hover" />
+                    <Property name="NormalImage" value="MenuControls/A_Hor_Minus_Normal" />
+                    <Property name="PushedImage" value="MenuControls/A_Hor_Minus_Click" />
+                    <Property name="DisabledImage" value="MenuControls/A_Hor_Minus_Disabled" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                </Window>
+                <Window type="Generic/ImageButton" name="AddButton" >
+                    <Property name="Area" value="{{0.4,0},{0,0},{0.5,0},{1,0}}" />
+                    <Property name="HoverImage" value="MenuControls/A_Hor_Add_Hover" />
+                    <Property name="NormalImage" value="MenuControls/A_Hor_Add_Normal" />
+                    <Property name="PushedImage" value="MenuControls/A_Hor_Add_Click" />
+                    <Property name="DisabledImage" value="MenuControls/A_Hor_Add_Disabled" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                </Window>
+            </Window>
+            <Window type="DefaultWindow" name="RecoveryAttributeRoot" >
+                <Property name="Area" value="{{0,0},{0.34,0},{0.97,0},{0.44,0}}" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="AlwaysOnTop" value="true" />
+                <Property name="HorizontalAlignment" value="Centre" />
+                <Window type="Generic/Label" name="Name" >
+                    <Property name="Area" value="{{-0.275,0},{0,0},{0.095,0},{1,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="Recovery:" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                </Window>
+                <Window type="Generic/Label" name="Value" >
+                    <Property name="Area" value="{{0.2,0},{0,0},{0.4,0},{1,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="100" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                </Window>
+                <Window type="Generic/ImageButton" name="MinusButton" >
+                    <Property name="Area" value="{{0,0},{0,0},{0.1,0},{1,0}}" />
+                    <Property name="HoverImage" value="MenuControls/A_Hor_Minus_Hover" />
+                    <Property name="NormalImage" value="MenuControls/A_Hor_Minus_Normal" />
+                    <Property name="PushedImage" value="MenuControls/A_Hor_Minus_Click" />
+                    <Property name="DisabledImage" value="MenuControls/A_Hor_Minus_Disabled" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                </Window>
+                <Window type="Generic/ImageButton" name="AddButton" >
+                    <Property name="Area" value="{{0.4,0},{0,0},{0.5,0},{1,0}}" />
+                    <Property name="HoverImage" value="MenuControls/A_Hor_Add_Hover" />
+                    <Property name="NormalImage" value="MenuControls/A_Hor_Add_Normal" />
+                    <Property name="PushedImage" value="MenuControls/A_Hor_Add_Click" />
+                    <Property name="DisabledImage" value="MenuControls/A_Hor_Add_Disabled" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                </Window>
+            </Window>
+            <Window type="DefaultWindow" name="DefenseAttributeRoot" >
+                <Property name="Area" value="{{0,0},{0.595,0},{0.97,0},{0.695,0}}" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="AlwaysOnTop" value="true" />
+                <Property name="HorizontalAlignment" value="Centre" />
+                <Window type="Generic/Label" name="Name" >
+                    <Property name="Area" value="{{-0.275,0},{0,0},{-0.005,0},{1,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="Defense:" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                </Window>
+                <Window type="Generic/Label" name="Value" >
+                    <Property name="Area" value="{{0.2,0},{0,0},{0.4,0},{1,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="100" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                </Window>
+                <Window type="Generic/ImageButton" name="MinusButton" >
+                    <Property name="Area" value="{{0,0},{0,0},{0.1,0},{1,0}}" />
+                    <Property name="HoverImage" value="MenuControls/A_Hor_Minus_Hover" />
+                    <Property name="NormalImage" value="MenuControls/A_Hor_Minus_Normal" />
+                    <Property name="PushedImage" value="MenuControls/A_Hor_Minus_Click" />
+                    <Property name="DisabledImage" value="MenuControls/A_Hor_Minus_Disabled" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                </Window>
+                <Window type="Generic/ImageButton" name="AddButton" >
+                    <Property name="Area" value="{{0.4,0},{0,0},{0.5,0},{1,0}}" />
+                    <Property name="HoverImage" value="MenuControls/A_Hor_Add_Hover" />
+                    <Property name="NormalImage" value="MenuControls/A_Hor_Add_Normal" />
+                    <Property name="PushedImage" value="MenuControls/A_Hor_Add_Click" />
+                    <Property name="DisabledImage" value="MenuControls/A_Hor_Add_Disabled" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                </Window>
+            </Window>
+            <Window type="DefaultWindow" name="AgilityAttributeRoot" >
+                <Property name="Area" value="{{0,0},{0.725,0},{0.97,0},{0.825,0}}" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="AlwaysOnTop" value="true" />
+                <Property name="HorizontalAlignment" value="Centre" />
+                <Window type="Generic/Label" name="Name" >
+                    <Property name="Area" value="{{-0.275,0},{0,0},{0.155,0},{1,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="Agility:" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                </Window>
+                <Window type="Generic/Label" name="Value" >
+                    <Property name="Area" value="{{0.2,0},{0,0},{0.4,0},{1,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="100" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                </Window>
+                <Window type="Generic/ImageButton" name="MinusButton" >
+                    <Property name="Area" value="{{0,0},{0,0},{0.1,0},{1,0}}" />
+                    <Property name="HoverImage" value="MenuControls/A_Hor_Minus_Hover" />
+                    <Property name="NormalImage" value="MenuControls/A_Hor_Minus_Normal" />
+                    <Property name="PushedImage" value="MenuControls/A_Hor_Minus_Click" />
+                    <Property name="DisabledImage" value="MenuControls/A_Hor_Minus_Disabled" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                </Window>
+                <Window type="Generic/ImageButton" name="AddButton" >
+                    <Property name="Area" value="{{0.4,0},{0,0},{0.5,0},{1,0}}" />
+                    <Property name="HoverImage" value="MenuControls/A_Hor_Add_Hover" />
+                    <Property name="NormalImage" value="MenuControls/A_Hor_Add_Normal" />
+                    <Property name="PushedImage" value="MenuControls/A_Hor_Add_Click" />
+                    <Property name="DisabledImage" value="MenuControls/A_Hor_Add_Disabled" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                </Window>
+            </Window>
+            <Window type="DefaultWindow" name="StrengthAttributeRoot" >
+                <Property name="Area" value="{{0,0},{0.467,0},{0.97,0},{0.567,0}}" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="AlwaysOnTop" value="true" />
+                <Property name="HorizontalAlignment" value="Centre" />
+                <Window type="Generic/Label" name="Name" >
+                    <Property name="Area" value="{{-0.275,0},{0,0},{0.085,0},{1,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="Strength:" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                </Window>
+                <Window type="Generic/Label" name="Value" >
+                    <Property name="Area" value="{{0.2,0},{0,0},{0.4,0},{1,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="100" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                </Window>
+                <Window type="Generic/ImageButton" name="MinusButton" >
+                    <Property name="Area" value="{{0,0},{0,0},{0.1,0},{1,0}}" />
+                    <Property name="HoverImage" value="MenuControls/A_Hor_Minus_Hover" />
+                    <Property name="NormalImage" value="MenuControls/A_Hor_Minus_Normal" />
+                    <Property name="PushedImage" value="MenuControls/A_Hor_Minus_Click" />
+                    <Property name="DisabledImage" value="MenuControls/A_Hor_Minus_Disabled" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                </Window>
+                <Window type="Generic/ImageButton" name="AddButton" >
+                    <Property name="Area" value="{{0.4,0},{0,0},{0.5,0},{1,0}}" />
+                    <Property name="HoverImage" value="MenuControls/A_Hor_Add_Hover" />
+                    <Property name="NormalImage" value="MenuControls/A_Hor_Add_Normal" />
+                    <Property name="PushedImage" value="MenuControls/A_Hor_Add_Click" />
+                    <Property name="DisabledImage" value="MenuControls/A_Hor_Add_Disabled" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                </Window>
+            </Window>
+        </Window>
+        <Window type="Generic/Image" name="TitleBacking" >
+            <Property name="Area" value="{{0,0},{0.02,0},{0.6,0},{0.195,0}}" />
+            <Property name="Image" value="MenuControls/Wood_Title_Bar" />
+            <Property name="MaxSize" value="{{1,0},{1,0}}" />
+            <Property name="HorizontalAlignment" value="Centre" />
+            <Window type="Generic/Label" name="Title" >
+                <Property name="Area" value="{{0,0},{0,0},{1,0},{1,0}}" />
+                <Property name="Font" value="slayer24" />
+                <Property name="Text" value="Character Set-Up" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="HorzFormatting" value="WordWrapCentreAligned" />
+                <Property name="NormalTextColour" value="FFFFAF00" />
+            </Window>
+        </Window>
+        <Window type="DefaultWindow" name="P1LoadOrCreateRootWindow" >
+            <Property name="Area" value="{{0.07,0},{0.38,0},{0.42,0},{0.88,0}}" />
+            <Property name="MaxSize" value="{{1,0},{1,0}}" />
+            <Property name="Visible" value="false" />
+            <Window type="Generic/Image" name="Background" >
+                <Property name="Area" value="{{0,0},{0,0},{1,0},{1,0}}" />
+                <Property name="Image" value="PaperBackground/PaperBackground" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+            </Window>
+            <Window type="Generic/ImageButton" name="CreateCharButton" >
+                <Property name="Area" value="{{0,0},{-0.34,0},{0.8,0},{-0.09,0}}" />
+                <Property name="HoverImage" value="MenuControls/A_Btn_Hover" />
+                <Property name="NormalImage" value="MenuControls/A_Btn_Normal" />
+                <Property name="PushedImage" value="MenuControls/A_Btn_Click" />
+                <Property name="DisabledImage" value="MenuControls/A_Btn_Disabled" />
+                <Property name="VerticalAlignment" value="Centre" />
+                <Property name="HorizontalAlignment" value="Centre" />
+                <Window type="Generic/Label" name="Text" >
+                    <Property name="Area" value="{{0,0},{0,0},{0.8,0},{1,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="Create Character" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="HorzFormatting" value="WordWrapCentreAligned" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                    <Property name="MousePassThroughEnabled" value="true" />
+                    <Property name="MouseInputPropagationEnabled" value="true" />
+                </Window>
+            </Window>
+            <Window type="Generic/ImageButton" name="LoadCharButton" >
+                <Property name="Area" value="{{0,0},{0.34,0},{0.8,0},{0.59,0}}" />
+                <Property name="HoverImage" value="MenuControls/A_Btn_Hover" />
+                <Property name="NormalImage" value="MenuControls/A_Btn_Normal" />
+                <Property name="PushedImage" value="MenuControls/A_Btn_Click" />
+                <Property name="DisabledImage" value="MenuControls/A_Btn_Disabled" />
+                <Property name="VerticalAlignment" value="Centre" />
+                <Property name="HorizontalAlignment" value="Centre" />
+                <Window type="Generic/Label" name="Text" >
+                    <Property name="Area" value="{{0,0},{0,0},{0.8,0},{1,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="Load Character" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="HorzFormatting" value="WordWrapCentreAligned" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                    <Property name="MousePassThroughEnabled" value="true" />
+                    <Property name="MouseInputPropagationEnabled" value="true" />
+                </Window>
+            </Window>
+            <Window type="Generic/ImageButton" name="EditCharButton" >
+                <Property name="Area" value="{{0,0},{0,0},{0.8,0},{0.25,0}}" />
+                <Property name="HoverImage" value="MenuControls/A_Btn_Hover" />
+                <Property name="NormalImage" value="MenuControls/A_Btn_Normal" />
+                <Property name="PushedImage" value="MenuControls/A_Btn_Click" />
+                <Property name="DisabledImage" value="MenuControls/A_Btn_Disabled" />
+                <Property name="VerticalAlignment" value="Centre" />
+                <Property name="HorizontalAlignment" value="Centre" />
+                <Window type="Generic/Label" name="Text" >
+                    <Property name="Area" value="{{0,0},{0,0},{0.8,0},{1,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="Edit Character" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="HorzFormatting" value="WordWrapCentreAligned" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                    <Property name="MousePassThroughEnabled" value="true" />
+                    <Property name="MouseInputPropagationEnabled" value="true" />
+                </Window>
+            </Window>
+            <Window type="Generic/Image" name="FrameLeft" >
+                <Property name="Area" value="{{0,0},{0,0},{0.04,0},{1,0}}" />
+                <Property name="Image" value="MenuControls/Dbl_Line_Bar" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="HorzFormatting" value="LeftAligned" />
+                <Property name="AutoRenderingSurface" value="true" />
+            </Window>
+            <Window type="Generic/Image" name="FrameRight" >
+                <Property name="Area" value="{{0.005,0},{0,0},{0.045,0},{1,0}}" />
+                <Property name="Image" value="MenuControls/Dbl_Line_Bar" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="HorzFormatting" value="LeftAligned" />
+                <Property name="HorizontalAlignment" value="Right" />
+                <Property name="AutoRenderingSurface" value="true" />
+            </Window>
+            <Window type="Generic/Image" name="FrameTop" >
+                <Property name="Area" value="{{0,0},{0,0},{1,0},{0.03,0}}" />
+                <Property name="Image" value="MenuControls/Dbl_Line_Bar_Horz" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="VertFormatting" value="TopAligned" />
+                <Property name="AutoRenderingSurface" value="true" />
+            </Window>
+            <Window type="Generic/Image" name="FrameBottom" >
+                <Property name="Area" value="{{0,0},{0,0},{1,0},{0.03,0}}" />
+                <Property name="Image" value="MenuControls/Dbl_Line_Bar_Horz" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="VertFormatting" value="TopAligned" />
+                <Property name="VerticalAlignment" value="Bottom" />
+                <Property name="AutoRenderingSurface" value="true" />
+            </Window>
+            <Window type="Generic/ImageButton" name="DoneButton" >
+                <Property name="Area" value="{{0,0},{0.2,0},{0.7,0},{0.38,0}}" />
+                <Property name="HoverImage" value="MenuControls/A_Btn_Hover" />
+                <Property name="NormalImage" value="MenuControls/A_Btn_Normal" />
+                <Property name="PushedImage" value="MenuControls/A_Btn_Click" />
+                <Property name="DisabledImage" value="MenuControls/A_Btn_Disabled" />
+                <Property name="ClippedByParent" value="false" />
+                <Property name="VerticalAlignment" value="Bottom" />
+                <Property name="HorizontalAlignment" value="Centre" />
+                <Window type="Generic/Label" name="Text" >
+                    <Property name="Area" value="{{0,0},{0,0},{1,0},{1,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="Done" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="MousePassThroughEnabled" value="true" />
+                    <Property name="MouseInputPropagationEnabled" value="true" />
+                </Window>
+            </Window>
+        </Window>
+        <Window type="Generic/Image" name="P1NameBacking" >
+            <Property name="Area" value="{{0,0},{0.21,0},{0.49,0},{0.36,0}}" />
+            <Property name="Image" value="MenuControls/A_Lrg_Frame" />
+            <Property name="MaxSize" value="{{1,0},{1,0}}" />
+            <Property name="RiseOnClickEnabled" value="false" />
+            <Window type="Generic/Label" name="NameLabel" >
+                <Property name="Area" value="{{-0.66,0},{0.2,0},{-0.41,0},{0.5,0}}" />
+                <Property name="Font" value="slayer11" />
+                <Property name="Text" value="Name:" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="RiseOnClickEnabled" value="false" />
+                <Property name="HorizontalAlignment" value="Right" />
+            </Window>
+            <Window type="Generic/Label" name="ProbenderName" >
+                <Property name="Area" value="{{0.15,0},{0.2,0},{0.75,0},{0.5,0}}" />
+                <Property name="Font" value="slayer11" />
+                <Property name="Text" value="Probender 1" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="RiseOnClickEnabled" value="false" />
+                <Property name="HorizontalAlignment" value="Centre" />
+            </Window>
+            <Window type="Generic/Label" name="ElementLabel" >
+                <Property name="Area" value="{{-0.66,0},{0.6,0},{-0.36,0},{0.9,0}}" />
+                <Property name="Font" value="slayer11" />
+                <Property name="Text" value="Element:" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="RiseOnClickEnabled" value="false" />
+                <Property name="HorizontalAlignment" value="Right" />
+            </Window>
+            <Window type="Generic/Label" name="ProbenderElement" >
+                <Property name="Area" value="{{0.15,0},{0.6,0},{0.75,0},{0.9,0}}" />
+                <Property name="Font" value="slayer11" />
+                <Property name="Text" value="Earth" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="RiseOnClickEnabled" value="false" />
+                <Property name="HorizontalAlignment" value="Centre" />
+            </Window>
+            <Window type="Generic/ImageButton" name="L_Element_Btn" >
+                <Property name="Area" value="{{0.35,0},{0.6,0},{0.45,0},{0.9,0}}" />
+                <Property name="HoverImage" value="MenuControls/A_Left_Sel_Hover" />
+                <Property name="NormalImage" value="MenuControls/A_Left_Sel_Normal" />
+                <Property name="PushedImage" value="MenuControls/A_Left_Sel_Click" />
+                <Property name="DisabledImage" value="MenuControls/A_Left_Sel_Disabled" />
+            </Window>
+            <Window type="Generic/ImageButton" name="R_Element_Btn" >
+                <Property name="Area" value="{{0.86,0},{0.6,0},{0.96,0},{0.9,0}}" />
+                <Property name="HoverImage" value="MenuControls/A_Right_Sel_Hover" />
+                <Property name="NormalImage" value="MenuControls/A_Right_Sel_Normal" />
+                <Property name="PushedImage" value="MenuControls/A_Right_Sel_Click" />
+                <Property name="DisabledImage" value="MenuControls/A_Right_Sel_Disabled" />
+            </Window>
+            <Window type="Generic/Image" name="FrameLeft" >
+                <Property name="Area" value="{{0,0},{0,0},{0.04,0},{1,0}}" />
+                <Property name="Image" value="MenuControls/Dbl_Line_Bar" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="HorzFormatting" value="LeftAligned" />
+                <Property name="RiseOnClickEnabled" value="false" />
+                <Property name="AutoRenderingSurface" value="true" />
+            </Window>
+            <Window type="Generic/Image" name="FrameRight" >
+                <Property name="Area" value="{{0,0},{0,0},{0.024,0},{1,0}}" />
+                <Property name="Image" value="MenuControls/Dbl_Line_Bar" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="AlwaysOnTop" value="true" />
+                <Property name="HorzFormatting" value="LeftAligned" />
+                <Property name="RiseOnClickEnabled" value="false" />
+                <Property name="HorizontalAlignment" value="Right" />
+                <Property name="AutoRenderingSurface" value="true" />
+            </Window>
+            <Window type="Generic/Image" name="FrameBottom" >
+                <Property name="Area" value="{{0,0},{0,0},{1,0},{0.1,0}}" />
+                <Property name="Image" value="MenuControls/Dbl_Line_Bar_Horz" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="VertFormatting" value="TopAligned" />
+                <Property name="VerticalAlignment" value="Bottom" />
+                <Property name="RiseOnClickEnabled" value="false" />
+                <Property name="AutoRenderingSurface" value="true" />
+            </Window>
+            <Window type="Generic/Image" name="FrameTop" >
+                <Property name="Area" value="{{0,0},{0,0},{1,0},{0.1,0}}" />
+                <Property name="Image" value="MenuControls/Dbl_Line_Bar_Horz" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="VertFormatting" value="TopAligned" />
+                <Property name="RiseOnClickEnabled" value="false" />
+                <Property name="AutoRenderingSurface" value="true" />
+            </Window>
+        </Window>
+        <Window type="Generic/Image" name="P2NameBacking" >
+            <Property name="Area" value="{{0.51,0},{0.21,0},{1,0},{0.36,0}}" />
+            <Property name="Image" value="MenuControls/A_Lrg_Frame" />
+            <Property name="MaxSize" value="{{1,0},{1,0}}" />
+            <Window type="Generic/Label" name="NameLabel" >
+                <Property name="Area" value="{{-0.66,0},{0.2,0},{-0.41,0},{0.5,0}}" />
+                <Property name="Font" value="slayer11" />
+                <Property name="Text" value="Name:" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="RiseOnClickEnabled" value="false" />
+                <Property name="HorizontalAlignment" value="Right" />
+            </Window>
+            <Window type="Generic/Label" name="ProbenderName" >
+                <Property name="Area" value="{{0.15,0},{0.2,0},{0.75,0},{0.5,0}}" />
+                <Property name="Font" value="slayer11" />
+                <Property name="Text" value="Probender 2" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="RiseOnClickEnabled" value="false" />
+                <Property name="HorizontalAlignment" value="Centre" />
+            </Window>
+            <Window type="Generic/Label" name="ElementLabel" >
+                <Property name="Area" value="{{-0.66,0},{0.6,0},{-0.36,0},{0.9,0}}" />
+                <Property name="Font" value="slayer11" />
+                <Property name="Text" value="Element:" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="RiseOnClickEnabled" value="false" />
+                <Property name="HorizontalAlignment" value="Right" />
+            </Window>
+            <Window type="Generic/Label" name="ProbenderElement" >
+                <Property name="Area" value="{{0.15,0},{0.6,0},{0.75,0},{0.9,0}}" />
+                <Property name="Font" value="slayer11" />
+                <Property name="Text" value="Earth" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="RiseOnClickEnabled" value="false" />
+                <Property name="HorizontalAlignment" value="Centre" />
+            </Window>
+            <Window type="Generic/ImageButton" name="L_Element_Btn" >
+                <Property name="Area" value="{{0.35,0},{0.6,0},{0.45,0},{0.9,0}}" />
+                <Property name="HoverImage" value="MenuControls/A_Left_Sel_Hover" />
+                <Property name="NormalImage" value="MenuControls/A_Left_Sel_Normal" />
+                <Property name="PushedImage" value="MenuControls/A_Left_Sel_Click" />
+                <Property name="DisabledImage" value="MenuControls/A_Left_Sel_Disabled" />
+            </Window>
+            <Window type="Generic/ImageButton" name="R_Element_Btn" >
+                <Property name="Area" value="{{0.86,0},{0.6,0},{0.96,0},{0.9,0}}" />
+                <Property name="HoverImage" value="MenuControls/A_Right_Sel_Hover" />
+                <Property name="NormalImage" value="MenuControls/A_Right_Sel_Normal" />
+                <Property name="PushedImage" value="MenuControls/A_Right_Sel_Click" />
+                <Property name="DisabledImage" value="MenuControls/A_Right_Sel_Disabled" />
+            </Window>
+            <Window type="Generic/Image" name="FrameLeft" >
+                <Property name="Area" value="{{0,0},{0,0},{0.04,0},{1,0}}" />
+                <Property name="Image" value="MenuControls/Dbl_Line_Bar" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="HorzFormatting" value="LeftAligned" />
+                <Property name="RiseOnClickEnabled" value="false" />
+                <Property name="AutoRenderingSurface" value="true" />
+            </Window>
+            <Window type="Generic/Image" name="FrameRight" >
+                <Property name="Area" value="{{0,0},{0,0},{0.024,0},{1,0}}" />
+                <Property name="Image" value="MenuControls/Dbl_Line_Bar" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="AlwaysOnTop" value="true" />
+                <Property name="HorzFormatting" value="LeftAligned" />
+                <Property name="RiseOnClickEnabled" value="false" />
+                <Property name="HorizontalAlignment" value="Right" />
+                <Property name="AutoRenderingSurface" value="true" />
+            </Window>
+            <Window type="Generic/Image" name="FrameBottom" >
+                <Property name="Area" value="{{0,0},{0,0},{1,0},{0.1,0}}" />
+                <Property name="Image" value="MenuControls/Dbl_Line_Bar_Horz" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="VertFormatting" value="TopAligned" />
+                <Property name="VerticalAlignment" value="Bottom" />
+                <Property name="RiseOnClickEnabled" value="false" />
+                <Property name="AutoRenderingSurface" value="true" />
+            </Window>
+            <Window type="Generic/Image" name="FrameTop" >
+                <Property name="Area" value="{{0,0},{0,0},{1,0},{0.1,0}}" />
+                <Property name="Image" value="MenuControls/Dbl_Line_Bar_Horz" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="VertFormatting" value="TopAligned" />
+                <Property name="RiseOnClickEnabled" value="false" />
+                <Property name="AutoRenderingSurface" value="true" />
+            </Window>
+        </Window>
+        <Window type="DefaultWindow" name="P1LoadDialog" >
+            <Property name="Area" value="{{0.07,0},{0.38,0},{0.42,0},{0.88,0}}" />
+            <Property name="MaxSize" value="{{1,0},{1,0}}" />
+            <Window type="Generic/Image" name="Background" >
+                <Property name="Area" value="{{0,0},{0,0},{1,0},{1,0}}" />
+                <Property name="Image" value="PaperBackground/PaperBackground" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+            </Window>
+            <Window type="Generic/Image" name="FrameLeft" >
+                <Property name="Area" value="{{0,0},{0,0},{0.04,0},{1,0}}" />
+                <Property name="Image" value="MenuControls/Dbl_Line_Bar" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="HorzFormatting" value="LeftAligned" />
+                <Property name="AutoRenderingSurface" value="true" />
+            </Window>
+            <Window type="Generic/Image" name="FrameRight" >
+                <Property name="Area" value="{{0.005,0},{0,0},{0.045,0},{1,0}}" />
+                <Property name="Image" value="MenuControls/Dbl_Line_Bar" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="HorzFormatting" value="LeftAligned" />
+                <Property name="HorizontalAlignment" value="Right" />
+                <Property name="AutoRenderingSurface" value="true" />
+            </Window>
+            <Window type="Generic/Image" name="FrameTop" >
+                <Property name="Area" value="{{0,0},{0,0},{1,0},{0.03,0}}" />
+                <Property name="Image" value="MenuControls/Dbl_Line_Bar_Horz" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="VertFormatting" value="TopAligned" />
+                <Property name="AutoRenderingSurface" value="true" />
+            </Window>
+            <Window type="Generic/Image" name="FrameBottom" >
+                <Property name="Area" value="{{0,0},{0,0},{1,0},{0.03,0}}" />
+                <Property name="Image" value="MenuControls/Dbl_Line_Bar_Horz" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="VertFormatting" value="TopAligned" />
+                <Property name="VerticalAlignment" value="Bottom" />
+                <Property name="AutoRenderingSurface" value="true" />
+            </Window>
+            <Window type="Generic/ImageButton" name="CancelButton" >
+                <Property name="Area" value="{{0,0},{0.2,0},{0.7,0},{0.38,0}}" />
+                <Property name="HoverImage" value="MenuControls/A_Btn_Hover" />
+                <Property name="NormalImage" value="MenuControls/A_Btn_Normal" />
+                <Property name="PushedImage" value="MenuControls/A_Btn_Click" />
+                <Property name="DisabledImage" value="MenuControls/A_Btn_Disabled" />
+                <Property name="ClippedByParent" value="false" />
+                <Property name="VerticalAlignment" value="Bottom" />
+                <Property name="HorizontalAlignment" value="Centre" />
+                <Window type="Generic/Label" name="Text" >
+                    <Property name="Area" value="{{0,0},{0,0},{1,0},{1,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="Cancel" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="MousePassThroughEnabled" value="true" />
+                    <Property name="MouseInputPropagationEnabled" value="true" />
+                </Window>
+            </Window>
+            <Window type="Generic/ImageButton" name="FileButton3" >
+                <Property name="Area" value="{{0,0},{0.55,0},{0.8,0},{0.8,0}}" />
+                <Property name="HoverImage" value="MenuControls/A_Btn_Hover" />
+                <Property name="NormalImage" value="MenuControls/A_Btn_Normal" />
+                <Property name="PushedImage" value="MenuControls/A_Btn_Click" />
+                <Property name="DisabledImage" value="MenuControls/A_Btn_Disabled" />
+                <Property name="HorizontalAlignment" value="Centre" />
+                <Window type="Generic/Label" name="Text" >
+                    <Property name="Area" value="{{0,0},{0,0},{0.8,0},{1,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="Angelina Hall" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="HorzFormatting" value="WordWrapCentreAligned" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                    <Property name="MousePassThroughEnabled" value="true" />
+                    <Property name="MouseInputPropagationEnabled" value="true" />
+                </Window>
+            </Window>
+            <Window type="Generic/ImageButton" name="FileButton2" >
+                <Property name="Area" value="{{0,0},{0.3,0},{0.8,0},{0.55,0}}" />
+                <Property name="HoverImage" value="MenuControls/A_Btn_Hover" />
+                <Property name="NormalImage" value="MenuControls/A_Btn_Normal" />
+                <Property name="PushedImage" value="MenuControls/A_Btn_Click" />
+                <Property name="DisabledImage" value="MenuControls/A_Btn_Disabled" />
+                <Property name="HorizontalAlignment" value="Centre" />
+                <Window type="Generic/Label" name="Text" >
+                    <Property name="Area" value="{{0,0},{0,0},{0.8,0},{1,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="Adam Merkel" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="HorzFormatting" value="WordWrapCentreAligned" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                    <Property name="MousePassThroughEnabled" value="true" />
+                    <Property name="MouseInputPropagationEnabled" value="true" />
+                </Window>
+            </Window>
+            <Window type="Generic/ImageButton" name="FileButton1" >
+                <Property name="Area" value="{{0,0},{0.05,0},{0.8,0},{0.3,0}}" />
+                <Property name="HoverImage" value="MenuControls/A_Btn_Hover" />
+                <Property name="NormalImage" value="MenuControls/A_Btn_Normal" />
+                <Property name="PushedImage" value="MenuControls/A_Btn_Click" />
+                <Property name="DisabledImage" value="MenuControls/A_Btn_Disabled" />
+                <Property name="HorizontalAlignment" value="Centre" />
+                <Window type="Generic/Label" name="Text" >
+                    <Property name="Area" value="{{0,0},{0,0},{0.8,0},{1,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="Jennifer Merkel" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="HorzFormatting" value="WordWrapCentreAligned" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                    <Property name="MousePassThroughEnabled" value="true" />
+                    <Property name="MouseInputPropagationEnabled" value="true" />
+                </Window>
+            </Window>
+            <Window type="Generic/Image" name="PageBar" >
+                <Property name="Area" value="{{0,0},{-0.1,0},{0.6,0},{-0.1,10}}" />
+                <Property name="Image" value="MenuControls/Sng_Line_Horz" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="VerticalAlignment" value="Bottom" />
+                <Property name="HorizontalAlignment" value="Centre" />
+                <Window type="Generic/Image" name="PageBarIndex" >
+                    <Property name="Area" value="{{0,0},{0,0},{0,15},{4,0}}" />
+                    <Property name="Image" value="MenuControls/Sng_Line_Bar" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="ClippedByParent" value="false" />
+                    <Property name="VerticalAlignment" value="Centre" />
+                </Window>
+            </Window>
+            <Window type="Generic/ImageButton" name="FilePageRight" >
+                <Property name="Area" value="{{0.325,0},{-0.04,0},{0.475,0},{0.11,0}}" />
+                <Property name="HoverImage" value="MenuControls/A_Right_Sel_Hover" />
+                <Property name="AlwaysOnTop" value="true" />
+                <Property name="NormalImage" value="MenuControls/A_Right_Sel_Normal" />
+                <Property name="PushedImage" value="MenuControls/A_Right_Sel_Click" />
+                <Property name="DisabledImage" value="MenuControls/A_Right_Sel_Disabled" />
+                <Property name="VerticalAlignment" value="Bottom" />
+                <Property name="HorizontalAlignment" value="Centre" />
+            </Window>
+            <Window type="Generic/ImageButton" name="FilePageLeft" >
+                <Property name="Area" value="{{-0.35,0},{-0.04,0},{-0.2,0},{0.11,0}}" />
+                <Property name="HoverImage" value="MenuControls/A_Left_Sel_Hover" />
+                <Property name="AlwaysOnTop" value="true" />
+                <Property name="NormalImage" value="MenuControls/A_Left_Sel_Normal" />
+                <Property name="PushedImage" value="MenuControls/A_Left_Sel_Click" />
+                <Property name="DisabledImage" value="MenuControls/A_Left_Sel_Disabled" />
+                <Property name="VerticalAlignment" value="Bottom" />
+                <Property name="HorizontalAlignment" value="Centre" />
+            </Window>
+        </Window>
+        <Window type="DefaultWindow" name="P1StatsRootWindow" >
+            <Property name="Area" value="{{0,0},{0.38,0},{0.49,0},{0.88,0}}" />
+            <Property name="MaxSize" value="{{1,0},{1,0}}" />
+            <Property name="Visible" value="false" />
+            <Window type="Generic/Image" name="Background" >
+                <Property name="Area" value="{{0,0},{0,0},{1,0},{1,0}}" />
+                <Property name="Image" value="PaperBackground/PaperBackground" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="RiseOnClickEnabled" value="false" />
+            </Window>
+            <Window type="Generic/Image" name="FrameTop" >
+                <Property name="Area" value="{{0,0},{0,0},{1,0},{0,10}}" />
+                <Property name="Image" value="MenuControls/Dbl_Line_Bar_Horz" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="VertFormatting" value="TopAligned" />
+                <Property name="AutoRenderingSurface" value="true" />
+            </Window>
+            <Window type="Generic/Image" name="FrameRight" >
+                <Property name="Area" value="{{0,0},{0,0},{0,10},{1,0}}" />
+                <Property name="Image" value="MenuControls/Dbl_Line_Bar" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="AlwaysOnTop" value="true" />
+                <Property name="HorzFormatting" value="LeftAligned" />
+                <Property name="HorizontalAlignment" value="Right" />
+                <Property name="AutoRenderingSurface" value="true" />
+            </Window>
+            <Window type="Generic/Image" name="FrameBottom" >
+                <Property name="Area" value="{{0,0},{0,0},{1,0},{0,9}}" />
+                <Property name="Image" value="MenuControls/Dbl_Line_Bar_Horz" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="VertFormatting" value="TopAligned" />
+                <Property name="VerticalAlignment" value="Bottom" />
+                <Property name="AutoRenderingSurface" value="true" />
+            </Window>
+            <Window type="Generic/Image" name="FrameLeft" >
+                <Property name="Area" value="{{0,0},{0,0},{0,10},{1,0}}" />
+                <Property name="Image" value="MenuControls/Dbl_Line_Bar" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="HorzFormatting" value="LeftAligned" />
+                <Property name="AutoRenderingSurface" value="true" />
+            </Window>
+            <Window type="Generic/ImageButton" name="OKButton" >
+                <Property name="Area" value="{{-0.254,0},{0.2,0},{0.196,0},{0.38,0}}" />
+                <Property name="HoverImage" value="MenuControls/A_Btn_Hover" />
+                <Property name="AlwaysOnTop" value="true" />
+                <Property name="NormalImage" value="MenuControls/A_Btn_Normal" />
+                <Property name="PushedImage" value="MenuControls/A_Btn_Click" />
+                <Property name="DisabledImage" value="MenuControls/A_Btn_Disabled" />
+                <Property name="ClippedByParent" value="false" />
+                <Property name="VerticalAlignment" value="Bottom" />
+                <Property name="HorizontalAlignment" value="Centre" />
+                <Window type="Generic/Label" name="Text" >
+                    <Property name="Area" value="{{0,0},{0,0},{1,0},{1,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="OK" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="MousePassThroughEnabled" value="true" />
+                    <Property name="MouseInputPropagationEnabled" value="true" />
+                </Window>
+            </Window>
+            <Window type="Generic/ImageButton" name="CancelButton" >
+                <Property name="Area" value="{{0.254,0},{0.2,0},{0.704,0},{0.38,0}}" />
+                <Property name="HoverImage" value="MenuControls/A_Btn_Hover" />
+                <Property name="AlwaysOnTop" value="true" />
+                <Property name="NormalImage" value="MenuControls/A_Btn_Normal" />
+                <Property name="PushedImage" value="MenuControls/A_Btn_Click" />
+                <Property name="DisabledImage" value="MenuControls/A_Btn_Disabled" />
+                <Property name="ClippedByParent" value="false" />
+                <Property name="VerticalAlignment" value="Bottom" />
+                <Property name="HorizontalAlignment" value="Centre" />
+                <Window type="Generic/Label" name="Text" >
+                    <Property name="Area" value="{{0,0},{0,0},{1,0},{1,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="Cancel" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="MousePassThroughEnabled" value="true" />
+                    <Property name="MouseInputPropagationEnabled" value="true" />
+                </Window>
+            </Window>
+            <Window type="DefaultWindow" name="RecoveryAttributeRoot" >
+                <Property name="Area" value="{{0,0},{0.34,0},{0.97,0},{0.44,0}}" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="AlwaysOnTop" value="true" />
+                <Property name="HorizontalAlignment" value="Centre" />
+                <Window type="Generic/Label" name="Name" >
+                    <Property name="Area" value="{{-0.275,0},{0,0},{0.095,0},{1,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="Recovery:" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                </Window>
+                <Window type="Generic/Label" name="Value" >
+                    <Property name="Area" value="{{0.2,0},{0,0},{0.4,0},{1,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="100" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                </Window>
+                <Window type="Generic/ImageButton" name="MinusButton" >
+                    <Property name="Area" value="{{0,0},{0,0},{0.1,0},{1,0}}" />
+                    <Property name="HoverImage" value="MenuControls/A_Hor_Minus_Hover" />
+                    <Property name="NormalImage" value="MenuControls/A_Hor_Minus_Normal" />
+                    <Property name="PushedImage" value="MenuControls/A_Hor_Minus_Click" />
+                    <Property name="DisabledImage" value="MenuControls/A_Hor_Minus_Disabled" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                </Window>
+                <Window type="Generic/ImageButton" name="AddButton" >
+                    <Property name="Area" value="{{0.4,0},{0,0},{0.5,0},{1,0}}" />
+                    <Property name="HoverImage" value="MenuControls/A_Hor_Add_Hover" />
+                    <Property name="NormalImage" value="MenuControls/A_Hor_Add_Normal" />
+                    <Property name="PushedImage" value="MenuControls/A_Hor_Add_Click" />
+                    <Property name="DisabledImage" value="MenuControls/A_Hor_Add_Disabled" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                </Window>
+            </Window>
+            <Window type="DefaultWindow" name="EnduranceAttributeRoot" >
+                <Property name="Area" value="{{0,0},{0.21,0},{0.97,0},{0.31,0}}" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="AlwaysOnTop" value="true" />
+                <Property name="HorizontalAlignment" value="Centre" />
+                <Window type="Generic/Label" name="Name" >
+                    <Property name="Area" value="{{-0.275,0},{0,0},{0.155,0},{1,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="Endurance:" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                </Window>
+                <Window type="Generic/Label" name="Value" >
+                    <Property name="Area" value="{{0.2,0},{0,0},{0.4,0},{1,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="100" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                </Window>
+                <Window type="Generic/ImageButton" name="MinusButton" >
+                    <Property name="Area" value="{{0,0},{0,0},{0.1,0},{1,0}}" />
+                    <Property name="HoverImage" value="MenuControls/A_Hor_Minus_Hover" />
+                    <Property name="NormalImage" value="MenuControls/A_Hor_Minus_Normal" />
+                    <Property name="PushedImage" value="MenuControls/A_Hor_Minus_Click" />
+                    <Property name="DisabledImage" value="MenuControls/A_Hor_Minus_Disabled" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                </Window>
+                <Window type="Generic/ImageButton" name="AddButton" >
+                    <Property name="Area" value="{{0.4,0},{0,0},{0.5,0},{1,0}}" />
+                    <Property name="HoverImage" value="MenuControls/A_Hor_Add_Hover" />
+                    <Property name="NormalImage" value="MenuControls/A_Hor_Add_Normal" />
+                    <Property name="PushedImage" value="MenuControls/A_Hor_Add_Click" />
+                    <Property name="DisabledImage" value="MenuControls/A_Hor_Add_Disabled" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                </Window>
+            </Window>
+            <Window type="DefaultWindow" name="LuckAttributeRoot" >
+                <Property name="Area" value="{{0,0},{0.85,0},{0.97,0},{0.95,0}}" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="AlwaysOnTop" value="true" />
+                <Property name="HorizontalAlignment" value="Centre" />
+                <Window type="Generic/Label" name="Name" >
+                    <Property name="Area" value="{{-0.572,0},{0,0},{-0.142,0},{1,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="Luck:" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="HorizontalAlignment" value="Right" />
+                </Window>
+                <Window type="Generic/Label" name="Value" >
+                    <Property name="Area" value="{{0.2,0},{0,0},{0.4,0},{1,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="100" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                </Window>
+                <Window type="Generic/ImageButton" name="MinusButton" >
+                    <Property name="Area" value="{{0,0},{0,0},{0.1,0},{1,0}}" />
+                    <Property name="HoverImage" value="MenuControls/A_Hor_Minus_Hover" />
+                    <Property name="NormalImage" value="MenuControls/A_Hor_Minus_Normal" />
+                    <Property name="PushedImage" value="MenuControls/A_Hor_Minus_Click" />
+                    <Property name="DisabledImage" value="MenuControls/A_Hor_Minus_Disabled" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                </Window>
+                <Window type="Generic/ImageButton" name="AddButton" >
+                    <Property name="Area" value="{{0.4,0},{0,0},{0.5,0},{1,0}}" />
+                    <Property name="HoverImage" value="MenuControls/A_Hor_Add_Hover" />
+                    <Property name="NormalImage" value="MenuControls/A_Hor_Add_Normal" />
+                    <Property name="PushedImage" value="MenuControls/A_Hor_Add_Click" />
+                    <Property name="DisabledImage" value="MenuControls/A_Hor_Add_Disabled" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                </Window>
+            </Window>
+            <Window type="DefaultWindow" name="DefenseAttributeRoot" >
+                <Property name="Area" value="{{0,0},{0.595,0},{0.97,0},{0.695,0}}" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="AlwaysOnTop" value="true" />
+                <Property name="HorizontalAlignment" value="Centre" />
+                <Window type="Generic/Label" name="Name" >
+                    <Property name="Area" value="{{-0.275,0},{0,0},{-0.005,0},{1,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="Defense:" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                </Window>
+                <Window type="Generic/Label" name="Value" >
+                    <Property name="Area" value="{{0.2,0},{0,0},{0.4,0},{1,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="100" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                </Window>
+                <Window type="Generic/ImageButton" name="MinusButton" >
+                    <Property name="Area" value="{{0,0},{0,0},{0.1,0},{1,0}}" />
+                    <Property name="HoverImage" value="MenuControls/A_Hor_Minus_Hover" />
+                    <Property name="NormalImage" value="MenuControls/A_Hor_Minus_Normal" />
+                    <Property name="PushedImage" value="MenuControls/A_Hor_Minus_Click" />
+                    <Property name="DisabledImage" value="MenuControls/A_Hor_Minus_Disabled" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                </Window>
+                <Window type="Generic/ImageButton" name="AddButton" >
+                    <Property name="Area" value="{{0.4,0},{0,0},{0.5,0},{1,0}}" />
+                    <Property name="HoverImage" value="MenuControls/A_Hor_Add_Hover" />
+                    <Property name="NormalImage" value="MenuControls/A_Hor_Add_Normal" />
+                    <Property name="PushedImage" value="MenuControls/A_Hor_Add_Click" />
+                    <Property name="DisabledImage" value="MenuControls/A_Hor_Add_Disabled" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                </Window>
+            </Window>
+            <Window type="DefaultWindow" name="AgilityAttributeRoot" >
+                <Property name="Area" value="{{0,0},{0.725,0},{0.97,0},{0.825,0}}" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="AlwaysOnTop" value="true" />
+                <Property name="HorizontalAlignment" value="Centre" />
+                <Window type="Generic/Label" name="Name" >
+                    <Property name="Area" value="{{-0.275,0},{0,0},{0.155,0},{1,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="Agility:" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                </Window>
+                <Window type="Generic/Label" name="Value" >
+                    <Property name="Area" value="{{0.2,0},{0,0},{0.4,0},{1,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="100" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                </Window>
+                <Window type="Generic/ImageButton" name="MinusButton" >
+                    <Property name="Area" value="{{0,0},{0,0},{0.1,0},{1,0}}" />
+                    <Property name="HoverImage" value="MenuControls/A_Hor_Minus_Hover" />
+                    <Property name="NormalImage" value="MenuControls/A_Hor_Minus_Normal" />
+                    <Property name="PushedImage" value="MenuControls/A_Hor_Minus_Click" />
+                    <Property name="DisabledImage" value="MenuControls/A_Hor_Minus_Disabled" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                </Window>
+                <Window type="Generic/ImageButton" name="AddButton" >
+                    <Property name="Area" value="{{0.4,0},{0,0},{0.5,0},{1,0}}" />
+                    <Property name="HoverImage" value="MenuControls/A_Hor_Add_Hover" />
+                    <Property name="NormalImage" value="MenuControls/A_Hor_Add_Normal" />
+                    <Property name="PushedImage" value="MenuControls/A_Hor_Add_Click" />
+                    <Property name="DisabledImage" value="MenuControls/A_Hor_Add_Disabled" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                </Window>
+            </Window>
+            <Window type="DefaultWindow" name="AvailablePointsRoot" >
+                <Property name="Area" value="{{0,0},{0.06,0},{1,0},{0.16,0}}" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="AlwaysOnTop" value="true" />
+                <Window type="Generic/Label" name="Label" >
+                    <Property name="Area" value="{{-0.25,0},{0.02,0},{0.4,0},{1.02,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="Available Points:" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="HorizontalAlignment" value="Right" />
+                </Window>
+                <Window type="Generic/Label" name="Value" >
+                    <Property name="Area" value="{{-0.03,0},{0,0},{0.17,0},{1,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="100" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="HorizontalAlignment" value="Right" />
+                </Window>
+            </Window>
+            <Window type="DefaultWindow" name="StrengthAttributeRoot" >
+                <Property name="Area" value="{{0,0},{0.467,0},{0.97,0},{0.567,0}}" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="AlwaysOnTop" value="true" />
+                <Property name="HorizontalAlignment" value="Centre" />
+                <Window type="Generic/Label" name="Name" >
+                    <Property name="Area" value="{{-0.275,0},{0,0},{0.085,0},{1,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="Strength:" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                </Window>
+                <Window type="Generic/Label" name="Value" >
+                    <Property name="Area" value="{{0.2,0},{0,0},{0.4,0},{1,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="100" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                </Window>
+                <Window type="Generic/ImageButton" name="MinusButton" >
+                    <Property name="Area" value="{{0,0},{0,0},{0.1,0},{1,0}}" />
+                    <Property name="HoverImage" value="MenuControls/A_Hor_Minus_Hover" />
+                    <Property name="NormalImage" value="MenuControls/A_Hor_Minus_Normal" />
+                    <Property name="PushedImage" value="MenuControls/A_Hor_Minus_Click" />
+                    <Property name="DisabledImage" value="MenuControls/A_Hor_Minus_Disabled" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                </Window>
+                <Window type="Generic/ImageButton" name="AddButton" >
+                    <Property name="Area" value="{{0.4,0},{0,0},{0.5,0},{1,0}}" />
+                    <Property name="HoverImage" value="MenuControls/A_Hor_Add_Hover" />
+                    <Property name="NormalImage" value="MenuControls/A_Hor_Add_Normal" />
+                    <Property name="PushedImage" value="MenuControls/A_Hor_Add_Click" />
+                    <Property name="DisabledImage" value="MenuControls/A_Hor_Add_Disabled" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                </Window>
+            </Window>
+        </Window>
+        <Window type="DefaultWindow" name="P2LoadOrCreateRootWindow" >
+            <Property name="Area" value="{{0.57,0},{0.38,0},{0.92,0},{0.88,0}}" />
+            <Property name="MaxSize" value="{{1,0},{1,0}}" />
+            <Property name="Visible" value="false" />
+            <Window type="Generic/Image" name="Background" >
+                <Property name="Area" value="{{0,0},{0,0},{1,0},{1,0}}" />
+                <Property name="Image" value="PaperBackground/PaperBackground" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+            </Window>
+            <Window type="Generic/ImageButton" name="CreateCharButton" >
+                <Property name="Area" value="{{0,0},{-0.34,0},{0.8,0},{-0.09,0}}" />
+                <Property name="HoverImage" value="MenuControls/A_Btn_Hover" />
+                <Property name="NormalImage" value="MenuControls/A_Btn_Normal" />
+                <Property name="PushedImage" value="MenuControls/A_Btn_Click" />
+                <Property name="DisabledImage" value="MenuControls/A_Btn_Disabled" />
+                <Property name="VerticalAlignment" value="Centre" />
+                <Property name="HorizontalAlignment" value="Centre" />
+                <Window type="Generic/Label" name="Text" >
+                    <Property name="Area" value="{{0,0},{0,0},{0.8,0},{1,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="Create Character" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="HorzFormatting" value="WordWrapCentreAligned" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                    <Property name="MousePassThroughEnabled" value="true" />
+                    <Property name="MouseInputPropagationEnabled" value="true" />
+                </Window>
+            </Window>
+            <Window type="Generic/ImageButton" name="LoadCharButton" >
+                <Property name="Area" value="{{0,0},{0.34,0},{0.8,0},{0.59,0}}" />
+                <Property name="HoverImage" value="MenuControls/A_Btn_Hover" />
+                <Property name="NormalImage" value="MenuControls/A_Btn_Normal" />
+                <Property name="PushedImage" value="MenuControls/A_Btn_Click" />
+                <Property name="DisabledImage" value="MenuControls/A_Btn_Disabled" />
+                <Property name="VerticalAlignment" value="Centre" />
+                <Property name="HorizontalAlignment" value="Centre" />
+                <Window type="Generic/Label" name="Text" >
+                    <Property name="Area" value="{{0,0},{0,0},{0.8,0},{1,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="Load Character" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="HorzFormatting" value="WordWrapCentreAligned" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                    <Property name="MousePassThroughEnabled" value="true" />
+                    <Property name="MouseInputPropagationEnabled" value="true" />
+                </Window>
+            </Window>
+            <Window type="Generic/ImageButton" name="EditCharButton" >
+                <Property name="Area" value="{{0,0},{0,0},{0.8,0},{0.25,0}}" />
+                <Property name="HoverImage" value="MenuControls/A_Btn_Hover" />
+                <Property name="NormalImage" value="MenuControls/A_Btn_Normal" />
+                <Property name="PushedImage" value="MenuControls/A_Btn_Click" />
+                <Property name="DisabledImage" value="MenuControls/A_Btn_Disabled" />
+                <Property name="VerticalAlignment" value="Centre" />
+                <Property name="HorizontalAlignment" value="Centre" />
+                <Window type="Generic/Label" name="Text" >
+                    <Property name="Area" value="{{0,0},{0,0},{0.8,0},{1,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="Edit Character" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="HorzFormatting" value="WordWrapCentreAligned" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                    <Property name="MousePassThroughEnabled" value="true" />
+                    <Property name="MouseInputPropagationEnabled" value="true" />
+                </Window>
+            </Window>
+            <Window type="Generic/Image" name="FrameLeft" >
+                <Property name="Area" value="{{0,0},{0,0},{0.04,0},{1,0}}" />
+                <Property name="Image" value="MenuControls/Dbl_Line_Bar" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="HorzFormatting" value="LeftAligned" />
+                <Property name="AutoRenderingSurface" value="true" />
+            </Window>
+            <Window type="Generic/Image" name="FrameRight" >
+                <Property name="Area" value="{{0.005,0},{0,0},{0.045,0},{1,0}}" />
+                <Property name="Image" value="MenuControls/Dbl_Line_Bar" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="HorzFormatting" value="LeftAligned" />
+                <Property name="HorizontalAlignment" value="Right" />
+                <Property name="AutoRenderingSurface" value="true" />
+            </Window>
+            <Window type="Generic/Image" name="FrameTop" >
+                <Property name="Area" value="{{0,0},{0,0},{1,0},{0.03,0}}" />
+                <Property name="Image" value="MenuControls/Dbl_Line_Bar_Horz" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="VertFormatting" value="TopAligned" />
+                <Property name="AutoRenderingSurface" value="true" />
+            </Window>
+            <Window type="Generic/Image" name="FrameBottom" >
+                <Property name="Area" value="{{0,0},{0,0},{1,0},{0.03,0}}" />
+                <Property name="Image" value="MenuControls/Dbl_Line_Bar_Horz" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="VertFormatting" value="TopAligned" />
+                <Property name="VerticalAlignment" value="Bottom" />
+                <Property name="AutoRenderingSurface" value="true" />
+            </Window>
+            <Window type="Generic/ImageButton" name="DoneButton" >
+                <Property name="Area" value="{{0,0},{0.2,0},{0.7,0},{0.38,0}}" />
+                <Property name="HoverImage" value="MenuControls/A_Btn_Hover" />
+                <Property name="NormalImage" value="MenuControls/A_Btn_Normal" />
+                <Property name="PushedImage" value="MenuControls/A_Btn_Click" />
+                <Property name="DisabledImage" value="MenuControls/A_Btn_Disabled" />
+                <Property name="ClippedByParent" value="false" />
+                <Property name="VerticalAlignment" value="Bottom" />
+                <Property name="HorizontalAlignment" value="Centre" />
+                <Window type="Generic/Label" name="Text" >
+                    <Property name="Area" value="{{0,0},{0,0},{1,0},{1,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="Done" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="MousePassThroughEnabled" value="true" />
+                    <Property name="MouseInputPropagationEnabled" value="true" />
+                </Window>
+            </Window>
+        </Window>
+        <Window type="DefaultWindow" name="P2LoadDialog" >
+            <Property name="Area" value="{{0.57,0},{0.38,0},{0.92,0},{0.88,0}}" />
+            <Property name="MaxSize" value="{{1,0},{1,0}}" />
+            <Property name="Visible" value="false" />
+            <Window type="Generic/Image" name="Background" >
+                <Property name="Area" value="{{0,0},{0,0},{1,0},{1,0}}" />
+                <Property name="Image" value="PaperBackground/PaperBackground" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+            </Window>
+            <Window type="Generic/Image" name="FrameLeft" >
+                <Property name="Area" value="{{0,0},{0,0},{0.04,0},{1,0}}" />
+                <Property name="Image" value="MenuControls/Dbl_Line_Bar" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="HorzFormatting" value="LeftAligned" />
+                <Property name="AutoRenderingSurface" value="true" />
+            </Window>
+            <Window type="Generic/Image" name="FrameRight" >
+                <Property name="Area" value="{{0.005,0},{0,0},{0.045,0},{1,0}}" />
+                <Property name="Image" value="MenuControls/Dbl_Line_Bar" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="HorzFormatting" value="LeftAligned" />
+                <Property name="HorizontalAlignment" value="Right" />
+                <Property name="AutoRenderingSurface" value="true" />
+            </Window>
+            <Window type="Generic/Image" name="FrameTop" >
+                <Property name="Area" value="{{0,0},{0,0},{1,0},{0.03,0}}" />
+                <Property name="Image" value="MenuControls/Dbl_Line_Bar_Horz" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="VertFormatting" value="TopAligned" />
+                <Property name="AutoRenderingSurface" value="true" />
+            </Window>
+            <Window type="Generic/Image" name="FrameBottom" >
+                <Property name="Area" value="{{0,0},{0,0},{1,0},{0.03,0}}" />
+                <Property name="Image" value="MenuControls/Dbl_Line_Bar_Horz" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="VertFormatting" value="TopAligned" />
+                <Property name="VerticalAlignment" value="Bottom" />
+                <Property name="AutoRenderingSurface" value="true" />
+            </Window>
+            <Window type="Generic/ImageButton" name="CancelButton" >
+                <Property name="Area" value="{{0,0},{0.2,0},{0.7,0},{0.38,0}}" />
+                <Property name="HoverImage" value="MenuControls/A_Btn_Hover" />
+                <Property name="NormalImage" value="MenuControls/A_Btn_Normal" />
+                <Property name="PushedImage" value="MenuControls/A_Btn_Click" />
+                <Property name="DisabledImage" value="MenuControls/A_Btn_Disabled" />
+                <Property name="ClippedByParent" value="false" />
+                <Property name="VerticalAlignment" value="Bottom" />
+                <Property name="HorizontalAlignment" value="Centre" />
+                <Window type="Generic/Label" name="Text" >
+                    <Property name="Area" value="{{0,0},{0,0},{1,0},{1,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="Cancel" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="MousePassThroughEnabled" value="true" />
+                    <Property name="MouseInputPropagationEnabled" value="true" />
+                </Window>
+            </Window>
+            <Window type="Generic/ImageButton" name="FileButton3" >
+                <Property name="Area" value="{{0,0},{0.55,0},{0.8,0},{0.8,0}}" />
+                <Property name="HoverImage" value="MenuControls/A_Btn_Hover" />
+                <Property name="NormalImage" value="MenuControls/A_Btn_Normal" />
+                <Property name="PushedImage" value="MenuControls/A_Btn_Click" />
+                <Property name="DisabledImage" value="MenuControls/A_Btn_Disabled" />
+                <Property name="HorizontalAlignment" value="Centre" />
+                <Window type="Generic/Label" name="Text" >
+                    <Property name="Area" value="{{0,0},{0,0},{0.8,0},{1,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="Angelina Hall" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="HorzFormatting" value="WordWrapCentreAligned" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                    <Property name="MousePassThroughEnabled" value="true" />
+                    <Property name="MouseInputPropagationEnabled" value="true" />
+                </Window>
+            </Window>
+            <Window type="Generic/ImageButton" name="FileButton2" >
+                <Property name="Area" value="{{0,0},{0.3,0},{0.8,0},{0.55,0}}" />
+                <Property name="HoverImage" value="MenuControls/A_Btn_Hover" />
+                <Property name="NormalImage" value="MenuControls/A_Btn_Normal" />
+                <Property name="PushedImage" value="MenuControls/A_Btn_Click" />
+                <Property name="DisabledImage" value="MenuControls/A_Btn_Disabled" />
+                <Property name="HorizontalAlignment" value="Centre" />
+                <Window type="Generic/Label" name="Text" >
+                    <Property name="Area" value="{{0,0},{0,0},{0.8,0},{1,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="Adam Merkel" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="HorzFormatting" value="WordWrapCentreAligned" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                    <Property name="MousePassThroughEnabled" value="true" />
+                    <Property name="MouseInputPropagationEnabled" value="true" />
+                </Window>
+            </Window>
+            <Window type="Generic/ImageButton" name="FileButton1" >
+                <Property name="Area" value="{{0,0},{0.05,0},{0.8,0},{0.3,0}}" />
+                <Property name="HoverImage" value="MenuControls/A_Btn_Hover" />
+                <Property name="NormalImage" value="MenuControls/A_Btn_Normal" />
+                <Property name="PushedImage" value="MenuControls/A_Btn_Click" />
+                <Property name="DisabledImage" value="MenuControls/A_Btn_Disabled" />
+                <Property name="HorizontalAlignment" value="Centre" />
+                <Window type="Generic/Label" name="Text" >
+                    <Property name="Area" value="{{0,0},{0,0},{0.8,0},{1,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="Jennifer Merkel" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="HorzFormatting" value="WordWrapCentreAligned" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                    <Property name="MousePassThroughEnabled" value="true" />
+                    <Property name="MouseInputPropagationEnabled" value="true" />
+                </Window>
+            </Window>
+            <Window type="Generic/Image" name="PageBar" >
+                <Property name="Area" value="{{0,0},{-0.1,0},{0.6,0},{-0.1,10}}" />
+                <Property name="Image" value="MenuControls/Sng_Line_Horz" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="VerticalAlignment" value="Bottom" />
+                <Property name="HorizontalAlignment" value="Centre" />
+                <Window type="Generic/Image" name="PageBarIndex" >
+                    <Property name="Area" value="{{0,0},{0,0},{0,15},{4,0}}" />
+                    <Property name="Image" value="MenuControls/Sng_Line_Bar" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="ClippedByParent" value="false" />
+                    <Property name="VerticalAlignment" value="Centre" />
+                </Window>
+            </Window>
+            <Window type="Generic/ImageButton" name="FilePageRight" >
+                <Property name="Area" value="{{0.325,0},{-0.04,0},{0.475,0},{0.11,0}}" />
+                <Property name="HoverImage" value="MenuControls/A_Right_Sel_Hover" />
+                <Property name="AlwaysOnTop" value="true" />
+                <Property name="NormalImage" value="MenuControls/A_Right_Sel_Normal" />
+                <Property name="PushedImage" value="MenuControls/A_Right_Sel_Click" />
+                <Property name="DisabledImage" value="MenuControls/A_Right_Sel_Disabled" />
+                <Property name="VerticalAlignment" value="Bottom" />
+                <Property name="HorizontalAlignment" value="Centre" />
+            </Window>
+            <Window type="Generic/ImageButton" name="FilePageLeft" >
+                <Property name="Area" value="{{-0.35,0},{-0.04,0},{-0.2,0},{0.11,0}}" />
+                <Property name="HoverImage" value="MenuControls/A_Left_Sel_Hover" />
+                <Property name="AlwaysOnTop" value="true" />
+                <Property name="NormalImage" value="MenuControls/A_Left_Sel_Normal" />
+                <Property name="PushedImage" value="MenuControls/A_Left_Sel_Click" />
+                <Property name="DisabledImage" value="MenuControls/A_Left_Sel_Disabled" />
+                <Property name="VerticalAlignment" value="Bottom" />
+                <Property name="HorizontalAlignment" value="Centre" />
+            </Window>
+        </Window>
+    </Window>
+</GUILayout>

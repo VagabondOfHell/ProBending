@@ -374,12 +374,13 @@ void Game::Run()
 	contestantData.push_back(player1Data);
 	contestantData.push_back(player2Data);
 
-	//std::shared_ptr<GameScene> gameScene(new GameScene(sceneManager, mRoot, "Probending Arena", contestantData));
+	/*std::shared_ptr<GameScene> gameScene(new GameScene(sceneManager, mRoot, "Probending Arena", contestantData));
+	sceneManager->FlagSceneSwitch(gameScene, true);
+	gameScene.reset();*/
+
 	std::shared_ptr<MenusScene> menuScene = std::make_shared<MenusScene>(sceneManager, mRoot, MenusScene::Screens::MainMenu);
 	sceneManager->FlagSceneSwitch(menuScene, true);
 	menuScene.reset();
-	//sceneManager->FlagSceneSwitch(gameScene, true);
-	//gameScene.reset();
 
 	bool rendering = true;
 

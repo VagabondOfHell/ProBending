@@ -106,6 +106,34 @@ public:
 		CalculateStats();
 	}
 
+	inline unsigned short GetAttribute(ProbenderAttributes::Attributes attribute)const
+	{
+		switch (attribute)
+		{
+		case ProbenderAttributes::Endurance:
+			return Endurance;
+			break;
+		case ProbenderAttributes::Recovery:
+			return Recovery;
+			break;
+		case ProbenderAttributes::Strength:
+			return Strength;
+			break;
+		case ProbenderAttributes::Defense:
+			return Defense;
+			break;
+		case ProbenderAttributes::Agility:
+			return Agility;
+			break;
+		case ProbenderAttributes::Luck:
+			return Luck;
+			break;
+		default:
+			return 0;
+			break;
+		}
+	}
+
 	inline void AddEnergy(const float val)
 	{
 		Energy += val;

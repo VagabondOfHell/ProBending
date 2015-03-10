@@ -26,8 +26,11 @@ public:
 
 	bool IsVisible();
 
-	void Show();
-	void Hide();
+	virtual void Show();
+	virtual void Hide();
+
+	void Disable();
+	void Enable();
 };
 
 class MainMenuHandler: public MenuHandler

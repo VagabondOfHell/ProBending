@@ -71,7 +71,7 @@ physx::PxSceneDesc* GameScene::GetSceneDescription(physx::PxVec3& gravity, bool 
 
 	sceneDescriptor->filterShader = CollisionFilterShaders::GameSceneFilterShader;
 	sceneDescriptor->flags |= physx::PxSceneFlag::eENABLE_KINEMATIC_STATIC_PAIRS;
-	
+
 	//use the following to pass Constant data to the shader
 	//sceneDescriptor->filterShaderData;sceneDescriptor->filterShaderSize;
 	collisionReporter = CollisionReporter();

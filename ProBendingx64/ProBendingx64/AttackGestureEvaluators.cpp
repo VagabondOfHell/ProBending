@@ -89,13 +89,29 @@ GestureEnums::BodySide AttackGestureEvaluators::ArmPunchGesture(const Probender*
 
 	if(customData.Side == GestureEnums::BODYSIDE_RIGHT || customData.Side == GestureEnums::BODYSIDE_EITHER)
 	{
+		//Check hand validity (tracked state only)
 		if(currData.JointData[JointType_HandRight].TrackingState != TrackingState::TrackingState_Tracked ||
 			prevData.JointData[JointType_HandRight].TrackingState != TrackingState::TrackingState_Tracked )
 			return GestureEnums::BODYSIDE_INVALID;
 
-		float zDiff = currData.JointData[JointType_HandRight].Position.Z - prevData.JointData[JointType_HandRight].Position.Z;
-		//Check if the right hand has moved over half the length of the arm towards the sensor
-		if(-zDiff >= 0.08f)//0.5f * bodyDimensions.RightArmLength)
+		//Check shoulder validity (inferred is fine)
+		if(currData.JointData[JointType_ShoulderRight].TrackingState == TrackingState::TrackingState_NotTracked
+			|| currData.JointData[JointType_ShoulderLeft].TrackingState == TrackingState::TrackingState_NotTracked)
+			return GestureEnums::BODYSIDE_INVALID;
+
+		CameraSpacePoint currHandPos = currData.JointData[JointType_HandRight].Position;
+		CameraSpacePoint prevHandPos = prevData.JointData[JointType_HandRight].Position;
+		CameraSpacePoint rightShoulderPos = currData.JointData[JointType_ShoulderRight].Position;
+		CameraSpacePoint leftShoulderPos = currData.JointData[JointType_ShoulderLeft].Position;
+
+		float zDiff = currHandPos.Z - prevHandPos.Z;
+		float shoulderDist = rightShoulderPos.X - leftShoulderPos.X;
+		float zDiffFromShoulders = currHandPos.Z - rightShoulderPos.Z;
+		float yDiffFromShoulder = currHandPos.Y - rightShoulderPos.Y;
+
+		if(-zDiff >= 0.08f && //Check if the hand has moved quickly towards the kinect, 
+			-zDiffFromShoulders >= shoulderDist && //That the arm is extended at least as long as the difference in shoulder size
+			-yDiffFromShoulder <= 0.3f * shoulderDist)//And that the hand is roughly as high as the shoulder
 			return GestureEnums::BODYSIDE_RIGHT;
 	}
 
@@ -105,24 +121,60 @@ GestureEnums::BodySide AttackGestureEvaluators::ArmPunchGesture(const Probender*
 			prevData.JointData[JointType_HandLeft].TrackingState != TrackingState::TrackingState_Tracked )
 			return GestureEnums::BODYSIDE_INVALID;
 
-		float zDiff = currData.JointData[JointType_HandLeft].Position.Z - prevData.JointData[JointType_HandLeft].Position.Z;
-		//Check if the right hand has moved over half the length of the arm towards the sensor
-		if(-zDiff >= 0.08f)// 0.15f * bodyDimensions.LeftArmLength)
+		//Check shoulder validity (inferred is fine)
+		if(currData.JointData[JointType_ShoulderRight].TrackingState == TrackingState::TrackingState_NotTracked
+			|| currData.JointData[JointType_ShoulderLeft].TrackingState == TrackingState::TrackingState_NotTracked)
+			return GestureEnums::BODYSIDE_INVALID;
+
+		CameraSpacePoint currHandPos = currData.JointData[JointType_HandLeft].Position;
+		CameraSpacePoint prevHandPos = prevData.JointData[JointType_HandLeft].Position;
+		CameraSpacePoint rightShoulderPos = currData.JointData[JointType_ShoulderRight].Position;
+		CameraSpacePoint leftShoulderPos = currData.JointData[JointType_ShoulderLeft].Position;
+
+		float zDiff = currHandPos.Z - prevHandPos.Z;
+		float shoulderDist = rightShoulderPos.X - leftShoulderPos.X;
+		float zDiffFromShoulders = currHandPos.Z - leftShoulderPos.Z;
+		float yDiffFromShoulder = currHandPos.Y - leftShoulderPos.Y;
+
+		if(-zDiff >= 0.08f && //Check if the hand has moved quickly towards the kinect, 
+			-zDiffFromShoulders >= shoulderDist && //That the arm is extended at least as long as the difference in shoulder size
+			-yDiffFromShoulder <= 0.3f * shoulderDist)//And that the hand is roughly as high as the shoulder
 			return GestureEnums::BODYSIDE_LEFT;
 	}
 
 	if (customData.Side == GestureEnums::BODYSIDE_BOTH)
 	{
-		if(currData.JointData[JointType_HandRight].TrackingState != TrackingState::TrackingState_Tracked ||
-			prevData.JointData[JointType_HandRight].TrackingState != TrackingState::TrackingState_Tracked ||
-			currData.JointData[JointType_HandLeft].TrackingState != TrackingState::TrackingState_Tracked ||
-			prevData.JointData[JointType_HandLeft].TrackingState != TrackingState::TrackingState_Tracked)
+		if(currData.JointData[JointType_HandRight].TrackingState == TrackingState::TrackingState_NotTracked ||
+			prevData.JointData[JointType_HandRight].TrackingState == TrackingState::TrackingState_NotTracked ||
+			currData.JointData[JointType_HandLeft].TrackingState == TrackingState::TrackingState_NotTracked ||
+			prevData.JointData[JointType_HandLeft].TrackingState == TrackingState::TrackingState_NotTracked)
 			return GestureEnums::BODYSIDE_INVALID;
 
-		float rightZDiff = currData.JointData[JointType_HandRight].Position.Z - prevData.JointData[JointType_HandRight].Position.Z;
-		float leftZDiff = currData.JointData[JointType_HandLeft].Position.Z - prevData.JointData[JointType_HandLeft].Position.Z;
+		//Check shoulder validity (inferred is fine)
+		if(currData.JointData[JointType_ShoulderRight].TrackingState == TrackingState::TrackingState_NotTracked
+			|| currData.JointData[JointType_ShoulderLeft].TrackingState == TrackingState::TrackingState_NotTracked)
+			return GestureEnums::BODYSIDE_INVALID;
 
-		if(rightZDiff >= 0.5f * bodyDimensions.RightArmLength && leftZDiff >= 0.5f * bodyDimensions.LeftArmLength)
+		CameraSpacePoint rightCurrHandPos = currData.JointData[JointType_HandRight].Position;
+		CameraSpacePoint rightPrevHandPos = prevData.JointData[JointType_HandRight].Position;
+		CameraSpacePoint leftCurrHandPos = currData.JointData[JointType_HandLeft].Position;
+		CameraSpacePoint leftPrevHandPos = prevData.JointData[JointType_HandLeft].Position;
+		CameraSpacePoint rightShoulderPos = currData.JointData[JointType_ShoulderRight].Position;
+		CameraSpacePoint leftShoulderPos = currData.JointData[JointType_ShoulderLeft].Position;
+
+		float rightZDiff = rightCurrHandPos.Z - rightPrevHandPos.Z;
+		float leftZDiff = leftCurrHandPos.Z - leftPrevHandPos.Z;
+
+		float shoulderDist = rightShoulderPos.X - leftShoulderPos.X;
+		float rightZDiffFromShoulders = rightCurrHandPos.Z - rightShoulderPos.Z;
+		float leftZDiffFromShoulders = leftCurrHandPos.Z - leftShoulderPos.Z;
+
+		float rightYDiffFromShoulder = rightCurrHandPos.Y - rightShoulderPos.Y;
+		float leftYDiffFromShoulder = leftCurrHandPos.Y - leftShoulderPos.Y;
+
+		if(-rightZDiff >= 0.08f && -leftZDiff >= 0.08f &&
+			-rightZDiffFromShoulders >= shoulderDist && -leftZDiffFromShoulders >= shoulderDist &&
+			-rightYDiffFromShoulder <= 0.3f * shoulderDist && -leftYDiffFromShoulder <= 0.3f * shoulderDist)
 			return GestureEnums::BODYSIDE_BOTH;
 	}
 

@@ -2,6 +2,7 @@
 #include "IScene.h"
 #include "MenuNavigator.h"
 #include "MenuHandler.h"
+#include "ProbenderData.h"
 
 class MenusScene :
 	public IScene
@@ -16,8 +17,10 @@ protected:
 	MenuHandler* handlers[Screens::Count];
 
 	Screens currentScreen;
-	
+
 public:
+	
+	ProbenderData Player1Data, Player2Data;
 
 	MenusScene(void);
 	MenusScene(SceneManager* _owningManager, Ogre::Root* root, Screens screenToSet = MainMenu);
@@ -34,5 +37,6 @@ public:
 
 	virtual void Close();
 
+	void SwitchToGame();
 };
 
