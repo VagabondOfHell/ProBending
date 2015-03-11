@@ -83,7 +83,9 @@ private:
 	{
 		for (int i = 0; i < gestureResults->size(); i++)
 		{
-			if((*gestureResults)[i].gestureName.c_str() == evaluator.discreteEvaluator.GestureName )
+			std::wstring currName = evaluator.discreteEvaluator.GestureName;
+
+			if((*gestureResults)[i].gestureName== currName)
 			{
 				if((*gestureResults)[i].discreteConfidence >= evaluator.discreteEvaluator.ConfidenceToExceed)
 				{
@@ -155,11 +157,16 @@ public:
 	inline void SetDiscreteEvaluator(const std::wstring& gestureName, bool trueFirstFrame, float confidence)
 	{
 		DiscreteEvaluator evaluator;
-		for (int i = 0; i < MAX_GESTURE_NAME_LENGTH; i++)
+
+		unsigned int strLength = gestureName.size();
+		if(strLength >= MAX_GESTURE_NAME_LENGTH - 1)
+			strLength = MAX_GESTURE_NAME_LENGTH - 1;
+
+		for (int i = 0; i < strLength; i++)
 		{
 			evaluator.GestureName[i] = gestureName[i];
 		}
-		evaluator.GestureName[MAX_GESTURE_NAME_LENGTH - 1] = '\0';
+		evaluator.GestureName[strLength] = '\0';
 		evaluator.TrueIfFirstDetected = trueFirstFrame;
 		evaluator.ConfidenceToExceed = confidence;
 

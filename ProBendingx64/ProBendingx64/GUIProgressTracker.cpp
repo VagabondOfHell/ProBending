@@ -9,7 +9,7 @@ const float GUIProgressTracker::ARENA_HALF_LENGTH = 13.0f;
 
 GUIProgressTracker::GUIProgressTracker(void)
 {
-	
+	trackerWindow = NULL;
 }
 
 GUIProgressTracker::~GUIProgressTracker(void)

@@ -49,6 +49,9 @@ protected:
 
 	void UpdateAttributeScores(bool player1);
 
+	void ActivateElementChoices(bool player1);
+	void DeactivateElementChoices(bool player1);
+
 	void ChangeElement(bool player1, ElementEnum::Element newElement);
 
 	void SetSkinsForGroup(bool player1, Stage stage, ElementEnum::Element elementSkin);

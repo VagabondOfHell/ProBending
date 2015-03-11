@@ -17,7 +17,7 @@ class ProjectileDatabase
 	static SharedProjectile CreateEarthCoin(IScene* scene);
 
 
-
+	static SharedProjectile CreateFireJab(IScene* scene);
 	static SharedProjectile CreateFireBlast(IScene* scene);
 
 public:

@@ -29,6 +29,8 @@ protected:
 #pragma region Variables
 	static ParticleKernelMap kernelsMap;//Shared instance of a list of kernels
 
+	bool enabled;
+
 	physx::PxParticleBase* particleBase;//The particle base, whether fluid or particles, so majority of functionality can be stored in this class
 
 	physx::PxParticleReadDataFlags readableData; ///The readable data of the particle system
@@ -138,12 +140,16 @@ protected:
 #pragma endregion
 
 public:
+	bool ResetOnDisable;//True to remove all particles when system is disabled, false if not
+
 	FluidAndParticleBase(std::shared_ptr<AbstractParticleEmitter> _emitter, size_t _maximumParticles, float _initialLifetime,
 		physx::PxCudaContextManager* _cudaMan);
 
 	virtual ~FluidAndParticleBase();
 
 #pragma region Getters and Setters
+
+	inline bool GetEnabled()const{return enabled;}
 
 	void inline SetInfiniteLifetime(const bool val){infiniteLifetime = true;}
 

@@ -8,6 +8,7 @@
             <Property name="Area" value="{{0,0},{0,1},{1,0},{1,1}}" />
             <Property name="Image" value="PaperBackground/PaperBackground" />
             <Property name="MaxSize" value="{{1,0},{1,0}}" />
+            <Property name="ZOrderingEnabled" value="false" />
         </Window>
         <Window type="DefaultWindow" name="ArenaDescriptor" >
             <Property name="Area" value="{{-0.08,0},{0.05,0},{0.12,0},{0.35,0}}" />
@@ -230,7 +231,7 @@
             <Window type="DefaultWindow" name="StartZoneLabelRoot" >
                 <Property name="Area" value="{{0,0},{0.74,0},{1,0},{0.89,0}}" />
                 <Property name="MaxSize" value="{{1,0},{1,0}}" />
-                <Window type="Generic/ImageButton" name="P1ColourSelLeft" >
+                <Window type="Generic/ImageButton" name="P1SelLeft" >
                     <Property name="Area" value="{{-0.65,0},{0,0},{-0.6,0},{1,0}}" />
                     <Property name="HoverImage" value="MenuControls/A_Left_Sel_Hover" />
                     <Property name="NormalImage" value="MenuControls/A_Left_Sel_Normal" />
@@ -238,7 +239,7 @@
                     <Property name="DisabledImage" value="MenuControls/A_Left_Sel_Disabled" />
                     <Property name="HorizontalAlignment" value="Right" />
                 </Window>
-                <Window type="Generic/ImageButton" name="P1ColourSelRight" >
+                <Window type="Generic/ImageButton" name="P1SelRight" >
                     <Property name="Area" value="{{-0.4,0},{0,0},{-0.35,0},{1,0}}" />
                     <Property name="HoverImage" value="MenuControls/A_Right_Sel_Hover" />
                     <Property name="NormalImage" value="MenuControls/A_Right_Sel_Normal" />
@@ -246,7 +247,7 @@
                     <Property name="DisabledImage" value="MenuControls/A_Right_Sel_Disabled" />
                     <Property name="HorizontalAlignment" value="Right" />
                 </Window>
-                <Window type="Generic/ImageButton" name="P2ColourSelRight" >
+                <Window type="Generic/ImageButton" name="P2SelRight" >
                     <Property name="Area" value="{{-0.03,0},{0,0},{0.02,0},{1,0}}" />
                     <Property name="HoverImage" value="MenuControls/A_Right_Sel_Hover" />
                     <Property name="NormalImage" value="MenuControls/A_Right_Sel_Normal" />
@@ -254,7 +255,7 @@
                     <Property name="DisabledImage" value="MenuControls/A_Right_Sel_Disabled" />
                     <Property name="HorizontalAlignment" value="Right" />
                 </Window>
-                <Window type="Generic/ImageButton" name="P2ColourSelLeft" >
+                <Window type="Generic/ImageButton" name="P2SelLeft" >
                     <Property name="Area" value="{{-0.28,0},{0,0},{-0.23,0},{1,0}}" />
                     <Property name="HoverImage" value="MenuControls/A_Left_Sel_Hover" />
                     <Property name="NormalImage" value="MenuControls/A_Left_Sel_Normal" />

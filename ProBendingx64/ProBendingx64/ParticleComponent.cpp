@@ -137,12 +137,19 @@ ParticleComponent* ParticleComponent::Clone(GameObject* gameObject)
 
 void ParticleComponent::Enable()
 {
-	particleSystem->EnableSimulation();
-	enabled = true;
+	if(!enabled)
+	{
+		particleSystem->EnableSimulation();
+		enabled = true;
+	}
 }
 
 void ParticleComponent::Disable()
 {
-	particleSystem->DisableSimulation();
-	enabled = false;
+	if(enabled)
+	{
+		particleSystem->DisableSimulation();
+		enabled = false;
+	}
+	
 }

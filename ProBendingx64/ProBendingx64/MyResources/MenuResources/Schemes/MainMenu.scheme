@@ -1,5 +1,5 @@
 <?xml version="1.0" ?>
-<GUIScheme version="5" name="ProbendArenaScheme">
+<GUIScheme version="5" name="ProbendingMenusScheme">
 	<Imageset filename="MenuItems.imageset" />
 	<Imageset filename="MainMenuBackgroundImage.imageset" />
 	<Imageset filename="GymBackground.imageset" />

@@ -52,6 +52,8 @@ public:
 
 	virtual void Close();
 
+	inline Ogre::Camera* GetCamera2()const{return Camera2;}
+
 	void ChangeScreenOrientation(bool horizontal)
 	{
 		if(horizontal != horizontalScreens)

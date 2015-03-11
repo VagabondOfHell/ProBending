@@ -40,7 +40,7 @@ ProjectileDatabase::SharedProjectile ProjectileDatabase::CreateEarthJab(IScene* 
 {
 	std::string projName = AbilityIDs::EarthEnumToString(AbilityIDs::EARTH_JAB);
 
-	ProjectileAttributes earthJabAttributes = ProjectileAttributes(0.2f, 1.0f, 0.0f, 30.0f, 20.0f, 30.0f);
+	ProjectileAttributes earthJabAttributes = ProjectileAttributes(Ogre::Vector3(0.0f), 0.2f, 350.0f, 450.0f, 30.0f, 20.0f, 30.0f, true);
 
 	SharedProjectile projectile = std::make_shared<Projectile>(scene, earthJabAttributes, projName);
 	projectile->tag = TagsAndLayersManager::ProjectileTag;
@@ -54,10 +54,12 @@ ProjectileDatabase::SharedProjectile ProjectileDatabase::CreateEarthJab(IScene* 
 	RigidBodyComponent* rigidBody = new RigidBodyComponent();
 	projectile->AttachComponent(rigidBody);
 	rigidBody->CreateRigidBody(RigidBodyComponent::DYNAMIC); //Create dynamic body at 0,0,0 with 0 rotation
-	physx::PxVec3 entityHalfSize = HelperFunctions::OgreToPhysXVec3(renderComponent->GetHalfExtents());
+	
+	earthJabAttributes.HalfExtents = renderComponent->GetHalfExtents();
+	physx::PxVec3 entityHalfSize = HelperFunctions::OgreToPhysXVec3(earthJabAttributes.HalfExtents);
 
 	ShapeDefinition shapeDef = ShapeDefinition();
-	shapeDef.SetSphereGeometry(entityHalfSize.magnitude() * 0.5f);
+	shapeDef.SetSphereGeometry(entityHalfSize.magnitude() * 0.45f);
 	//shapeDef.SetBoxGeometry(entityHalfSize);
 	shapeDef.SetFilterFlags(ArenaData::PROJECTILE);
 
@@ -66,7 +68,7 @@ ProjectileDatabase::SharedProjectile ProjectileDatabase::CreateEarthJab(IScene* 
 	if(shape)
 	{
 		rigidBody->AttachShape(*shape);
-		rigidBody->CreateDebugDraw();
+		//rigidBody->CreateDebugDraw();
 		rigidBody->SetUseGravity(false);
 	}
 
@@ -77,7 +79,7 @@ ProjectileDatabase::SharedProjectile ProjectileDatabase::CreateEarthCoin(IScene*
 {
 	std::string projName = AbilityIDs::EarthEnumToString(AbilityIDs::EARTH_COIN);
 	
-	ProjectileAttributes earthCoinAttributes = ProjectileAttributes(1.0f, 2.0f, 150.0f, 150.0f, 30.0f, 50.0f);
+	ProjectileAttributes earthCoinAttributes = ProjectileAttributes(Ogre::Vector3(0.0f), 1.0f, 2.0f, 400.0f, 500.0f, 30.0f, 50.0f, true);
 
 	SharedProjectile projectile = std::make_shared<Projectile>(scene, earthCoinAttributes, projName);
 	projectile->tag = TagsAndLayersManager::ProjectileTag;
@@ -91,7 +93,9 @@ ProjectileDatabase::SharedProjectile ProjectileDatabase::CreateEarthCoin(IScene*
 	RigidBodyComponent* rigidBody = new RigidBodyComponent();
 	projectile->AttachComponent(rigidBody);
 	rigidBody->CreateRigidBody(RigidBodyComponent::DYNAMIC); //Create dynamic body at 0,0,0 with 0 rotation
-	physx::PxVec3 entityHalfSize = HelperFunctions::OgreToPhysXVec3(renderComponent->GetHalfExtents());
+	earthCoinAttributes.HalfExtents = renderComponent->GetHalfExtents();
+
+	physx::PxVec3 entityHalfSize = HelperFunctions::OgreToPhysXVec3(earthCoinAttributes.HalfExtents);
 	
 	ShapeDefinition shapeDef = ShapeDefinition();
 	//shapeDef.SetSphereGeometry(entityHalfSize.magnitude() * 0.5f);
@@ -103,7 +107,7 @@ ProjectileDatabase::SharedProjectile ProjectileDatabase::CreateEarthCoin(IScene*
 	if(shape)
 	{
 		rigidBody->AttachShape(*shape);
-		rigidBody->CreateDebugDraw();
+		//rigidBody->CreateDebugDraw();
 		rigidBody->SetUseGravity(false);
 	}
 
@@ -116,18 +120,61 @@ ProjectileDatabase::ProjectileDictionary ProjectileDatabase::GetFireProjectiles(
 {
 	ProjectileDictionary fireDictionary = ProjectileDictionary();
 
+	fireDictionary.insert(ProjectileDictionary::value_type(AbilityIDs::FIRE_JAB, CreateFireJab(scene)));
 	fireDictionary.insert(ProjectileDictionary::value_type(AbilityIDs::FIRE_BLAST, CreateFireBlast(scene)));
 
 	return fireDictionary;
+}
+
+ProjectileDatabase::SharedProjectile ProjectileDatabase::CreateFireJab(IScene* scene)
+{
+	std::string projName = AbilityIDs::FireEnumToString(AbilityIDs::FIRE_JAB);
+
+	ProjectileAttributes attributes = ProjectileAttributes(Ogre::Vector3(0.0f), 0.0f, 1.0f, 350.0f, 450.0f, 15.0f, 25.0f, false);
+
+	SharedProjectile newProjectile = std::make_shared<Projectile>(scene, attributes, projName);
+	newProjectile->tag = TagsAndLayersManager::ProjectileTag;
+	newProjectile->DestructionTriggers = ArenaData::PROJECTILE | ArenaData::WATER | ArenaData::WALL | ArenaData::ARENA_SURFACE;
+
+	ParticleComponent* fireEffect = ParticleFactory::CreateParticleSystem(ParticleFactory::Fire, 
+		newProjectile.get(), scene);
+	fireEffect->particleSystem->GetEmitter()->SetEmissionRate(100.0f);
+
+	ParticleComponent* smokeEffect = ParticleFactory::CreateParticleSystem(ParticleFactory::Smoke,
+		newProjectile.get(), scene);
+
+	RigidBodyComponent* rigidBody = new RigidBodyComponent();
+	newProjectile->AttachComponent(rigidBody);
+	rigidBody->CreateRigidBody(RigidBodyComponent::DYNAMIC);
+
+	ShapeDefinition shapeDef = ShapeDefinition();
+	shapeDef.SetSphereGeometry(0.15f);
+	attributes.HalfExtents = Ogre::Vector3(0.15f);
+
+	shapeDef.SetFilterFlags(ArenaData::PROJECTILE);
+
+	shapeDef.AddMaterial(PhysXDataManager::GetSingletonPtr()->CreateMaterial(1.0f, 1.0f, 0.0f, "101000"));
+	physx::PxShape* shape = PhysXDataManager::GetSingletonPtr()->CreateShape(shapeDef, projName + ShapeString);
+
+	if(shape)
+	{
+		rigidBody->AttachShape(*shape);
+		//rigidBody->CreateDebugDraw();
+		rigidBody->SetUseGravity(false);
+	}
+
+	newProjectile->SetScale(0.1f, 0.1f, 0.1f);
+
+	return newProjectile;
 }
 
 ProjectileDatabase::SharedProjectile ProjectileDatabase::CreateFireBlast(IScene* scene)
 {
 	std::string projName = AbilityIDs::FireEnumToString(AbilityIDs::FIRE_BLAST);
 
-	ProjectileAttributes attributes = ProjectileAttributes();
+	ProjectileAttributes attributes = ProjectileAttributes(Ogre::Vector3(0.0f), 0.0f, 1.0f, 400.0f, 500.0f, 15.0f, 25.0f, false);
 
-	SharedProjectile newProjectile = std::make_shared<Projectile>(scene, ProjectileAttributes(), projName);
+	SharedProjectile newProjectile = std::make_shared<Projectile>(scene, attributes, projName);
 	newProjectile->tag = TagsAndLayersManager::ProjectileTag;
 	newProjectile->DestructionTriggers = ArenaData::PROJECTILE | ArenaData::WATER | ArenaData::WALL;
 
@@ -143,6 +190,9 @@ ProjectileDatabase::SharedProjectile ProjectileDatabase::CreateFireBlast(IScene*
 
 	ShapeDefinition shapeDef = ShapeDefinition();
 	shapeDef.SetSphereGeometry(0.15f);
+
+	attributes.HalfExtents = Ogre::Vector3(0.15f);
+
 	shapeDef.SetFilterFlags(ArenaData::PROJECTILE);
 
 	shapeDef.AddMaterial(PhysXDataManager::GetSingletonPtr()->CreateMaterial(1.0f, 1.0f, 0.0f, "101000"));
@@ -151,7 +201,7 @@ ProjectileDatabase::SharedProjectile ProjectileDatabase::CreateFireBlast(IScene*
 	if(shape)
 	{
 		rigidBody->AttachShape(*shape);
-		rigidBody->CreateDebugDraw();
+		//rigidBody->CreateDebugDraw();
 		rigidBody->SetUseGravity(false);
 	}
 

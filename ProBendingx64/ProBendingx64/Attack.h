@@ -43,6 +43,18 @@ public:
 						return GetOgrePositionRelative(attackData.CurrentData->JointData[JointType_HandRight].Position,
 							attackData.CurrentData->JointData[JointType_SpineBase].Position);
 				}
+				else if(CalculationOption == CALC_OPTIONS_AVERAGE)
+				{
+					CameraSpacePoint spineBase = attackData.CurrentData->JointData[JointType_SpineBase].Position;
+					CameraSpacePoint leftHand = attackData.CurrentData->JointData[JointType_HandLeft].Position;
+					//leftHand.X -= spineBase.X; leftHand.Y -= spineBase.Y; leftHand.Z -= spineBase.Z;
+					Ogre::Vector3 leftHandDiff = GetOgrePositionRelative(attackData.CurrentData->JointData[JointType_HandLeft].Position,
+						spineBase);
+					Ogre::Vector3 rightHandDiff = GetOgrePositionRelative(attackData.CurrentData->JointData[JointType_HandRight].Position,
+						spineBase);
+
+					return (rightHandDiff + leftHandDiff * 0.5f);
+				}
 				break;
 			case SpawnPositionCalculator::LIMB_FEET:
 				break;
@@ -92,7 +104,7 @@ private:
 	Ogre::Vector3 GetOgrePositionRelative(const CameraSpacePoint& limbPosition, const CameraSpacePoint& referencePoint)
 	{
 		CameraSpacePoint result = CameraSpacePoint();
-		result.X = limbPosition.X - referencePoint.X;
+		result.X = -limbPosition.X - -referencePoint.X;
 		result.Y = limbPosition.Y - referencePoint.Y;
 		result.Z = limbPosition.Z - referencePoint.Z;
 

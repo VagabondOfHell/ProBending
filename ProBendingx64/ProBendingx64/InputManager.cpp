@@ -44,12 +44,19 @@ void InputManager::ShutdownThreads()
 	cancelBodyCapture = true;
 
 	DWORD result = WaitForSingleObject(speechCaptureThread.native_handle(), 100);
+	printf("First Wait Done\n");
 
 	speechCaptureThread.join();
 
+	printf("First Join Done\n");
+
 	result = WaitForSingleObject(bodyCaptureThread.native_handle(), 100);
 
+	printf("Second Wait Done\n");
+
 	bodyCaptureThread.join();
+
+	printf("Second Join Done\n");
 
 	if(kinectReader)
 	{
@@ -156,6 +163,11 @@ bool InputManager::RegisterListenerToNewBody(KinectBodyListener* listener)
 	}
 
 	return false;
+}
+
+void InputManager::FlushListeners()
+{
+	KinectBodyEventNotifier::GetInstance()->FlushListeners();
 }
 
 bool InputManager::RegisterListenerToBody(UINT8 bodyID, KinectBodyListener* listener)

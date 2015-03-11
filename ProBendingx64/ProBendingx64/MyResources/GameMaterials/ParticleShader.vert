@@ -24,7 +24,7 @@ in vec4 vertex;
 
 out vec4 Color;
 
-float pixelsPerRadian = 200;
+float pixelsPerRadian = 250;
 
 void main() {
 	gl_Position = worldViewProj * vec4(vertex.xyz, 1.0);

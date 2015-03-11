@@ -32,7 +32,7 @@ ParticleKernelMap::ParticleKernelMap()
 
 FluidAndParticleBase::FluidAndParticleBase(std::shared_ptr<AbstractParticleEmitter> _emitter, 
 	size_t _maximumParticles, float _initialLifetime, physx::PxCudaContextManager* _cudaMan)
-	: emitter(_emitter), maximumParticles(_maximumParticles), 
+	: emitter(_emitter), maximumParticles(_maximumParticles), enabled(true), ResetOnDisable(false),
 	initialLifetime(_initialLifetime), cudaContextManager(_cudaMan), cudaKernel(NULL)
 {
 	// our vertices are just points
@@ -175,6 +175,9 @@ void FluidAndParticleBase::Initialize(physx::PxScene* scene)
 
 void FluidAndParticleBase::Update(float time)
 {
+	if(!enabled)
+		return;
+
 	using namespace physx;
 	PxParticleReadData* rd;
 
@@ -538,16 +541,38 @@ Ogre::Real FluidAndParticleBase::getSquaredViewDepth(const Ogre::Camera* cam)con
 
 void FluidAndParticleBase::EnableSimulation()
 {
-	if(particleBase)
-		particleBase->setActorFlag(physx::PxActorFlag::eDISABLE_SIMULATION, false);
-	setVisible(true);
+	if(!enabled)
+	{
+		if(particleBase)
+			particleBase->setActorFlag(physx::PxActorFlag::eDISABLE_SIMULATION, false);
+		setVisible(true);
+		enabled = true;
+	}
 }
 
 void FluidAndParticleBase::DisableSimulation()
 {
-	if(particleBase)
-		particleBase->setActorFlag(physx::PxActorFlag::eDISABLE_SIMULATION, true);
-	setVisible(false);
+	if(enabled)
+	{
+		if(particleBase)
+			particleBase->setActorFlag(physx::PxActorFlag::eDISABLE_SIMULATION, true);
+		setVisible(false);
+		enabled = false;
+
+		if(ResetOnDisable)
+		{
+			particleBase->releaseParticles();
+			GPUResourcePointers lockedBufferData = LockBuffersCPU();
+			for (int i = 0; i < maximumParticles; i++)
+			{
+				lockedBufferData.positions[i] = physx::PxVec4(9999.9f, 9999.9f, 9999.9f, 1.0f);
+				lifetimes[i] = 0.0f;
+			}
+			UnlockBuffersCPU();
+		}
+	}
+	
 }
+
 
 #pragma endregion

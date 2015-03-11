@@ -49,6 +49,9 @@ public:
 	inline float GetBaseMinKnockback()const{return baseAttributes.MinKnockback;}
 	inline float GetBaseMaxKnockback()const{return baseAttributes.MaxKnockback;}
 
+	inline Ogre::Vector3 GetHalfExtents()const{return baseAttributes.HalfExtents;}
+	inline bool GetUseGravity()const{return baseAttributes.UseGravity;}
+
 	///<summary>At the moment this is used to differentiate between standard Game Objects and Projectiles and Probenders</summary>
 	///<returns>True if serializable, false if not</returns>
 	virtual inline bool IsSerializable()const{return false;}

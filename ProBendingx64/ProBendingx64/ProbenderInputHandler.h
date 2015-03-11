@@ -19,9 +19,11 @@ struct ConfigurationLayout
 
 	KeyboardKey AttackButton;
 	KeyboardKey JumpButton;
+	KeyboardKey StopListeningButton;
 
-	ConfigurationLayout(KeyboardKey attackButton = OIS::KC_SPACE, KeyboardKey jumpButton = OIS::KC_J)
-		:AttackButton(attackButton), JumpButton(jumpButton)
+	ConfigurationLayout(KeyboardKey attackButton = OIS::KC_SPACE, KeyboardKey jumpButton = OIS::KC_J, 
+		KeyboardKey stopListening = OIS::KC_1)
+		:AttackButton(attackButton), JumpButton(jumpButton), StopListeningButton(stopListening)
 	{
 
 	}
@@ -80,6 +82,8 @@ public:
 
 	void SetProbenderToHandle(Probender* _probenderToHandle);
 
+	bool ListenToBody(short bodyIndex);
+
 	///<summary>Overrides the current stance used by the input handler and sets Manage Stance to false</summary>
 	///<param name="newStance">The new stance to be used. Setting to Unknown Stance will
 	///result in no gestures being registered until ManageStance is set to true or user overrides
@@ -95,7 +99,11 @@ public:
 	void BeginListeningToAll();
 
 	///<summary>Begins listening to Kinect Body input</summary>
-	inline void BeginListeningToKinectBody(){InputManager::GetInstance()->RegisterListenerToNewBody(this); KinectBodyListener::Enabled = true;}
+	inline void BeginListeningToKinectBody(){
+		if(!IsListening())
+			InputManager::GetInstance()->RegisterListenerToNewBody(this); 
+		KinectBodyListener::Enabled = true;
+	}
 
 	///<summary>Begins listening to Kinect Speech input</summary>
 	inline void BeginListeningToKinectSpeech(){InputManager::GetInstance()->RegisterAudioListener(this); KinectAudioListener::Enabled = true;}

@@ -14,5 +14,12 @@ namespace AttackGestureEvaluators
 
 	GestureEnums::BodySide ArmPunchGesture(const Probender* probender, const BodyDimensions& bodyDimensions, 
 		const CompleteData& currData, const CompleteData& prevData, const ExtraCustomData& customData);
+
+	///For when the arms are extended out from the body towards the left and right sides
+	GestureEnums::BodySide ArmsWideGesture(const Probender* probender, const BodyDimensions& bodyDimensions,
+		const CompleteData& currData, const CompleteData& prevData, const ExtraCustomData& customData);
+
+	GestureEnums::BodySide HandsClapGesture(const Probender* probender, const BodyDimensions& bodyDimensions,
+		const CompleteData& currData, const CompleteData& prevData, const ExtraCustomData& customData);
 };
 

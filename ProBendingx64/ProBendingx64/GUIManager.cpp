@@ -256,9 +256,22 @@ CEGUI::PushButton* const GUIManager::CreateGUIButton(const CEGUI::String& style,
 	return NULL;
 }
 
+void GUIManager::InjectMousePosition(float x, float y)
+{
+	defaultContext->injectMousePosition(x, y);
+}
+
 void GUIManager::InjectMouseMove(float x, float y)
 {
 	defaultContext->injectMouseMove(x, y);
+}
+
+void GUIManager::InjectMouseClick(OIS::MouseButtonID button)
+{
+	if(!defaultContext->injectMouseButtonClick(ConvertButton(button)))
+		printf("NO HANDLE\n");
+	else
+		printf("HANDLED\n");
 }
 
 void GUIManager::InjectMouseButtonDown(OIS::MouseButtonID button)

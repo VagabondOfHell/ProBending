@@ -102,6 +102,8 @@ public:
 		ValidateMinAndMax(minimumDirection, maximumDirection);
 	}
 
+	void SetEmissionRate(float pps){particlesPerSecond = pps;}
+
 	///<summary>Sets new values to the minimum and maximum speeds and ensures that maximum is greater
 	///than the minimum</summary>
 	///<param name="newMin">The new minimum speed to use</param>

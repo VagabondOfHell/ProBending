@@ -1,7 +1,11 @@
+
+#include "OgreSceneNode.h"
+#include "OgreCamera.h"
+
 #include "Arena.h"
 #include "Probender.h"
 #include "GUIManager.h"
-#include "IScene.h"
+#include "GameScene.h"
 
 #include "ProjectileManager.h"
 #include "PhysXDataManager.h"
@@ -163,7 +167,7 @@ void Arena::PlaceContestants()
 
 		//For debugging purposes
 		if(i ==1)
-			contestants[i]->SetKeyboardConfiguration(ConfigurationLayout(OIS::KC_Q, OIS::KC_TAB));
+			contestants[i]->SetKeyboardConfiguration(ConfigurationLayout(OIS::KC_Q, OIS::KC_TAB, OIS::KC_2));
 		//End debugging purposes
 
 		ArenaData::Zones currZone = contestants[i]->GetCurrentZone();
@@ -242,11 +246,15 @@ void Arena::PlaceContestants()
 		owningScene->AddGameObject(contestants[i]);
 	}
 
+	contestants[0]->SetCamera(owningScene->GetCamera());
+	contestants[1]->SetCamera(((GameScene*)owningScene)->GetCamera2());
+
+	contestants[0]->currentTarget = contestants[1].get();
+	contestants[1]->currentTarget = contestants[0].get();
 }
 
 bool Arena::Update(const float gameTime)
 {
-
 	for (int i = 0; i < contestantCount; i++)
 	{
 		contestants[i]->Update(gameTime);

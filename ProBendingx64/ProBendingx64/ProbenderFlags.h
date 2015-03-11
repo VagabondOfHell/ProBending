@@ -202,7 +202,7 @@ namespace ProbenderAttributes
 namespace AbilityIDs
 {
 	typedef unsigned short AbilityID;
-	enum FireAbilities{FIRE_BLAST, FIRE_ABILITIES_COUNT};
+	enum FireAbilities{FIRE_JAB, FIRE_BLAST, FIRE_ABILITIES_COUNT};
 	enum EarthAbilities{EARTH_JAB, EARTH_COIN, EARTH_ABILITIES_COUNT};
 	enum AirAbilities{AIR_ABILITIES_COUNT};
 	enum WaterAbilities{WATER_ABILITIES_COUNT};
@@ -211,6 +211,9 @@ namespace AbilityIDs
 	{
 		switch (fireAbilities)
 		{
+		case FIRE_JAB:
+			return "Fire_Jab";
+			break;
 		case FIRE_BLAST:
 			return "Fire_Blast";
 			break;

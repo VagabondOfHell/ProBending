@@ -93,7 +93,10 @@ public:
 	///<param name="schemeName">The name of the scheme to remove</param>
 	void RemoveScheme(const CEGUI::String& schemeName);
 
+	void InjectMousePosition(float x, float y);
 	void InjectMouseMove(float x, float y);
+
+	void InjectMouseClick(OIS::MouseButtonID button);
 	void InjectMouseButtonDown(OIS::MouseButtonID button);
 	void InjectMouseButtonUp(OIS::MouseButtonID button);
 

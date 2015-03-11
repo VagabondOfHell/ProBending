@@ -298,16 +298,23 @@ void ProbenderInputHandler::HandleAttacks(const AttackData& attackData)
 					MeshRenderComponent* renderComp = (MeshRenderComponent*)proj->GetComponent(Component::MESH_RENDER_COMPONENT);
 
 					Ogre::Vector3 spawnPos = activeAttack->GetSpawnPosition();
-					float val = spawnPos.x;
-					spawnPos.x = spawnPos.z;
-					spawnPos.z = val;
+					spawnPos.z = 1.0f;
+
+					//float val = spawnPos.z;
+					//spawnPos.z = spawnPos.x;
+					//spawnPos.x = 1.0f;//spawnPos.z;
+
+					spawnPos = probender->GetWorldOrientation() * spawnPos;
 
 					printf("%f, %f, %f\n", spawnPos.x, spawnPos.y, spawnPos.z);
 
-					proj->SetWorldPosition(probender->GetWorldPosition() + spawnPos
-						+ (probender->Forward() * renderComp->GetHalfExtents().x ));
-						//probender->Forward() * 2.0f);
+					Ogre::Vector3 camForward = probender->camera->getDerivedOrientation() * -Ogre::Vector3::UNIT_Z;
 
+					proj->SetWorldPosition(probender->GetWorldPosition() + spawnPos
+						+ (camForward * proj->GetHalfExtents().x ));
+						//probender->Forward() * 2.0f);
+					/*proj->SetWorldPosition(probender->GetWorldPosition() + spawnPos
+						+ (probender->Forward() * proj->GetHalfExtents().x ));*/
 					proj->SetWorldOrientation(1.0f, 0.0f, 0.0f, 0.0f);
 
 					proj->GetRigidBody()->SetUseGravity(false);
@@ -316,11 +323,18 @@ void ProbenderInputHandler::HandleAttacks(const AttackData& attackData)
 					if(activeAttack->LaunchOnCreate)
 					{
 						proj->GetRigidBody()->WakeUp();
-						proj->GetRigidBody()->SetUseGravity(true);
+						proj->GetRigidBody()->SetUseGravity(proj->GetUseGravity());
+
+						Ogre::Vector3 camForward = probender->camera->getDerivedOrientation() * -Ogre::Vector3::UNIT_Z;
+
 						//Launch the Projectile
-						proj->LaunchProjectile(HelperFunctions::OgreToPhysXVec3(probender->Forward()), 
+						proj->LaunchProjectile(HelperFunctions::OgreToPhysXVec3(camForward), 
 							probender->GetInGameData().CurrentAttributes.GetBonusAttackSpeed(),
 							probender->GetInGameData().CurrentAttributes.GetBonusAttackDamage());
+
+						/*proj->LaunchProjectile(HelperFunctions::OgreToPhysXVec3(probender->Forward()), 
+							probender->GetInGameData().CurrentAttributes.GetBonusAttackSpeed(),
+							probender->GetInGameData().CurrentAttributes.GetBonusAttackDamage());*/
 
 						activeAttack = NULL;
 						probender->stateManager.SetStateImmediate(StateFlags::IDLE_STATE, 0.0f);
@@ -345,12 +359,16 @@ void ProbenderInputHandler::HandleAttacks(const AttackData& attackData)
 			if(proj)
 			{
 				proj->GetRigidBody()->WakeUp();
-				proj->GetRigidBody()->SetUseGravity(true);
+				proj->GetRigidBody()->SetUseGravity(proj->GetUseGravity());
+				Ogre::Vector3 camForward = probender->camera->getDerivedOrientation() * -Ogre::Vector3::UNIT_Z;
 				//Launch the Projectile
-				proj->LaunchProjectile(HelperFunctions::OgreToPhysXVec3(probender->Forward()), 
+				proj->LaunchProjectile(HelperFunctions::OgreToPhysXVec3(camForward), 
 					probender->GetInGameData().CurrentAttributes.GetBonusAttackSpeed(),
 					probender->GetInGameData().CurrentAttributes.GetBonusAttackDamage());
 			
+				/*proj->LaunchProjectile(HelperFunctions::OgreToPhysXVec3(probender->Forward()), 
+					probender->GetInGameData().CurrentAttributes.GetBonusAttackSpeed(),
+					probender->GetInGameData().CurrentAttributes.GetBonusAttackDamage());*/
 				activeAttack = NULL;
 				attackBreather = ATTACK_PAUSE;
 
@@ -365,6 +383,15 @@ bool created = false;
 
 void ProbenderInputHandler::DiscreteGesturesAcquired(const std::vector<KinectGestureResult>discreteGestureResults)
 {
+	AttackData frameData = AttackData();
+	std::remove_const<const std::vector<KinectGestureResult>>::type noConstResults = discreteGestureResults;
+
+	frameData.DiscreteGestureResults = &noConstResults;
+	frameData._BodyDimensions = &bodyDimensions;
+	frameData._Probender = probender;
+
+	HandleAttacks(frameData);
+
 	///BE SURE TO IMPLEMENT MANAGE STANCE////
 	for (int i = 0; i < discreteGestureResults.size(); i++)
 	{
@@ -377,13 +404,13 @@ void ProbenderInputHandler::DiscreteGesturesAcquired(const std::vector<KinectGes
 			else if(discreteGestureResults[i].gestureName == L"Fire_Blast_Begin" && discreteGestureResults[i].discreteConfidence >= 0.7f)
 				if(!created && probender->GetCurrentElement() == ElementEnum::Fire)
 				{
-					SharedProjectile attack = probender->GetOwningArena()->
-						GetProjectileManager()->CreateProjectile(ElementEnum::Fire, AbilityIDs::FIRE_BLAST);
+					/*SharedProjectile attack = probender->GetOwningArena()->
+						GetProjectileManager()->CreateProjectile(ElementEnum::Fire, AbilityIDs::FIRE_BLAST);*/
 
 					//attack->AttachAbility(ability);
 
-					probender->rightHandAttack = attack;
-					created = true;
+					/*probender->rightHandAttack = attack;
+					created = true;*/
 				}
 			else if(discreteGestureResults[i].gestureName == L"Fire_Blast_Release")
 			{
@@ -529,14 +556,14 @@ void ProbenderInputHandler::keyPressed( const OIS::KeyEvent &arg )
 		if(probender->GetCurrentElement() == ElementEnum::Fire)
 		{
 			SharedProjectile attack = probender->GetOwningArena()->GetProjectileManager()->
-				CreateProjectile(ElementEnum::Fire, AbilityIDs::FIRE_BLAST);
+				CreateProjectile(ElementEnum::Fire, AbilityIDs::FIRE_JAB);
 
 			if(attack)
 			{
 				attack->CasterContestantID = probender->contestantID;
 
 				attack->Enable();
-				//attack->GetRigidBody()->SetUseGravity(true);
+				attack->GetRigidBody()->SetUseGravity(attack->GetUseGravity());
 
 				Ogre::Vector3 camDir = probender->Forward();
 
@@ -583,6 +610,19 @@ void ProbenderInputHandler::keyPressed( const OIS::KeyEvent &arg )
 			}
 		}
 		
+	}
+	else if(arg.key == keysLayout.StopListeningButton)
+	{
+		StopListeningToKinectBody();
+		std::vector<Ogre::Vector3> meshData = std::vector<Ogre::Vector3>();
+		meshData.reserve(JointType::JointType_Count);
+
+		for (int i = 0; i < RenderableJointType::Count; i++)
+		{
+				meshData.push_back(Ogre::Vector3(0.0f));
+		}
+
+		probender->meshRenderComponent->UpdateMesh(meshData, 0, Ogre::VES_POSITION);
 	}
 	else if (arg.key == OIS::KC_BACK)
 	{
@@ -635,6 +675,14 @@ void ProbenderInputHandler::mousePressed( const OIS::MouseEvent &arg, OIS::Mouse
 
 void ProbenderInputHandler::mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id )
 {
+}
+
+bool ProbenderInputHandler::ListenToBody(short bodyIndex)
+{
+	if(bodyIndex >= 0)
+		return InputManager::GetInstance()->RegisterListenerToBody(bodyIndex, this);
+	
+	return false;
 }
 
 #pragma endregion

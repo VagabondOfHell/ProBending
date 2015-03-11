@@ -23,23 +23,24 @@
 #include "OgreMeshManager.h"
 #include "OgreHardwareBufferManager.h"
 
-const physx::PxVec3 Probender::HALF_EXTENTS = physx::PxVec3(0.250f, 0.60f, 0.040f);
+const physx::PxVec3 Probender::HALF_EXTENTS = physx::PxVec3(0.250f, 0.60f, 0.40f);
 
 const float Probender::DODGE_DISTANCE = 1.0f;
 
 const float Probender::FALL_FORCE = -350.0f;
 
 Probender::Probender()
-	: GameObject(NULL), owningArena(NULL), leftHandAttack(NULL), rightHandAttack(NULL), currentTarget(NULL)
+	: GameObject(NULL), owningArena(NULL), leftHandAttack(NULL), rightHandAttack(NULL), currentTarget(NULL), camera(NULL)
 {
 }
 
 Probender::Probender(const unsigned short _contestantID, const ProbenderData charData, Arena* _owningArena)
 	: GameObject(_owningArena->GetOwningScene(), "Probender" + std::to_string(_contestantID)), 
 		contestantID(_contestantID), owningArena(_owningArena), characterData(charData), 
-		leftHandAttack(NULL), rightHandAttack(NULL), currentTarget(NULL)
+		leftHandAttack(NULL), rightHandAttack(NULL), currentTarget(NULL), camera(NULL)
 {
 	characterData.CurrentAttributes = characterData.BaseAttributes;
+	characterData.CurrentElement = characterData.MainElement;
 
 	tag = TagsAndLayersManager::ContestantTag;
 }
@@ -48,10 +49,30 @@ Probender::~Probender(void)
 {
 }
 
+void Probender::SetCamera(Ogre::Camera* newCamera)
+{
+	gameObjectNode->attachObject(newCamera);
+
+	if(camera)
+		gameObjectNode->detachObject(camera);
+
+	camera = newCamera;
+
+	camera->setPosition(Ogre::Vector3(0.0f, 1.0f, 0.0f));
+	
+	if(currentTarget)
+		camera->lookAt(currentTarget->GetWorldPosition());
+	else
+		camera->lookAt(Ogre::Vector3(0.0f, 2.0f, 0.0f));
+}
+
 void Probender::Start()
 {
-	SetInputState(Probender::Listen);
 	inputHandler.SetProbenderToHandle(this);
+	if(!inputHandler.ListenToBody(characterData.BodyID))
+		printf("Listen to specified body failed\n");
+
+	SetInputState(Probender::Listen);
 
 	characterData.BaseAttributes.Energy = characterData.CurrentAttributes.Energy = 
 		characterData.BaseAttributes.GetMaxEnergy();
@@ -95,6 +116,10 @@ void Probender::Start()
 void Probender::Update(float gameTime)
 {
 	GameObject::Update(gameTime);
+
+	if(currentTarget)
+		if(camera)
+			camera->lookAt(currentTarget->GetWorldPosition() + Ogre::Vector3(0.0f, 1.0f, 0.0f));
 
 	inputHandler.Update(gameTime);
 	stateManager.Update(gameTime);	

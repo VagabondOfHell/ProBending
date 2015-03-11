@@ -199,6 +199,7 @@ struct TeamData
 struct ProbenderData
 {
 	unsigned short Level;
+	short BodyID;//used to transfer control of the same user to the game. not unsigned so this way we can apply -1
 
 	ElementEnum::Element MainElement;
 	ElementEnum::Element SubElement;
@@ -213,7 +214,7 @@ struct ProbenderData
 	ProbenderData(ElementEnum::Element _mainElement = ElementEnum::InvalidElement, ElementEnum::Element _subElement = ElementEnum::InvalidElement, 
 		unsigned short level = 0, CharacterAttributes baseAttributes = CharacterAttributes(), TeamData _teamData = TeamData())
 		: MainElement(_mainElement), SubElement(_subElement), CurrentElement(_mainElement), Level(level), 
-		BaseAttributes(baseAttributes), CurrentAttributes(baseAttributes), TeamDatas(_teamData)
+		BaseAttributes(baseAttributes), CurrentAttributes(baseAttributes), TeamDatas(_teamData), BodyID(-1)
 	{	}
 	
 };

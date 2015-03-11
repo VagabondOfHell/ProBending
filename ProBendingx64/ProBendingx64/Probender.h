@@ -13,6 +13,11 @@ namespace physx
 	class PxRigidDynamic;
 };
 
+namespace Ogre
+{
+	class Camera;
+};
+
 class MeshRenderComponent;
 class IScene;
 class Arena;
@@ -30,6 +35,8 @@ private:
 	static const float DODGE_DISTANCE;
 	static const float FALL_FORCE;
 
+	Ogre::Camera* camera;
+
 	ProbenderData characterData;//The characters game stats
 	
 	ProbenderInputHandler inputHandler;//The component handling input
@@ -37,8 +44,6 @@ private:
 	SharedProjectile leftHandAttack;//The projectile in the left hand
 	SharedProjectile rightHandAttack;//The projectile in the right hand
 	
-	Probender* currentTarget;//The probender currently targeted by this player
-
 	Arena* owningArena;//The arena the contestant is part of
 
 	MeshRenderComponent* meshRenderComponent;
@@ -55,6 +60,8 @@ private:
 	void HandleDodge(const float gameTime);
 
 public:
+	Probender* currentTarget;//The probender currently targeted by this player
+
 	ProbenderStateManager stateManager;//The state manager for probenders
 	
 	enum InputState{Listen, Pause, Stop};
@@ -76,6 +83,10 @@ public:
 
 	inline ArenaData::Zones GetCurrentZone()const{return characterData.TeamDatas.CurrentZone;}
 	
+	inline Ogre::Camera* GetCamera()const{return camera;}
+
+	void SetCamera(Ogre::Camera* newCamera);
+
 	void Start();
 
 	void Update(float gameTime);

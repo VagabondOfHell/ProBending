@@ -27,6 +27,9 @@ CharacterMenuHandler::CharacterMenuHandler(IScene* scene)
 	p1PointsAvailable = p2PointsAvailable = 0;
 	p1ValidCharacter = p2ValidCharacter = false;
 
+	p1ModdedData.MainElement = ElementEnum::Earth;
+	p2ModdedData.MainElement = ElementEnum::Earth;
+
 	GatherRootWindows();
 
 	DisableUnimplementedControls();
@@ -152,7 +155,9 @@ void CharacterMenuHandler::SetStage(bool player1, Stage newStage)
 {
 	switch (newStage)
 	{
+	case CharacterMenuHandler::Done:
 	case CharacterMenuHandler::MainDialog:
+		DeactivateElementChoices(player1);
 		if(player1)
 		{
 			p1MainDialog->setVisible(true);
@@ -167,6 +172,8 @@ void CharacterMenuHandler::SetStage(bool player1, Stage newStage)
 		}
 		break;
 	case CharacterMenuHandler::EditStats:
+		ActivateElementChoices(player1);
+
 		if(player1)
 		{
 			p1MainDialog->setVisible(false);
@@ -184,7 +191,7 @@ void CharacterMenuHandler::SetStage(bool player1, Stage newStage)
 		break;
 	case CharacterMenuHandler::CreateStats:
 		CreateCharacter(player1);
-
+		ActivateElementChoices(player1);
 		if(player1)
 		{
 			p1MainDialog->setVisible(false);
@@ -198,10 +205,12 @@ void CharacterMenuHandler::SetStage(bool player1, Stage newStage)
 			p2StatsDialog->setVisible(true);
 		}
 
+		ChangeElement(player1, ElementEnum::InvalidElement);
 		UpdateAttributeScores(player1);
 
 		break;
 	case CharacterMenuHandler::LoadDialog:
+		DeactivateElementChoices(player1);
 		if(player1)
 		{
 			p1MainDialog->setVisible(false);
@@ -212,21 +221,6 @@ void CharacterMenuHandler::SetStage(bool player1, Stage newStage)
 		{
 			p2MainDialog->setVisible(false);
 			p2LoadDialog->setVisible(true);
-			p2StatsDialog->setVisible(false);
-		}
-		break;
-
-	case CharacterMenuHandler::Done:
-		if(player1)
-		{
-			p1MainDialog->setVisible(true);
-			p1LoadDialog->setVisible(false);
-			p1StatsDialog->setVisible(false);
-		}
-		else
-		{
-			p2MainDialog->setVisible(true);
-			p2LoadDialog->setVisible(false);
 			p2StatsDialog->setVisible(false);
 		}
 		break;
@@ -247,9 +241,9 @@ void CharacterMenuHandler::ChangeElement(bool player1, ElementEnum::Element newE
 	if(newElement == ElementEnum::InvalidElement)
 	{
 		if(player1)
-			newElement = menuScene->Player1Data.MainElement;
+			newElement = p1ModdedData.MainElement;
 		else
-			newElement = menuScene->Player2Data.MainElement;
+			newElement = p2ModdedData.MainElement;
 	}
 
 	//Get the stage for the specified player
@@ -279,6 +273,7 @@ void CharacterMenuHandler::SetSkinsForGroup(bool player1, Stage stage, ElementEn
 
 	switch (stage)
 	{
+	case CharacterMenuHandler::Done:
 	case CharacterMenuHandler::MainDialog:
 		{
 			//Set button images for each of the windows in the Main Dialog Window
@@ -397,18 +392,26 @@ void CharacterMenuHandler::GetButtonSkinSuffix(ButtonSkinType skinType, ButtonSk
 
 void CharacterMenuHandler::CreateCharacter(bool player1)
 {
+	ProbenderData* playerData = NULL;
 	CharacterAttributes* attr = NULL;
 
 	if(player1)
 	{
-		attr = &p1ModdedData.BaseAttributes;
+		playerData = &p1ModdedData;
+		p1ValidCharacter = true;
 	}
 	else
 	{
-		attr = &p2ModdedData.BaseAttributes;
+		playerData = &p2ModdedData;
+		p2ValidCharacter = true;
 	}
 
 	unsigned short default_val = 5;
+
+
+	attr = &playerData->BaseAttributes;
+	
+	playerData->MainElement = ElementEnum::Earth;
 
 	attr->SetAttribute(ProbenderAttributes::Endurance, default_val);
 	attr->SetAttribute(ProbenderAttributes::Recovery, default_val);
@@ -424,10 +427,12 @@ void CharacterMenuHandler::ApplyModdedData(bool player1)
 
 	if(player1)
 	{
+		menu->Player1Data.MainElement = p1ModdedData.MainElement;
 		menu->Player1Data.BaseAttributes = p1ModdedData.BaseAttributes;
 	}
 	else
 	{
+		menu->Player2Data.MainElement = p2ModdedData.MainElement;
 		menu->Player2Data.BaseAttributes = p2ModdedData.BaseAttributes;
 	}
 }
@@ -726,21 +731,21 @@ bool CharacterMenuHandler::L_ElementButtonClickEvent(const CEGUI::EventArgs& e)
 
 	if(IsPlayer1((const CEGUI::WindowEventArgs&)e))
 	{
-		menu->Player1Data.MainElement = (ElementEnum::Element)(menu->Player1Data.MainElement - 1);
+		p1ModdedData.MainElement = (ElementEnum::Element)(p1ModdedData.MainElement - 1);
 
-		if(menu->Player1Data.MainElement < ElementEnum::Air)
-			menu->Player1Data.MainElement = ElementEnum::Water;
+		if(p1ModdedData.MainElement < ElementEnum::Air)
+			p1ModdedData.MainElement = ElementEnum::Water;
 
-		ChangeElement(true, menu->Player1Data.MainElement);
+		ChangeElement(true, p1ModdedData.MainElement);
 	}
 	else
 	{
-		menu->Player2Data.MainElement = (ElementEnum::Element)(menu->Player2Data.MainElement - 1);
+		p2ModdedData.MainElement = (ElementEnum::Element)(p2ModdedData.MainElement - 1);
 
-		if(menu->Player2Data.MainElement < ElementEnum::Air)
-			menu->Player2Data.MainElement = ElementEnum::Water;
+		if(p2ModdedData.MainElement < ElementEnum::Air)
+			p2ModdedData.MainElement = ElementEnum::Water;
 
-		ChangeElement(false, menu->Player2Data.MainElement);
+		ChangeElement(false, p2ModdedData.MainElement);
 	}
 
 	return true;
@@ -752,21 +757,21 @@ bool CharacterMenuHandler::R_ElementButtonClickEvent(const CEGUI::EventArgs& e)
 
 	if(IsPlayer1((const CEGUI::WindowEventArgs&)e))
 	{
-		menu->Player1Data.MainElement = (ElementEnum::Element)(menu->Player1Data.MainElement + 1);
+		p1ModdedData.MainElement = (ElementEnum::Element)(p1ModdedData.MainElement + 1);
 
-		if(menu->Player1Data.MainElement > ElementEnum::Water)
-			menu->Player1Data.MainElement = ElementEnum::Air;
+		if(p1ModdedData.MainElement > ElementEnum::Water)
+			p1ModdedData.MainElement = ElementEnum::Air;
 
-		ChangeElement(true, menu->Player1Data.MainElement);
+		ChangeElement(true, p1ModdedData.MainElement);
 	}
 	else
 	{
-		menu->Player2Data.MainElement = (ElementEnum::Element)(menu->Player2Data.MainElement + 1);
+		p2ModdedData.MainElement = (ElementEnum::Element)(p2ModdedData.MainElement + 1);
 
-		if(menu->Player2Data.MainElement > ElementEnum::Water)
-			menu->Player2Data.MainElement = ElementEnum::Air;
+		if(p2ModdedData.MainElement > ElementEnum::Water)
+			p2ModdedData.MainElement = ElementEnum::Air;
 
-		ChangeElement(false, menu->Player2Data.MainElement);
+		ChangeElement(false, p2ModdedData.MainElement);
 	}
 
 	return true;
@@ -817,20 +822,10 @@ bool CharacterMenuHandler::MainDlgLoadCharBtnClickEvent(const CEGUI::EventArgs& 
 bool CharacterMenuHandler::MainDlgDoneBtnClickEvent(const CEGUI::EventArgs& e)
 {
 	MenusScene* menu = (MenusScene*)scene;
-
-	if(IsPlayer1((const CEGUI::WindowEventArgs&)e))
+	//will need fixing
+	if(p1CurrentStage == Done && p2CurrentStage == Done)
 	{
-		if(p2CurrentStage == Done)
-		{
-			menu->SetScreen(MenusScene::GameSetup);
-		}
-	}
-	else
-	{
-		if(p1CurrentStage == Done)
-		{
-			menu->SetScreen(MenusScene::GameSetup);
-		}
+		menu->SetScreen(MenusScene::GameSetup);
 	}
 
 	return true;
@@ -938,6 +933,7 @@ bool CharacterMenuHandler::StatsOKBtnClickEvent(const CEGUI::EventArgs& e)
 	{
 		if(p1ValidCharacter)
 		{
+			ApplyModdedData(true);
 			SetStage(true, Done);
 		}
 	}
@@ -945,6 +941,7 @@ bool CharacterMenuHandler::StatsOKBtnClickEvent(const CEGUI::EventArgs& e)
 	{
 		if(p2ValidCharacter)
 		{
+			ApplyModdedData(false);
 			SetStage(false, Done);
 		}
 	}
@@ -966,6 +963,18 @@ bool CharacterMenuHandler::StatsCancelBtnClickEvent(const CEGUI::EventArgs& e)
 	}
 
 	return true;
+}
+
+void CharacterMenuHandler::ActivateElementChoices(bool player1)
+{
+	GetWindow(MW_ELEMENT_SEL_LEFT, player1)->enable();
+	GetWindow(MW_ELEMENT_SEL_RIGHT, player1)->enable();
+}
+
+void CharacterMenuHandler::DeactivateElementChoices(bool player1)
+{
+	GetWindow(MW_ELEMENT_SEL_LEFT, player1)->disable();
+	GetWindow(MW_ELEMENT_SEL_RIGHT, player1)->disable();
 }
 
 #pragma endregion

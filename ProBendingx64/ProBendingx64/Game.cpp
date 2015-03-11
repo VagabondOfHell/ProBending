@@ -353,7 +353,7 @@ void Game::Run()
 	printf("Debugging Window:\n");
 	
 	std::vector<ProbenderData> contestantData;
-	ProbenderData player1Data = ProbenderData(ElementEnum::Fire);
+	ProbenderData player1Data = ProbenderData(ElementEnum::Earth);
 	player1Data.TeamDatas.Team = ArenaData::BLUE_TEAM;
 	player1Data.TeamDatas.CurrentZone = ArenaData::BLUE_ZONE_1;
 	player1Data.TeamDatas.PlayerColour = TeamData::PURPLE;
@@ -362,7 +362,7 @@ void Game::Run()
 	player1Data.BaseAttributes.SetAttribute(ProbenderAttributes::Endurance, 5);
 	player1Data.BaseAttributes.SetAttribute(ProbenderAttributes::Recovery, 5);
 
-	ProbenderData player2Data = ProbenderData(ElementEnum::Earth);
+	ProbenderData player2Data = ProbenderData(ElementEnum::Fire);
 	player2Data.TeamDatas.Team = ArenaData::RED_TEAM;
 	player2Data.TeamDatas.CurrentZone = ArenaData::RED_ZONE_1;
 	player2Data.TeamDatas.PlayerColour = TeamData::BLUE;

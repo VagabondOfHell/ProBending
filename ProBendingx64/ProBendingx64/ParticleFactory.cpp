@@ -21,9 +21,10 @@ ParticleComponent* ParticleFactory::CreateFireEffect(GameObject* object, IScene*
 
 	ParticleSystemParams params = ParticleSystemParams(1.0f, 2.0f, scene->GetCudaContextManager(),
 		physx::PxVec3(0.0f, 0.0f, 0.0f),1.0f, false, physx::PxParticleBaseFlag::eENABLED,
-		0.50f, 0.0f, 0.0f, 0.30f, 0.3f, 0.0f);
+		0.50f, 0.0f, 0.0f, 0.30f, 0.1f, 0.0f);
 
 	ParticleSystemBase* particles = new ParticleSystemBase(emitter, 50, 0.750f,params);
+	particles->ResetOnDisable = true;
 
 	ParticleComponent* particleComponent = new ParticleComponent(particles, false);
 
@@ -66,9 +67,10 @@ ParticleComponent* ParticleFactory::CreateSmokeEffect(GameObject* object, IScene
 
 	ParticleSystemParams params = ParticleSystemParams(1.0f, 2.0f, scene->GetCudaContextManager(),
 		physx::PxVec3(0.0f, 0.0f, 0.0f),1.0f, false, physx::PxParticleBaseFlag::eENABLED,
-		0.50f, 0.0f, 0.0f, 0.30f, 0.3f, 0.0f);
+		0.50f, 0.0f, 0.0f, 0.30f, 0.1f, 0.0f);
 
 	ParticleSystemBase* particles = new ParticleSystemBase(emitter, 30, 0.750f,params);
+	particles->ResetOnDisable = true;
 
 	ParticleComponent* particleComponent = new ParticleComponent(particles, false);
 

@@ -355,6 +355,7 @@
                 <Property name="Area" value="{{0,0},{0,0},{1,0},{1,0}}" />
                 <Property name="Image" value="PaperBackground/PaperBackground" />
                 <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="ZOrderingEnabled" value="false" />
             </Window>
             <Window type="Generic/ImageButton" name="CreateCharButton" >
                 <Property name="Area" value="{{0,0},{-0.34,0},{0.8,0},{-0.09,0}}" />
@@ -1103,6 +1104,7 @@
                 <Property name="Area" value="{{0,0},{0,0},{1,0},{1,0}}" />
                 <Property name="Image" value="PaperBackground/PaperBackground" />
                 <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="ZOrderingEnabled" value="false" />
             </Window>
             <Window type="Generic/ImageButton" name="CreateCharButton" >
                 <Property name="Area" value="{{0,0},{-0.34,0},{0.8,0},{-0.09,0}}" />

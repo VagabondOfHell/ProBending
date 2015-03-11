@@ -112,6 +112,9 @@ public:
 	///<returns>True if successful, false if not</returns>
 	bool RegisterListenerToBody(UINT8 bodyID, KinectBodyListener* listener);
 
+	///<summary>Removes all flagged listeners</summary>
+	void FlushListeners();
+
 	///<summary>Swaps the bodies that each listener is listening to</summary>
 	///<param name="listener1">The listener to switch from</param>
 	///<param name="listener2">The listener to switch to</param>
