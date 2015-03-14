@@ -131,7 +131,10 @@ void ParticleComponent::SetTransformationSpace(const bool _useLocalSpace)
 ParticleComponent* ParticleComponent::Clone(GameObject* gameObject)
 {
 	ParticleComponent* clone = new ParticleComponent(particleSystem->Clone(), useLocalSpace);
-	
+
+	if(!enabled)
+		clone->Disable();
+
 	return clone;
 }
 

@@ -255,10 +255,10 @@ void Arena::PlaceContestants()
 
 bool Arena::Update(const float gameTime)
 {
-	for (int i = 0; i < contestantCount; i++)
+	/*for (int i = 0; i < contestantCount; i++)
 	{
 		contestants[i]->Update(gameTime);
-	}
+	}*/
 
 	label->setText(std::to_string(contestants[0]->GetInGameData().CurrentAttributes.Energy));
 	

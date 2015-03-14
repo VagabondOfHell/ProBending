@@ -3,8 +3,8 @@
 const float CharacterAttributes::MAX_DODGE_SPEED = 30.0f;
 const float CharacterAttributes::MIN_DODGE_SPEED = 10.0f;
 
-const float CharacterAttributes::MIN_JUMP_HEIGHT = 6.0f;
-const float CharacterAttributes::MAX_JUMP_HEIGHT = 12.0f;
+const float CharacterAttributes::MIN_JUMP_HEIGHT = 24.0f;
+const float CharacterAttributes::MAX_JUMP_HEIGHT = 36.0f;
 
 const float CharacterAttributes::MIN_ENERGY_VAL = 100.0f;
 const float CharacterAttributes::MAX_ENERGY_VAL = 1000.0f;

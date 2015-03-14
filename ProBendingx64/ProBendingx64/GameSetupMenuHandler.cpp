@@ -17,6 +17,9 @@ GameSetupMenuHandler::GameSetupMenuHandler(IScene* scene)
 	DisableUnimplementedControls();
 	SubscribeEvents();
 	
+	ChangeElement(true, ElementEnum::InvalidElement);
+	ChangeElement(false, ElementEnum::InvalidElement);
+
 	zoneListing[0] = ArenaData::RED_ZONE_3;
 	zoneListing[1] = ArenaData::RED_ZONE_2;
 	zoneListing[2] = ArenaData::RED_ZONE_1;
@@ -58,31 +61,102 @@ void GameSetupMenuHandler::DisableUnimplementedControls()
 
 void GameSetupMenuHandler::SubscribeEvents()
 {
+	MenusScene* menu = (MenusScene*)scene;
+
 	GetWindow(MW_BEGIN_GAME_BTN)->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber
 		(&GameSetupMenuHandler::StartGameBtnClickEvent,this));
+	menu->RegisterHoverEvents(GetWindow(MW_BEGIN_GAME_BTN));
 
 	GetWindow(MW_MODE_LEFT_SEL)->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber
 		(&GameSetupMenuHandler::GameModeSelBtnClickEvent,this));
+	menu->RegisterHoverEvents(GetWindow(MW_MODE_LEFT_SEL));
+
 	GetWindow(MW_MODE_RIGHT_SEL)->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber
 		(&GameSetupMenuHandler::GameModeSelBtnClickEvent,this));
+	menu->RegisterHoverEvents(GetWindow(MW_MODE_RIGHT_SEL));
+
+	GetWindow(MW_PLAYER_ELEMENT_LEFT_SEL)->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber
+		(&GameSetupMenuHandler::ElementSelBtnClickEvent,this));
+	menu->RegisterHoverEvents(GetWindow(MW_PLAYER_ELEMENT_LEFT_SEL));
+
+	GetWindow(MW_PLAYER_ELEMENT_RIGHT_SEL)->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber
+		(&GameSetupMenuHandler::ElementSelBtnClickEvent,this));
+	menu->RegisterHoverEvents(GetWindow(MW_PLAYER_ELEMENT_RIGHT_SEL));
+
+	GetWindow(MW_PLAYER_ELEMENT_LEFT_SEL, false)->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber
+		(&GameSetupMenuHandler::ElementSelBtnClickEvent,this));
+	menu->RegisterHoverEvents(GetWindow(MW_PLAYER_ELEMENT_LEFT_SEL, false));
+
+	GetWindow(MW_PLAYER_ELEMENT_RIGHT_SEL, false)->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber
+		(&GameSetupMenuHandler::ElementSelBtnClickEvent,this));
+	menu->RegisterHoverEvents(GetWindow(MW_PLAYER_ELEMENT_RIGHT_SEL, false));
 
 	GetWindow(MW_PLAYER_TEAM_COLOUR_LEFT_SEL)->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber
 		(&GameSetupMenuHandler::TeamSelBtnClickEvent,this));
+	menu->RegisterHoverEvents(GetWindow(MW_PLAYER_TEAM_COLOUR_LEFT_SEL));
+
 	GetWindow(MW_PLAYER_TEAM_COLOUR_RIGHT_SEL)->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber
 		(&GameSetupMenuHandler::TeamSelBtnClickEvent,this));
+	menu->RegisterHoverEvents(GetWindow(MW_PLAYER_TEAM_COLOUR_RIGHT_SEL));
+
 	GetWindow(MW_PLAYER_TEAM_COLOUR_LEFT_SEL, false)->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber
 		(&GameSetupMenuHandler::TeamSelBtnClickEvent,this));
+	menu->RegisterHoverEvents(GetWindow(MW_PLAYER_TEAM_COLOUR_LEFT_SEL, false));
+
 	GetWindow(MW_PLAYER_TEAM_COLOUR_RIGHT_SEL, false)->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber
 		(&GameSetupMenuHandler::TeamSelBtnClickEvent,this));
+	menu->RegisterHoverEvents(GetWindow(MW_PLAYER_TEAM_COLOUR_RIGHT_SEL, false));
 
 	GetWindow(MW_PLAYER_ZONE_LEFT_SEL)->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber
 		(&GameSetupMenuHandler::ZoneSelBtnClickEvent,this));
+	menu->RegisterHoverEvents(GetWindow(MW_PLAYER_ZONE_LEFT_SEL));
+
 	GetWindow(MW_PLAYER_ZONE_RIGHT_SEL)->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber
 		(&GameSetupMenuHandler::ZoneSelBtnClickEvent,this));
+	menu->RegisterHoverEvents(GetWindow(MW_PLAYER_ZONE_RIGHT_SEL));
+
 	GetWindow(MW_PLAYER_ZONE_LEFT_SEL, false)->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber
 		(&GameSetupMenuHandler::ZoneSelBtnClickEvent,this));
+	menu->RegisterHoverEvents(GetWindow(MW_PLAYER_ZONE_LEFT_SEL, false));
+
 	GetWindow(MW_PLAYER_ZONE_RIGHT_SEL, false)->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber
 		(&GameSetupMenuHandler::ZoneSelBtnClickEvent,this));
+	menu->RegisterHoverEvents(GetWindow(MW_PLAYER_ZONE_RIGHT_SEL, false));
+}
+
+void GameSetupMenuHandler::UnsubscribeEvents()
+{
+	MenusScene* menu = (MenusScene*)scene;
+
+	menu->UnregisterHoverEvents(GetWindow(MW_BEGIN_GAME_BTN));
+
+	menu->UnregisterHoverEvents(GetWindow(MW_MODE_LEFT_SEL));
+
+	menu->UnregisterHoverEvents(GetWindow(MW_MODE_RIGHT_SEL));
+
+	menu->UnregisterHoverEvents(GetWindow(MW_PLAYER_ELEMENT_LEFT_SEL));
+
+	menu->UnregisterHoverEvents(GetWindow(MW_PLAYER_ELEMENT_RIGHT_SEL));
+
+	menu->UnregisterHoverEvents(GetWindow(MW_PLAYER_ELEMENT_LEFT_SEL, false));
+
+	menu->UnregisterHoverEvents(GetWindow(MW_PLAYER_ELEMENT_RIGHT_SEL, false));
+
+	menu->UnregisterHoverEvents(GetWindow(MW_PLAYER_TEAM_COLOUR_LEFT_SEL));
+
+	menu->UnregisterHoverEvents(GetWindow(MW_PLAYER_TEAM_COLOUR_RIGHT_SEL));
+
+	menu->UnregisterHoverEvents(GetWindow(MW_PLAYER_TEAM_COLOUR_LEFT_SEL, false));
+
+	menu->UnregisterHoverEvents(GetWindow(MW_PLAYER_TEAM_COLOUR_RIGHT_SEL, false));
+
+	menu->UnregisterHoverEvents(GetWindow(MW_PLAYER_ZONE_LEFT_SEL));
+
+	menu->UnregisterHoverEvents(GetWindow(MW_PLAYER_ZONE_RIGHT_SEL));
+
+	menu->UnregisterHoverEvents(GetWindow(MW_PLAYER_ZONE_LEFT_SEL, false));
+
+	menu->UnregisterHoverEvents(GetWindow(MW_PLAYER_ZONE_RIGHT_SEL, false));
 }
 
 CEGUI::Window* GameSetupMenuHandler::GetWindow(MenuWindows windowToGet, bool player1 /*= true*/)
@@ -98,8 +172,8 @@ CEGUI::Window* GameSetupMenuHandler::GetWindow(MenuWindows windowToGet, bool pla
 	case GameSetupMenuHandler::MW_PLAYER_OPTIONS_ROOT:
 		return guiManager->GetChildWindow(ROOT_WINDOW_NAME + "/" + PLAYER_OPTIONS_ROOT);
 		break;
-	case GameSetupMenuHandler::MW_PLAYER_NAME_ROOT:
-		return guiManager->GetChildWindow(playerOptionsRoot, "ProbenderNameLabelRoot");
+	case GameSetupMenuHandler::MW_PLAYER_ELEMENT_ROOT:
+		return guiManager->GetChildWindow(playerOptionsRoot, "ProbenderElementLabelRoot");
 		break;
 	case GameSetupMenuHandler::MW_PLAYER_TEAM_ROOT:
 		return guiManager->GetChildWindow(playerOptionsRoot, "TeamLabelRoot");
@@ -128,13 +202,25 @@ CEGUI::Window* GameSetupMenuHandler::GetWindow(MenuWindows windowToGet, bool pla
 			return guiManager->GetChildWindow(playerOptionsRoot, "Player2Backing");
 		break;
 
-	case GameSetupMenuHandler::MW_PLAYER_NAME_VAL:
+	case GameSetupMenuHandler::MW_PLAYER_ELEMENT_LEFT_SEL:
 		if(player1)
-			return guiManager->GetChildWindow(GetWindow(MW_PLAYER_NAME_ROOT), "Player1Name");
+			return guiManager->GetChildWindow(GetWindow(MW_PLAYER_ELEMENT_ROOT), "P1ElementSelLeft");
 		else
-			return guiManager->GetChildWindow(GetWindow(MW_PLAYER_NAME_ROOT), "Player2Name");
+			return guiManager->GetChildWindow(GetWindow(MW_PLAYER_ELEMENT_ROOT), "P2ElementSelLeft");
 		break;
-
+	case GameSetupMenuHandler::MW_PLAYER_ELEMENT_RIGHT_SEL:
+		if(player1)
+			return guiManager->GetChildWindow(GetWindow(MW_PLAYER_ELEMENT_ROOT), "P1ElementSelRight");
+		else
+			return guiManager->GetChildWindow(GetWindow(MW_PLAYER_ELEMENT_ROOT), "P2ElementSelRight");
+		break;
+	case GameSetupMenuHandler::MW_PLAYER_ELEMENT_VAL:
+		if(player1)
+			return guiManager->GetChildWindow(GetWindow(MW_PLAYER_ELEMENT_ROOT), "P1Element");
+		else
+			return guiManager->GetChildWindow(GetWindow(MW_PLAYER_ELEMENT_ROOT), "P2Element");
+		break;
+		
 	case GameSetupMenuHandler::MW_PLAYER_TEAM_COLOUR_LEFT_SEL:
 		if(player1)
 			return guiManager->GetChildWindow(GetWindow(MW_PLAYER_TEAM_ROOT), "P1TeamSelLeft");
@@ -230,6 +316,8 @@ bool GameSetupMenuHandler::StartGameBtnClickEvent(const CEGUI::EventArgs& e)
 
 	menu->SwitchToGame();
 
+	UnsubscribeEvents();
+
 	return true;
 }
 
@@ -251,6 +339,112 @@ bool GameSetupMenuHandler::GameModeSelBtnClickEvent(const CEGUI::EventArgs& e)
 
 	return true;
 }
+
+bool GameSetupMenuHandler::ElementSelBtnClickEvent(const CEGUI::EventArgs& e)
+{
+	CEGUI::WindowEventArgs& windowE = (CEGUI::WindowEventArgs&)e;
+
+	if(windowE.window->getName()[12] == 'L')
+	{
+		DecrementElement(IsPlayer1(windowE));
+	}
+	else
+	{
+		IncrementElement(IsPlayer1(windowE));
+	}
+
+	return true;
+}
+
+void GameSetupMenuHandler::IncrementElement(bool incrementPlayer1)
+{
+	MenusScene* menu = (MenusScene*)scene;
+
+	if(incrementPlayer1)
+	{
+		menu->Player1Data.MainElement = (ElementEnum::Element)(menu->Player1Data.MainElement + 1);
+
+		if(menu->Player1Data.MainElement > ElementEnum::Water)
+			menu->Player1Data.MainElement = ElementEnum::Air;
+
+		ChangeElement(true, menu->Player1Data.MainElement);
+	}
+	else
+	{
+		menu->Player2Data.MainElement = (ElementEnum::Element)(menu->Player2Data.MainElement + 1);
+
+		if(menu->Player2Data.MainElement > ElementEnum::Water)
+			menu->Player2Data.MainElement = ElementEnum::Air;
+
+		ChangeElement(false, menu->Player2Data.MainElement);
+	}
+}
+
+void GameSetupMenuHandler::DecrementElement(bool incrementPlayer1)
+{
+	MenusScene* menu = (MenusScene*)scene;
+
+	if(incrementPlayer1)
+	{
+		menu->Player1Data.MainElement = (ElementEnum::Element)(menu->Player1Data.MainElement - 1);
+
+		if(menu->Player1Data.MainElement < ElementEnum::Air)
+			menu->Player1Data.MainElement = ElementEnum::Water;
+
+		ChangeElement(true, menu->Player1Data.MainElement);
+	}
+	else
+	{
+		menu->Player2Data.MainElement = (ElementEnum::Element)(menu->Player2Data.MainElement - 1);
+
+		if(menu->Player2Data.MainElement < ElementEnum::Air)
+			menu->Player2Data.MainElement = ElementEnum::Water;
+
+		ChangeElement(false, menu->Player2Data.MainElement);
+	}
+}
+
+void GameSetupMenuHandler::ChangeElement(bool player1, ElementEnum::Element newElement)
+{
+	MenusScene* menu = (MenusScene*)scene;
+
+	if(newElement == ElementEnum::InvalidElement)
+	{
+		if(player1)
+			newElement = menu->Player2Data.MainElement;
+		else
+			newElement = menu->Player2Data.MainElement;
+	}
+	
+	//Update the visible buttons
+	SetControlSkins(player1, newElement);
+
+
+}
+
+void GameSetupMenuHandler::SetControlSkins(bool player1, ElementEnum::Element elementSkin)
+{
+	MenusScene* menuScene = (MenusScene*)scene;
+
+	//Get the element prefix for accessing controls
+	std::string elementPrefix = GetElementPrefix(elementSkin);
+	GetWindow(MW_PLAYER_ELEMENT_VAL, player1)->setText(ElementEnum::EnumToString(elementSkin));
+	//Set image for the name backing
+	GetWindow(MW_PLAYER_ID_BACKING, player1)->setProperty("Image", "MenuControls/"+elementPrefix+"Lrg_Frame");
+
+	SetButtonImage(GetWindow(MW_PLAYER_ELEMENT_LEFT_SEL, player1), BTN_SKIN_LEFT_BTN_HORZ, elementSkin);
+	SetButtonImage(GetWindow(MW_PLAYER_ELEMENT_RIGHT_SEL, player1), BTN_SKIN_RIGHT_BTN_HORZ, elementSkin);
+	
+	SetButtonImage(GetWindow(MW_PLAYER_TEAM_COLOUR_LEFT_SEL, player1), BTN_SKIN_LEFT_BTN_HORZ, elementSkin);
+	SetButtonImage(GetWindow(MW_PLAYER_TEAM_COLOUR_RIGHT_SEL, player1), BTN_SKIN_RIGHT_BTN_HORZ, elementSkin);
+
+	SetButtonImage(GetWindow(MW_PLAYER_ZONE_LEFT_SEL, player1), BTN_SKIN_LEFT_BTN_HORZ, elementSkin);
+	SetButtonImage(GetWindow(MW_PLAYER_ZONE_RIGHT_SEL, player1), BTN_SKIN_RIGHT_BTN_HORZ, elementSkin);
+
+	SetButtonImage(GetWindow(MW_PLAYER_COLOUR_LEFT_SEL, player1), BTN_SKIN_LEFT_BTN_HORZ, elementSkin);
+	SetButtonImage(GetWindow(MW_PLAYER_COLOUR_RIGHT_SEL, player1), BTN_SKIN_RIGHT_BTN_HORZ, elementSkin);
+}
+
 
 void GameSetupMenuHandler::SetTeamColours(ArenaData::Team player1)
 {
@@ -400,4 +594,5 @@ bool GameSetupMenuHandler::CharColourSelBtnClickEvent(const CEGUI::EventArgs& e)
 
 	return true;
 }
+
 

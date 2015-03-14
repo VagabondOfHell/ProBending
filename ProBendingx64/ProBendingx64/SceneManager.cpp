@@ -20,6 +20,16 @@ SceneManager::~SceneManager(void)
 		currentScene->Close();
 }
 
+float SceneManager::GetWindowWidth() const
+{
+	return window->getWidth();
+}
+
+float SceneManager::GetWindowHeight() const
+{
+	return window->getHeight();
+}
+
 std::shared_ptr<IScene> SceneManager::SwapScene(std::shared_ptr<IScene> newScene)
 {
 	std::shared_ptr<IScene> oldScene = currentScene;

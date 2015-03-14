@@ -1,5 +1,8 @@
 #pragma once
 #include <string>
+#include "foundation/PxVec3.h"
+
+static const physx::PxVec3 PROBENDER_HALF_EXTENTS = physx::PxVec3(0.60f, 1.60f, 0.40f);
 
 namespace RenderableJointType
 {

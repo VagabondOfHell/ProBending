@@ -6,8 +6,13 @@
 #include "MenusScene.h"
 #include "GUIManager.h"
 
+#include "SceneManager.h"
+
+#include "CEGUI/Window.h"
+#include "CEGUI/CoordConverter.h"
+
 MenuNavigator::MenuNavigator(MenusScene* _menuScene /*= NULL*/)
-	:menuScene(_menuScene)
+	:menuScene(_menuScene), AllowMenuControls(false)
 {
 }
 
@@ -21,10 +26,20 @@ MenuNavigator::~MenuNavigator(void)
 
 void MenuNavigator::BodyFrameAcquired(const CompleteData& currentData, const CompleteData& previousData)
 {
+	if(!AllowMenuControls)
+		return;
+
 	DepthSpacePoint screen = GetBody()->GetBodyReader()->GetKinectReader()->GetWindowSize();
 
+	Joint handJoint;
+
+	if(currentData.JointData[JointType_HandRight].Position.Z < currentData.JointData[JointType_HandLeft].Position.Z)
+		handJoint = currentData.JointData[JointType_HandRight];
+	else
+		handJoint = currentData.JointData[JointType_HandLeft];
+
 	//Get the cursor from within the body's comfortable range
-	DepthSpacePoint cursorPoint = PointToBodyRectangle(screen, currentData.JointData[JointType_HandRight], currentData);
+	DepthSpacePoint cursorPoint = PointToBodyRectangle(screen, handJoint, currentData);
 
 	//If the point from above is valid, inject the position
 	if(cursorPoint.X != -1.0f)
@@ -52,17 +67,40 @@ void MenuNavigator::BodyLost(const CompleteData& currentData, const CompleteData
 void MenuNavigator::mouseMoved(const OIS::MouseEvent &arg)
 {
 	//menuScene->GetGUIManager()->InjectMouseMove(arg.state.X.rel, arg.state.Y.rel);
+	if(!AllowMenuControls)
+		return;
 
-	menuScene->GetGUIManager()->InjectMousePosition(arg.state.X.abs, arg.state.Y.abs);
+	GUIManager* guiManager = menuScene->GetGUIManager();
+
+	if(guiManager)
+	{
+		guiManager->InjectMousePosition(arg.state.X.abs, arg.state.Y.abs);
+
+		CEGUI::USize progressBarSize = MenusScene::progressBar.GetWindow()->getSize();
+
+		SceneManager* sceneManager = menuScene->GetSceneManager();
+
+		CEGUI::Sizef baseWindow = CEGUI::Sizef(sceneManager->GetWindowWidth(), sceneManager->GetWindowHeight());
+
+		CEGUI::Sizef absPos = CEGUI::CoordConverter::asAbsolute(progressBarSize, baseWindow);
+
+		MenusScene::progressBar.SetAbsolutePosition(
+			arg.state.X.abs - (absPos.d_width * 0.35f),
+			arg.state.Y.abs - (absPos.d_height * 0.35f));
+	}
 }
 
 void MenuNavigator::mousePressed(const OIS::MouseEvent &arg, OIS::MouseButtonID id)
 {
+	if(!AllowMenuControls)
+		return;
 	menuScene->GetGUIManager()->InjectMouseButtonDown(id);
 }
 
 void MenuNavigator::mouseReleased(const OIS::MouseEvent &arg, OIS::MouseButtonID id)
 {
+	if(!AllowMenuControls)
+		return;
 	menuScene->GetGUIManager()->InjectMouseButtonUp(id);
 }
 
@@ -75,4 +113,9 @@ void MenuNavigator::Update(float gameTime)
 		if(inputManager->RegisterListenerToNewBody(this))
 			printf("Registered!\n");
 	}
+}
+
+void MenuNavigator::AudioDataReceived(AudioData* audioData)
+{
+	//throw std::logic_error("The method or operation is not implemented.");
 }

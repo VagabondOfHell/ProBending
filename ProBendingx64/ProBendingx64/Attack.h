@@ -53,7 +53,7 @@ public:
 					Ogre::Vector3 rightHandDiff = GetOgrePositionRelative(attackData.CurrentData->JointData[JointType_HandRight].Position,
 						spineBase);
 
-					return (rightHandDiff + leftHandDiff * 0.5f);
+					return ((rightHandDiff + leftHandDiff) * 0.5f);
 				}
 				break;
 			case SpawnPositionCalculator::LIMB_FEET:
@@ -101,15 +101,8 @@ private:
 	{
 		return Ogre::Vector3(kinectPosition.X, kinectPosition.Y, kinectPosition.Z);
 	}
-	Ogre::Vector3 GetOgrePositionRelative(const CameraSpacePoint& limbPosition, const CameraSpacePoint& referencePoint)
-	{
-		CameraSpacePoint result = CameraSpacePoint();
-		result.X = -limbPosition.X - -referencePoint.X;
-		result.Y = limbPosition.Y - referencePoint.Y;
-		result.Z = limbPosition.Z - referencePoint.Z;
-
-		return Ogre::Vector3(result.X, result.Y, result.Z);
-	}
+	Ogre::Vector3 GetOgrePositionRelative(const CameraSpacePoint& limbPosition, const CameraSpacePoint& referencePoint);
+	
 };
 
 struct AttackParams

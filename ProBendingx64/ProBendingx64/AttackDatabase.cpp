@@ -32,8 +32,11 @@ void AttackDatabase::GetEarthAttacks(ProjectileManager* projManager, std::vector
 		GestureEnums::TRANRULE_SAME);
 	
 	//Controller that uses the same hand of the knee to control
+	/*HandMoveController* earthCoinController = new HandMoveController(NULL, HandMoveController::CH_RIGHT,
+	physx::PxVec3(-0.50f, -0.20f, 0.0f), physx::PxVec3(0.50f, 0.50f, 0.50f), GestureEnums::TRANRULE_SAME);*/
 	HandMoveController* earthCoinController = new HandMoveController(NULL, HandMoveController::CH_RIGHT,
-		physx::PxVec3(-0.50f, -0.20f, 0.0f), physx::PxVec3(0.50f, 0.50f, 0.50f), GestureEnums::TRANRULE_SAME);
+		physx::PxVec3(-PROBENDER_HALF_EXTENTS.x, -PROBENDER_HALF_EXTENTS.y * 0.5f, 0.0f), 
+		physx::PxVec3(PROBENDER_HALF_EXTENTS.x, PROBENDER_HALF_EXTENTS.y, 0.0f), GestureEnums::TRANRULE_SAME);
 
 	//Punch with opposite to the controlling hand to launch the rock
 	AttackGesture* earthCoinLaunchGesture = new AttackGesture();
@@ -86,8 +89,11 @@ void AttackDatabase::GetFireAttacks(ProjectileManager* projManager, std::vector<
 	AttackGesture* fireBlastLaunchGesture = new AttackGesture();
 	fireBlastLaunchGesture->AddCustomEvaluator(0.0f, &AttackGestureEvaluators::ArmPunchGesture, GestureEnums::BODYSIDE_BOTH);
 	
-	HandMoveController* fireBlastController = new HandMoveController(NULL, HandMoveController::CH_BOTH,
-		physx::PxVec3(-0.5f, -0.5f, 0.0f), physx::PxVec3(0.5f, 0.5f, 0.5f), GestureEnums::TRANRULE_SAME);
+	//HandMoveController* fireBlastController = new HandMoveController(NULL, HandMoveController::CH_BOTH,
+	//	physx::PxVec3(-0.5f, -0.5f, 0.0f), physx::PxVec3(0.5f, 0.5f, 0.5f), GestureEnums::TRANRULE_SAME);
+	HandMoveController* fireBlastController = new HandMoveController(NULL, HandMoveController::CH_RIGHT,
+		physx::PxVec3(-PROBENDER_HALF_EXTENTS.x, -PROBENDER_HALF_EXTENTS.y, 0.0f), 
+		physx::PxVec3(PROBENDER_HALF_EXTENTS.x, PROBENDER_HALF_EXTENTS.y * 0.5f, 0.0f), GestureEnums::TRANRULE_SAME);
 
 	ProjectileIdentifier fireBlastID = ProjectileIdentifier();
 	fireBlastID.Element = ElementEnum::Fire; fireBlastID.AbilityID = AbilityIDs::FIRE_BLAST;
