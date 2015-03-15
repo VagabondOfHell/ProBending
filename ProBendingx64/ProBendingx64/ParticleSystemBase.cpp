@@ -265,7 +265,5 @@ ParticleSystemBase* ParticleSystemBase::Clone()
 		clone->AddAffector(std::shared_ptr<ParticleAffector>(start->second->Clone()));
 	}
 	
-	clone->ResetOnDisable = ResetOnDisable;
-
 	return clone;
 }

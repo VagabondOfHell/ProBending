@@ -145,21 +145,3 @@ void Attack::Reset()
 	//Destroy the projectile instance
 	currentState = AS_NONE;
 }
-
-Ogre::Vector3 SpawnPositionCalculator::GetOgrePositionRelative(const CameraSpacePoint& limbPosition, const CameraSpacePoint& referencePoint)
-{
-	{
-		CameraSpacePoint result = CameraSpacePoint();
-
-		result.X = (-limbPosition.X - -referencePoint.X);
-		result.Y = (limbPosition.Y - referencePoint.Y);
-		result.Z = (limbPosition.Z - referencePoint.Z);
-		
-		float mag = Ogre::Math::Sqrt(result.X * result.X + result.Y * result.Y + result.Z * result.Z);
-
-		float div = 1.0f / mag;
-		
-		return Ogre::Vector3(result.X * div * PROBENDER_HALF_EXTENTS.x, 
-			result.Y * div * PROBENDER_HALF_EXTENTS.y, result.Z * div * PROBENDER_HALF_EXTENTS.z);
-	}
-}

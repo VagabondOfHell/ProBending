@@ -169,9 +169,6 @@ void FluidAndParticleBase::Initialize(physx::PxScene* scene)
 
 	InitializeVertexBuffers();
 
-	if(!enabled)
-		DisableSimulation();
-
 	//Add it to the scene
 	scene->addActor(*particleBase);
 }
@@ -565,17 +562,13 @@ void FluidAndParticleBase::DisableSimulation()
 		if(ResetOnDisable)
 		{
 			particleBase->releaseParticles();
-			if(bufferMap.find(Ogre::VES_POSITION) != bufferMap.end())
+			GPUResourcePointers lockedBufferData = LockBuffersCPU();
+			for (int i = 0; i < maximumParticles; i++)
 			{
-				GPUResourcePointers lockedBufferData = LockBuffersCPU();
-				for (int i = 0; i < maximumParticles; i++)
-				{
-					lockedBufferData.positions[i] = physx::PxVec4(9999.0f, 9999.0f, 9999.0f, 0.0f);
-					lifetimes[i] = 0.0f;
-				}
-				UnlockBuffersCPU();
+				lockedBufferData.positions[i] = physx::PxVec4(9999.9f, 9999.9f, 9999.9f, 1.0f);
+				lifetimes[i] = 0.0f;
 			}
-			
+			UnlockBuffersCPU();
 		}
 	}
 	

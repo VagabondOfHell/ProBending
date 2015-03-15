@@ -72,8 +72,6 @@ void CharacterMenuHandler::GatherRootWindows()
 
 void CharacterMenuHandler::SubscribeToEvents()
 {
-	MenusScene* menu = (MenusScene*)scene;
-
 	GetWindow(MW_ELEMENT_SEL_LEFT)->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber
 		(&CharacterMenuHandler::L_ElementButtonClickEvent,this));
 	GetWindow(MW_ELEMENT_SEL_RIGHT)->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber
@@ -82,16 +80,6 @@ void CharacterMenuHandler::SubscribeToEvents()
 		(&CharacterMenuHandler::L_ElementButtonClickEvent,this));
 	GetWindow(MW_ELEMENT_SEL_RIGHT, false)->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber
 		(&CharacterMenuHandler::R_ElementButtonClickEvent,this));
-	
-	menu->RegisterHoverBeginEvent(GetWindow(MW_ELEMENT_SEL_LEFT));
-	menu->RegisterHoverBeginEvent(GetWindow(MW_ELEMENT_SEL_RIGHT));
-	menu->RegisterHoverEndEvent(GetWindow(MW_ELEMENT_SEL_LEFT));
-	menu->RegisterHoverEndEvent(GetWindow(MW_ELEMENT_SEL_RIGHT));
-	
-	menu->RegisterHoverBeginEvent(GetWindow(MW_ELEMENT_SEL_LEFT, false));
-	menu->RegisterHoverBeginEvent(GetWindow(MW_ELEMENT_SEL_RIGHT, false));
-	menu->RegisterHoverEndEvent(GetWindow(MW_ELEMENT_SEL_LEFT, false));
-	menu->RegisterHoverEndEvent(GetWindow(MW_ELEMENT_SEL_RIGHT, false));
 
 	GetWindow(MW_MAIN_CREATE_CHAR_BTN)->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber
 		(&CharacterMenuHandler::MainDlgCreateCharBtnClickEvent, this));
@@ -101,9 +89,6 @@ void CharacterMenuHandler::SubscribeToEvents()
 		(&CharacterMenuHandler::MainDlgLoadCharBtnClickEvent, this));
 	GetWindow(MW_MAIN_DONE_BTN)->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber
 		(&CharacterMenuHandler::MainDlgDoneBtnClickEvent, this));
-
-	menu->RegisterHoverBeginEvent(GetWindow(MW_MAIN_CREATE_CHAR_BTN));
-
 
 	GetWindow(MW_MAIN_CREATE_CHAR_BTN, false)->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber
 		(&CharacterMenuHandler::MainDlgCreateCharBtnClickEvent, this));
@@ -328,6 +313,79 @@ void CharacterMenuHandler::SetSkinsForGroup(bool player1, Stage stage, ElementEn
 		}
 		break;
 	default:
+		break;
+	}
+}
+
+std::string CharacterMenuHandler::GetElementPrefix(ElementEnum::Element newElement)
+{
+	switch (newElement)
+	{
+	case ElementEnum::Air:
+		return "A_";
+		break;
+	case ElementEnum::Earth:
+		return "E_";
+		break;
+	case ElementEnum::Fire:
+		return "F_";
+		break;
+	case ElementEnum::Water:
+		return "W_";
+		break;
+	default:
+		return "";
+		break;
+	}
+}
+
+void CharacterMenuHandler::SetButtonImage(CEGUI::Window* button, ButtonSkinType skinType, ElementEnum::Element newElement)
+{
+	ButtonSkinListing buttonListing;
+	std::string elementPrefix = GetElementPrefix(newElement);
+	GetButtonSkinSuffix(skinType, buttonListing);
+
+	button->setProperty("NormalImage", "MenuControls/" + elementPrefix + buttonListing.NormalImage);
+	button->setProperty("DisabledImage", "MenuControls/" + elementPrefix + buttonListing.DisabledImage);
+	button->setProperty("HoverImage", "MenuControls/" + elementPrefix + buttonListing.HoverImage);
+	button->setProperty("PushedImage", "MenuControls/" + elementPrefix + buttonListing.ClickImage);
+}
+
+void CharacterMenuHandler::GetButtonSkinSuffix(ButtonSkinType skinType, ButtonSkinListing& outVal)
+{
+	outVal.ClickImage = outVal.DisabledImage = outVal.HoverImage = outVal.NormalImage = "";
+
+	switch (skinType)
+	{
+	case CharacterMenuHandler::BTN_SKIN_PUSH_BUTTON:
+		outVal.ClickImage = "Btn_Click";
+		outVal.DisabledImage = "Btn_Disabled";
+		outVal.HoverImage = "Btn_Hover";
+		outVal.NormalImage = "Btn_Normal";
+		break;
+	case CharacterMenuHandler::BTN_SKIN_MINUS_BTN_HORZ:
+		outVal.ClickImage = "Hor_Minus_Click";
+		outVal.DisabledImage = "Hor_Minus_Disabled";
+		outVal.HoverImage = "Hor_Minus_Hover";
+		outVal.NormalImage = "Hor_Minus_Normal";
+		break;
+	case CharacterMenuHandler::BTN_SKIN_ADD_BTN_HORZ:
+		outVal.ClickImage = "Hor_Add_Click";
+		outVal.DisabledImage = "Hor_Add_Disabled";
+		outVal.HoverImage = "Hor_Add_Hover";
+		outVal.NormalImage = "Hor_Add_Normal";
+		break;
+	case CharacterMenuHandler::BTN_SKIN_LEFT_BTN_HORZ:
+		outVal.ClickImage = "Left_Sel_Click";
+		outVal.DisabledImage = "Left_Sel_Disabled";
+		outVal.HoverImage = "Left_Sel_Hover";
+		outVal.NormalImage = "Left_Sel_Normal";
+		break;
+	case CharacterMenuHandler::BTN_SKIN_RIGHT_BTN_HORZ:
+		outVal.ClickImage = "Right_Sel_Click";
+		outVal.DisabledImage = "Right_Sel_Disabled";
+		outVal.HoverImage = "Right_Sel_Hover";
+		outVal.NormalImage = "Right_Sel_Normal";
 		break;
 	}
 }

@@ -163,14 +163,11 @@ void ProbenderInputHandler::Update(const float gameTime)
 
 void ProbenderInputHandler::BodyAcquired()
 {
-	printf("Body ID: %i\n", GetBody()->GetBodyTrackingID());
-	printf("Body Index: %i \n", GetBody()->GetBodyID());
 }
 
 void ProbenderInputHandler::BodyLost(const CompleteData& currentData, const CompleteData& previousData)
 {
 	InputManager::GetInstance()->UnregisterBodyListener(this);
-	printf("Body Lost\n");
 }
 	
 void ProbenderInputHandler::HandTrackingStateChanged(const Hand hand, const CompleteData& currentData, const CompleteData& previousData)
@@ -214,9 +211,7 @@ void ProbenderInputHandler::UpdateDisplay(const CompleteData& currentData)
 		if(currentData.JointData->TrackingState != TrackingState::TrackingState_NotTracked)
 		{
 			CameraSpacePoint point = currentData.JointData[i].Position;
-			
-			meshData.push_back((Ogre::Vector3(-point.X * PROBENDER_HALF_EXTENTS.x * 2, point.Y
-				* PROBENDER_HALF_EXTENTS.y * 1.5f, 1.0f)) - spineBasePosition);
+			meshData.push_back(Ogre::Vector3(-point.X, point.Y, 1.0f) - spineBasePosition);
 		}
 	}
 
@@ -311,7 +306,7 @@ void ProbenderInputHandler::HandleAttacks(const AttackData& attackData)
 
 					spawnPos = probender->GetWorldOrientation() * spawnPos;
 
-					//printf("%f, %f, %f\n", spawnPos.x, spawnPos.y, spawnPos.z);
+					printf("%f, %f, %f\n", spawnPos.x, spawnPos.y, spawnPos.z);
 
 					Ogre::Vector3 camForward = probender->camera->getDerivedOrientation() * -Ogre::Vector3::UNIT_Z;
 
@@ -514,7 +509,7 @@ void ProbenderInputHandler::keyPressed( const OIS::KeyEvent &arg )
 			Ogre::Vector3 newPos = probender->GetWorldPosition();
 			newPos.x += 1;
 			probender->rigidBody->SetPosition(HelperFunctions::OgreToPhysXVec3(newPos));
-			//printf("New Position: %f, %f, %f\n", newPos.x, newPos.y, newPos.z);
+			printf("New Position: %f, %f, %f\n", newPos.x, newPos.y, newPos.z);
 		}
 	}
 	else if(arg.key == OIS::KC_DOWN)
@@ -522,7 +517,7 @@ void ProbenderInputHandler::keyPressed( const OIS::KeyEvent &arg )
 		Ogre::Vector3 newPos = probender->GetWorldPosition();
 		newPos.x -= 1;
 		probender->rigidBody->SetPosition(HelperFunctions::OgreToPhysXVec3(newPos));
-		//printf("New Position: %f, %f, %f\n", newPos.x, newPos.y, newPos.z);
+		printf("New Position: %f, %f, %f\n", newPos.x, newPos.y, newPos.z);
 	}
 	else if(arg.key == OIS::KC_LEFT)
 	{
@@ -619,7 +614,6 @@ void ProbenderInputHandler::keyPressed( const OIS::KeyEvent &arg )
 	else if(arg.key == keysLayout.StopListeningButton)
 	{
 		StopListeningToKinectBody();
-		//InputManager::GetInstance()->FlushListeners();
 		std::vector<Ogre::Vector3> meshData = std::vector<Ogre::Vector3>();
 		meshData.reserve(JointType::JointType_Count);
 
@@ -664,7 +658,7 @@ void ProbenderInputHandler::mouseMoved( const OIS::MouseEvent &arg )
 	{
 		PxVec3 dir = PxVec3(curr.x - prev.x, -(curr.y - prev.y), 0.0f).getNormalized();
 
-		//printf("Direction: %f, %f, %f\n", dir.x, dir.y, dir.z);
+		printf("Direction: %f, %f, %f\n", dir.x, dir.y, dir.z);
 
 		RigidBodyComponent* rigidBody = (RigidBodyComponent*)probender->rightHandAttack->GetComponent(Component::RIGID_BODY_COMPONENT);
 

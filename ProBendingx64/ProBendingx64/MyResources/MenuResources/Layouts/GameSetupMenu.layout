@@ -78,6 +78,39 @@
                     <Property name="MaxSize" value="{{1,0},{1,0}}" />
                 </Window>
             </Window>
+            <Window type="DefaultWindow" name="ProbenderNameLabelRoot" >
+                <Property name="Area" value="{{0,0},{0.2,0},{1,0},{0.35,0}}" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Window type="Generic/Label" name="ProbenderLabel" >
+                    <Property name="Area" value="{{-0.77,0},{0,0},{-0.57,0},{0.5,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="Probender" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="HorizontalAlignment" value="Right" />
+                </Window>
+                <Window type="Generic/Label" name="NameLabel" >
+                    <Property name="Area" value="{{-0.77,0},{0,0},{-0.66,0},{0.5,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="Name:" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="VerticalAlignment" value="Bottom" />
+                    <Property name="HorizontalAlignment" value="Right" />
+                </Window>
+                <Window type="Generic/Label" name="Player1Name" >
+                    <Property name="Area" value="{{0.3,0},{0,0},{0.6,0},{1,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="Larger Test" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="HorzFormatting" value="LeftAligned" />
+                </Window>
+                <Window type="Generic/Label" name="Player2Name" >
+                    <Property name="Area" value="{{0.67,0},{0,0},{0.97,0},{1,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="Test" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="HorzFormatting" value="LeftAligned" />
+                </Window>
+            </Window>
             <Window type="DefaultWindow" name="TeamLabelRoot" >
                 <Property name="Area" value="{{0,0},{0.38,0},{1,0},{0.53,0}}" />
                 <Property name="MaxSize" value="{{1,0},{1,0}}" />
@@ -259,67 +292,6 @@
                     <Property name="Text" value="Zone 1" />
                     <Property name="MaxSize" value="{{1,0},{1,0}}" />
                     <Property name="VerticalAlignment" value="Bottom" />
-                </Window>
-            </Window>
-            <Window type="DefaultWindow" name="ProbenderElementLabelRoot" >
-                <Property name="Area" value="{{0,0},{0.2,0},{1,0},{0.35,0}}" />
-                <Property name="MaxSize" value="{{1,0},{1,0}}" />
-                <Window type="Generic/Label" name="ProbenderLabel" >
-                    <Property name="Area" value="{{-0.77,0},{0,0},{-0.57,0},{0.5,0}}" />
-                    <Property name="Font" value="slayer11" />
-                    <Property name="Text" value="Probender" />
-                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
-                    <Property name="HorizontalAlignment" value="Right" />
-                </Window>
-                <Window type="Generic/Label" name="ElementLabel" >
-                    <Property name="Area" value="{{-0.77,0},{0,0},{-0.66,0},{0.5,0}}" />
-                    <Property name="Font" value="slayer11" />
-                    <Property name="Text" value="Element:" />
-                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
-                    <Property name="VerticalAlignment" value="Bottom" />
-                    <Property name="HorizontalAlignment" value="Right" />
-                </Window>
-                <Window type="Generic/ImageButton" name="P1ElementSelLeft" >
-                    <Property name="Area" value="{{-0.65,0},{0,0},{-0.6,0},{1,0}}" />
-                    <Property name="HoverImage" value="MenuControls/A_Left_Sel_Hover" />
-                    <Property name="NormalImage" value="MenuControls/A_Left_Sel_Normal" />
-                    <Property name="PushedImage" value="MenuControls/A_Left_Sel_Click" />
-                    <Property name="DisabledImage" value="MenuControls/A_Left_Sel_Disabled" />
-                    <Property name="HorizontalAlignment" value="Right" />
-                </Window>
-                <Window type="Generic/Label" name="P1Element" >
-                    <Property name="Area" value="{{0.37,0},{0,0},{0.53,0},{1,0}}" />
-                    <Property name="Text" value="Fire" />
-                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
-                </Window>
-                <Window type="Generic/ImageButton" name="P1ElementSelRight" >
-                    <Property name="Area" value="{{-0.4,0},{0,0},{-0.35,0},{1,0}}" />
-                    <Property name="HoverImage" value="MenuControls/A_Right_Sel_Hover" />
-                    <Property name="NormalImage" value="MenuControls/A_Right_Sel_Normal" />
-                    <Property name="PushedImage" value="MenuControls/A_Right_Sel_Click" />
-                    <Property name="DisabledImage" value="MenuControls/A_Right_Sel_Disabled" />
-                    <Property name="HorizontalAlignment" value="Right" />
-                </Window>
-                <Window type="Generic/ImageButton" name="P2ElementSelLeft" >
-                    <Property name="Area" value="{{-0.28,0},{0,0},{-0.23,0},{1,0}}" />
-                    <Property name="HoverImage" value="MenuControls/A_Left_Sel_Hover" />
-                    <Property name="NormalImage" value="MenuControls/A_Left_Sel_Normal" />
-                    <Property name="PushedImage" value="MenuControls/A_Left_Sel_Click" />
-                    <Property name="DisabledImage" value="MenuControls/A_Left_Sel_Disabled" />
-                    <Property name="HorizontalAlignment" value="Right" />
-                </Window>
-                <Window type="Generic/ImageButton" name="P2ElementSelRight" >
-                    <Property name="Area" value="{{-0.03,0},{0,0},{0.02,0},{1,0}}" />
-                    <Property name="HoverImage" value="MenuControls/A_Right_Sel_Hover" />
-                    <Property name="NormalImage" value="MenuControls/A_Right_Sel_Normal" />
-                    <Property name="PushedImage" value="MenuControls/A_Right_Sel_Click" />
-                    <Property name="DisabledImage" value="MenuControls/A_Right_Sel_Disabled" />
-                    <Property name="HorizontalAlignment" value="Right" />
-                </Window>
-                <Window type="Generic/Label" name="P2Element" >
-                    <Property name="Area" value="{{0.74,0},{0,0},{0.9,0},{1,0}}" />
-                    <Property name="Text" value="Earth" />
-                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
                 </Window>
             </Window>
         </Window>

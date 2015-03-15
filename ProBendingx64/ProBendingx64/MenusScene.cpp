@@ -4,27 +4,17 @@
 #include "InputManager.h"
 
 #include "GUIManager.h"
-#include "SceneManager.h"
+#include "OgreSceneManager.h"
 
 #include "CharacterMenuHandler.h"
 #include "GameSetupMenuHandler.h"
 
 #include "GameScene.h"
-
-#include "OgreSceneManager.h"
-#include "OgreRenderWindow.h"
+#include "SceneManager.h"
 #include "OgreRoot.h"
 
-#include "CEGUI/WindowManager.h"
-#include "CEGUI/widgets/PushButton.h"
-
-const float MenusScene::HOVER_TIME = 1.25f;
-
-RadialProgressBar MenusScene::progressBar;
-
 MenusScene::MenusScene(void)
-	:IScene(NULL, NULL, "MenusScene", "MenusResources"), timePassed(0), 
-	onWindow(false), hoverWindow(NULL)
+	:IScene(NULL, NULL, "MenusScene", "MenusResources")
 {
 	for (unsigned int i = 0; i < Screens::Count; ++i)
 	{
@@ -33,8 +23,7 @@ MenusScene::MenusScene(void)
 }
 
 MenusScene::MenusScene(SceneManager* _owningManager, Ogre::Root* root, Screens screenToSet)
-	:IScene(_owningManager, root, "MenusScene", "MenusResources"), currentScreen(screenToSet), 
-	timePassed(0), onWindow(false), hoverWindow(NULL)
+	:IScene(_owningManager, root, "MenusScene", "MenusResources"), currentScreen(screenToSet)
 {
 	for (unsigned int i = 0; i < Screens::Count; ++i)
 	{
@@ -51,8 +40,6 @@ MenusScene::~MenusScene(void)
 			delete handlers[i];
 		}
 	}
-
-	progressBar.SetWindow(nullptr);
 }
 
 void MenusScene::Initialize()
@@ -60,8 +47,6 @@ void MenusScene::Initialize()
 	InitializeResources(resourceGroupName);
 
 	player1Nav = MenuNavigator(this);
-	player1Nav.AllowMenuControls = true;
-
 	player2Nav = MenuNavigator(this);
 
 	Player1Data.MainElement = ElementEnum::Air;
@@ -73,26 +58,10 @@ void MenusScene::Initialize()
 	guiManager->AddScheme("MainMenu.scheme");
 	guiManager->LoadLayout("MainMenuLayout.layout", nullptr);
 	guiManager->LoadLayout("GameSetupMenu.layout", nullptr);
-	//guiManager->LoadLayout("CharacterSetupMenu.layout", nullptr);
-	
-	if(progressBar.GetWindow() == NULL)
-	{
-		CEGUI::Window* progressWindow = CEGUI::WindowManager::getSingleton().createWindow("Generic/Image", "CursorProgress");
-		progressWindow->setSize( CEGUI::USize(CEGUI::UDim( 0.1f, 0 ), CEGUI::UDim( 0.1f, 0 ) ) );
-		progressWindow->setPosition( CEGUI::UVector2(CEGUI::UDim( 0.5f, 0 ), CEGUI::UDim( 0.5f, 0 ) ) );
-		progressWindow->setAlwaysOnTop(true);
-		progressWindow->setMousePassThroughEnabled(true);
-
-		//progressWindow->setHorizontalAlignment(CEGUI::HA_CENTRE);
-		//progressWindow->setVerticalAlignment(CEGUI::VA_CENTRE);
-
-		guiManager->GetRootWindow()->addChild(progressWindow);
-		progressBar.SetWindow(progressWindow);
-		progressWindow->setVisible(true);
-	}
+	guiManager->LoadLayout("CharacterSetupMenu.layout", nullptr);
 
 	handlers[Screens::MainMenu] = new MainMenuHandler(this);
-	//handlers[Screens::CharacterSetup] = new CharacterMenuHandler(this);
+	handlers[Screens::CharacterSetup] = new CharacterMenuHandler(this);
 	handlers[Screens::GameSetup] = new GameSetupMenuHandler(this);
 
 	for (unsigned int i = 0; i < Screens::Count; i++)
@@ -115,30 +84,8 @@ void MenusScene::Start()
 
 bool MenusScene::Update(float gameTime)
 {
-	if(!kinectConnected)
-		InputManager::GetInstance()->InitializeKinect(
-			owningManager->GetRenderWindow()->getWidth(), owningManager->GetRenderWindow()->getHeight());
-
 	player1Nav.Update(gameTime);
 	player2Nav.Update(gameTime);
-
-	if(onWindow)
-	{
-		timePassed += gameTime;
-
-		if(timePassed >= HOVER_TIME)
-		{
-			hoverWindow->fireEvent(CEGUI::PushButton::EventClicked, 
-				CEGUI::WindowEventArgs(hoverWindow));
-
-			progressBar.Reset();
-			timePassed = 0.0f;
-		}
-
-		float progress = (timePassed / HOVER_TIME) * 100.0f;
-
-		progressBar.SetProgress((unsigned int)progress);
-	}
 
 	return true;
 }
@@ -159,28 +106,52 @@ void MenusScene::SetScreen(Screens screenToSet)
 	currentScreen = screenToSet;
 
 	handlers[currentScreen]->Show();
-
-	progressBar.Hide();
-	progressBar.Reset();
-
 	//handlers[currentScreen]->Enable();
+
+	switch (screenToSet)
+	{
+	case MenusScene::MainMenu:
+		break;
+	case MenusScene::CharacterSetup:
+		break;
+	case MenusScene::GameSetup:
+		break;
+	default:
+		break;
+	}
 }
 
 void MenusScene::SwitchToGame()
 {
 	std::vector<ProbenderData> contestantData;
+	/*ProbenderData player1Data = ProbenderData(ElementEnum::Fire);
+	player1Data.TeamDatas.Team = ArenaData::BLUE_TEAM;
+	player1Data.TeamDatas.CurrentZone = ArenaData::BLUE_ZONE_1;
+	player1Data.TeamDatas.PlayerColour = TeamData::PURPLE;
 
+	player1Data.BaseAttributes.SetAttribute(ProbenderAttributes::Agility, 10);
+	player1Data.BaseAttributes.SetAttribute(ProbenderAttributes::Endurance, 5);
+	player1Data.BaseAttributes.SetAttribute(ProbenderAttributes::Recovery, 5);
+
+	ProbenderData player2Data = ProbenderData(ElementEnum::Earth);
+	player2Data.TeamDatas.Team = ArenaData::RED_TEAM;
+	player2Data.TeamDatas.CurrentZone = ArenaData::RED_ZONE_1;
+	player2Data.TeamDatas.PlayerColour = TeamData::BLUE;
+
+	player2Data.BaseAttributes.SetAttribute(ProbenderAttributes::Agility, 0);
+	player2Data.BaseAttributes.SetAttribute(ProbenderAttributes::Endurance, 5);
+	player2Data.BaseAttributes.SetAttribute(ProbenderAttributes::Recovery, 7);*/
 	KinectBody* body = player1Nav.GetBody();
 
 	if(body)
-		Player1Data.BodyID = -1;// body->GetBodyID();
+		Player1Data.BodyID = body->GetBodyID();
 	else
 		Player1Data.BodyID = -1;
 
 	body = player2Nav.GetBody();
 
 	if(body)
-		Player2Data.BodyID = -1;// body->GetBodyID();
+		Player2Data.BodyID = body->GetBodyID();
 	else
 		Player2Data.BodyID = -1;
 
@@ -191,60 +162,3 @@ void MenusScene::SwitchToGame()
 	owningManager->FlagSceneSwitch(gameScene, true);
 	gameScene.reset();
 }
-
-void MenusScene::SensorDisconnected()
-{
-	InputManager::GetInstance()->CloseKinect();
-	kinectConnected = false;
-}
-
-bool MenusScene::HoverBeginEvent(const CEGUI::EventArgs& e)
-{
-	timePassed = 0.0f;
-	progressBar.Reset();
-
-	progressBar.Show();
-
-	CEGUI::WindowEventArgs& windowEvent = (CEGUI::WindowEventArgs&)e;
-	onWindow = true;
-	hoverWindow = windowEvent.window;
-
-	return true;
-}
-
-bool MenusScene::HoverEndEvent(const CEGUI::EventArgs& e)
-{
-	progressBar.Reset();
-
-	timePassed = 0.0f;
-
-	onWindow = false;
-	hoverWindow = NULL;
-
-	progressBar.Hide();
-
-	return true;
-}
-
-void MenusScene::RegisterHoverBeginEvent(CEGUI::Window* window)
-{
-	window->subscribeEvent(CEGUI::Window::EventMouseEntersArea, 
-		CEGUI::Event::Subscriber(&MenusScene::HoverBeginEvent,this));/**/
-}
-
-void MenusScene::RegisterHoverEndEvent(CEGUI::Window* window)
-{
-	window->subscribeEvent(CEGUI::Window::EventMouseLeavesArea, 
-		CEGUI::Event::Subscriber(&MenusScene::HoverEndEvent,this));/**/
-}
-
-void MenusScene::UnregisterHoverBeginEvent(CEGUI::Window* window)
-{
-	window->removeEvent(CEGUI::Window::EventMouseEntersArea);
-}
-
-void MenusScene::UnregisterHoverEndEvent(CEGUI::Window* window)
-{
-	window->removeEvent(CEGUI::Window::EventMouseLeavesArea);
-}
-

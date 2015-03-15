@@ -115,9 +115,6 @@ void KinectBody::RecieveBodyInformation(IBody* body)
 	//If the tracking ID has changed, fill in the data for the body
 	if(currBodyData.BodyTrackingID != previousData.BodyTrackingID)
 	{
-		if(currBodyData.BodyTrackingID == 0)
-			printf("Resetting Body ID\n");
-
 		SetBodyTrackingID(currBodyData.BodyTrackingID);	
 	}
 

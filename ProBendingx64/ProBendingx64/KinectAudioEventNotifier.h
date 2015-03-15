@@ -22,7 +22,7 @@ public:
 		return instance;
 	}
 
-	static void DestroySingleton();
+	void DestroySingleton();
 
 	bool RegisterAudioListener(KinectAudioListener* listener);
 	bool UnregisterAudioListener(KinectAudioListener* listener);

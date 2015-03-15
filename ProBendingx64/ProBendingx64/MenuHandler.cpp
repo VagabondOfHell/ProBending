@@ -51,95 +51,13 @@ void MenuHandler::Enable()
 		rootWindow->enable();
 }
 
-std::string MenuHandler::GetElementPrefix(ElementEnum::Element newElement)
-{
-	switch (newElement)
-	{
-	case ElementEnum::Air:
-		return "A_";
-		break;
-	case ElementEnum::Earth:
-		return "E_";
-		break;
-	case ElementEnum::Fire:
-		return "F_";
-		break;
-	case ElementEnum::Water:
-		return "W_";
-		break;
-	default:
-		return "";
-		break;
-	}
-}
-
-void MenuHandler::SetButtonImage(CEGUI::Window* button, ButtonSkinType skinType, ElementEnum::Element newElement)
-{
-	ButtonSkinListing buttonListing;
-	std::string elementPrefix = GetElementPrefix(newElement);
-	GetButtonSkinSuffix(skinType, buttonListing);
-
-	button->setProperty("NormalImage", "MenuControls/" + elementPrefix + buttonListing.NormalImage);
-	button->setProperty("DisabledImage", "MenuControls/" + elementPrefix + buttonListing.DisabledImage);
-	button->setProperty("HoverImage", "MenuControls/" + elementPrefix + buttonListing.HoverImage);
-	button->setProperty("PushedImage", "MenuControls/" + elementPrefix + buttonListing.ClickImage);
-}
-
-void MenuHandler::GetButtonSkinSuffix(ButtonSkinType skinType, ButtonSkinListing& outVal)
-{
-	outVal.ClickImage = outVal.DisabledImage = outVal.HoverImage = outVal.NormalImage = "";
-
-	switch (skinType)
-	{
-	case MenuHandler::BTN_SKIN_PUSH_BUTTON:
-		outVal.ClickImage = "Btn_Click";
-		outVal.DisabledImage = "Btn_Disabled";
-		outVal.HoverImage = "Btn_Hover";
-		outVal.NormalImage = "Btn_Normal";
-		break;
-	case MenuHandler::BTN_SKIN_MINUS_BTN_HORZ:
-		outVal.ClickImage = "Hor_Minus_Click";
-		outVal.DisabledImage = "Hor_Minus_Disabled";
-		outVal.HoverImage = "Hor_Minus_Hover";
-		outVal.NormalImage = "Hor_Minus_Normal";
-		break;
-	case MenuHandler::BTN_SKIN_ADD_BTN_HORZ:
-		outVal.ClickImage = "Hor_Add_Click";
-		outVal.DisabledImage = "Hor_Add_Disabled";
-		outVal.HoverImage = "Hor_Add_Hover";
-		outVal.NormalImage = "Hor_Add_Normal";
-		break;
-	case MenuHandler::BTN_SKIN_LEFT_BTN_HORZ:
-		outVal.ClickImage = "Left_Sel_Click";
-		outVal.DisabledImage = "Left_Sel_Disabled";
-		outVal.HoverImage = "Left_Sel_Hover";
-		outVal.NormalImage = "Left_Sel_Normal";
-		break;
-	case MenuHandler::BTN_SKIN_RIGHT_BTN_HORZ:
-		outVal.ClickImage = "Right_Sel_Click";
-		outVal.DisabledImage = "Right_Sel_Disabled";
-		outVal.HoverImage = "Right_Sel_Hover";
-		outVal.NormalImage = "Right_Sel_Normal";
-		break;
-	}
-}
-
-void MenuHandler::Update(float gameTime)
-{
-}
-
 MainMenuHandler::MainMenuHandler(IScene* _scene)
 	:MenuHandler(_scene)
 {
 	rootWindow = guiManager->GetChildWindow("MainMenuRoot");
 
 	startButton = (CEGUI::PushButton*)guiManager->GetChildWindow("MainMenuRoot/EnterTournamentButton");
-	startButton->subscribeEvent(CEGUI::PushButton::EventClicked, 
-		CEGUI::Event::Subscriber(&MainMenuHandler::StartButtonClickEvent,this));
-	
-	MenusScene* menus = (MenusScene*)scene;
-
-	menus->RegisterHoverEvents(startButton);
+	startButton->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MainMenuHandler::StartButtonClickEvent,this));
 }
 
 MainMenuHandler::~MainMenuHandler()
@@ -149,11 +67,7 @@ MainMenuHandler::~MainMenuHandler()
 
 bool MainMenuHandler::StartButtonClickEvent(const CEGUI::EventArgs& e)
 {
-	MenusScene* menus = (MenusScene*)scene;
-	//((MenusScene*)scene)->SetScreen(MenusScene::CharacterSetup);
-
-	menus->UnregisterHoverEvents(startButton);
-	menus->SetScreen(MenusScene::GameSetup);
+	((MenusScene*)scene)->SetScreen(MenusScene::CharacterSetup);
 
 	return true;
 }

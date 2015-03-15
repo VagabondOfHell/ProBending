@@ -1,12 +1,11 @@
 #pragma once
 #include "KinectBodyListener.h"
-#include "KinectAudioListener.h"
 #include "InputObserver.h"
 
 class MenusScene;
 
 class MenuNavigator :
-	public KinectBodyListener, public KinectAudioListener, public InputObserver
+	public KinectBodyListener, public InputObserver
 {
 private:
 	MenusScene* menuScene;
@@ -61,8 +60,6 @@ private:
 	}
 
 public:
-	bool AllowMenuControls;
-
 	MenuNavigator(MenusScene* menuScene = NULL);
 	~MenuNavigator(void);
 
@@ -77,8 +74,6 @@ public:
 	virtual void mousePressed(const OIS::MouseEvent &arg, OIS::MouseButtonID id);
 
 	virtual void mouseReleased(const OIS::MouseEvent &arg, OIS::MouseButtonID id);
-
-	virtual void AudioDataReceived(AudioData* audioData);
 
 };
 

@@ -31,6 +31,7 @@ class Probender : public GameObject
 private:
 	unsigned short contestantID;//The ID the contestant is stored in the arena with
 	
+	static const physx::PxVec3 HALF_EXTENTS;
 	static const float DODGE_DISTANCE;
 	static const float FALL_FORCE;
 

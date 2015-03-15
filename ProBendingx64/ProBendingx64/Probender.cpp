@@ -23,9 +23,11 @@
 #include "OgreMeshManager.h"
 #include "OgreHardwareBufferManager.h"
 
+const physx::PxVec3 Probender::HALF_EXTENTS = physx::PxVec3(0.250f, 0.60f, 0.40f);
+
 const float Probender::DODGE_DISTANCE = 1.0f;
 
-const float Probender::FALL_FORCE = -1000.0f;
+const float Probender::FALL_FORCE = -350.0f;
 
 Probender::Probender()
 	: GameObject(NULL), owningArena(NULL), leftHandAttack(NULL), rightHandAttack(NULL), currentTarget(NULL), camera(NULL)
@@ -56,12 +58,12 @@ void Probender::SetCamera(Ogre::Camera* newCamera)
 
 	camera = newCamera;
 
-	camera->setPosition(Ogre::Vector3(0.0f, PROBENDER_HALF_EXTENTS.y, 0.0f));
+	camera->setPosition(Ogre::Vector3(0.0f, 1.0f, 0.0f));
 	
 	if(currentTarget)
 		camera->lookAt(currentTarget->GetWorldPosition());
 	else
-		camera->lookAt(Ogre::Vector3(0.0f, PROBENDER_HALF_EXTENTS.y * 2, 0.0f));
+		camera->lookAt(Ogre::Vector3(0.0f, 2.0f, 0.0f));
 }
 
 void Probender::Start()
@@ -93,7 +95,7 @@ void Probender::Start()
 	rigid->CreateRigidBody(RigidBodyComponent::DYNAMIC);
 	
 	ShapeDefinition shapeDef = ShapeDefinition();
-	shapeDef.SetBoxGeometry(PROBENDER_HALF_EXTENTS);
+	shapeDef.SetBoxGeometry(HALF_EXTENTS);
 	shapeDef.AddMaterial("101000");
 	shapeDef.SetFilterFlags(ArenaData::CONTESTANT);
 	PhysXDataManager::GetSingletonPtr()->CreateShape(shapeDef, "ProbenderShape");
@@ -117,11 +119,8 @@ void Probender::Update(float gameTime)
 
 	if(currentTarget)
 		if(camera)
-		{
-			Ogre::Vector3 targetPos = currentTarget->GetWorldPosition();
-			camera->lookAt(targetPos.x, PROBENDER_HALF_EXTENTS.y * 2.0f, targetPos.z);
-			//camera->lookAt(currentTarget->GetWorldPosition() + Ogre::Vector3(0.0f, 1.0f, 0.0f));
-		}
+			camera->lookAt(currentTarget->GetWorldPosition() + Ogre::Vector3(0.0f, 1.0f, 0.0f));
+
 	inputHandler.Update(gameTime);
 	stateManager.Update(gameTime);	
 	progressTracker.Update(gameTime);

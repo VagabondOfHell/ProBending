@@ -40,8 +40,6 @@ public:
 	//<Param: windowHeight> Height of the Render Window
 	HRESULT InitializeKinect(const UINT32 windowWidth, const UINT32 windowHeight);
 
-	void CloseKinect();
-
 	///True if connected and available, false if not
 	inline bool KinectReader::KinectConnected()const
 	{

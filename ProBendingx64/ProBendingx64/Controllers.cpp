@@ -179,8 +179,6 @@ void HandMoveController::ReceivePreviousResults(GestureEnums::BodySide prevResul
 			HandUsed = CH_LEFT;
 		else if(prevResults == GestureEnums::BODYSIDE_RIGHT)
 			HandUsed = CH_RIGHT;
-		else if(prevResults == GestureEnums::BODYSIDE_BOTH)
-			HandUsed = CH_BOTH;
 		break;
 	case GestureEnums::TRANRULE_OPPOSITE:
 		if(prevResults == GestureEnums::BODYSIDE_LEFT)

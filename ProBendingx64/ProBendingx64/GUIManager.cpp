@@ -13,12 +13,6 @@ GUIManager::GUIManager(void)
 
 GUIManager::~GUIManager(void)
 {
-	for (int i = 0; i < rootWindow->getChildCount(); i++)
-	{
-		rootWindow->getChildAtIdx(i)->removeAllEvents();
-
-		CEGUI::WindowManager::getSingleton().destroyWindow(rootWindow->getChildAtIdx(i));
-	}
 }
 
 void GUIManager::BootstrapSystem(Ogre::RenderTarget* renderTarget)

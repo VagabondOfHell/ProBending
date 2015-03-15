@@ -28,8 +28,8 @@ InputManager::~InputManager(void)
 {
 	ShutdownThreads();
 
-	KinectBodyEventNotifier::DestroySingleton();
-	KinectAudioEventNotifier::DestroySingleton();
+	KinectBodyEventNotifier::GetInstance()->DestroySingleton();
+	KinectAudioEventNotifier::GetInstance()->DestroySingleton();
 
 	if(gestureReader)
 	{
@@ -50,12 +50,11 @@ void InputManager::ShutdownThreads()
 
 	printf("First Join Done\n");
 
-	cancelBodyCapture = true;
 	result = WaitForSingleObject(bodyCaptureThread.native_handle(), 100);
 
 	printf("Second Wait Done\n");
-	if(bodyCaptureThread.joinable())
-		bodyCaptureThread.join();
+
+	bodyCaptureThread.join();
 
 	printf("Second Join Done\n");
 
@@ -64,11 +63,6 @@ void InputManager::ShutdownThreads()
 		delete kinectReader;
 		kinectReader = NULL;
 	}
-}
-
-void InputManager::CloseKinect()
-{
-	ShutdownThreads();
 }
 
 bool InputManager::InitializeKinect(const UINT32 windowWidth, const UINT32 windowHeight)
@@ -85,7 +79,7 @@ bool InputManager::InitializeKinect(const UINT32 windowWidth, const UINT32 windo
 	Sleep(1000);
 
 	 bool result = kinectReader->OpenBodyReader();
-	 
+
 	if(!result)
 		return false;
 
@@ -273,18 +267,10 @@ void InputManager::BodyCapture()
 	cancelBodyCapture = false;
 	pauseBodyCapture = false;
 
-	bool breakNow = false;
-
-//	while (!cancelBodyCapture)
+	while (!cancelBodyCapture)
 	{
 		if(!pauseBodyCapture)
-			breakNow = !kinectReader->CaptureBodyReader();
-
-		//if(breakNow)
-		//	break;
-
-		if(cancelBodyCapture)
-			printf("Wanna Leave\n");
+			kinectReader->CaptureBodyReader();
 	}
 }
 
@@ -303,7 +289,7 @@ void InputManager::AudioCapture()
 
 void InputManager::BeginAllCapture()
 {
-	//bodyCaptureThread = std::thread(&InputManager::BodyCapture, this);
+	bodyCaptureThread = std::thread(&InputManager::BodyCapture, this);
 	speechCaptureThread = std::thread(&InputManager::AudioCapture, this);
 }
 
@@ -319,8 +305,6 @@ void InputManager::SetBodyCaptureState(bool enabled)
 
 void InputManager::ProcessEvents()
 {
-	BodyCapture();
 	KinectBodyEventNotifier::GetInstance()->ProcessEvents();
 	KinectAudioEventNotifier::GetInstance()->ProcessEvents();
-	FlushListeners();
 }
