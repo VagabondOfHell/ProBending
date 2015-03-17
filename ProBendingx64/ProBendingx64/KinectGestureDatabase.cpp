@@ -51,6 +51,7 @@ struct KinectGesture
 		if(GestureInterface)
 		{
 			HRESULT hr = GestureInterface->get_Name(sizeof(fill), fill);
+
 			//Fill the wstring with the array results
 			name.assign(fill);
 
@@ -150,7 +151,7 @@ bool KinectGestureDatabase::GetGestures()
 		}	
 	}
 
-	delete gestures;
+	delete[] gestures;
 
 	return true;
 }

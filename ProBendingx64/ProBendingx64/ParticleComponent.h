@@ -3,6 +3,7 @@
 #include "Component.h"
 
 class FluidAndParticleBase;
+class ParticleBehaviour;
 
 namespace Ogre
 {

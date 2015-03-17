@@ -348,7 +348,7 @@ void RigidBodyComponent::CreateDebugDraw()
 	}
 	
 	if(shapes)
-		delete shapes;
+		delete[] shapes;
 
 	
 	// add ManualObject to the node so it will be visible

@@ -15,9 +15,10 @@ protected:
 
 	enum MenuWindows{
 		MW_ROOT_WINDOW, MW_GAME_OPTIONS_ROOT, MW_PLAYER_OPTIONS_ROOT,
-		MW_PLAYER_NAME_ROOT, MW_PLAYER_TEAM_ROOT, MW_PLAYER_COLOUR_ROOT, MW_PLAYER_ZONE_ROOT,
+		MW_PLAYER_ELEMENT_ROOT, MW_PLAYER_TEAM_ROOT, MW_PLAYER_COLOUR_ROOT, MW_PLAYER_ZONE_ROOT,
 		MW_MODE_LEFT_SEL, MW_MODE_RIGHT_SEL, MW_MODE_VAL,
-		MW_PLAYER_ID_BACKING, MW_PLAYER_NAME_VAL, 
+		MW_PLAYER_ID_BACKING, 
+		MW_PLAYER_ELEMENT_LEFT_SEL, MW_PLAYER_ELEMENT_RIGHT_SEL, MW_PLAYER_ELEMENT_VAL, 
 		MW_PLAYER_TEAM_COLOUR_LEFT_SEL, MW_PLAYER_TEAM_COLOUR_RIGHT_SEL, MW_PLAYER_TEAM_COLOUR_VAL, 
 		MW_PLAYER_COLOUR_LEFT_SEL, MW_PLAYER_COLOUR_RIGHT_SEL, MW_PLAYER_COLOUR_VAL,
 		MW_PLAYER_ZONE_LEFT_SEL, MW_PLAYER_ZONE_RIGHT_SEL, MW_PLAYER_ZONE_COLOUR_VAL, MW_PLAYER_ZONE_POS_VAL,
@@ -26,12 +27,16 @@ protected:
 	void GetRootWindows();
 
 	void SubscribeEvents();
+	void UnsubscribeEvents();
 
 	void DisableUnimplementedControls();
 
 	bool IsPlayer1(const CEGUI::WindowEventArgs& windowEvent);
 
 	void SetTeamColours(ArenaData::Team player1);
+
+	void SetControlSkins(bool player1, ElementEnum::Element elementSkin);
+	void ChangeElement(bool player1, ElementEnum::Element newElement);
 
 	std::string GetZoneColourText(ArenaData::Zones zone)
 	{
@@ -107,6 +112,9 @@ protected:
 	void IncrementZone(bool incrementPlayer1);
 	void DecrementZone(bool decrementPlayer1);
 
+	void IncrementElement(bool incrementPlayer1);
+	void DecrementElement(bool incrementPlayer1);
+
 	void SetZoneData();
 
 	CEGUI::Window* GetWindow(MenuWindows windowToGet, bool player1 = true);
@@ -117,6 +125,8 @@ public:
 
 	bool StartGameBtnClickEvent(const CEGUI::EventArgs& e);
 	bool GameModeSelBtnClickEvent(const CEGUI::EventArgs& e);
+
+	bool ElementSelBtnClickEvent(const CEGUI::EventArgs& e);
 	bool TeamSelBtnClickEvent(const CEGUI::EventArgs& e);
 	bool ZoneSelBtnClickEvent(const CEGUI::EventArgs& e);
 	bool CharColourSelBtnClickEvent(const CEGUI::EventArgs& e);

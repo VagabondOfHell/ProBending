@@ -3,6 +3,8 @@
 #include "ParticleSystemParams.h"
 #include "AffectorParameters.h"
 
+#include "ParticleBehaviour.h"
+
 #include "ParticleSystemMaterial.h"
 #include <memory>
 
@@ -38,8 +40,10 @@ protected:
 	std::shared_ptr<AbstractParticleEmitter> emitter;//The emitter used to create particles
 
 	std::vector<physx::PxU32> availableIndices; //The available indices within the particle system
-
 	std::vector<const physx::PxU32> indicesToRemove;//Vector of indices that should be removed this frame
+	std::vector<physx::PxU32> usedIndices;//list of indices currently used
+
+	std::vector<ParticleBehaviour*> behaviours;
 
 	physx::PxCudaContextManager* cudaContextManager; ///The physX cuda context manager
 
@@ -196,10 +200,43 @@ public:
 	///<summary>Initializes particle system and attaches to the specified scene</summary>
 	///<param name="scene">The physX scene to add the particle system to</param>
 	void Initialize(physx::PxScene* scene);
-
+	
 	///<summary>Updates the information of the particle system</summary>
 	///<param name="time">The time step of the frame</param>
 	void Update(float time);
+
+	///<summary>Adds a behaviour to the list. The particle system assumes control of the memory</summary>
+	///<param name="behaviour">The behaviour to add</param>
+	void AddBehaviour(ParticleBehaviour* behaviour){behaviours.push_back(behaviour);}
+
+	const std::vector<physx::PxU32>& GetUsedIndices()const;
+
+	void ApplyForces(unsigned int numParticles, const physx::PxStrideIterator<unsigned int>& indices, 
+		const physx::PxStrideIterator<physx::PxVec3>& forces, physx::PxForceMode::Enum forceMode);
+
+	inline void ApplyForce(physx::PxU32 particleIndex, physx::PxVec3& force, physx::PxForceMode::Enum forceMode)
+	{
+		ApplyForces(1, physx::PxStrideIterator<physx::PxU32>(&particleIndex), 
+			physx::PxStrideIterator<physx::PxVec3>(&force), forceMode );
+	}
+
+	void SetVelocities(unsigned int numParticles, const physx::PxStrideIterator<unsigned int>& indices, 
+		const physx::PxStrideIterator<physx::PxVec3>& velocities);
+
+	inline void SetVelocity(physx::PxU32 particleIndex, physx::PxVec3& velocity)
+	{
+		SetVelocities(1, physx::PxStrideIterator<physx::PxU32>(&particleIndex), 
+			physx::PxStrideIterator<physx::PxVec3>(&velocity));
+	}
+
+	void SetPositions(unsigned int numParticles, const physx::PxStrideIterator<unsigned int>& indices, 
+		const physx::PxStrideIterator<physx::PxVec3>& positions);
+
+	inline void SetPosition(physx::PxU32 particleIndex, physx::PxVec3& position)
+	{
+		SetPositions(1, physx::PxStrideIterator<physx::PxU32>(&particleIndex), 
+			physx::PxStrideIterator<physx::PxVec3>(&position));
+	}
 
 #pragma endregion
 

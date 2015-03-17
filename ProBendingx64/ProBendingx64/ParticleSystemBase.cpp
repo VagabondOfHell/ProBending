@@ -24,6 +24,8 @@ ParticleSystemBase::ParticleSystemBase(std::shared_ptr<AbstractParticleEmitter> 
 	//place the system on the GPU if it should be
 	pxParticleSystem->setParticleBaseFlag(physx::PxParticleBaseFlag::eGPU, onGPU);
 	
+	SetParticleReadFlags(pxParticleSystem, paramsStruct.readData);
+
 	//Check that PhysX didn't overwrite our GPU selection. If they did, reset our information
 	if(!(pxParticleSystem->getParticleBaseFlags() & physx::PxParticleBaseFlag::eGPU))
 	{
@@ -128,6 +130,13 @@ void ParticleSystemBase::UpdateParticleSystemCPU(const float time, const physx::
 					
 					//Allow children to update their own particle data
 					UpdateParticle(index, readData);
+
+					//Update particle behaviours
+					for (int i = 0; i < behaviours.size(); i++)
+					{
+						behaviours[i]->ApplyToParticle(this, index, readData, time, lifetimes[index]);
+					}
+
 				}
 			}//end of bitmap for loop (b)
 		}//end of particle range for loop
@@ -253,7 +262,7 @@ ParticleSystemBase* ParticleSystemBase::Clone()
 		!particleBase->getActorFlags().isSet(PxActorFlag::eDISABLE_GRAVITY), particleBase->getParticleBaseFlags(), 
 		particleBase->getRestOffset(), particleBase->getStaticFriction(), particleBase->getDynamicFriction(), 
 		particleBase->getRestitution(), particleBase->getContactOffset(), particleBase->getDamping(),
-		particleBase->getSimulationFilterData());
+		particleBase->getSimulationFilterData(), particleBase->getParticleReadDataFlags());
 
 	ParticleSystemBase* clone = new ParticleSystemBase(emitter, maximumParticles, 
 		initialLifetime, params);
@@ -265,5 +274,7 @@ ParticleSystemBase* ParticleSystemBase::Clone()
 		clone->AddAffector(std::shared_ptr<ParticleAffector>(start->second->Clone()));
 	}
 	
+	clone->ResetOnDisable = ResetOnDisable;
+
 	return clone;
 }

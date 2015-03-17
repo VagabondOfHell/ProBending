@@ -62,11 +62,15 @@ FluidAndParticleBase::FluidAndParticleBase(std::shared_ptr<AbstractParticleEmitt
 	{
 		availableIndices.push_back(i);
 	}
-
 }
 
 FluidAndParticleBase::~FluidAndParticleBase()
 {
+	for (int i = 0; i < behaviours.size(); ++i)
+	{
+		delete behaviours[i];
+	}
+
 	if(cudaKernel)
 		delete cudaKernel;
 
@@ -169,6 +173,9 @@ void FluidAndParticleBase::Initialize(physx::PxScene* scene)
 
 	InitializeVertexBuffers();
 
+	if(!enabled)
+		DisableSimulation();
+
 	//Add it to the scene
 	scene->addActor(*particleBase);
 }
@@ -217,6 +224,11 @@ void FluidAndParticleBase::Update(float time)
 		for (int i = indicesToRemove.size() - 1; i >= 0; --i)
 		{
 			availableIndices.push_back(indicesToRemove[i]);
+			//usedIndices.erase(indicesToRemove[i]);
+			
+			usedIndices.erase(std::remove(usedIndices.begin(), 
+				usedIndices.end(), indicesToRemove[i]), usedIndices.end());
+		
 			indicesToRemove.pop_back();
 		}
 	}
@@ -231,7 +243,8 @@ void FluidAndParticleBase::Update(float time)
 	if(creationData.numParticles > 0)
 	{
 		//Fill the index buffer
-		creationData.indexBuffer = physx::PxStrideIterator<PxU32>(&availableIndices[availableIndices.size() - creationData.numParticles]);
+		creationData.indexBuffer = 
+			physx::PxStrideIterator<PxU32>(&availableIndices[availableIndices.size() - creationData.numParticles]);
 
 		//Check validity
 		if(creationData.isValid())
@@ -245,6 +258,8 @@ void FluidAndParticleBase::Update(float time)
 				//Remove the particles from the available list
 				for (unsigned int i = 0; i < creationData.numParticles; i++)
 				{
+					usedIndices.push_back(availableIndices[availableIndices.size() - 1]);
+					//usedIndices.insert(availableIndices[availableIndices.size() - 1]);
 					availableIndices.pop_back();
 				}
 			}
@@ -252,6 +267,8 @@ void FluidAndParticleBase::Update(float time)
 				printf("CREATION ERROR");
 		}	
 	}
+
+	std::sort(usedIndices.begin(), usedIndices.end(), std::greater<physx::PxU32>());
 }
 
 #pragma endregion
@@ -351,6 +368,12 @@ void FluidAndParticleBase::UpdateParticleSystemCPU(const float time, const physx
 					
 					//Allow children to update their own particle data
 					UpdateParticle(index, readData);
+
+					for (int i = 0; i < behaviours.size(); i++)
+					{
+						behaviours[i]->ApplyToParticle(this, index, readData, time, lifetimes[index]);
+					}
+
 				}
 			}//end of bitmap for loop (b)
 		}//end of particle range for loop
@@ -488,7 +511,7 @@ Ogre::HardwareVertexBufferSharedPtr FluidAndParticleBase::CreateVertexBuffer(Ogr
 	{
 		BufferMapInsertResult result = bufferMap.insert(BufferMap::value_type(semantic, returnVal));
 
-		if(result.second = true)
+		if(result.second == true)
 		{
 			//Set the binding to the semantic value
 			mRenderOp.vertexData->vertexBufferBinding->setBinding(semantic, returnVal);
@@ -562,17 +585,42 @@ void FluidAndParticleBase::DisableSimulation()
 		if(ResetOnDisable)
 		{
 			particleBase->releaseParticles();
-			GPUResourcePointers lockedBufferData = LockBuffersCPU();
-			for (int i = 0; i < maximumParticles; i++)
+			if(bufferMap.find(Ogre::VES_POSITION) != bufferMap.end())
 			{
-				lockedBufferData.positions[i] = physx::PxVec4(9999.9f, 9999.9f, 9999.9f, 1.0f);
-				lifetimes[i] = 0.0f;
-			}
-			UnlockBuffersCPU();
+				GPUResourcePointers lockedBufferData = LockBuffersCPU();
+				for (int i = 0; i < maximumParticles; i++)
+				{
+					lockedBufferData.positions[i] = physx::PxVec4(9999.0f, 9999.0f, 9999.0f, 0.0f);
+					lifetimes[i] = 0.0f;
+				}
+				UnlockBuffersCPU();
+			}	
 		}
 	}
-	
 }
 
+void FluidAndParticleBase::ApplyForces(unsigned int numParticles, const physx::PxStrideIterator<unsigned int>& indices, 
+		const physx::PxStrideIterator<physx::PxVec3>& forces, physx::PxForceMode::Enum forceMode)
+{
+	particleBase->addForces(numParticles, indices, forces, forceMode);
+}
+
+
+void FluidAndParticleBase::SetVelocities(unsigned int numParticles, const physx::PxStrideIterator<unsigned int>& indices, 
+		const physx::PxStrideIterator<physx::PxVec3>& velocities)
+{
+	particleBase->setVelocities(numParticles, indices, velocities);
+}
+
+void FluidAndParticleBase::SetPositions(unsigned int numParticles, const physx::PxStrideIterator<unsigned int>& indices, 
+		const physx::PxStrideIterator<physx::PxVec3>& positions)
+{
+	particleBase->setPositions(numParticles, indices, positions);
+}
+
+const std::vector<physx::PxU32>& FluidAndParticleBase::GetUsedIndices() const
+{
+	return usedIndices;// std::vector<physx::PxU32>(usedIndices.begin(), usedIndices.end());
+}
 
 #pragma endregion

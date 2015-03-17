@@ -47,6 +47,8 @@ private:
 
 	bool canLean;
 
+	bool NeedSpawnPosition;
+
 	std::vector<Attack> mainElementGestures;
 	std::vector<Attack> subElementGestures;
 
@@ -69,6 +71,9 @@ private:
 
 	void HandleAttacks(const AttackData& attackData);
 
+	void PrepareProjectile();
+	void PrepareProjectileLaunch();
+
 public:
 	ConfigurationLayout keysLayout;
 	ProbenderOptions controlOptions;
@@ -82,7 +87,7 @@ public:
 
 	void SetProbenderToHandle(Probender* _probenderToHandle);
 
-	bool ListenToBody(short bodyIndex);
+	bool ListenToBody(UINT8 bodyIndex);
 
 	///<summary>Overrides the current stance used by the input handler and sets Manage Stance to false</summary>
 	///<param name="newStance">The new stance to be used. Setting to Unknown Stance will

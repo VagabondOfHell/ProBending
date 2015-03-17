@@ -16,14 +16,13 @@ class ProjectileDatabase
 	static SharedProjectile CreateEarthJab(IScene* scene);
 	static SharedProjectile CreateEarthCoin(IScene* scene);
 
-
 	static SharedProjectile CreateFireJab(IScene* scene);
 	static SharedProjectile CreateFireBlast(IScene* scene);
 
+	static SharedProjectile CreateWaterJab(IScene* scene);
+
 public:
 	typedef std::map<AbilityIDs::AbilityID, SharedProjectile> ProjectileDictionary;
-
-	static ProjectileDictionary GetAirProjectiles(IScene* scene);
 
 	///<summary>Gets a map of all the earth projectiles</summary>
 	///<param name="scene">The scene that will create the scene nodes for the projectiles</param>

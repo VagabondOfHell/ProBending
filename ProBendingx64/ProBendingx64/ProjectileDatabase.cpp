@@ -19,11 +19,6 @@
 
 const std::string ProjectileDatabase::ShapeString = "Shape";
 
-ProjectileDatabase::ProjectileDictionary ProjectileDatabase::GetAirProjectiles(IScene* scene)
-{
-	return ProjectileDictionary();
-}
-
 #pragma region Earth Element
 
 ProjectileDatabase::ProjectileDictionary ProjectileDatabase::GetEarthProjectiles(IScene* scene)
@@ -49,17 +44,16 @@ ProjectileDatabase::SharedProjectile ProjectileDatabase::CreateEarthJab(IScene* 
 	MeshRenderComponent* renderComponent = new MeshRenderComponent();
 	projectile->AttachComponent(renderComponent);
 	renderComponent->LoadModel("Rock_01.mesh");
-	projectile->SetScale(0.0025f, 0.0025f, 0.0025f);
+	projectile->SetScale(0.25f, 0.25f, 0.25f);
 
 	RigidBodyComponent* rigidBody = new RigidBodyComponent();
 	projectile->AttachComponent(rigidBody);
 	rigidBody->CreateRigidBody(RigidBodyComponent::DYNAMIC); //Create dynamic body at 0,0,0 with 0 rotation
-	
-	earthJabAttributes.HalfExtents = renderComponent->GetHalfExtents();
-	physx::PxVec3 entityHalfSize = HelperFunctions::OgreToPhysXVec3(earthJabAttributes.HalfExtents);
+	projectile->SetHalfExtents(renderComponent->GetHalfExtents());
+	physx::PxVec3 entityHalfSize = HelperFunctions::OgreToPhysXVec3(projectile->GetHalfExtents());
 
 	ShapeDefinition shapeDef = ShapeDefinition();
-	shapeDef.SetSphereGeometry(entityHalfSize.magnitude() * 0.45f);
+	shapeDef.SetSphereGeometry(entityHalfSize.magnitude() * 0.5f);
 	//shapeDef.SetBoxGeometry(entityHalfSize);
 	shapeDef.SetFilterFlags(ArenaData::PROJECTILE);
 
@@ -68,7 +62,7 @@ ProjectileDatabase::SharedProjectile ProjectileDatabase::CreateEarthJab(IScene* 
 	if(shape)
 	{
 		rigidBody->AttachShape(*shape);
-		//rigidBody->CreateDebugDraw();
+		rigidBody->CreateDebugDraw();
 		rigidBody->SetUseGravity(false);
 	}
 
@@ -88,14 +82,14 @@ ProjectileDatabase::SharedProjectile ProjectileDatabase::CreateEarthCoin(IScene*
 	MeshRenderComponent* renderComponent = new MeshRenderComponent();
 	projectile->AttachComponent(renderComponent);
 	renderComponent->LoadModel("Rock_01.mesh");
-	projectile->SetScale(0.005f, 0.001f, 0.005f);
+	projectile->SetScale(0.5f, 0.1f, 0.5f);
 
 	RigidBodyComponent* rigidBody = new RigidBodyComponent();
 	projectile->AttachComponent(rigidBody);
 	rigidBody->CreateRigidBody(RigidBodyComponent::DYNAMIC); //Create dynamic body at 0,0,0 with 0 rotation
-	earthCoinAttributes.HalfExtents = renderComponent->GetHalfExtents();
+	projectile->SetHalfExtents(renderComponent->GetHalfExtents());
 
-	physx::PxVec3 entityHalfSize = HelperFunctions::OgreToPhysXVec3(earthCoinAttributes.HalfExtents);
+	physx::PxVec3 entityHalfSize = HelperFunctions::OgreToPhysXVec3(projectile->GetHalfExtents());
 	
 	ShapeDefinition shapeDef = ShapeDefinition();
 	//shapeDef.SetSphereGeometry(entityHalfSize.magnitude() * 0.5f);
@@ -149,7 +143,7 @@ ProjectileDatabase::SharedProjectile ProjectileDatabase::CreateFireJab(IScene* s
 
 	ShapeDefinition shapeDef = ShapeDefinition();
 	shapeDef.SetSphereGeometry(0.15f);
-	attributes.HalfExtents = Ogre::Vector3(0.15f);
+	newProjectile->SetHalfExtents(Ogre::Vector3(0.15f));
 
 	shapeDef.SetFilterFlags(ArenaData::PROJECTILE);
 
@@ -191,8 +185,8 @@ ProjectileDatabase::SharedProjectile ProjectileDatabase::CreateFireBlast(IScene*
 	ShapeDefinition shapeDef = ShapeDefinition();
 	shapeDef.SetSphereGeometry(0.15f);
 
-	attributes.HalfExtents = Ogre::Vector3(0.15f);
-
+	newProjectile->SetHalfExtents(Ogre::Vector3(0.15f));
+	
 	shapeDef.SetFilterFlags(ArenaData::PROJECTILE);
 
 	shapeDef.AddMaterial(PhysXDataManager::GetSingletonPtr()->CreateMaterial(1.0f, 1.0f, 0.0f, "101000"));
@@ -212,7 +206,51 @@ ProjectileDatabase::SharedProjectile ProjectileDatabase::CreateFireBlast(IScene*
 
 ProjectileDatabase::ProjectileDictionary ProjectileDatabase::GetWaterProjectiles(IScene* scene)
 {
-	return ProjectileDictionary();
+	ProjectileDictionary waterDictionary = ProjectileDictionary();
+
+	waterDictionary.insert(ProjectileDictionary::value_type(AbilityIDs::WATER_JAB, CreateWaterJab(scene)));
+
+	return waterDictionary;
+}
+
+ProjectileDatabase::SharedProjectile ProjectileDatabase::CreateWaterJab(IScene* scene)
+{
+	std::string projName = AbilityIDs::WaterEnumToString(AbilityIDs::WATER_JAB);
+
+	ProjectileAttributes waterJabAttributes = 
+		ProjectileAttributes(Ogre::Vector3(0.0f), 0.2f, 350.0f, 450.0f, 30.0f, 20.0f, 30.0f, true);
+
+	SharedProjectile projectile = std::make_shared<Projectile>(scene, waterJabAttributes, projName);
+	projectile->tag = TagsAndLayersManager::ProjectileTag;
+	projectile->DestructionTriggers = ArenaData::PROJECTILE | ArenaData::WATER;
+
+	MeshRenderComponent* renderComponent = new MeshRenderComponent();
+	projectile->AttachComponent(renderComponent);
+	renderComponent->LoadModel("WaterSphere.mesh");
+//	renderComponent->SetMaterial("Examples/WaterSphere");
+	//projectile->SetScale(0.0025f, 0.0025f, 0.0025f);
+
+	RigidBodyComponent* rigidBody = new RigidBodyComponent();
+	projectile->AttachComponent(rigidBody);
+	rigidBody->CreateRigidBody(RigidBodyComponent::DYNAMIC); //Create dynamic body at 0,0,0 with 0 rotation
+
+	waterJabAttributes.HalfExtents = renderComponent->GetHalfExtents();
+	physx::PxVec3 entityHalfSize = HelperFunctions::OgreToPhysXVec3(waterJabAttributes.HalfExtents);
+
+	ShapeDefinition shapeDef = ShapeDefinition();
+	shapeDef.SetSphereGeometry(entityHalfSize.magnitude() * 0.6f);// * 0.45f);
+	shapeDef.SetFilterFlags(ArenaData::PROJECTILE);
+
+	shapeDef.AddMaterial(PhysXDataManager::GetSingletonPtr()->CreateMaterial(1.0f, 1.0f, 0.0f, "101000"));
+	physx::PxShape* shape = PhysXDataManager::GetSingletonPtr()->CreateShape(shapeDef, projName + ShapeString);
+	if(shape)
+	{
+		rigidBody->AttachShape(*shape);
+		rigidBody->CreateDebugDraw();
+		rigidBody->SetUseGravity(false);
+	}
+
+	return projectile;
 }
 
 

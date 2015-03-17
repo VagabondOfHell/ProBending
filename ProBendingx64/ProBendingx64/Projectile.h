@@ -31,7 +31,7 @@ struct ProjectileIdentifier
 class Projectile : public GameObject
 {
 	friend class ProjectileManager;
-	const ProjectileAttributes baseAttributes;
+	ProjectileAttributes baseAttributes;
 
 public:
 	ProjectileAttributes Attributes;
@@ -48,6 +48,8 @@ public:
 
 	inline float GetBaseMinKnockback()const{return baseAttributes.MinKnockback;}
 	inline float GetBaseMaxKnockback()const{return baseAttributes.MaxKnockback;}
+
+	inline void SetHalfExtents(Ogre::Vector3& newHalfExtents){baseAttributes.HalfExtents = Attributes.HalfExtents = newHalfExtents;}
 
 	inline Ogre::Vector3 GetHalfExtents()const{return baseAttributes.HalfExtents;}
 	inline bool GetUseGravity()const{return baseAttributes.UseGravity;}

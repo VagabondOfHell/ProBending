@@ -38,6 +38,12 @@ struct DiscreteEvaluator
 	bool TrueIfFirstDetected;
 	//The value that the Kinect needs to be greater than for valid recognition of the gesture
 	float ConfidenceToExceed;
+	//True to append left or right to the gesture
+	bool AppendSide;
+	//True to require the gesture to become false before allowing another true
+	bool RequireFalseReset;
+	//The body side to return if this gesture is successful. If append side is true, use either
+	GestureEnums::BodySide ReturnResult;
 };
 
 struct ContinuousEvaluator
@@ -66,6 +72,8 @@ public:
 	//How this gesture should transition from the last completed transition
 	GestureEnums::TransitionRules TransitionFromLast;
 
+	bool falseResultRecd;//True if the gesture was false recently
+
 private:
 	//A union of the possible types of function pointers
 	union Evaluators
@@ -81,27 +89,134 @@ private:
 
 	inline GestureEnums::BodySide EvaluateDiscretes(const std::vector<KinectGestureResult>* gestureResults)
 	{
-		for (int i = 0; i < gestureResults->size(); i++)
-		{
-			std::wstring currName = evaluator.discreteEvaluator.GestureName;
+		std::wstring currName = evaluator.discreteEvaluator.GestureName;
+		std::wstring leftName, rightName;
 
-			if((*gestureResults)[i].gestureName== currName)
-			{
-				if((*gestureResults)[i].discreteConfidence >= evaluator.discreteEvaluator.ConfidenceToExceed)
-				{
-					if(evaluator.discreteEvaluator.TrueIfFirstDetected)
-						if((*gestureResults)[i].discreteFirstFrameDetected != false)
-						{
-							return GestureEnums::BODYSIDE_EITHER;
-						}
-					else
-						if((*gestureResults)[i].discreteDetected != false)
-							return GestureEnums::BODYSIDE_EITHER;
-				}
-				
-			}
+		bool otherFound = false;//True if the other side result has been evaluated (whether left or right)
+		bool otherFirstDetected = false;//Result of the others' first detected result
+		float otherConfidence = 0.0f;
+
+		bool sideDependent = evaluator.discreteEvaluator.AppendSide;//easy access to side independency
+
+		if(sideDependent)//create left and right names
+		{
+			leftName = currName + L"_Left";
+			rightName = currName + L"_Right";
 		}
 
+		for (int i = 0; i < gestureResults->size(); i++)
+		{
+			bool nameMatch = false;//used to check if the current result matches the name of this evaluator
+			const KinectGestureResult& currResult = (*gestureResults)[i];//quick access to current result
+
+			bool leftSide = true;//if there is a name match for side dependent evaluator, we need to know the side later
+
+			if(sideDependent)//if the gesture is side-sensitive
+			{
+				nameMatch = currResult.gestureName == leftName;//check if matches left name
+
+				if(!nameMatch)//otherwise check right name
+				{
+					nameMatch = currResult.gestureName == rightName;
+					leftSide = false;
+				}
+			}
+			else//otherwise, just use base name
+				nameMatch = currResult.gestureName == currName;
+
+			if(!nameMatch)//names don't match, so move to the next one
+				continue;
+
+			printf("Confidence: %f\n", currResult.discreteConfidence);
+
+			//if confidence isn't good enough, return other side result, break, or continue, based
+			//on description of this evaluator
+			if(currResult.discreteConfidence < evaluator.discreteEvaluator.ConfidenceToExceed)
+			{
+				if(!sideDependent)//if we are side independant, we have found our gesture and can break early
+				{
+					falseResultRecd = true;
+					break;
+				}
+				else
+				{
+					if(!otherFound)//if the other hasn't been found yet
+					{
+						otherFound = true;//indicate it was found
+						otherConfidence = 0.0f;//and indicate it's confidence is not valid
+						continue;
+					}
+					else//if the other has been found
+					{
+						if(otherConfidence > 0.0f)//if the other is valid
+						{
+							falseResultRecd = false;
+							if(leftSide)//return the side
+								return GestureEnums::BODYSIDE_RIGHT;
+							else
+								return GestureEnums::BODYSIDE_LEFT;
+						}
+						else//if the other is invalid, return invalid
+						{
+							falseResultRecd = true;
+							return GestureEnums::BODYSIDE_INVALID;
+						}
+					}
+				}
+			}
+
+			if(evaluator.discreteEvaluator.RequireFalseReset)
+				if(!falseResultRecd)
+					break;
+
+			//if confidence is high enough, check what to do with results based on side dependency
+			if(sideDependent)
+			{
+				if(otherFound)//if the other gesture has been found already
+				{
+					falseResultRecd = false;
+
+					//if this confidence exceeds other, return this side
+					if(currResult.discreteConfidence > otherConfidence)
+					{
+						if(leftSide)
+							return GestureEnums::BODYSIDE_LEFT;
+						else
+							return GestureEnums::BODYSIDE_RIGHT;
+					}
+					else//otherwise return the other side
+					{
+						if(leftSide)
+							return GestureEnums::BODYSIDE_RIGHT;
+						else
+							return GestureEnums::BODYSIDE_LEFT;
+					}
+				}
+				else//if the other hasn't been found, we store these results as the others
+				{
+					otherFound = true;
+					otherConfidence = currResult.discreteConfidence;
+					otherFirstDetected = currResult.discreteFirstFrameDetected != false;
+				}
+			}
+			else //if not side dependent
+			{
+				if(evaluator.discreteEvaluator.TrueIfFirstDetected)//check if first frame detected is a requirement
+				{
+					if(currResult.discreteFirstFrameDetected != false)
+					{
+						falseResultRecd = false;
+						return evaluator.discreteEvaluator.ReturnResult;
+					}
+				}
+				else
+				{
+					falseResultRecd = false;
+					return evaluator.discreteEvaluator.ReturnResult;
+				}
+			}
+		}
+			
 		return GestureEnums::BODYSIDE_INVALID;
 	}
 
@@ -154,28 +269,33 @@ public:
 		evaluatorType = ET_DISCRETE;
 	}
 	
-	inline void SetDiscreteEvaluator(const std::wstring& gestureName, bool trueFirstFrame, float confidence)
+	inline void SetDiscreteEvaluator(const std::wstring& gestureName, bool trueFirstFrame, float confidence,
+		bool appendSide, bool requireFalseReset)
 	{
 		DiscreteEvaluator evaluator;
 
-		unsigned int strLength = gestureName.size();
+		size_t strLength = gestureName.size();
 		if(strLength >= MAX_GESTURE_NAME_LENGTH - 1)
 			strLength = MAX_GESTURE_NAME_LENGTH - 1;
 
-		for (int i = 0; i < strLength; i++)
+		for (size_t i = 0; i < strLength; i++)
 		{
 			evaluator.GestureName[i] = gestureName[i];
 		}
 		evaluator.GestureName[strLength] = '\0';
 		evaluator.TrueIfFirstDetected = trueFirstFrame;
 		evaluator.ConfidenceToExceed = confidence;
+		evaluator.AppendSide = appendSide;
+		evaluator.RequireFalseReset = requireFalseReset;
 
 		SetDiscreteEvaluator(evaluator);
 	}
 
-	inline void SetDiscreteEvaluator(const std::string& gestureName, bool trueFirstFrame, float confidence)
+	inline void SetDiscreteEvaluator(const std::string& gestureName, bool trueFirstFrame, 
+		float confidence, bool appendSide, bool requireFalseReset)
 	{
-		SetDiscreteEvaluator(HelperFunctions::StringToWideString(gestureName), trueFirstFrame, confidence);
+		SetDiscreteEvaluator(HelperFunctions::StringToWideString(gestureName), trueFirstFrame, 
+			confidence, appendSide, requireFalseReset);
 	}
 
 	inline void SetContinuousEvaluator(const ContinuousEvaluator& continuousEvaluator)
@@ -274,10 +394,11 @@ public:
 	///<param name="trueIfFirstFrame">Only true if this is the first frame the gesture has been detected, false if
 	///any frame it can be true</param>
 	///<param name="confidence">How confident the Kinect must be to register the gesture, between 0.0f and 1.0f</param>
-	inline void AddDiscreteEvaluator(float timeToComplete, const std::string& gestureName, bool trueIfFirstFrame, float confidence )
+	inline void AddDiscreteEvaluator(float timeToComplete, const std::string& gestureName, 
+		bool trueIfFirstFrame, float confidence, bool appendSide, bool requireFalseReset )
 	{
 		GestureEvaluator eval = GestureEvaluator(timeToComplete);
-		eval.SetDiscreteEvaluator(gestureName, trueIfFirstFrame, confidence);
+		eval.SetDiscreteEvaluator(gestureName, trueIfFirstFrame, confidence, appendSide, requireFalseReset);
 		gestureEvaluators.push_back(eval);
 	}
 

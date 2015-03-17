@@ -249,7 +249,7 @@ bool XMLWriter::AddAttribute(const std::string& attName, const bool attVal, bool
 	//Allocate the strings if necessary
 	const char* allocName = allocateName ? AllocateString(attName.c_str()) : attName.c_str();
 
-	return AddAttribute(allocName,  attVal ? std::string("T") : std::string("F"), nodeToAddTo);
+	return AddAttribute(allocName,  attVal ? std::string("T").c_str() : std::string("F").c_str(), nodeToAddTo);
 }
 
 bool XMLWriter::AddAttribute(const char* attName, const char* attVal, XMLNode nodeToAddTo /*= NULL*/)

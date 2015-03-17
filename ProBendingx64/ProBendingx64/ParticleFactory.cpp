@@ -15,15 +15,15 @@
 ParticleComponent* ParticleFactory::CreateFireEffect(GameObject* object, IScene* scene)
 {
 	std::shared_ptr<ParticlePointEmitter> emitter = std::make_shared<ParticlePointEmitter>
-		(ParticlePointEmitter(70, physx::PxVec3(0.0f, 0.0f, 0.0f), 
-		physx::PxVec3(-0.6f, 1.0f, -0.50f).getNormalized(), physx::PxVec3(0.60f, 1.0f, 0.50f).getNormalized(),
-		0.0f, 0.50f, 1.0f));
+		(ParticlePointEmitter(90, physx::PxVec3(0.0f, 0.0f, 0.0f), 
+		physx::PxVec3(-0.7f, 1.0f, -0.70f).getNormalized(), physx::PxVec3(0.70f, 1.0f, 0.70f).getNormalized(),
+		0.0f, 1.50f, 2.50f));
 
 	ParticleSystemParams params = ParticleSystemParams(1.0f, 2.0f, scene->GetCudaContextManager(),
 		physx::PxVec3(0.0f, 0.0f, 0.0f),1.0f, false, physx::PxParticleBaseFlag::eENABLED,
-		0.50f, 0.0f, 0.0f, 0.30f, 0.1f, 0.0f);
+		0.50f, 0.0f, 0.0f, 0.30f, 0.1f, 0.0f, physx::PxFilterData());
 
-	ParticleSystemBase* particles = new ParticleSystemBase(emitter, 50, 0.750f,params);
+	ParticleSystemBase* particles = new ParticleSystemBase(emitter, 75, 0.750f,params);
 	particles->ResetOnDisable = true;
 
 	ParticleComponent* particleComponent = new ParticleComponent(particles, false);
@@ -62,8 +62,8 @@ ParticleComponent* ParticleFactory::CreateSmokeEffect(GameObject* object, IScene
 {
 	std::shared_ptr<ParticlePointEmitter> emitter = std::make_shared<ParticlePointEmitter>
 		(ParticlePointEmitter(40, physx::PxVec3(0.0f, 0.50f, 0.0f), 
-		physx::PxVec3(-0.30f, 1.0f, -0.50f).getNormalized(), physx::PxVec3(0.30f, 1.0f, 0.50f).getNormalized(),
-		0.0f, 0.50f, 1.0f));
+		physx::PxVec3(-0.50f, 1.0f, -0.50f).getNormalized(), physx::PxVec3(0.50f, 1.0f, 0.50f).getNormalized(),
+		0.0f, 1.50f, 2.0f));
 
 	ParticleSystemParams params = ParticleSystemParams(1.0f, 2.0f, scene->GetCudaContextManager(),
 		physx::PxVec3(0.0f, 0.0f, 0.0f),1.0f, false, physx::PxParticleBaseFlag::eENABLED,

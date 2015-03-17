@@ -110,7 +110,6 @@ void MeshRenderComponent::Enable()
 void MeshRenderComponent::Disable()
 {
 	owningGameObject->gameObjectNode->setVisible(false);
-	
 	enabled = false;
 }
 

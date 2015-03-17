@@ -35,7 +35,7 @@ public:
 		return instance;
 	}
 
-	inline void DestroySingleton()
+	inline static void DestroySingleton()
 	{
 		if(instance)
 		{
@@ -43,6 +43,8 @@ public:
 			instance = NULL;
 		}
 	}
+
+	void CloseKinect();
 
 	///<summary>Gets the Gesture Reader of the Input Manager
 	///Meant to be a Default gesture reader</summary>

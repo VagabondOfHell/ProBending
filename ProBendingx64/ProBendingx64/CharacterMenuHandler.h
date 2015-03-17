@@ -1,12 +1,9 @@
 #pragma once
 #include "MenuHandler.h"
-#include "ProbenderFlags.h"
-#include "ProbenderData.h"
 
 class CharacterMenuHandler: public MenuHandler
 {
 public:
-	enum ButtonSkinType{BTN_SKIN_PUSH_BUTTON, BTN_SKIN_MINUS_BTN_HORZ, BTN_SKIN_ADD_BTN_HORZ, BTN_SKIN_LEFT_BTN_HORZ, BTN_SKIN_RIGHT_BTN_HORZ};
 	
 protected:
 	static const std::string P1_PREFIX; static const std::string P2_PREFIX;
@@ -15,12 +12,7 @@ protected:
 	static const std::string MAIN_DIALOG_ROOT; static const std::string LOAD_DIALOG_ROOT; static const std::string STAT_DIALOG_ROOT;
 	static const std::string ATTRIBUTE_SUFFIX; static const std::string MINUS_BTN_SUFFIX; static const std::string ADD_BTN_SUFFIX;
 	static const std::string VALUE_SUFFIX;
-
-	struct ButtonSkinListing
-	{
-		std::string ClickImage, HoverImage, DisabledImage, NormalImage;
-	};
-
+	
 	//Root Windows
 	CEGUI::Window *p1MainDialog, *p1LoadDialog, *p1StatsDialog;	CEGUI::Window* p2MainDialog, *p2LoadDialog, *p2StatsDialog;
 	CEGUI::Window* p1NameBacking, *p2NameBacking;
@@ -55,11 +47,6 @@ protected:
 	void ChangeElement(bool player1, ElementEnum::Element newElement);
 
 	void SetSkinsForGroup(bool player1, Stage stage, ElementEnum::Element elementSkin);
-
-	void SetButtonImage(CEGUI::Window* button, ButtonSkinType skinType, ElementEnum::Element newElement);
-
-	std::string GetElementPrefix(ElementEnum::Element newElement);
-	void GetButtonSkinSuffix(ButtonSkinType skinType, ButtonSkinListing& outVal);
 
 	void GatherRootWindows();
 

@@ -1,5 +1,8 @@
 #pragma once
 #include <string>
+#include "foundation/PxVec3.h"
+
+static const physx::PxVec3 PROBENDER_HALF_EXTENTS = physx::PxVec3(0.60f, 1.60f, 0.40f);
 
 namespace RenderableJointType
 {
@@ -204,8 +207,7 @@ namespace AbilityIDs
 	typedef unsigned short AbilityID;
 	enum FireAbilities{FIRE_JAB, FIRE_BLAST, FIRE_ABILITIES_COUNT};
 	enum EarthAbilities{EARTH_JAB, EARTH_COIN, EARTH_ABILITIES_COUNT};
-	enum AirAbilities{AIR_ABILITIES_COUNT};
-	enum WaterAbilities{WATER_ABILITIES_COUNT};
+	enum WaterAbilities{WATER_JAB, WATER_ABILITIES_COUNT};
 
 	static std::string FireEnumToString(const FireAbilities fireAbilities)
 	{
@@ -232,6 +234,19 @@ namespace AbilityIDs
 			break;
 		case EARTH_COIN:
 			return "Earth_Coin";
+			break;
+		default:
+			return "";
+			break;
+		}
+	}
+
+	static std::string WaterEnumToString(const WaterAbilities waterAbilities)
+	{
+		switch (waterAbilities)
+		{
+		case AbilityIDs::WATER_JAB:
+			return "Water_Jab";
 			break;
 		default:
 			return "";

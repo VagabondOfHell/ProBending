@@ -35,7 +35,7 @@ public:
 	}
 	
 	
-	inline void DestroySingleton()
+	inline static void DestroySingleton()
 	{
 		if(instance)
 		{

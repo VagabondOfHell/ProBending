@@ -113,8 +113,8 @@ GestureEnums::BodySide AttackGestureEvaluators::ArmPunchGesture(const Probender*
 			prevData.JointData[JointType_HandRight].TrackingState != TrackingState::TrackingState_Tracked )
 			validData = false;
 
-		if(currData.RightHandState != HandState::HandState_Closed || currData.RightHandConfidence < 0.35f)
-			validData = false;
+		//if(currData.RightHandState != HandState::HandState_Closed || currData.RightHandConfidence < 0.35f)
+			//validData = false;
 
 		//Check shoulder validity (inferred is fine)
 		if(currData.JointData[JointType_ShoulderRight].TrackingState == TrackingState::TrackingState_NotTracked
@@ -128,14 +128,14 @@ GestureEnums::BodySide AttackGestureEvaluators::ArmPunchGesture(const Probender*
 			CameraSpacePoint rightShoulderPos = currData.JointData[JointType_ShoulderRight].Position;
 			CameraSpacePoint leftShoulderPos = currData.JointData[JointType_ShoulderLeft].Position;
 
-			float zDiff = currHandPos.Z - prevHandPos.Z;
+			float zDiff = Ogre::Math::Abs(currHandPos.Z - prevHandPos.Z);
 			float shoulderDist = rightShoulderPos.X - leftShoulderPos.X;
-			float zDiffFromShoulders = currHandPos.Z - rightShoulderPos.Z;
-			float yDiffFromShoulder = currHandPos.Y - rightShoulderPos.Y;
+			float zDiffFromShoulders = Ogre::Math::Abs(currHandPos.Z - rightShoulderPos.Z);
+			float yDiffFromShoulder = Ogre::Math::Abs(currHandPos.Y - rightShoulderPos.Y);
 
-			if(-zDiff >= shoulderDist * 0.3f && //Check if the hand has moved quickly towards the kinect, 
-				-zDiffFromShoulders >= shoulderDist * 0.75f && //That the arm is extended at least as long as 75% the difference in shoulder size
-				-yDiffFromShoulder <= 0.5f * shoulderDist)//And that the hand is roughly as high as the shoulder
+			if(zDiff >= shoulderDist * 0.3f && //Check if the hand has moved quickly towards the kinect, 
+				zDiffFromShoulders >= shoulderDist * 1.25f && //That the arm is extended at least as long as 125% the difference in shoulder size
+				yDiffFromShoulder <= shoulderDist)//And that the hand is roughly as high as the shoulder
 				return GestureEnums::BODYSIDE_RIGHT;
 		}
 	}
@@ -148,8 +148,8 @@ GestureEnums::BodySide AttackGestureEvaluators::ArmPunchGesture(const Probender*
 			prevData.JointData[JointType_HandLeft].TrackingState != TrackingState::TrackingState_Tracked )
 			validData = false;
 
-		if(currData.LeftHandState != HandState::HandState_Closed || currData.LeftHandConfidence < 0.35f)
-			validData = false;
+		//if(currData.LeftHandState != HandState::HandState_Closed || currData.LeftHandConfidence < 0.35f)
+			//validData = false;
 
 		//Check shoulder validity (inferred is fine)
 		if(currData.JointData[JointType_ShoulderRight].TrackingState == TrackingState::TrackingState_NotTracked
@@ -170,7 +170,7 @@ GestureEnums::BodySide AttackGestureEvaluators::ArmPunchGesture(const Probender*
 
 			if(-zDiff >= shoulderDist * 0.3f && //Check if the hand has moved quickly towards the kinect, 
 				-zDiffFromShoulders >= shoulderDist * 0.75f && //That the arm is extended at least as long as the difference in shoulder size
-				-yDiffFromShoulder <= 0.5f * shoulderDist)//And that the hand is roughly as high as the shoulder
+				-yDiffFromShoulder <= shoulderDist)//And that the hand is roughly as high as the shoulder
 				return GestureEnums::BODYSIDE_LEFT;
 		}
 	}

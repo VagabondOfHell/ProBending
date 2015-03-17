@@ -1,5 +1,4 @@
 #include "ProjectileManager.h"
-#include "ProjectileFactory.h"
 #include "Probender.h"
 
 #include "RigidBodyComponent.h"
@@ -121,7 +120,20 @@ void ProjectileManager::CreatePool(ElementEnum::Element elementPool, unsigned sh
 		}
 		break;
 	case ElementEnum::Water:
-		return;
+		{
+			ProjectileDatabase::ProjectileDictionary waterDictionary = 
+				ProjectileDatabase::GetWaterProjectiles(owningScene);
+
+			AbilityPool abilityPool;
+
+			for (auto start = waterDictionary.begin(); start != waterDictionary.end(); ++start)
+			{
+				ProjectilePool pool = ProjectilePool(BASE_NUM_WATER_PROJECTILES * numberOfElement, start->second);
+				abilityPool.insert(AbilityPool::value_type(start->first, pool));
+			}
+
+			projectileMap.insert(ProjectileMap::value_type(ElementEnum::Water, abilityPool));
+		}
 		break;
 	default:
 		return;

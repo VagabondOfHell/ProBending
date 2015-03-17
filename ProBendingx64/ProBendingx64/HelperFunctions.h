@@ -109,4 +109,6 @@ public:
 	static void GetMeshInformation(const Ogre::Mesh* const mesh, MeshInfo& meshInfo,
 		const Ogre::Vector3 &position = Ogre::Vector3::ZERO, const Ogre::Quaternion &orient = Ogre::Quaternion::IDENTITY, 
 		const Ogre::Vector3 &scale = Ogre::Vector3::UNIT_SCALE);
+
+	static physx::PxQuat FromEulerAngles(const physx::PxVec3& angles);
 };

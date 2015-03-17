@@ -45,6 +45,9 @@ public:
 		return window;
 	}
 
+	float GetWindowWidth()const;
+	float GetWindowHeight()const;
+
 	void Initialize(Ogre::RenderWindow* _window, Ogre::Root* _ogreRoot);
 
 	///<summary>Gets the current scene</summary>

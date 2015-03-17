@@ -9,7 +9,8 @@ Attack::Attack(float attackCooldown /*= 0.0f*/, ProjectileManager* projManager/*
 			   ProjectileController* controller /*= NULL*/, AttackGesture* _launchGesture /*= NULL*/)
 	:creationGesture(_creationGesture), launchGesture(_launchGesture), currentState(AS_NONE), projectileController(controller),
 		AttackCooldown(attackCooldown), cooldownTimePassed(0.0f), projectileIdentifier(projID),
-		projectileManager(projManager), LaunchOnCreate(false)
+		projectileManager(projManager), LaunchOnCreate(false), spawnPositionValid(false), 
+		bodySideResult(GestureEnums::BODYSIDE_INVALID), projectile(NULL)
 {
 }
 
@@ -19,7 +20,8 @@ Attack::Attack(float attackCooldown /*= 0.0f*/, ProjectileManager* projManager /
 		projectileController(params.ProjController),
 		AttackCooldown(attackCooldown), cooldownTimePassed(0.0f), projectileIdentifier(projID),
 		projectileManager(projManager), spawnPositionCalculator(params.PositionCalculator), spawnPosition(0.0f),
-		LaunchOnCreate(params.LaunchOnCreate)
+		LaunchOnCreate(params.LaunchOnCreate), spawnPositionValid(false), bodySideResult(GestureEnums::BODYSIDE_INVALID),
+		projectile(NULL)
 {
 }
 
@@ -45,7 +47,8 @@ void Attack::Update(float gameTime)
 		break;
 		//if in the created state update to the controlled state
 	case Attack::AS_CREATED:
-		currentState = AS_CONTROLLED;
+		if(spawnPositionValid)
+			currentState = AS_CONTROLLED;
 		break;
 		//If in the control state, check if the projectile should be launched
 	case Attack::AS_CONTROLLED:
@@ -78,8 +81,13 @@ Attack::AttackState Attack::Evaluate(const AttackData& bodyData)
 			{
 				currentState = AS_CREATED;
 
+				bodySideResult = result;
+
 				if(bodyData.CurrentData)
+				{
 					spawnPosition = spawnPositionCalculator.CalculateSpawnPoint(result, bodyData);
+					spawnPositionValid = true;
+				}
 				else
 					spawnPosition = Ogre::Vector3(0.0f);
 
@@ -94,7 +102,11 @@ Attack::AttackState Attack::Evaluate(const AttackData& bodyData)
 		
 		break;
 	case Attack::AS_CREATED:
-
+		if(bodyData.CurrentData)
+		{
+			spawnPosition = spawnPositionCalculator.CalculateSpawnPoint(bodySideResult, bodyData);
+			spawnPositionValid = true;
+		}
 		break;
 	case Attack::AS_CONTROLLED:
 		if(projectileController)
@@ -142,6 +154,26 @@ void Attack::Reset()
 	if(projectileController)
 		projectileController->projectile = NULL;
 
+	spawnPositionValid = false;
+
 	//Destroy the projectile instance
 	currentState = AS_NONE;
+}
+
+Ogre::Vector3 SpawnPositionCalculator::GetOgrePositionRelative(const CameraSpacePoint& limbPosition, const CameraSpacePoint& referencePoint)
+{
+	{
+		CameraSpacePoint result = CameraSpacePoint();
+
+		result.X = (-limbPosition.X - -referencePoint.X);
+		result.Y = (limbPosition.Y - referencePoint.Y);
+		result.Z = (limbPosition.Z - referencePoint.Z);
+		
+		float mag = Ogre::Math::Sqrt(result.X * result.X + result.Y * result.Y + result.Z * result.Z);
+
+		float div = 1.0f / mag;
+		
+		return Ogre::Vector3(result.X * div * PROBENDER_HALF_EXTENTS.x, 
+			result.Y * div * PROBENDER_HALF_EXTENTS.y, result.Z * div * PROBENDER_HALF_EXTENTS.z);
+	}
 }
