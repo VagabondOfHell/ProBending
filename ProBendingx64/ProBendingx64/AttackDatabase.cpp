@@ -3,14 +3,16 @@
 #include "Attack.h"
 #include "Controllers.h"
 
-void AttackDatabase::GetEarthAttacks(ProjectileManager* projManager, std::vector<Attack>& outVal)
+#include "ProjectileManager.h"
+
+void AttackDatabase::GetEarthAttacks(ProjectileManager* projManager, unsigned short contestantID, std::vector<Attack>& outVal)
 {
 	outVal.reserve(5);
 
 	AttackParams earthJabParams = AttackParams();
 
-	AttackGesture* earthJabCreateGesture = new AttackGesture();
-	earthJabCreateGesture->AddDiscreteEvaluator(0.0f, "Jab", false, 0.5f, true, true);
+	AttackGesture* earthJabCreateGesture = new AttackGesture(projManager->GetOwningScene()->GetGUIManager());
+	earthJabCreateGesture->AddDiscreteEvaluator(0.0f, "Jab", "", GestureEnums::INVALID_GESTURE_SLOT, false, 0.8f, true, true);
 	//earthJabCreateGesture->AddCustomEvaluator(0.0f, &AttackGestureEvaluators::ArmPunchGesture, GestureEnums::BODYSIDE_EITHER);
 
 	ProjectileIdentifier earthJabID = ProjectileIdentifier();
@@ -27,10 +29,18 @@ void AttackDatabase::GetEarthAttacks(ProjectileManager* projManager, std::vector
 
 	AttackParams earthCoinParams = AttackParams();
 
-	AttackGesture* earthCoinCreateGesture = new AttackGesture();
-	earthCoinCreateGesture->AddCustomEvaluator(0.0f, &AttackGestureEvaluators::KneeRaiseGesture, GestureEnums::BODYSIDE_EITHER);
-	earthCoinCreateGesture->AddCustomEvaluator(0.5f, &AttackGestureEvaluators::KneeDownGesture, GestureEnums::BODYSIDE_EITHER, 
-		GestureEnums::TRANRULE_SAME);
+	GestureEnums::GUIGestureSlot earthCoinGestureSlot;
+
+	if(contestantID == 0)
+		earthCoinGestureSlot = GestureEnums::P1_GESTURE_SLOT_1;
+	else
+		earthCoinGestureSlot = GestureEnums::P2_GESTURE_SLOT_1;
+
+	AttackGesture* earthCoinCreateGesture = new AttackGesture(projManager->GetOwningScene()->GetGUIManager());
+	earthCoinCreateGesture->AddCustomEvaluator(0.0f, &AttackGestureEvaluators::KneeRaiseGesture, GestureEnums::BODYSIDE_EITHER,
+		GestureEnums::EARTH_STOMP_BEGIN_IMAGE, earthCoinGestureSlot);
+	earthCoinCreateGesture->AddCustomEvaluator(0.5f, &AttackGestureEvaluators::KneeDownGesture, GestureEnums::BODYSIDE_EITHER,
+		GestureEnums::EARTH_STOMP_END_IMAGE, earthCoinGestureSlot, GestureEnums::TRANRULE_SAME);
 	
 	//Controller that uses the same hand of the knee to control
 	HandMoveController* earthCoinController = new HandMoveController(NULL, HandMoveController::CH_RIGHT,
@@ -38,9 +48,9 @@ void AttackDatabase::GetEarthAttacks(ProjectileManager* projManager, std::vector
 		physx::PxVec3(PROBENDER_HALF_EXTENTS.x, PROBENDER_HALF_EXTENTS.y, 0.0f), GestureEnums::TRANRULE_SAME);
 
 	//Punch with opposite to the controlling hand to launch the rock
-	AttackGesture* earthCoinLaunchGesture = new AttackGesture();
+	AttackGesture* earthCoinLaunchGesture = new AttackGesture(projManager->GetOwningScene()->GetGUIManager());
 	earthCoinLaunchGesture->AddCustomEvaluator(0.0f, &AttackGestureEvaluators::ArmPunchGesture, GestureEnums::BODYSIDE_EITHER,
-		GestureEnums::TRANRULE_OPPOSITE);
+		GestureEnums::EARTH_STOMP_LAUNCH_IMAGE, earthCoinGestureSlot, GestureEnums::TRANRULE_OPPOSITE);
 
 	ProjectileIdentifier earthCoinID = ProjectileIdentifier();
 	earthCoinID.Element = ElementEnum::Earth; earthCoinID.AbilityID = AbilityIDs::EARTH_COIN;
@@ -57,15 +67,16 @@ void AttackDatabase::GetEarthAttacks(ProjectileManager* projManager, std::vector
 
 }
 
-void AttackDatabase::GetFireAttacks(ProjectileManager* projManager, std::vector<Attack>& outVal)
+void AttackDatabase::GetFireAttacks(ProjectileManager* projManager, unsigned short contestantID, std::vector<Attack>& outVal)
 {
 	outVal.reserve(5);
 
 	AttackParams fireJabParams = AttackParams();
 
-	AttackGesture* fireJabCreateGesture = new AttackGesture();
+	AttackGesture* fireJabCreateGesture = new AttackGesture(projManager->GetOwningScene()->GetGUIManager());
 	//fireJabCreateGesture->AddCustomEvaluator(0.0f, &AttackGestureEvaluators::ArmPunchGesture, GestureEnums::BODYSIDE_EITHER);
-	fireJabCreateGesture->AddDiscreteEvaluator(0.0f, "Jab", false, 0.5f, true, true);
+	fireJabCreateGesture->AddDiscreteEvaluator(0.0f, "Jab", std::string(""), 
+		GestureEnums::INVALID_GESTURE_SLOT, false, 0.5f, true, true);
 
 	ProjectileIdentifier fireJabID = ProjectileIdentifier();
 	fireJabID.Element = ElementEnum::Fire; fireJabID.AbilityID = AbilityIDs::FIRE_JAB;
@@ -81,13 +92,23 @@ void AttackDatabase::GetFireAttacks(ProjectileManager* projManager, std::vector<
 
 	AttackParams fireBlastParams = AttackParams();
 
-	AttackGesture* fireBlastCreateGesture = new AttackGesture();
-	fireBlastCreateGesture->AddCustomEvaluator(0.0f, &AttackGestureEvaluators::ArmsWideGesture, GestureEnums::BODYSIDE_BOTH);
-	//fireBlastCreateGesture->AddDiscreteEvaluator(0.3f, "Fire_Blast_Begin", true, 0.7f);
-	fireBlastCreateGesture->AddCustomEvaluator(0.5f, &AttackGestureEvaluators::HandsClapGesture, GestureEnums::BODYSIDE_BOTH);
+	GestureEnums::GUIGestureSlot fireBlastGestureSlot;
 
-	AttackGesture* fireBlastLaunchGesture = new AttackGesture();
-	fireBlastLaunchGesture->AddCustomEvaluator(0.0f, &AttackGestureEvaluators::ArmPunchGesture, GestureEnums::BODYSIDE_BOTH);
+	if(contestantID == 0)
+		fireBlastGestureSlot = GestureEnums::P1_GESTURE_SLOT_1;
+	else
+		fireBlastGestureSlot = GestureEnums::P2_GESTURE_SLOT_1;
+
+	AttackGesture* fireBlastCreateGesture = new AttackGesture(projManager->GetOwningScene()->GetGUIManager());
+	fireBlastCreateGesture->AddCustomEvaluator(0.0f, &AttackGestureEvaluators::ArmsWideGesture, GestureEnums::BODYSIDE_BOTH,
+		GestureEnums::FIRE_BLAST_BEGIN_IMAGE, fireBlastGestureSlot);
+	//fireBlastCreateGesture->AddDiscreteEvaluator(0.3f, "Fire_Blast_Begin", true, 0.7f);
+	fireBlastCreateGesture->AddCustomEvaluator(0.5f, &AttackGestureEvaluators::HandsClapGesture, GestureEnums::BODYSIDE_BOTH,
+		GestureEnums::FIRE_BLAST_END_IMAGE, fireBlastGestureSlot);
+
+	AttackGesture* fireBlastLaunchGesture = new AttackGesture(projManager->GetOwningScene()->GetGUIManager());
+	fireBlastLaunchGesture->AddCustomEvaluator(0.0f, &AttackGestureEvaluators::ArmPunchGesture, GestureEnums::BODYSIDE_BOTH,
+		GestureEnums::FIRE_BLAST_LAUNCH_IMAGE, fireBlastGestureSlot);
 	
 	//HandMoveController* fireBlastController = new HandMoveController(NULL, HandMoveController::CH_BOTH,
 	//	physx::PxVec3(-0.5f, -0.5f, 0.0f), physx::PxVec3(0.5f, 0.5f, 0.5f), GestureEnums::TRANRULE_SAME);
@@ -108,12 +129,30 @@ void AttackDatabase::GetFireAttacks(ProjectileManager* projManager, std::vector<
 	outVal.emplace_back(0.20f, projManager, fireBlastID, fireBlastParams);
 }
 
-void AttackDatabase::GetAirAttacks(ProjectileManager* projManager, std::vector<Attack>& outVal)
+void AttackDatabase::GetAirAttacks(ProjectileManager* projManager, unsigned short contestantID, std::vector<Attack>& outVal)
 {
 	outVal = std::vector<Attack>();
 }
 
-void AttackDatabase::GetWaterAttacks(ProjectileManager* projManager, std::vector<Attack>& outVal)
+void AttackDatabase::GetWaterAttacks(ProjectileManager* projManager, unsigned short contestantID, std::vector<Attack>& outVal)
 {
-	outVal = std::vector<Attack>();
+	outVal.reserve(5);
+
+	AttackParams waterJabParams = AttackParams();
+
+	AttackGesture* waterJabCreateGesture = new AttackGesture(projManager->GetOwningScene()->GetGUIManager());
+	//fireJabCreateGesture->AddCustomEvaluator(0.0f, &AttackGestureEvaluators::ArmPunchGesture, GestureEnums::BODYSIDE_EITHER);
+	waterJabCreateGesture->AddDiscreteEvaluator(0.0f, "Jab", "", GestureEnums::INVALID_GESTURE_SLOT, false, 0.5f, true, true);
+
+	ProjectileIdentifier waterJabID = ProjectileIdentifier();
+	waterJabID.Element = ElementEnum::Water; waterJabID.AbilityID = AbilityIDs::WATER_JAB;
+
+	waterJabParams.CreationGesture = waterJabCreateGesture;
+	waterJabParams.LaunchGesture = NULL;
+	waterJabParams.ProjController = NULL;
+	waterJabParams.PositionCalculator = SpawnPositionCalculator(GestureEnums::TRANRULE_SAME, GestureEnums::BODYSIDE_EITHER,
+		SpawnPositionCalculator::LIMB_HANDS, SpawnPositionCalculator::CALC_OPTIONS_JOINT_POSITION);
+	waterJabParams.LaunchOnCreate = true;
+
+	outVal.emplace_back(0.20f, projManager, waterJabID, waterJabParams);
 }

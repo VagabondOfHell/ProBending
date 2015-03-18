@@ -56,12 +56,12 @@ void Probender::SetCamera(Ogre::Camera* newCamera)
 
 	camera = newCamera;
 
-	camera->setPosition(Ogre::Vector3(0.0f, PROBENDER_HALF_EXTENTS.y, 0.0f));
+	camera->setPosition(Ogre::Vector3(0.0f, PROBENDER_HALF_EXTENTS.y * 0.75f, -5.0f));
 	
 	if(currentTarget)
 		camera->lookAt(currentTarget->GetWorldPosition());
 	else
-		camera->lookAt(Ogre::Vector3(0.0f, PROBENDER_HALF_EXTENTS.y * 2, 0.0f));
+		camera->lookAt(Ogre::Vector3(0.0f, PROBENDER_HALF_EXTENTS.y, 0.0f));
 }
 
 void Probender::Start()
@@ -119,7 +119,7 @@ void Probender::Update(float gameTime)
 		if(camera)
 		{
 			Ogre::Vector3 targetPos = currentTarget->GetWorldPosition();
-			camera->lookAt(targetPos.x, PROBENDER_HALF_EXTENTS.y * 2.0f, targetPos.z);
+			camera->lookAt(targetPos.x, PROBENDER_HALF_EXTENTS.y * 1.75f, targetPos.z);
 			//camera->lookAt(currentTarget->GetWorldPosition() + Ogre::Vector3(0.0f, 1.0f, 0.0f));
 		}
 	inputHandler.Update(gameTime);

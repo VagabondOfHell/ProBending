@@ -77,16 +77,16 @@ void ProbenderInputHandler::PopulateWithGestures(std::vector<Attack>& elementVec
 	switch (element)
 	{
 	case ElementEnum::Earth:
-		AttackDatabase::GetEarthAttacks(probender->GetOwningArena()->GetProjectileManager(), elementVector);
+		AttackDatabase::GetEarthAttacks(probender->GetOwningArena()->GetProjectileManager(), probender->contestantID, elementVector);
 		break;
 	case ElementEnum::Fire:
-		AttackDatabase::GetFireAttacks(probender->GetOwningArena()->GetProjectileManager(), elementVector);
+		AttackDatabase::GetFireAttacks(probender->GetOwningArena()->GetProjectileManager(), probender->contestantID, elementVector);
 		break;
 	case ElementEnum::Water:
-		AttackDatabase::GetWaterAttacks(probender->GetOwningArena()->GetProjectileManager(), elementVector);
+		AttackDatabase::GetWaterAttacks(probender->GetOwningArena()->GetProjectileManager(), probender->contestantID, elementVector);
 		break;
 	case ElementEnum::Air:
-		AttackDatabase::GetAirAttacks(probender->GetOwningArena()->GetProjectileManager(), elementVector);
+		AttackDatabase::GetAirAttacks(probender->GetOwningArena()->GetProjectileManager(), probender->contestantID, elementVector);
 		break;
 	default:
 		break;

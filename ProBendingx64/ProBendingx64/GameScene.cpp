@@ -99,6 +99,8 @@ void GameScene::SetUpCameras()
 	Camera2->setNearClipDistance(0.1f);
 	Camera2->setFarClipDistance(10000.0f);
 
+	horizontalScreens = true;
+
 	ChangeScreenSplit();
 }
 
@@ -123,17 +125,11 @@ void GameScene::ChangeScreenSplit()
 	{
 		height = 0.5f;
 		cam2YPos = 0.5f;
-
-		screenSeparator->setPosition(CEGUI::UVector2(CEGUI::UDim(0.0f, 0.0f), CEGUI::UDim(0.49f, 0.0f)));
-		screenSeparator->setSize(CEGUI::USize(CEGUI::UDim(1.0f, 0.0f), CEGUI::UDim(0.01f, 0.0f)));
 	}
 	else
 	{
 		width = 0.5f;
 		cam2XPos = 0.5f;
-
-		screenSeparator->setPosition(CEGUI::UVector2(CEGUI::UDim(0.495f, 0.0f), CEGUI::UDim(0.0f, 0.0f)));
-		screenSeparator->setSize(CEGUI::USize(CEGUI::UDim(0.01f, 0.0f), CEGUI::UDim(1.0f, 0.0f)));
 	}
 
 	//Add a viewport for the specified camera
@@ -165,11 +161,13 @@ void GameScene::Initialize()
 	guiManager->AddScheme("ProbendArenaGUIScheme.scheme");
 	guiManager->LoadLayout("ProbendArenaGUILayout.layout", false);
 
-	screenSeparator = CEGUI::WindowManager::getSingleton().createWindow("Generic/Image", "ScreenSeparator");
+	/*screenSeparator = CEGUI::WindowManager::getSingleton().createWindow("Generic/Image", "ScreenSeparator");
 	screenSeparator->setProperty("Image", "ProbendArenaGUI/ZoneSeparatorBar");
-	screenSeparator->moveBehind(guiManager->GetChildWindow("InGameGUIRoot"));
+	screenSeparator->moveBehind(guiManager->GetChildWindow("InGameGUIRoot"));*/
 
-	guiManager->GetRootWindow()->addChild(screenSeparator);
+	//guiManager->GetRootWindow()->addChild(screenSeparator);
+
+	progressTrackerWindow = guiManager->GetChildWindow( "InGameGUIRoot");
 
 	SetUpCameras();
 

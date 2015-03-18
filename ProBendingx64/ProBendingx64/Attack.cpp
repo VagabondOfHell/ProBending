@@ -12,6 +12,8 @@ Attack::Attack(float attackCooldown /*= 0.0f*/, ProjectileManager* projManager/*
 		projectileManager(projManager), LaunchOnCreate(false), spawnPositionValid(false), 
 		bodySideResult(GestureEnums::BODYSIDE_INVALID), projectile(NULL)
 {
+	creationGesture->UpdateGUI = true;
+	creationGesture->ShowImage();
 }
 
 Attack::Attack(float attackCooldown /*= 0.0f*/, ProjectileManager* projManager /*= NULL*/, 
@@ -23,6 +25,8 @@ Attack::Attack(float attackCooldown /*= 0.0f*/, ProjectileManager* projManager /
 		LaunchOnCreate(params.LaunchOnCreate), spawnPositionValid(false), bodySideResult(GestureEnums::BODYSIDE_INVALID),
 		projectile(NULL)
 {
+	creationGesture->UpdateGUI = true;
+	creationGesture->ShowImage();
 }
 
 Attack::~Attack(void)
@@ -96,7 +100,12 @@ Attack::AttackState Attack::Evaluate(const AttackData& bodyData)
 					projectileController->ReceivePreviousResults(result);
 
 				if(launchGesture)
+				{
+					creationGesture->UpdateGUI = false;
+					launchGesture->UpdateGUI = true;
+					launchGesture->ShowImage();
 					launchGesture->TransitionFromGesture(result);
+				}
 			}
 		}
 		
@@ -147,10 +156,16 @@ void Attack::Reset()
 	cooldownTimePassed = 0.0f;
 
 	creationGesture->Reset();
-
+	creationGesture->UpdateGUI = true;
+	
 	if(launchGesture)
+	{
 		launchGesture->Reset();
+		launchGesture->UpdateGUI = false;
+	}
 
+	creationGesture->ShowImage();
+	
 	if(projectileController)
 		projectileController->projectile = NULL;
 

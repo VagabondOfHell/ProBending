@@ -1,8 +1,10 @@
 #include "AttackGesture.h"
 
+#include "GUIManager.h"
+#include "CEGUI/Window.h"
 
-AttackGesture::AttackGesture(void)
-	:currentIndex(0), timePassed(0)
+AttackGesture::AttackGesture(GUIManager* _guiManager)
+	:guiManager(_guiManager), currentIndex(0), timePassed(0), UpdateGUI(false)
 {
 }
 
@@ -39,7 +41,9 @@ GestureEnums::BodySide AttackGesture::Evaluate(const AttackData& attackData)
 		unsigned int newIndex =	(currentIndex + 1) % gestureEvaluators.size();
 
 		if(newIndex != 0)
+		{
 			SetNextTransitionData(result, currentIndex, newIndex);
+		}
 
 		currentIndex = newIndex;
 
@@ -54,6 +58,9 @@ GestureEnums::BodySide AttackGesture::Evaluate(const AttackData& attackData)
 void AttackGesture::SetNextTransitionData(GestureEnums::BodySide result, unsigned int currentIndex, unsigned int newIndex)
 {
 	GestureEnums::TransitionRules tranRule = gestureEvaluators[newIndex].TransitionFromLast;
+	
+	if(UpdateGUI)
+		SetGUIGestureSlot(gestureEvaluators[newIndex].guiImageName, gestureEvaluators[newIndex].guiGestureSlot);
 
 	switch (tranRule)
 	{
@@ -95,4 +102,14 @@ void AttackGesture::TransitionFromGesture(GestureEnums::BodySide result)
 		return;
 		break;
 	}
+}
+
+void AttackGesture::SetGUIGestureSlot(const std::string imageName, const GestureEnums::GUIGestureSlot gestureSlot)
+{
+	if(gestureSlot == GestureEnums::INVALID_GESTURE_SLOT)
+		return;
+
+	CEGUI::Window* guiSlot = guiManager->GetChildWindow(GestureEnums::GUI_GESTURE_SLOT_PATHS[gestureSlot]);
+
+	guiSlot->setProperty("Image", imageName);
 }

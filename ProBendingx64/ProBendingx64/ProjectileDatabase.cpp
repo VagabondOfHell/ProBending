@@ -228,17 +228,17 @@ ProjectileDatabase::SharedProjectile ProjectileDatabase::CreateWaterJab(IScene* 
 	projectile->AttachComponent(renderComponent);
 	renderComponent->LoadModel("WaterSphere.mesh");
 //	renderComponent->SetMaterial("Examples/WaterSphere");
-	//projectile->SetScale(0.0025f, 0.0025f, 0.0025f);
+	projectile->SetScale(0.25f, 0.25f, 0.25f);
 
 	RigidBodyComponent* rigidBody = new RigidBodyComponent();
 	projectile->AttachComponent(rigidBody);
 	rigidBody->CreateRigidBody(RigidBodyComponent::DYNAMIC); //Create dynamic body at 0,0,0 with 0 rotation
 
-	waterJabAttributes.HalfExtents = renderComponent->GetHalfExtents();
-	physx::PxVec3 entityHalfSize = HelperFunctions::OgreToPhysXVec3(waterJabAttributes.HalfExtents);
+	projectile->SetHalfExtents(renderComponent->GetHalfExtents());
+	physx::PxVec3 entityHalfSize = HelperFunctions::OgreToPhysXVec3(projectile->GetHalfExtents());
 
 	ShapeDefinition shapeDef = ShapeDefinition();
-	shapeDef.SetSphereGeometry(entityHalfSize.magnitude() * 0.6f);// * 0.45f);
+	shapeDef.SetSphereGeometry(entityHalfSize.magnitude() * 0.45f);
 	shapeDef.SetFilterFlags(ArenaData::PROJECTILE);
 
 	shapeDef.AddMaterial(PhysXDataManager::GetSingletonPtr()->CreateMaterial(1.0f, 1.0f, 0.0f, "101000"));

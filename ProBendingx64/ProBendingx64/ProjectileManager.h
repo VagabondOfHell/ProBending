@@ -35,6 +35,8 @@ public:
 	ProjectileManager(IScene* _owningScene);
 	~ProjectileManager(void);
 
+	inline IScene* GetOwningScene()const{return owningScene;}
+
 	void CreatePool(ElementEnum::Element elementPool, unsigned short numberOfElement);
 
 	///<summary>Creates a new projectile based on the element and ability id given</summary>

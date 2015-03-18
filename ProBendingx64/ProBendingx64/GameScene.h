@@ -16,6 +16,7 @@ protected:
 	CollisionReporter collisionReporter;
 
 	CEGUI::Window* screenSeparator;
+	CEGUI::Window* progressTrackerWindow;
 
 	Ogre::Camera* Camera2;
 	

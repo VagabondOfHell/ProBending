@@ -9,6 +9,7 @@
 #include "GestureEnums.h"
 
 class Probender;
+class GUIManager;
 
 struct AttackData
 {
@@ -74,6 +75,11 @@ public:
 
 	bool falseResultRecd;//True if the gesture was false recently
 
+	std::string guiImageName;
+	GestureEnums::GUIGestureSlot guiGestureSlot;
+
+	GUIManager* guiManager;
+
 private:
 	//A union of the possible types of function pointers
 	union Evaluators
@@ -127,7 +133,7 @@ private:
 			if(!nameMatch)//names don't match, so move to the next one
 				continue;
 
-			printf("Confidence: %f\n", currResult.discreteConfidence);
+			//printf("Confidence: %f\n", currResult.discreteConfidence);
 
 			//if confidence isn't good enough, return other side result, break, or continue, based
 			//on description of this evaluator
@@ -238,7 +244,9 @@ public:
 	//The amount of time that is allowed to pass before the gesture should be considered reset
 	float TimeToComplete;
 
-	GestureEvaluator(float _timeToComplete = 0.0f, GestureEnums::TransitionRules transitionFromLast = GestureEnums::TRANRULE_NONE):evaluatorType(ET_NONE),
+	GestureEvaluator(const std::string& _guiImageName, GestureEnums::GUIGestureSlot _guiSlot = GestureEnums::INVALID_GESTURE_SLOT,
+		float _timeToComplete = 0.0f, GestureEnums::TransitionRules transitionFromLast = GestureEnums::TRANRULE_NONE)
+		:guiImageName(_guiImageName), guiGestureSlot(_guiSlot), evaluatorType(ET_NONE),
 		TimeToComplete(_timeToComplete), extraCustomData(ExtraCustomData()), TransitionFromLast(transitionFromLast)
 	{}
 
@@ -365,27 +373,40 @@ private:
 
 	inline void SetNextTransitionData(GestureEnums::BodySide result, unsigned int currentIndex, unsigned int newIndex);
 
+	GUIManager* guiManager;
+	
+	void SetGUIGestureSlot(const std::string imageName, const GestureEnums::GUIGestureSlot gestureSlot);
+
 public:
-	AttackGesture(void);
+	bool UpdateGUI;
+
+	AttackGesture(GUIManager* _guiManager);
 	~AttackGesture(void);
 
 	///<summary>Adds an evaluator to this attack gesture</summary>
 	///<param name="evaluator">The evaluator to add</param>
-	inline void AddEvaluator(GestureEvaluator& evaluator){gestureEvaluators.push_back(evaluator);}
+	inline void AddEvaluator(GestureEvaluator& evaluator)
+	{
+		gestureEvaluators.push_back(evaluator);
+		if(gestureEvaluators.size() == 1)
+			SetGUIGestureSlot(gestureEvaluators[0].guiImageName, gestureEvaluators[0].guiGestureSlot);
+	}
 	
 	///<summary>Adds an evaluator that uses a custom defined method to execute instructions on the received body data</summary>
 	///<param name="timeToComplete">The time to complete the evaluator when it is the active one</param>
 	///<param name="CustomEvaluator">The pointer to the static method that will evaluate the body data</param>
 	inline void AddCustomEvaluator(float timeToComplete, GestureEnums::BodySide (*CustomEvaluator)
 		(const Probender*, const BodyDimensions&, const CompleteData&, const CompleteData&, const ExtraCustomData& extraCustomData),
-		GestureEnums::BodySide bodySide, GestureEnums::TransitionRules transitionFromPrevious = 
-		GestureEnums::TRANRULE_NONE, void* extraData = NULL)
+		GestureEnums::BodySide bodySide, const std::string& _guiImageName, GestureEnums::GUIGestureSlot _guiSlot = GestureEnums::INVALID_GESTURE_SLOT,
+		GestureEnums::TransitionRules transitionFromPrevious = GestureEnums::TRANRULE_NONE, void* extraData = NULL)
 	{
-		GestureEvaluator eval = GestureEvaluator(timeToComplete);
+		GestureEvaluator eval = GestureEvaluator(_guiImageName, _guiSlot, timeToComplete, transitionFromPrevious);
 		eval.SetCustomEvaluator(CustomEvaluator, bodySide, extraData);
-		eval.TransitionFromLast = transitionFromPrevious;
 		
 		gestureEvaluators.push_back(eval);
+
+		if(gestureEvaluators.size() == 1)
+			SetGUIGestureSlot(gestureEvaluators[0].guiImageName, gestureEvaluators[0].guiGestureSlot);
 	}
 
 	///<summary>Adds an evaluator that queries the Discrete Gesture data</summary>
@@ -395,11 +416,16 @@ public:
 	///any frame it can be true</param>
 	///<param name="confidence">How confident the Kinect must be to register the gesture, between 0.0f and 1.0f</param>
 	inline void AddDiscreteEvaluator(float timeToComplete, const std::string& gestureName, 
-		bool trueIfFirstFrame, float confidence, bool appendSide, bool requireFalseReset )
+		const std::string& _guiImageName, GestureEnums::GUIGestureSlot _guiSlot,
+		bool trueIfFirstFrame, float confidence, bool appendSide, bool requireFalseReset,
+		GestureEnums::TransitionRules transitionFromPrevious = GestureEnums::TRANRULE_NONE)
 	{
-		GestureEvaluator eval = GestureEvaluator(timeToComplete);
+		GestureEvaluator eval = GestureEvaluator(_guiImageName, _guiSlot, timeToComplete, transitionFromPrevious);
 		eval.SetDiscreteEvaluator(gestureName, trueIfFirstFrame, confidence, appendSide, requireFalseReset);
 		gestureEvaluators.push_back(eval);
+
+		if(gestureEvaluators.size() == 1)
+			SetGUIGestureSlot(gestureEvaluators[0].guiImageName, gestureEvaluators[0].guiGestureSlot);
 	}
 
 	///<summary>Adds an evaluator that queries the Discrete Gesture data</summary>
@@ -407,11 +433,16 @@ public:
 	///<param name="gestureName">The name of the gesture that the evaluator pertains to</param>
 	///<param name="progress">The progress through the gesture that must be reached before the evaluator registers true
 	///Must be between 0.0f and 1.0f</param>
-	inline void AddContinuousEvaluator(float timeToComplete, const std::string& gestureName, float progress)
+	inline void AddContinuousEvaluator(float timeToComplete, const std::string& gestureName, float progress,
+		const std::string& _guiImageName, GestureEnums::GUIGestureSlot _guiSlot,
+		GestureEnums::TransitionRules transitionFromPrevious = GestureEnums::TRANRULE_NONE)
 	{
-		GestureEvaluator eval = GestureEvaluator(timeToComplete);
+		GestureEvaluator eval = GestureEvaluator(_guiImageName, _guiSlot, timeToComplete, transitionFromPrevious);
 		eval.SetContinuousEvaluator(gestureName, progress);
 		gestureEvaluators.push_back(eval);
+
+		if(gestureEvaluators.size() == 1)
+			SetGUIGestureSlot(gestureEvaluators[0].guiImageName, gestureEvaluators[0].guiGestureSlot);
 	}
 
 	void Update(float gameTime);
@@ -426,6 +457,13 @@ public:
 	///<param name="result">The result of the previous gesture</param>
 	void TransitionFromGesture(GestureEnums::BodySide result);
 
-	inline void Reset(){currentIndex = 0; timePassed = 0.0f;}
+	void ShowImage()
+	{
+		SetGUIGestureSlot(gestureEvaluators[currentIndex].guiImageName, gestureEvaluators[currentIndex].guiGestureSlot);
+	}
+
+	inline void Reset(){currentIndex = 0; timePassed = 0.0f; 
+		if(gestureEvaluators.size())
+			SetGUIGestureSlot(gestureEvaluators[0].guiImageName, gestureEvaluators[0].guiGestureSlot);}
 };
 

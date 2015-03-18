@@ -5,8 +5,9 @@
         <Property name="Area" value="{{0,0},{0,0},{1,0},{1,0}}" />
         <Property name="MaxSize" value="{{1,0},{1,0}}" />
         <Window type="DefaultWindow" name="ProgressBar" >
-            <Property name="Area" value="{{0,0},{0,10},{1,0},{0.032,10}}" />
+            <Property name="Area" value="{{0,0},{0,0},{1,0},{0.032,0}}" />
             <Property name="MaxSize" value="{{1,0},{1,0}}" />
+            <Property name="VerticalAlignment" value="Centre" />
             <Window type="Generic/Image" name="RedZoneBar" >
                 <Property name="Area" value="{{0,0},{0,0},{0.5,0},{1,0}}" />
                 <Property name="Image" value="ProbendArenaGUI/RedZoneBar" />
@@ -27,7 +28,7 @@
                 </Window>
             </Window>
             <Window type="Generic/Image" name="BlueZoneBar2" >
-                <Property name="Area" value="{{-0,-0},{0,0},{0.5,0},{1,0}}" />
+                <Property name="Area" value="{{0,0},{0,0},{0.5,0},{1,0}}" />
                 <Property name="Image" value="ProbendArenaGUI/BlueZoneBar" />
                 <Property name="MaxSize" value="{{1,0},{1,0}}" />
                 <Property name="HorizontalAlignment" value="Right" />
@@ -108,6 +109,60 @@
                 <Property name="MaxSize" value="{{1,0},{1,0}}" />
                 <Property name="VertFormatting" value="TopAligned" />
                 <Property name="HorizontalAlignment" value="Centre" />
+            </Window>
+        </Window>
+        <Window type="DefaultWindow" name="P1GestureRoot" >
+            <Property name="Area" value="{{0,0},{-0.2,0},{0.15,0},{0.15,0}}" />
+            <Property name="MaxSize" value="{{1,0},{1,0}}" />
+            <Property name="VerticalAlignment" value="Centre" />
+            <Property name="HorizontalAlignment" value="Right" />
+            <Window type="Generic/Image" name="Gesture1" >
+                <Property name="Area" value="{{0,0},{0,0},{0.55,0},{0.35,0}}" />
+                <Property name="Image" value="ProbendArenaGUI/FireBlastBegin" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="VerticalAlignment" value="Bottom" />
+            </Window>
+            <Window type="Generic/Image" name="Gesture2" >
+                <Property name="Area" value="{{0,0},{0,0},{0.55,0},{0.35,0}}" />
+                <Property name="Image" value="ProbendArenaGUI/FireBlastEnd" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="Visible" value="false" />
+                <Property name="VerticalAlignment" value="Centre" />
+                <Property name="HorizontalAlignment" value="Centre" />
+            </Window>
+            <Window type="Generic/Image" name="Gesture3" >
+                <Property name="Area" value="{{0,0},{0,0},{0.55,0},{0.35,0}}" />
+                <Property name="Image" value="ProbendArenaGUI/FireBlastLaunch" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="Visible" value="false" />
+                <Property name="HorizontalAlignment" value="Right" />
+            </Window>
+        </Window>
+        <Window type="DefaultWindow" name="P2GestureRoot" >
+            <Property name="Area" value="{{0,0},{0,0},{0.15,0},{0.35,0}}" />
+            <Property name="MaxSize" value="{{1,0},{1,0}}" />
+            <Property name="VerticalAlignment" value="Bottom" />
+            <Property name="HorizontalAlignment" value="Right" />
+            <Window type="Generic/Image" name="Gesture1" >
+                <Property name="Area" value="{{0,0},{0,0},{0.55,0},{0.35,0}}" />
+                <Property name="Image" value="ProbendArenaGUI/FireBlastBegin" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="VerticalAlignment" value="Bottom" />
+            </Window>
+            <Window type="Generic/Image" name="Gesture2" >
+                <Property name="Area" value="{{0,0},{0,0},{0.55,0},{0.35,0}}" />
+                <Property name="Image" value="ProbendArenaGUI/FireBlastEnd" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="Visible" value="false" />
+                <Property name="VerticalAlignment" value="Centre" />
+                <Property name="HorizontalAlignment" value="Centre" />
+            </Window>
+            <Window type="Generic/Image" name="Gesture3" >
+                <Property name="Area" value="{{0,0},{0,0},{0.55,0},{0.35,0}}" />
+                <Property name="Image" value="ProbendArenaGUI/FireBlastLaunch" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="Visible" value="false" />
+                <Property name="HorizontalAlignment" value="Right" />
             </Window>
         </Window>
     </Window>
