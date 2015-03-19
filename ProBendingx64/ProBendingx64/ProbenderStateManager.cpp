@@ -23,28 +23,39 @@ ProbenderStateManager::ProbenderStateManager(Probender* bender)
 	disallowStateChange = false;
 
 	States[StateFlags::IDLE_STATE - 1] = State(StateFlags::IDLE_STATE, 
-		StateFlags::ALL_STATES & ~StateFlags::IDLE_STATE_FLAG, 0.0f, StateFlags::ALL_STATES & ~StateFlags::IDLE_STATE_FLAG);
+		StateFlags::ALL_STATES & ~StateFlags::IDLE_STATE_FLAG, 0.0f, 
+		StateFlags::ALL_STATES & ~StateFlags::IDLE_STATE_FLAG);
 
 	States[StateFlags::JUMP_STATE - 1] = State(StateFlags::JUMP_STATE, 
-		StateFlags::FALLING_STATE_FLAG, 0.0f, StateFlags::REELING_STATE_FLAG | StateFlags::FALLING_STATE_FLAG);
+		StateFlags::FALLING_STATE_FLAG, 0.0f, StateFlags::REELING_STATE_FLAG | 
+		StateFlags::FALLING_STATE_FLAG | StateFlags::TRANSITION_STATE_FLAG);
 
 	States[StateFlags::FALLING_STATE - 1] = State(StateFlags::FALLING_STATE,
-		StateFlags::IDLE_STATE_FLAG, 0.0f, StateFlags::IDLE_STATE_FLAG | StateFlags::REELING_STATE_FLAG);
+		StateFlags::IDLE_STATE_FLAG, 0.0f, 
+		StateFlags::IDLE_STATE_FLAG | StateFlags::REELING_STATE_FLAG | StateFlags::TRANSITION_STATE_FLAG);
 
-	States[StateFlags::BLOCK_STATE - 1] = State(StateFlags::BLOCK_STATE, StateFlags::IDLE_STATE_FLAG, 1.0f, StateFlags::REELING_STATE_FLAG);
+	States[StateFlags::BLOCK_STATE - 1] = State(StateFlags::BLOCK_STATE, 
+		StateFlags::IDLE_STATE_FLAG, 1.0f, StateFlags::REELING_STATE_FLAG | StateFlags::TRANSITION_STATE_FLAG);
 
-	States[StateFlags::CATCH_STATE - 1] = State(StateFlags::CATCH_STATE, StateFlags::IDLE_STATE_FLAG, 1.0f, StateFlags::REELING_STATE_FLAG);
+	States[StateFlags::CATCH_STATE - 1] = State(StateFlags::CATCH_STATE, 
+		StateFlags::IDLE_STATE_FLAG, 1.0f, StateFlags::REELING_STATE_FLAG | StateFlags::TRANSITION_STATE_FLAG);
 
-	States[StateFlags::HEAL_STATE - 1] = State(StateFlags::HEAL_STATE, StateFlags::IDLE_STATE_FLAG, 1.0f, StateFlags::REELING_STATE_FLAG);
+	States[StateFlags::HEAL_STATE - 1] = State(StateFlags::HEAL_STATE, 
+		StateFlags::IDLE_STATE_FLAG, 1.0f, StateFlags::REELING_STATE_FLAG | StateFlags::TRANSITION_STATE_FLAG);
 
-	States[StateFlags::DODGE_STATE - 1] = State(StateFlags::DODGE_STATE, StateFlags::IDLE_STATE_FLAG, 0.0f, StateFlags::INVALID_STATE_FLAG);
+	States[StateFlags::DODGE_STATE - 1] = State(StateFlags::DODGE_STATE, 
+		StateFlags::IDLE_STATE_FLAG, 0.0f, StateFlags::INVALID_STATE_FLAG | StateFlags::TRANSITION_STATE_FLAG);
 
-	States[StateFlags::REELING_STATE - 1] = State(StateFlags::REELING_STATE, StateFlags::IDLE_STATE_FLAG, 1.0f, StateFlags::INVALID_STATE_FLAG);
+	States[StateFlags::REELING_STATE - 1] = State(StateFlags::REELING_STATE, 
+		StateFlags::IDLE_STATE_FLAG, 1.0f, StateFlags::INVALID_STATE_FLAG | StateFlags::TRANSITION_STATE_FLAG);
 	States[StateFlags::REELING_STATE - 1].SetAutoSwitch(StateFlags::IDLE_STATE, 
 		probender->GetInGameData().CurrentAttributes.GetRecoveryRate());
 
 	States[StateFlags::ATTACKING_STATE - 1] = State(StateFlags::PossibleStates::ATTACKING_STATE,
-		StateFlags::IDLE_STATE_FLAG, 0.0f, StateFlags::REELING_STATE_FLAG);
+		StateFlags::IDLE_STATE_FLAG, 0.0f, StateFlags::REELING_STATE_FLAG | StateFlags::TRANSITION_STATE_FLAG);
+
+	States[StateFlags::TRANSITION_STATE - 1] = State(StateFlags::PossibleStates::TRANSITION_STATE,
+		StateFlags::IDLE_STATE_FLAG, 0.0f, StateFlags::IDLE_STATE_FLAG);
 
 	currentState = StateFlags::IDLE_STATE;
 }

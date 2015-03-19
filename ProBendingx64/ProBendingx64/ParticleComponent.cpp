@@ -7,8 +7,6 @@
 #include "IScene.h"
 #include "GameObject.h"
 
-#include "ParticleOrbitPoint.h"
-
 Ogre::SceneNode* ParticleComponent::WORLD_PARTICLES_NODE = NULL;
 int ParticleComponent::NUM_INSTANCES = 0;
 
@@ -16,10 +14,6 @@ ParticleComponent::ParticleComponent(FluidAndParticleBase* _particleSystem, bool
 	:Component(), particleSystem(_particleSystem), useLocalSpace(_useLocalSpace)
 {
 	++NUM_INSTANCES;
-	ParticleOrbitPoint* behaviour = new ParticleOrbitPoint(3.0f, 15.0f);
-	((ParticleOrbitPoint*)behaviour)->Pivot = physx::PxVec3(0.0f);
-
-	particleSystem->AddBehaviour(behaviour);
 }
 
 ParticleComponent::~ParticleComponent(void)
@@ -109,18 +103,6 @@ void ParticleComponent::Update(float gameTime)
 			particleSystem->GetEmitter()->position = HelperFunctions::OgreToPhysXVec3(sceneNode->_getDerivedPosition());
 	
 		particleSystem->Update(gameTime);
-
-	/*std::vector<physx::PxU32> indices = particleSystem->GetUsedIndices();
-
-		if(indices.size() > 0)
-		{
-			std::vector<physx::PxVec3> forces;
-			forces.push_back(physx::PxVec3(0.0f, 0.0f, 3.0f));
-
-			particleSystem->SetVelocities(indices.size(), 
-				physx::PxStrideIterator<physx::PxU32>(&indices[0]), physx::PxStrideIterator<physx::PxVec3>(&forces[0], 0));
-
-		}*/
 	}
 }
 

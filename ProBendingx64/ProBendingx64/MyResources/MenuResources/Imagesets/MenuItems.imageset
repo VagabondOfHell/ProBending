@@ -11,4 +11,6 @@
     <Image height="34" name="Radial_Bar_7" width="33" xPos="252" yPos="388" />
     <Image height="34" name="Radial_Bar_8" width="33" xPos="293" yPos="388" />
     <Image height="34" name="Radial_Bar_9" width="33" xPos="335" yPos="388" />
+    <Image height="67" name="Title_Stickman" width="451" xPos="283" yPos="152" />
+    <Image height="70" name="Title_Tournament_Earth" width="611" xPos="264" yPos="227" />
 </Imageset>

@@ -55,7 +55,7 @@ public:
 			unsigned short _endurance = 0, unsigned short _recovery = 0, unsigned short _strength = 0,
 			unsigned short _defense = 0, unsigned short _agility = 0, short _luck = 0)
 			:Endurance(_endurance), Recovery(_recovery), Strength(_strength), Defense(_defense), Agility(_agility), 
-			Luck(_luck), Energy(0)
+			Luck(_luck), Energy(0), DefenseBonus(0.0f), AgilityBonus(0.0f)
 	{
 		//Check to make sure attributes aren't too high
 		if(Endurance > ProbenderAttributes::MAX_ATTRIBUTE_POINTS_ALLOWED)
@@ -106,6 +106,17 @@ public:
 		CalculateStats();
 	}
 
+	inline void SetAllAttributes(unsigned short endurance, unsigned short strength, unsigned short recovery,
+		unsigned short defense, unsigned short agility, unsigned short luck)
+	{
+		SetAttribute(ProbenderAttributes::Endurance, endurance);
+		SetAttribute(ProbenderAttributes::Strength, strength);
+		SetAttribute(ProbenderAttributes::Recovery, recovery);
+		SetAttribute(ProbenderAttributes::Defense, defense);
+		SetAttribute(ProbenderAttributes::Agility, agility);
+		SetAttribute(ProbenderAttributes::Luck, luck);
+	}
+
 	inline unsigned short GetAttribute(ProbenderAttributes::Attributes attribute)const
 	{
 		switch (attribute)
@@ -140,6 +151,8 @@ public:
 
 		if(Energy > MaxEnergy)
 			Energy = MaxEnergy;
+		else if(Energy < 0.0f)
+			Energy = 0.0f;
 	}
 
 	inline float GetMaxEnergy()const{return MaxEnergy;}

@@ -4,9 +4,193 @@
     <Window type="DefaultWindow" name="InGameGUIRoot" >
         <Property name="Area" value="{{0,0},{0,0},{1,0},{1,0}}" />
         <Property name="MaxSize" value="{{1,0},{1,0}}" />
+        <Window type="DefaultWindow" name="P1GestureRoot" >
+            <Property name="Area" value="{{0,0},{-0.2,0},{0.15,0},{0.15,0}}" />
+            <Property name="MaxSize" value="{{1,0},{1,0}}" />
+            <Property name="VerticalAlignment" value="Centre" />
+            <Property name="HorizontalAlignment" value="Right" />
+            <Window type="Generic/Image" name="Gesture1" >
+                <Property name="Area" value="{{0,0},{0,0},{0.55,0},{0.35,0}}" />
+                <Property name="Image" value="ProbendArenaGUI/FireBlastBegin" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="VerticalAlignment" value="Bottom" />
+            </Window>
+            <Window type="Generic/Image" name="Gesture2" >
+                <Property name="Area" value="{{0,0},{0,0},{0.55,0},{0.35,0}}" />
+                <Property name="Image" value="ProbendArenaGUI/FireBlastEnd" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="Visible" value="false" />
+                <Property name="VerticalAlignment" value="Centre" />
+                <Property name="HorizontalAlignment" value="Centre" />
+            </Window>
+            <Window type="Generic/Image" name="Gesture3" >
+                <Property name="Area" value="{{0,0},{0,0},{0.55,0},{0.35,0}}" />
+                <Property name="Image" value="ProbendArenaGUI/FireBlastLaunch" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="Visible" value="false" />
+                <Property name="HorizontalAlignment" value="Right" />
+            </Window>
+        </Window>
+        <Window type="DefaultWindow" name="P2GestureRoot" >
+            <Property name="Area" value="{{0,0},{0,0},{0.15,0},{0.35,0}}" />
+            <Property name="MaxSize" value="{{1,0},{1,0}}" />
+            <Property name="VerticalAlignment" value="Bottom" />
+            <Window type="Generic/Image" name="Gesture1" >
+                <Property name="Area" value="{{0,0},{0,0},{0.55,0},{0.35,0}}" />
+                <Property name="Image" value="ProbendArenaGUI/FireBlastBegin" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="VerticalAlignment" value="Bottom" />
+                <Property name="HorizontalAlignment" value="Right" />
+            </Window>
+            <Window type="Generic/Image" name="Gesture2" >
+                <Property name="Area" value="{{0,0},{0,0},{0.55,0},{0.35,0}}" />
+                <Property name="Image" value="ProbendArenaGUI/FireBlastEnd" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="Visible" value="false" />
+                <Property name="VerticalAlignment" value="Centre" />
+                <Property name="HorizontalAlignment" value="Centre" />
+            </Window>
+            <Window type="Generic/Image" name="Gesture3" >
+                <Property name="Area" value="{{0,0},{0,0},{0.55,0},{0.35,0}}" />
+                <Property name="Image" value="ProbendArenaGUI/FireBlastLaunch" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="Visible" value="false" />
+            </Window>
+        </Window>
+        <Window type="DefaultWindow" name="P1HealthRoot" >
+            <Property name="Area" value="{{0.025,0},{0.02,0},{0.375,0},{0.07,0}}" />
+            <Property name="MaxSize" value="{{1,0},{1,0}}" />
+            <Window type="Generic/Image" name="Background" >
+                <Property name="Area" value="{{0,0},{0,0},{1,0},{1,0}}" />
+                <Property name="Image" value="ProbendArenaGUI/WoodBacking" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+            </Window>
+            <Window type="DefaultWindow" name="HealthParent" >
+                <Property name="Area" value="{{0,0},{0,0},{1,0},{1,0}}" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="AlwaysOnTop" value="true" />
+                <Window type="Generic/Image" name="HealthImage" >
+                    <Property name="Area" value="{{0,0},{0,0},{0,350},{1,0}}" />
+                    <Property name="Image" value="ProbendArenaGUI/WhiteBar" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="ImageColours" value="tl:FF7D0000 tr:FF00FA00 bl:FFFF0000 br:FF009600" />
+                </Window>
+            </Window>
+            <Window type="Generic/Image" name="TopRightCorner" >
+                <Property name="Area" value="{{0,0},{0,0},{0.1,0},{0.6,0}}" />
+                <Property name="Image" value="ProbendArenaGUI/D_L_CornerFrame" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="AlwaysOnTop" value="true" />
+                <Property name="HorizontalAlignment" value="Right" />
+            </Window>
+            <Window type="Generic/Image" name="TopLeftCorner" >
+                <Property name="Area" value="{{0,0},{0,0},{0.1,0},{0.6,0}}" />
+                <Property name="Image" value="ProbendArenaGUI/D_R_CornerFrame" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="AlwaysOnTop" value="true" />
+            </Window>
+            <Window type="Generic/Image" name="BottomLeftCorner" >
+                <Property name="Area" value="{{0,0},{0,0},{0.1,0},{0.6,0}}" />
+                <Property name="Image" value="ProbendArenaGUI/U_R_CornerFrame" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="AlwaysOnTop" value="true" />
+                <Property name="VerticalAlignment" value="Bottom" />
+            </Window>
+            <Window type="Generic/Image" name="BottomRightCorner" >
+                <Property name="Area" value="{{0,0},{0,0},{0.1,0},{0.6,0}}" />
+                <Property name="Image" value="ProbendArenaGUI/U_L_CornerFrame" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="AlwaysOnTop" value="true" />
+                <Property name="VerticalAlignment" value="Bottom" />
+                <Property name="HorizontalAlignment" value="Right" />
+            </Window>
+            <Window type="Generic/Image" name="Top" >
+                <Property name="Area" value="{{0,0},{0,0},{1,0},{0,7.5}}" />
+                <Property name="Image" value="ProbendArenaGUI/HorizontalFrame" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="AlwaysOnTop" value="true" />
+            </Window>
+            <Window type="Generic/Image" name="Bottom" >
+                <Property name="Area" value="{{0,0},{0,0},{1,0},{0,7.5}}" />
+                <Property name="Image" value="ProbendArenaGUI/HorizontalFrame" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="AlwaysOnTop" value="true" />
+                <Property name="VerticalAlignment" value="Bottom" />
+            </Window>
+        </Window>
+        <Window type="DefaultWindow" name="P2HealthRoot" >
+            <Property name="Area" value="{{-0.025,0},{0.075,0},{0.275,0},{0.125,0}}" />
+            <Property name="MaxSize" value="{{1,0},{1,0}}" />
+            <Property name="VerticalAlignment" value="Centre" />
+            <Property name="HorizontalAlignment" value="Right" />
+            <Window type="Generic/Image" name="Background" >
+                <Property name="Area" value="{{0,0},{0,0},{1,0},{1,0}}" />
+                <Property name="Image" value="ProbendArenaGUI/WoodBacking" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+            </Window>
+            <Window type="DefaultWindow" name="HealthParent" >
+                <Property name="Area" value="{{0,0},{0,0},{1,0},{1,0}}" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="AlwaysOnTop" value="true" />
+                <Window type="Generic/Image" name="HealthImage" >
+                    <Property name="Area" value="{{0,0},{0,0},{0,300},{1,0}}" />
+                    <Property name="Image" value="ProbendArenaGUI/WhiteBar" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="ImageColours" value="tl:FF7D0000 tr:FF00FA00 bl:FFFF0000 br:FF009600" />
+                </Window>
+            </Window>
+            <Window type="Generic/Image" name="TopLeftCorner" >
+                <Property name="Area" value="{{0,0},{0,0},{0.1,0},{0.6,0}}" />
+                <Property name="Image" value="ProbendArenaGUI/D_R_CornerFrame" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="AlwaysOnTop" value="true" />
+            </Window>
+            <Window type="Generic/Image" name="TopRightCorner" >
+                <Property name="Area" value="{{0,0},{0,0},{0.1,0},{0.6,0}}" />
+                <Property name="Image" value="ProbendArenaGUI/D_L_CornerFrame" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="AlwaysOnTop" value="true" />
+                <Property name="HorizontalAlignment" value="Right" />
+            </Window>
+            <Window type="Generic/Image" name="Top" >
+                <Property name="Area" value="{{0,0},{0,0},{1,0},{0,7.5}}" />
+                <Property name="Image" value="ProbendArenaGUI/HorizontalFrame" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="AlwaysOnTop" value="true" />
+            </Window>
+            <Window type="Generic/Image" name="BottomLeftCorner" >
+                <Property name="Area" value="{{0,0},{0,0},{0.1,0},{0.6,0}}" />
+                <Property name="Image" value="ProbendArenaGUI/U_R_CornerFrame" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="AlwaysOnTop" value="true" />
+                <Property name="VerticalAlignment" value="Bottom" />
+            </Window>
+            <Window type="Generic/Image" name="Bottom" >
+                <Property name="Area" value="{{0,0},{0,0},{1,0},{0,7.5}}" />
+                <Property name="Image" value="ProbendArenaGUI/HorizontalFrame" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="AlwaysOnTop" value="true" />
+                <Property name="VerticalAlignment" value="Bottom" />
+            </Window>
+            <Window type="Generic/Image" name="BottomRightCorner" >
+                <Property name="Area" value="{{0,0},{0,0},{0.1,0},{0.6,0}}" />
+                <Property name="Image" value="ProbendArenaGUI/U_L_CornerFrame" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="AlwaysOnTop" value="true" />
+                <Property name="VerticalAlignment" value="Bottom" />
+                <Property name="HorizontalAlignment" value="Right" />
+            </Window>
+        </Window>
+        <Window type="Generic/Image" name="ProgressBarBacking" >
+            <Property name="Area" value="{{0,0},{0,0},{1,0},{0.06,0}}" />
+            <Property name="Image" value="ProbendArenaGUI/GreyBacking" />
+            <Property name="MaxSize" value="{{1,0},{1,0}}" />
+            <Property name="VerticalAlignment" value="Centre" />
+        </Window>
         <Window type="DefaultWindow" name="ProgressBar" >
             <Property name="Area" value="{{0,0},{0,0},{1,0},{0.032,0}}" />
             <Property name="MaxSize" value="{{1,0},{1,0}}" />
+            <Property name="AlwaysOnTop" value="true" />
             <Property name="VerticalAlignment" value="Centre" />
             <Window type="Generic/Image" name="RedZoneBar" >
                 <Property name="Area" value="{{0,0},{0,0},{0.5,0},{1,0}}" />
@@ -109,60 +293,6 @@
                 <Property name="MaxSize" value="{{1,0},{1,0}}" />
                 <Property name="VertFormatting" value="TopAligned" />
                 <Property name="HorizontalAlignment" value="Centre" />
-            </Window>
-        </Window>
-        <Window type="DefaultWindow" name="P1GestureRoot" >
-            <Property name="Area" value="{{0,0},{-0.2,0},{0.15,0},{0.15,0}}" />
-            <Property name="MaxSize" value="{{1,0},{1,0}}" />
-            <Property name="VerticalAlignment" value="Centre" />
-            <Property name="HorizontalAlignment" value="Right" />
-            <Window type="Generic/Image" name="Gesture1" >
-                <Property name="Area" value="{{0,0},{0,0},{0.55,0},{0.35,0}}" />
-                <Property name="Image" value="ProbendArenaGUI/FireBlastBegin" />
-                <Property name="MaxSize" value="{{1,0},{1,0}}" />
-                <Property name="VerticalAlignment" value="Bottom" />
-            </Window>
-            <Window type="Generic/Image" name="Gesture2" >
-                <Property name="Area" value="{{0,0},{0,0},{0.55,0},{0.35,0}}" />
-                <Property name="Image" value="ProbendArenaGUI/FireBlastEnd" />
-                <Property name="MaxSize" value="{{1,0},{1,0}}" />
-                <Property name="Visible" value="false" />
-                <Property name="VerticalAlignment" value="Centre" />
-                <Property name="HorizontalAlignment" value="Centre" />
-            </Window>
-            <Window type="Generic/Image" name="Gesture3" >
-                <Property name="Area" value="{{0,0},{0,0},{0.55,0},{0.35,0}}" />
-                <Property name="Image" value="ProbendArenaGUI/FireBlastLaunch" />
-                <Property name="MaxSize" value="{{1,0},{1,0}}" />
-                <Property name="Visible" value="false" />
-                <Property name="HorizontalAlignment" value="Right" />
-            </Window>
-        </Window>
-        <Window type="DefaultWindow" name="P2GestureRoot" >
-            <Property name="Area" value="{{0,0},{0,0},{0.15,0},{0.35,0}}" />
-            <Property name="MaxSize" value="{{1,0},{1,0}}" />
-            <Property name="VerticalAlignment" value="Bottom" />
-            <Property name="HorizontalAlignment" value="Right" />
-            <Window type="Generic/Image" name="Gesture1" >
-                <Property name="Area" value="{{0,0},{0,0},{0.55,0},{0.35,0}}" />
-                <Property name="Image" value="ProbendArenaGUI/FireBlastBegin" />
-                <Property name="MaxSize" value="{{1,0},{1,0}}" />
-                <Property name="VerticalAlignment" value="Bottom" />
-            </Window>
-            <Window type="Generic/Image" name="Gesture2" >
-                <Property name="Area" value="{{0,0},{0,0},{0.55,0},{0.35,0}}" />
-                <Property name="Image" value="ProbendArenaGUI/FireBlastEnd" />
-                <Property name="MaxSize" value="{{1,0},{1,0}}" />
-                <Property name="Visible" value="false" />
-                <Property name="VerticalAlignment" value="Centre" />
-                <Property name="HorizontalAlignment" value="Centre" />
-            </Window>
-            <Window type="Generic/Image" name="Gesture3" >
-                <Property name="Area" value="{{0,0},{0,0},{0.55,0},{0.35,0}}" />
-                <Property name="Image" value="ProbendArenaGUI/FireBlastLaunch" />
-                <Property name="MaxSize" value="{{1,0},{1,0}}" />
-                <Property name="Visible" value="false" />
-                <Property name="HorizontalAlignment" value="Right" />
             </Window>
         </Window>
     </Window>

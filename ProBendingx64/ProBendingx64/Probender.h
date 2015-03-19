@@ -5,6 +5,7 @@
 #include "Projectile.h"
 
 #include "GUIProgressTracker.h"
+#include "ProbenderEnergyMeter.h"
 
 #include <memory>
 
@@ -23,6 +24,12 @@ class IScene;
 class Arena;
 
 typedef std::shared_ptr<Projectile> SharedProjectile;
+
+struct TransitionData
+{
+	physx::PxVec3 StartPos, EndPos;
+	float Percentile;
+};
 
 class Probender : public GameObject
 {
@@ -50,9 +57,12 @@ private:
 	physx::PxVec3 dodgeTargetPos;//The final position
 	physx::PxVec3 dodgeDirection;//direction to move towards
 
+	TransitionData transitionInfo;//Info used during the transition state
+
 	std::string GetMeshAndMaterialName();
 
 	GUIProgressTracker progressTracker;
+	ProbenderEnergyMeter energyMeter;
 
 	void HandleJump();
 
@@ -85,6 +95,8 @@ public:
 	inline Ogre::Camera* GetCamera()const{return camera;}
 
 	void SetCamera(Ogre::Camera* newCamera);
+
+	void TransitionToPoint(physx::PxVec3& positionToMoveTo);
 
 	void Start();
 

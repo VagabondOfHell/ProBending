@@ -5,10 +5,8 @@
 
 #include <map>
 #include <vector>
-#include "CEGUI/widgets/PushButton.h"
 
 class IScene;
-//class GameObject;
 class Probender;
 struct ProbenderData;
 class ProjectileManager;
@@ -18,6 +16,9 @@ class Arena
 	friend class ArenaBuilder;
 
 protected:
+	//Blue Zone 3 because 0 == Invalid. So Blue Zone 3 represents count
+	SharedGameObject zoneStartPositions[ArenaData::BLUE_ZONE_3];
+
 	std::string arenaName;//Name of this arena
 	std::string resourceGroupName;//Name of the resource group that this arena uses
 
@@ -30,8 +31,6 @@ protected:
 	unsigned short contestantCount;//Number of Probenders in the arena
 
 	std::vector<std::shared_ptr<Probender>> contestants;//Array of Probenders
-
-	CEGUI::PushButton* label;//For prototype demo
 
 	virtual void PlaceContestants();
 
@@ -54,22 +53,13 @@ public:
 	///<returns>A pointer to the projectile manager, or NULL if not initialized yet</returns>
 	inline ProjectileManager* const GetProjectileManager()const{return projectileManager;}
 	
-	///<summary>Checks if the position is a valid movement within the specified zone</summary>
-	///<param name="currentZone">The zone to query</param>
-	///<param name="position">The position to check if it is within the zone</param>
-	///<returns>True if valid, false if not</returns>
-	bool IsWithinZone(ArenaData::Zones currentZone, const physx::PxVec3& position);
-
-	///<summary>Gets the zone that the specified position is within</summary>
-	///<param name="queryPos">The position to query</param>
-	///<returns>The zone the position is within, or INVALID_ZONE if no zone fits</returns>
-	ArenaData::Zones GetAssociatedZone(const physx::PxVec3& queryPos);
-
 	virtual void Initialize(const std::vector<ProbenderData> contestantData);
 	
 	virtual bool SavePhysXData(const std::string& fileName, const std::string& collectionName);
 	
 	virtual bool LoadPhysXData(const std::string& fileName, const std::string& collectionName);
+
+	void BeginTransition(unsigned short contestantID, ArenaData::Zones newZone);
 
 	virtual void Start();
 

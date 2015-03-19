@@ -12,6 +12,11 @@ namespace physx
 class HelperFunctions
 {
 public:
+	static inline physx::PxVec3 Lerp(const physx::PxVec3& startPos, const physx::PxVec3& endPos, const float percentile)
+	{
+		return startPos + (percentile * (endPos - startPos));
+	}
+
 	static inline float ClampFloat(const float valueToClamp, const float minVal, const float maxVal)
 	{
 		//Ternary that checks if the value is less then the min. If it is, sets the min

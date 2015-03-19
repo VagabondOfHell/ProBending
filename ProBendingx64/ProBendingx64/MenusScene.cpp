@@ -169,6 +169,9 @@ void MenusScene::SwitchToGame()
 
 	KinectBody* body = player1Nav.GetBody();
 
+	Player1Data.BaseAttributes.SetAllAttributes(10, 10, 10, 10, 10, 10);
+	Player2Data.BaseAttributes.SetAllAttributes(10, 10, 10, 10, 10, 10);
+
 	if(body)
 		Player1Data.BodyID = -1;// body->GetBodyID();
 	else

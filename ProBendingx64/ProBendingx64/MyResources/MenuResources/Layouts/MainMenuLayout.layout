@@ -13,17 +13,19 @@
             <Property name="RiseOnClickEnabled" value="false" />
         </Window>
         <Window type="Generic/Image" name="Probending" >
-            <Property name="Area" value="{{0,0},{0.2,0},{0.45,0},{0.4,0}}" />
+            <Property name="Area" value="{{0,0},{0,0},{0.45,0},{0.2,0}}" />
             <Property name="Image" value="MenuItems/Title_Probending" />
             <Property name="MaxSize" value="{{1,0},{1,0}}" />
             <Property name="Rotation" value="w:0.965926 x:0 y:0 z:-0.258819" />
+            <Property name="VerticalAlignment" value="Centre" />
             <Property name="AutoRenderingSurface" value="true" />
         </Window>
         <Window type="Generic/Image" name="Tournament" >
-            <Property name="Area" value="{{0,0},{0.2,0},{0.45,0},{0.4,0}}" />
-            <Property name="Image" value="MenuItems/Title_Tournament" />
+            <Property name="Area" value="{{0,0},{0,0},{0.45,0},{0.2,0}}" />
+            <Property name="Image" value="MenuItems/Title_Tournament_Earth" />
             <Property name="MaxSize" value="{{1,0},{1,0}}" />
             <Property name="Rotation" value="w:0.965926 x:0 y:0 z:0.258819" />
+            <Property name="VerticalAlignment" value="Centre" />
             <Property name="HorizontalAlignment" value="Right" />
             <Property name="AutoRenderingSurface" value="true" />
         </Window>
@@ -61,6 +63,14 @@
                 <Property name="DistributeCapturedInputs" value="true" />
                 <Property name="MouseInputPropagationEnabled" value="true" />
             </Window>
+        </Window>
+        <Window type="Generic/Image" name="Stickman" >
+            <Property name="Area" value="{{0,0},{0,0},{0.45,0},{0.2,0}}" />
+            <Property name="Image" value="MenuItems/Title_Stickman" />
+            <Property name="MaxSize" value="{{1,0},{1,0}}" />
+            <Property name="Rotation" value="w:0.965926 x:0 y:0 z:0" />
+            <Property name="HorizontalAlignment" value="Centre" />
+            <Property name="AutoRenderingSurface" value="true" />
         </Window>
     </Window>
 </GUILayout>

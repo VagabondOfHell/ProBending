@@ -99,6 +99,18 @@ bool Arena::LoadPhysXData(const std::string& fileName, const std::string& collec
 	return success;
 }
 
+void Arena::BeginTransition(unsigned short contestantID, ArenaData::Zones newZone)
+{
+	if(newZone == ArenaData::INVALID_ZONE)
+		return;
+
+	for (int i = 0; i < contestants.size(); i++)
+	{
+		contestants[i]->TransitionToPoint(
+			HelperFunctions::OgreToPhysXVec3(zoneStartPositions[newZone - 1]->GetWorldPosition()));
+	}
+}
+
 void Arena::Start()
 {
 	PlaceContestants();
@@ -132,27 +144,18 @@ void Arena::Start()
 	projectileManager->CreatePool(ElementEnum::Fire, fireCount);
 	projectileManager->CreatePool(ElementEnum::Air, airCount);
 	projectileManager->CreatePool(ElementEnum::Water, waterCount);
-
-	using namespace CEGUI;
-
-	label = owningScene->GetGUIManager()->CreateGUIButton("TaharezLook/Button", "ElementDisplay", 
-		ElementEnum::EnumToString(contestants[0]->GetInGameData().MainElement), 
-		UVector2(UDim(0.0f, 0.0f), UDim(0.9f, 0.0f)), USize(UDim(0.3f, 0.0f), UDim(0.05f, 0.0f)));
 }
 
 void Arena::PlaceContestants()
 {
 	//Find the start positions for each colours zone
-	SharedGameObject rz1Obj = owningScene->FindByName("RedZone1SP");
-	SharedGameObject rz2Obj = owningScene->FindByName("RedZone2SP");
-	SharedGameObject rz3Obj = owningScene->FindByName("RedZone3SP");
-	SharedGameObject bz1Obj = owningScene->FindByName("BlueZone1SP");
-	SharedGameObject bz2Obj = owningScene->FindByName("BlueZone2SP");
-	SharedGameObject bz3Obj = owningScene->FindByName("BlueZone3SP");
-
-	if(!rz1Obj)
-		return;
-
+	zoneStartPositions[ArenaData::RED_ZONE_1 - 1] = owningScene->FindByName("RedZone1SP");
+	zoneStartPositions[ArenaData::RED_ZONE_2 - 1] = owningScene->FindByName("RedZone2SP");
+	zoneStartPositions[ArenaData::RED_ZONE_3 - 1] = owningScene->FindByName("RedZone3SP");
+	zoneStartPositions[ArenaData::BLUE_ZONE_1 - 1] = owningScene->FindByName("BlueZone1SP");
+	zoneStartPositions[ArenaData::BLUE_ZONE_2 - 1] = owningScene->FindByName("BlueZone2SP");
+	zoneStartPositions[ArenaData::BLUE_ZONE_3 - 1] = owningScene->FindByName("BlueZone3SP");
+	
 	Ogre::Vector3 rightShift(0.0f, 0.0f, 1.0f);
 	Ogre::Vector3 leftShift(0.0f, 0.0f, -1.0f);
 
@@ -177,72 +180,61 @@ void Arena::PlaceContestants()
 		if(currZone == ArenaData::INVALID_ZONE)
 			currZone = currTeam == ArenaData::BLUE_TEAM ? ArenaData::BLUE_ZONE_1 : ArenaData::RED_ZONE_1;
 
+		Ogre::Vector3 currZoneWorldPosition;
+		Ogre::Vector3 currShift;
+		
+		unsigned int shiftIndex;
+
 		//Position game characters in accordance to starting zone. Shift left or right of the zones' start position
 		//based on the number of characters already assigned to that zone (allows customization of handicaps later on)
 		switch (currZone)
 		{
 		case ArenaData::RED_ZONE_1:
-			if(rz1 == 0)
-				contestants[i]->SetWorldPosition(rz1Obj->GetWorldPosition());
-			else if(rz1 == 1)
-				contestants[i]->SetWorldPosition(rz1Obj->GetWorldPosition() + leftShift);
-			else if(rz1 == 2)
-				contestants[i]->SetWorldPosition(rz1Obj->GetWorldPosition() + rightShift);
+			currZoneWorldPosition = zoneStartPositions[ArenaData::RED_ZONE_1 - 1]->GetWorldPosition();
 			contestants[i]->SetWorldOrientation(Ogre::Quaternion(Ogre::Radian(Ogre::Degree(-90.0f)), Ogre::Vector3::UNIT_Y));
+			shiftIndex = rz1;
 			++rz1;
 			break;
 		case ArenaData::RED_ZONE_2:
-			if(rz2 == 0)
-				contestants[i]->SetWorldPosition(rz2Obj->GetWorldPosition());
-			else if(rz2 == 1)
-				contestants[i]->SetWorldPosition(rz2Obj->GetWorldPosition() + leftShift);
-			else if(rz2 == 2)
-				contestants[i]->SetWorldPosition(rz2Obj->GetWorldPosition() + rightShift);
+			currZoneWorldPosition = zoneStartPositions[ArenaData::RED_ZONE_2 - 1]->GetWorldPosition();
 			contestants[i]->SetWorldOrientation(Ogre::Quaternion(Ogre::Radian(Ogre::Degree(-90.0f)), Ogre::Vector3::UNIT_Y));
+			shiftIndex = rz2;
 			++rz2;
 			break;
 		case ArenaData::RED_ZONE_3:
-			if(rz3 == 0)
-				contestants[i]->SetWorldPosition(rz3Obj->GetWorldPosition());
-			else if(rz3 == 1)
-				contestants[i]->SetWorldPosition(rz3Obj->GetWorldPosition() + leftShift);
-			else if(rz3 == 2)
-				contestants[i]->SetWorldPosition(rz3Obj->GetWorldPosition() + rightShift);
+			currZoneWorldPosition = zoneStartPositions[ArenaData::RED_ZONE_3 - 1]->GetWorldPosition();
 			contestants[i]->SetWorldOrientation(Ogre::Quaternion(Ogre::Radian(Ogre::Degree(-90.0f)), Ogre::Vector3::UNIT_Y));
+			shiftIndex = rz3;
 			++rz3;
 			break;
 		case ArenaData::BLUE_ZONE_1:
-			if(bz1 == 0)
-				contestants[i]->SetWorldPosition(bz1Obj->GetWorldPosition());
-			else if(bz1 == 1)
-				contestants[i]->SetWorldPosition(bz1Obj->GetWorldPosition() + leftShift);
-			else if(bz1 == 2)
-				contestants[i]->SetWorldPosition(bz1Obj->GetWorldPosition() + rightShift);
+			currZoneWorldPosition = zoneStartPositions[ArenaData::BLUE_ZONE_1 - 1]->GetWorldPosition();
 			contestants[i]->SetWorldOrientation(Ogre::Quaternion(Ogre::Radian(Ogre::Degree(90.0f)), Ogre::Vector3::UNIT_Y));
+			shiftIndex = bz1;
 			++bz1;
 			break;
 		case ArenaData::BLUE_ZONE_2:
-			if(bz2 == 0)
-				contestants[i]->SetWorldPosition(bz2Obj->GetWorldPosition());
-			else if(bz2 == 1)
-				contestants[i]->SetWorldPosition(bz2Obj->GetWorldPosition() + leftShift);
-			else if(bz2 == 2)
-				contestants[i]->SetWorldPosition(bz2Obj->GetWorldPosition() + rightShift);
+			currZoneWorldPosition = zoneStartPositions[ArenaData::BLUE_ZONE_2 - 1]->GetWorldPosition();
 			contestants[i]->SetWorldOrientation(Ogre::Quaternion(Ogre::Radian(Ogre::Degree(90.0f)), Ogre::Vector3::UNIT_Y));
+			shiftIndex = bz2;
 			++bz2;
 			break;
 		case ArenaData::BLUE_ZONE_3:
-			if(bz3 == 0)
-				contestants[i]->SetWorldPosition(bz3Obj->GetWorldPosition());
-			else if(bz3 == 1)
-				contestants[i]->SetWorldPosition(bz3Obj->GetWorldPosition() + leftShift);
-			else if(bz3 == 2)
-				contestants[i]->SetWorldPosition(bz3Obj->GetWorldPosition() + rightShift);
+			currZoneWorldPosition = zoneStartPositions[ArenaData::BLUE_ZONE_3 - 1]->GetWorldPosition();
 			contestants[i]->SetWorldOrientation(Ogre::Quaternion(Ogre::Radian(Ogre::Degree(90.0f)), Ogre::Vector3::UNIT_Y));
+			shiftIndex = bz3;
 			++bz3;
 			break;
 		}
 
+		if(shiftIndex == 0)
+			currShift = Ogre::Vector3::ZERO;
+		else if(shiftIndex == 1)
+			currShift = leftShift;
+		else if(shiftIndex == 2)
+			currShift = rightShift;
+
+		contestants[i]->SetWorldPosition(currZoneWorldPosition + currShift);
 		owningScene->AddGameObject(contestants[i]);
 	}
 
@@ -255,13 +247,31 @@ void Arena::PlaceContestants()
 
 bool Arena::Update(const float gameTime)
 {
-	/*for (int i = 0; i < contestantCount; i++)
-	{
-		contestants[i]->Update(gameTime);
-	}*/
+	GameScene* gameScene = (GameScene*)owningScene;
 
-	label->setText(std::to_string(contestants[0]->GetInGameData().CurrentAttributes.Energy));
-	
+	if(gameScene->GetCurrentState() == GameScene::GS_TRANSITION)
+	{
+		bool transitioning = false;
+
+		for (int i = 0; i < contestants.size(); i++)
+		{
+			if(contestants[i]->stateManager.GetCurrentState() == StateFlags::TRANSITION_STATE)
+			{
+				transitioning = true;
+				break;
+			}
+		}
+
+		if(!transitioning)//if no more transitions, indicate all contestants should listen
+		{
+			for (int i = 0; i < contestants.size(); i++)
+			{
+				contestants[i]->SetInputState(Probender::Listen);
+			}
+		}
+	}
+
+	//Contestants get updated by the game object list
 	//Update the projectile manager
 	projectileManager->Update(gameTime);
 	
@@ -333,4 +343,5 @@ bool Arena::DeserializeArena()
 	PhysXSerializerWrapper::DestroySerializer();
 	return success;
 }
+
 

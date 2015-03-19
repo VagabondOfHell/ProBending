@@ -16,4 +16,13 @@
     <Image height="127" name="FireBlastLaunch" width="127" xPos="262" yPos="210" />
     <Image height="120" name="VertBlueZoneBar" width="20" xPos="10" yPos="539" />
     <Image height="120" name="VertRedZoneBar" width="20" xPos="30" yPos="539" />
+    <Image height="19" name="WhiteBar" width="119" xPos="0" yPos="41" />
+    <Image height="67" name="GreyBacking" width="69" xPos="266" yPos="5" />
+    <Image height="59" name="VerticalFrame" width="4" xPos="355" yPos="10" />
+    <Image height="5" name="HorizontalFrame" width="60" xPos="363" yPos="37" />
+    <Image height="16" name="D_R_CornerFrame" width="15" xPos="371" yPos="9" />
+    <Image height="16" name="D_L_CornerFrame" width="15" xPos="394" yPos="9" />
+    <Image height="16" name="U_R_CornerFrame" width="15" xPos="372" yPos="53" />
+    <Image height="16" name="U_L_CornerFrame" width="15" xPos="393" yPos="53" />
+    <Image height="67" name="WoodBacking" width="67" xPos="444" yPos="10" />
 </Imageset>

@@ -17,6 +17,7 @@
 #include "MeshRenderComponent.h"
 
 #include "CEGUI/WindowManager.h"
+#include "CEGUI/Window.h"
 
 #include "OgreMeshManager.h"
 #include "OgreSceneManager.h"
@@ -42,7 +43,7 @@ bool savePhysX = false;
 bool raycast = false;
 
 GameScene::GameScene(void)
-	:IScene(NULL, NULL, "", ""), horizontalScreens(false), Camera2(nullptr)
+	:IScene(NULL, NULL, "", ""), horizontalScreens(false), Camera2(nullptr), currentState(GS_COUNTDOWN)
 {
 }
 
@@ -50,10 +51,11 @@ GameScene::GameScene(void)
 GameScene::GameScene(SceneManager* _owningManager, Ogre::Root* root, 
 					 std::string _arenaNameToLoad, std::vector<ProbenderData> contestantData)
 	:IScene(_owningManager, root, _arenaNameToLoad, "CommonArenaResources"), horizontalScreens(false),
-	Camera2(nullptr)
+	Camera2(nullptr), currentState(GS_COUNTDOWN)
 {
 	 battleArena = new Arena(this, _arenaNameToLoad);
 	 battleArena->Initialize(contestantData);
+
 }
 
 GameScene::~GameScene(void)
@@ -160,14 +162,8 @@ void GameScene::Initialize()
 
 	guiManager->AddScheme("ProbendArenaGUIScheme.scheme");
 	guiManager->LoadLayout("ProbendArenaGUILayout.layout", false);
-
-	/*screenSeparator = CEGUI::WindowManager::getSingleton().createWindow("Generic/Image", "ScreenSeparator");
-	screenSeparator->setProperty("Image", "ProbendArenaGUI/ZoneSeparatorBar");
-	screenSeparator->moveBehind(guiManager->GetChildWindow("InGameGUIRoot"));*/
-
-	//guiManager->GetRootWindow()->addChild(screenSeparator);
-
-	progressTrackerWindow = guiManager->GetChildWindow( "InGameGUIRoot");
+	
+	progressTrackerWindow = guiManager->GetChildWindow("InGameGUIRoot");
 
 	SetUpCameras();
 
@@ -206,8 +202,6 @@ void GameScene::Initialize()
 		//Set the confidence threshold
 		speechReader->SetConfidenceThreshold(0.6f);
 	}
-
-	
 }
 
 void GameScene::Start()
@@ -228,6 +222,7 @@ bool GameScene::Update(float gameTime)
 	}
 
 	if(physxSimulating)
+	{
 		if(physicsWorld->checkResults())
 		{
 			physicsWorld->fetchResults(true);
@@ -242,23 +237,8 @@ bool GameScene::Update(float gameTime)
 
 			physxSimulating = false;
 		}
-
-	if(raycast)
-	{
-		physx::PxSceneReadLock scopedLock(*physicsWorld);
-
-		physx::PxSweepBuffer buf;
-
-		if(BoxCast(physx::PxTransform(PxIdentity), physx::PxVec3(0, -1, 0), physx::PxVec3(1, 1, 1),
-			250, buf, physx::PxHitFlag::eDEFAULT, physx::PxFilterData(ArenaData::WATER, 0, 0, 0)))
-		{
-			printf("Box Cast Successful\n");
-			physx::PxSweepHit hit = buf.getAnyHit(0);
-
-			printf("Distance: %f\n", hit.distance);
-		}
 	}
-
+	
 	if(!physxSimulating && savePhysX)
 	{
 		PhysXSerializerWrapper::CreateSerializer();
@@ -297,6 +277,22 @@ bool GameScene::Update(float gameTime)
 	}
 
 	return true;
+}
+
+void GameScene::SetGameState(GameState newState)
+{
+	if(currentState == newState)
+		return;
+
+	switch (newState)
+	{
+	case GameScene::GS_COUNTDOWN:
+		break;
+	case GameScene::GS_TRANSITION:
+		break;
+	case GameScene::GS_GAMEPLAY:
+		break;
+	}
 }
 
 void GameScene::Close()
@@ -388,7 +384,7 @@ void GameScene::keyPressed( const OIS::KeyEvent &arg )
 
 	if(arg.key == OIS::KC_R)
 	{
-		ChangeScreenOrientation(!horizontalScreens);
+		//ChangeScreenOrientation(!horizontalScreens);
 	}
 	//	raycast = true;
 }

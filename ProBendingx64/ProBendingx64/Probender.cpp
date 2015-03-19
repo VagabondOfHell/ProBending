@@ -100,7 +100,6 @@ void Probender::Start()
 	rigid->AttachShape("ProbenderShape");
 	rigid->SetMass(150.0f);
 	rigid->FreezeAllRotation();
-	//rigid->SetUseGravity(false);
 
 	rigid->CreateDebugDraw();
 	
@@ -109,6 +108,9 @@ void Probender::Start()
 	stateManager = ProbenderStateManager(this);
 
 	progressTracker.Initialize(this);
+	energyMeter.Initialize(owningScene->GetGUIManager(), contestantID);
+	energyMeter.SetValue(characterData.CurrentAttributes.Energy, characterData.CurrentAttributes.GetMaxEnergy());
+
 }
 
 void Probender::Update(float gameTime)
@@ -120,29 +122,20 @@ void Probender::Update(float gameTime)
 		{
 			Ogre::Vector3 targetPos = currentTarget->GetWorldPosition();
 			camera->lookAt(targetPos.x, PROBENDER_HALF_EXTENTS.y * 1.75f, targetPos.z);
-			//camera->lookAt(currentTarget->GetWorldPosition() + Ogre::Vector3(0.0f, 1.0f, 0.0f));
 		}
 	inputHandler.Update(gameTime);
 	stateManager.Update(gameTime);	
 	progressTracker.Update(gameTime);
 
-	if(stateManager.GetCurrentState() == StateFlags::IDLE_STATE)
-		characterData.CurrentAttributes.AddEnergy(characterData.CurrentAttributes.GetEnergyRegen() * gameTime);
-
-	/*std::string message = "Current Zone for " + std::to_string(contestantID) + 
-		" : " + ArenaData::GetStringFromZone(CurrentZone) + "\n";
-	printf(message.c_str());*/
-
-	StateFlags::PossibleStates ps = stateManager.GetCurrentState();
+	energyMeter.SetValue(characterData.CurrentAttributes.Energy, characterData.CurrentAttributes.GetMaxEnergy());
 
 	if(!stateManager.GetOnGround())
-	{
 		rigidBody->ApplyForce(physx::PxVec3(0.0f, characterData.CurrentAttributes.GetJumpHeight() * FALL_FORCE, 0.0f));
-	}
 
 	switch (stateManager.GetCurrentState())
 	{
 	case StateFlags::IDLE_STATE:
+		characterData.CurrentAttributes.AddEnergy(characterData.CurrentAttributes.GetEnergyRegen() * gameTime);
 		break;
 	case StateFlags::JUMP_STATE:
 		HandleJump();
@@ -159,6 +152,15 @@ void Probender::Update(float gameTime)
 		HandleDodge(gameTime);
 		break;
 	case StateFlags::REELING_STATE:
+		break;
+	case StateFlags::TRANSITION_STATE:
+		rigidBody->SetKinematicTarget(
+			HelperFunctions::Lerp(transitionInfo.StartPos, transitionInfo.EndPos, transitionInfo.Percentile));
+		transitionInfo.Percentile += 0.1f;
+
+		if(transitionInfo.Percentile == 1.0f)
+			stateManager.SetStateImmediate(StateFlags::IDLE_STATE, 0.0f);
+
 		break;
 	case StateFlags::COUNT:
 		break;
@@ -186,6 +188,20 @@ void Probender::SetInputState(const InputState newState)
 		inputHandler.StopListeningToAll();
 		break;
 	}
+}
+
+void Probender::TransitionToPoint(physx::PxVec3& positionToMoveTo)
+{
+	rigidBody->SetKinematic(true);
+
+	SetInputState(Probender::Pause);
+
+	stateManager.SetStateImmediate(StateFlags::TRANSITION_STATE, 0.0f);
+
+	transitionInfo.StartPos = rigidBody->GetPosition();
+	transitionInfo.EndPos = positionToMoveTo;
+	transitionInfo.Percentile = 0.0f;
+
 }
 
 void Probender::RemoveProjectile(SharedProjectile projectileToRemove)
@@ -413,14 +429,12 @@ void Probender::OnCollisionStay(const CollisionReport& collision)
 
 void Probender::ApplyProjectileCollision(float damage, float knockback)
 {
-	characterData.CurrentAttributes.Energy -= damage;
+	characterData.CurrentAttributes.AddEnergy(-damage);
 
 	if(!stateManager.SetState(StateFlags::REELING_STATE, characterData.CurrentAttributes.GetRecoveryRate()))
 	{
 		stateManager.ResetCurrentState();
 	}
 
-	rigidBody->ApplyImpulse(-HelperFunctions::OgreToPhysXVec3(Forward()) * knockback);
-
-	
+	rigidBody->ApplyImpulse(-HelperFunctions::OgreToPhysXVec3(Forward()) * knockback);	
 }

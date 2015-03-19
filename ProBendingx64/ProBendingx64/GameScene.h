@@ -1,16 +1,24 @@
 #pragma once
 #include "IScene.h"
 #include "ProbenderData.h"
-#include <vector>
 #include "InputObserver.h"
 #include "CollisionReporter.h"
 #include "PxBatchQuery.h"
-#include "CEGUI/Window.h"
+
+#include <vector>
 
 class Arena;
 
+namespace CEGUI
+{
+	class Window;
+};
+
 class GameScene:public IScene, public InputObserver
 {
+public:
+	enum GameState{GS_COUNTDOWN, GS_TRANSITION, GS_GAMEPLAY};
+
 protected:
 	Arena* battleArena;
 	CollisionReporter collisionReporter;
@@ -20,6 +28,8 @@ protected:
 
 	Ogre::Camera* Camera2;
 	
+	GameState currentState;
+
 	bool horizontalScreens;
 
 	void SetUpCameras();
@@ -43,6 +53,8 @@ public:
 	///<returns>Pointer to the Game Arena</returns>
 	inline Arena* const GetArena()const{return battleArena;}
 
+	inline GameState GetCurrentState()const{return currentState;}
+
 	virtual physx::PxSceneDesc* GetSceneDescription(physx::PxVec3& gravity, bool initializeCuda);
 
 	virtual void Initialize();
@@ -50,6 +62,8 @@ public:
 	virtual void Start();
 
 	virtual bool Update(float gameTime);
+
+	void SetGameState(GameState newState);
 
 	virtual void Close();
 
