@@ -34,6 +34,8 @@ protected:
 
 	virtual void PlaceContestants();
 
+	ArenaData::Zones GetAdjacentZone(ArenaData::Zones currentZone, bool towardsCenter);
+
 public:
 	Arena(IScene* _owningScene, std::string _arenaName);
 
@@ -59,7 +61,7 @@ public:
 	
 	virtual bool LoadPhysXData(const std::string& fileName, const std::string& collectionName);
 
-	void BeginTransition(unsigned short contestantID, ArenaData::Zones newZone);
+	void BeginTransition(unsigned short contestantID, ArenaData::Zones newZone, ArenaData::Zones oldZone);
 
 	virtual void Start();
 

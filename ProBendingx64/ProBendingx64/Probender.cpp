@@ -138,7 +138,8 @@ void Probender::Update(float gameTime)
 		characterData.CurrentAttributes.AddEnergy(characterData.CurrentAttributes.GetEnergyRegen() * gameTime);
 		break;
 	case StateFlags::JUMP_STATE:
-		HandleJump();
+		if(rigidBody->GetVelocity().y < -0.0f && !stateManager.GetOnGround())
+			stateManager.SetState(StateFlags::FALLING_STATE, 0.0f);
 		break;
 	case StateFlags::FALLING_STATE:
 		break;
@@ -149,16 +150,29 @@ void Probender::Update(float gameTime)
 	case StateFlags::HEAL_STATE:
 		break;
 	case StateFlags::DODGE_STATE:
-		HandleDodge(gameTime);
-		break;
+		{
+			float distanceAway = GetWorldPosition().z - dodgeTargetPos.z;
+				//(HelperFunctions::OgreToPhysXVec3(GetWorldPosition()) - dodgeTargetPos).magnitude();
+			if(distanceAway > 0.1f)
+				rigidBody->SetVelocity(dodgeDirection * characterData.CurrentAttributes.GetDodgeSpeed());
+			else
+				stateManager.SetState(StateFlags::IDLE_STATE, 0.0f);
+			break;
+		}
 	case StateFlags::REELING_STATE:
+		if(rigidBody->GetVelocity().magnitudeSquared() < 0.1f)
+		{
+			stateManager.SetStateImmediate(StateFlags::IDLE_STATE, 0.0f);
+			rigidBody->SetVelocity(physx::PxVec3(0.0f));
+		}
 		break;
+
 	case StateFlags::TRANSITION_STATE:
 		rigidBody->SetKinematicTarget(
 			HelperFunctions::Lerp(transitionInfo.StartPos, transitionInfo.EndPos, transitionInfo.Percentile));
-		transitionInfo.Percentile += 0.1f;
+		transitionInfo.Percentile += 1.5f * gameTime;
 
-		if(transitionInfo.Percentile == 1.0f)
+		if(transitionInfo.Percentile >= 1.0f)
 			stateManager.SetStateImmediate(StateFlags::IDLE_STATE, 0.0f);
 
 		break;
@@ -192,16 +206,13 @@ void Probender::SetInputState(const InputState newState)
 
 void Probender::TransitionToPoint(physx::PxVec3& positionToMoveTo)
 {
-	rigidBody->SetKinematic(true);
-
-	SetInputState(Probender::Pause);
-
 	stateManager.SetStateImmediate(StateFlags::TRANSITION_STATE, 0.0f);
+
+	positionToMoveTo.y = PROBENDER_HALF_EXTENTS.y;
 
 	transitionInfo.StartPos = rigidBody->GetPosition();
 	transitionInfo.EndPos = positionToMoveTo;
 	transitionInfo.Percentile = 0.0f;
-
 }
 
 void Probender::RemoveProjectile(SharedProjectile projectileToRemove)
@@ -342,6 +353,11 @@ void Probender::StateExitted(StateFlags::PossibleStates exittedState)
 		break;
 	case StateFlags::REELING_STATE:
 		break;
+	case StateFlags::TRANSITION_STATE:
+		rigidBody->SetKinematic(false);
+		SetInputState(Probender::Listen);
+		characterData.CurrentAttributes.Energy = characterData.CurrentAttributes.GetMaxEnergy();
+		break;
 	case StateFlags::COUNT:
 		break;
 	default:
@@ -371,27 +387,15 @@ void Probender::StateEntered(StateFlags::PossibleStates enteredState)
 		break;
 	case StateFlags::REELING_STATE:
 		break;
+	case StateFlags::TRANSITION_STATE:
+		rigidBody->SetKinematic(true);
+		SetInputState(Probender::Pause);
+		break;
 	case StateFlags::COUNT:
 		break;
 	default:
 		break;
 	}
-}
-
-void Probender::HandleDodge(const float gameTime)
-{
-	float distanceAway = (HelperFunctions::OgreToPhysXVec3(GetWorldPosition()) - dodgeTargetPos).magnitude();
-
-	if(distanceAway > 0.1f)
-		rigidBody->SetVelocity(dodgeDirection * characterData.CurrentAttributes.GetDodgeSpeed());
-	else
-		stateManager.SetState(StateFlags::IDLE_STATE, 0.0f);
-}
-
-void Probender::HandleJump()
-{
-	if(rigidBody->GetVelocity().y < -0.0f && !stateManager.GetOnGround())
-		stateManager.SetState(StateFlags::FALLING_STATE, 0.0f);
 }
 
 void Probender::OnTriggerEnter(GameObject* trigger, GameObject* other)
@@ -400,12 +404,15 @@ void Probender::OnTriggerEnter(GameObject* trigger, GameObject* other)
 	{
 		ArenaData::Zones newZone = ArenaData::GetZoneFromString(trigger->GetName());
 
-		if(newZone != GetCurrentZone())
+		ArenaData::Zones currZone = GetCurrentZone();
+
+		if(newZone != currZone)
 		{
 			characterData.TeamDatas.CurrentZone = newZone;
-			/*std::string message = "Trigger Entered with: " + trigger->GetName() + "For " + std::to_string(contestantID) + 
-			" : "+ "\n";
-			printf(message.c_str());*/
+
+			if(characterData.TeamDatas.Team == ArenaData::RED_TEAM && newZone < currZone ||
+				characterData.TeamDatas.Team == ArenaData::BLUE_TEAM &&	newZone > currZone)
+				owningArena->BeginTransition(contestantID, newZone, currZone);
 		}
 	}
 }
@@ -436,5 +443,7 @@ void Probender::ApplyProjectileCollision(float damage, float knockback)
 		stateManager.ResetCurrentState();
 	}
 
-	rigidBody->ApplyImpulse(-HelperFunctions::OgreToPhysXVec3(Forward()) * knockback);	
+	float energyDiff = characterData.CurrentAttributes.Energy / characterData.CurrentAttributes.GetMaxEnergy();
+
+	rigidBody->ApplyImpulse(-HelperFunctions::OgreToPhysXVec3(Forward()) * (knockback * (1.0f - (energyDiff * 0.75f))));	
 }

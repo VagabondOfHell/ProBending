@@ -4,7 +4,7 @@
 namespace ArenaData
 {
 	enum Team{INVALID_TEAM, RED_TEAM, BLUE_TEAM};
-	enum Zones{INVALID_ZONE, RED_ZONE_1, RED_ZONE_2, RED_ZONE_3, BLUE_ZONE_1, BLUE_ZONE_2, BLUE_ZONE_3};
+	enum Zones{INVALID_ZONE, RED_ZONE_3, RED_ZONE_2, RED_ZONE_1, BLUE_ZONE_1, BLUE_ZONE_2, BLUE_ZONE_3};
 
 	enum RaycastFilterGroups{
 		NONE = 0,
@@ -72,4 +72,26 @@ namespace ArenaData
 			break;
 		}
 	}
+
+	static Zones GetAdjacentZone(Zones currentZone, bool increase)
+	{
+		if(currentZone == INVALID_ZONE)
+			return currentZone;
+
+		if(increase)
+		{
+			if(currentZone == BLUE_ZONE_3)
+				return INVALID_ZONE;
+
+			return (Zones)(currentZone + 1);
+		}
+		else
+		{
+			if(currentZone == RED_ZONE_3)
+				return INVALID_ZONE;
+
+			return (Zones)(currentZone - 1);
+		}
+	}
+
 };

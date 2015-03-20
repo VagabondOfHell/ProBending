@@ -35,7 +35,7 @@ ProjectileDatabase::SharedProjectile ProjectileDatabase::CreateEarthJab(IScene* 
 {
 	std::string projName = AbilityIDs::EarthEnumToString(AbilityIDs::EARTH_JAB);
 
-	ProjectileAttributes earthJabAttributes = ProjectileAttributes(Ogre::Vector3(0.0f), 20.0f, 40.0f, 25.0f, 100.0f, 20.0f, 30.0f, true);
+	ProjectileAttributes earthJabAttributes = ProjectileAttributes(Ogre::Vector3(0.0f), 20.0f, 40.0f, 250.0f, 800.0f, 20.0f, 30.0f, true);
 
 	SharedProjectile projectile = std::make_shared<Projectile>(scene, earthJabAttributes, projName);
 	projectile->tag = TagsAndLayersManager::ProjectileTag;

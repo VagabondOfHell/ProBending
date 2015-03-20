@@ -17,7 +17,7 @@ namespace CEGUI
 class GameScene:public IScene, public InputObserver
 {
 public:
-	enum GameState{GS_COUNTDOWN, GS_TRANSITION, GS_GAMEPLAY};
+	enum GameState{GS_INTRO, GS_COUNTDOWN, GS_TRANSITION, GS_GAMEPLAY, GS_END_GAME};
 
 protected:
 	Arena* battleArena;

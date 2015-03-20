@@ -99,15 +99,29 @@ bool Arena::LoadPhysXData(const std::string& fileName, const std::string& collec
 	return success;
 }
 
-void Arena::BeginTransition(unsigned short contestantID, ArenaData::Zones newZone)
+void Arena::BeginTransition(unsigned short contestantID, ArenaData::Zones newZone, ArenaData::Zones oldZone)
 {
-	if(newZone == ArenaData::INVALID_ZONE)
-		return;
+	GameScene* gameScene = (GameScene*)owningScene;
 
-	for (int i = 0; i < contestants.size(); i++)
+	if(newZone == ArenaData::INVALID_ZONE)
 	{
-		contestants[i]->TransitionToPoint(
+		gameScene->SetGameState(GameScene::GS_END_GAME);
+	}
+	else
+	{
+		gameScene->SetGameState(GameScene::GS_TRANSITION);
+
+		//Get the contestant that was pushed across the line to move towards the center of the current zone
+		contestants[contestantID]->TransitionToPoint(
 			HelperFunctions::OgreToPhysXVec3(zoneStartPositions[newZone - 1]->GetWorldPosition()));
+
+		unsigned short otherContestantID = contestantID == 0 ? 1 : 0;
+		
+		ArenaData::Zones zoneToTransitionTo = ArenaData::GetAdjacentZone(
+			contestants[otherContestantID]->GetCurrentZone(), newZone > oldZone);
+
+		contestants[otherContestantID]->TransitionToPoint(
+			HelperFunctions::OgreToPhysXVec3(zoneStartPositions[zoneToTransitionTo - 1]->GetWorldPosition()));
 	}
 }
 
@@ -266,6 +280,7 @@ bool Arena::Update(const float gameTime)
 		{
 			for (int i = 0; i < contestants.size(); i++)
 			{
+				gameScene->SetGameState(GameScene::GS_GAMEPLAY);
 				contestants[i]->SetInputState(Probender::Listen);
 			}
 		}

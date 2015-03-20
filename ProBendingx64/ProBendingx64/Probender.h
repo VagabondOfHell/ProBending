@@ -64,10 +64,6 @@ private:
 	GUIProgressTracker progressTracker;
 	ProbenderEnergyMeter energyMeter;
 
-	void HandleJump();
-
-	void HandleDodge(const float gameTime);
-
 public:
 	Probender* currentTarget;//The probender currently targeted by this player
 
