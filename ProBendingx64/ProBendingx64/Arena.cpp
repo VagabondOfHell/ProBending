@@ -252,11 +252,11 @@ void Arena::PlaceContestants()
 		owningScene->AddGameObject(contestants[i]);
 	}
 
-	contestants[0]->SetCamera(owningScene->GetCamera());
-	contestants[1]->SetCamera(((GameScene*)owningScene)->GetCamera2());
-
 	contestants[0]->currentTarget = contestants[1].get();
 	contestants[1]->currentTarget = contestants[0].get();
+
+	contestants[0]->SetCamera(owningScene->GetCamera());
+	contestants[1]->SetCamera(((GameScene*)owningScene)->GetCamera2());
 }
 
 bool Arena::Update(const float gameTime)

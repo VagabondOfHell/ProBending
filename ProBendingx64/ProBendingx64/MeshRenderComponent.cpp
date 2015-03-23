@@ -10,6 +10,7 @@
 #include "OgreEntity.h"
 #include "OgreMesh.h"
 #include "OgreSubMesh.h"
+#include "OgreSubEntity.h"
 
 #include "geometry/PxBoxGeometry.h"
 
@@ -132,7 +133,8 @@ MeshRenderComponent* MeshRenderComponent::Clone(GameObject* gameObject)
 	{
 		Ogre::NameGenerator nameGenerator = Ogre::NameGenerator(entity->getName());
 		clone->LoadModel(GetMeshName());
-			//entity->clone(nameGenerator.generate());
+		
+		clone->SetMaterial(entity->getSubEntity(0)->getMaterialName());//entity->getMesh()->getSubMesh(0)->getMaterialName());
 	}
 	
 	if(!enabled)

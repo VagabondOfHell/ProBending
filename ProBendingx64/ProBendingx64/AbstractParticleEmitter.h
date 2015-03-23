@@ -2,6 +2,8 @@
 #include "foundation\PxVec3.h"
 #include "particles\PxParticleCreationData.h"
 
+#include <vector>
+
 class AbstractParticleEmitter
 {
 	friend class SceneSerializer;
@@ -29,15 +31,47 @@ private:
 protected:
 	physx::PxVec3 minimumDirection;
 	physx::PxVec3 maximumDirection;
-	
+
+	std::vector<physx::PxVec3>forces;//The forces to apply to newly created particles
+
 	float particlesPerSecond; //Amount of particles to launch per second. Can be a fractional number to take longer than a second
 	float particlesToEmitThisFrame;//Number of particles to emit this frame
 
 	float minSpeed, maxSpeed;
 	float timePassed;
 
+	unsigned int GetEmissionCount(const float gameTime, 
+		const unsigned int availableIndiceCount)
+	{
+		unsigned int emissionCount(0);
+
+		bool infiniteEmission = duration <= 0.0f;
+
+		if(!infiniteEmission)
+			timePassed += gameTime;
+
+		//if time passed has not exceeded system duration or there should be infinite emission
+		if((timePassed <= duration && !infiniteEmission) || (infiniteEmission))
+		{
+			//Check amount of particles available
+			if(availableIndiceCount > 0)
+			{
+				//Calculate the number of particles to emit this frame
+				particlesToEmitThisFrame += particlesPerSecond * gameTime;
+				emissionCount = (unsigned int)physx::PxFloor(particlesToEmitThisFrame);
+				particlesToEmitThisFrame -= emissionCount;
+
+				//Gather available indices
+				if(availableIndiceCount < emissionCount)
+					emissionCount = availableIndiceCount;
+			}
+		}
+
+		return emissionCount;
+	}
+
 public:
-	enum ParticleEmitterType{NONE, POINT_EMITTER, LINE_EMITTER, MESH_EMITTER};
+	enum ParticleEmitterType{NONE, POINT_EMITTER, LINE_EMITTER, SPHERE_EMITTER, MESH_EMITTER};
 
 	physx::PxVec3 position;
 	

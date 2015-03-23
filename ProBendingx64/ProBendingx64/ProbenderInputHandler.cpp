@@ -253,7 +253,7 @@ void ProbenderInputHandler::CheckLean(const CompleteData& currentData, const Com
 		{
 			Probender::DodgeDirection dir = Probender::DD_RIGHT;
 
-			if(currentData.LeanAmount.X > 0.0f)
+			if(currentData.LeanAmount.X < 0.0f)
 				dir = Probender::DD_LEFT;
 
 			probender->Dodge(dir);
@@ -301,8 +301,9 @@ void ProbenderInputHandler::HandleAttacks(const AttackData& attackData)
 						PrepareProjectile();
 						NeedSpawnPosition = false;
 
-						if(activeAttack->LaunchOnCreate)
-							PrepareProjectileLaunch();
+						if(activeAttack)
+							if(activeAttack->LaunchOnCreate)
+								PrepareProjectileLaunch();
 					}
 
 					break;
@@ -387,6 +388,8 @@ void ProbenderInputHandler::PrepareProjectileLaunch()
 
 		NeedSpawnPosition = true;
 	}
+	else
+		activeAttack = NULL;
 }
 
 bool created = false;
@@ -490,28 +493,29 @@ void ProbenderInputHandler::keyPressed( const OIS::KeyEvent &arg )
 	}
 	else if(arg.key == OIS::KC_LEFT)
 	{
-		if(probender->rightHandAttack)
+		/*if(probender->rightHandAttack)
 		{
 			RigidBodyComponent* rigidBody = (RigidBodyComponent*)probender->rightHandAttack->GetComponent(Component::RIGID_BODY_COMPONENT);
 			Ogre::Vector3 currPos = probender->rightHandAttack->GetWorldPosition();
 			if(rigidBody)
 				rigidBody->ApplyForce(physx::PxVec3(-100.0f, 0.0f, 0.0f));
 		}
-		else
+		else*/
 		{
+			if(probender->contestantID == 0)
 			probender->Dodge(Probender::DD_LEFT);
 		}
 	}
 	else if(arg.key == OIS::KC_RIGHT)
 	{
-		if(probender->rightHandAttack)
+		/*if(probender->rightHandAttack)
 		{
-			RigidBodyComponent* rigidBody = (RigidBodyComponent*)probender->rightHandAttack->GetComponent(Component::RIGID_BODY_COMPONENT);
+		RigidBodyComponent* rigidBody = (RigidBodyComponent*)probender->rightHandAttack->GetComponent(Component::RIGID_BODY_COMPONENT);
 
-			if(rigidBody)
-				rigidBody->ApplyForce(physx::PxVec3(100.0f, 0.0f, 0.0f));
+		if(rigidBody)
+		rigidBody->ApplyForce(physx::PxVec3(100.0f, 0.0f, 0.0f));
 		}
-		else
+		else*/
 		{
 			probender->Dodge(Probender::DD_RIGHT);
 		}
@@ -525,7 +529,7 @@ void ProbenderInputHandler::keyPressed( const OIS::KeyEvent &arg )
 		if(probender->GetCurrentElement() == ElementEnum::Fire)
 		{
 			SharedProjectile attack = probender->GetOwningArena()->GetProjectileManager()->
-				CreateProjectile(ElementEnum::Fire, AbilityIDs::FIRE_JAB);
+				CreateProjectile(ElementEnum::Fire, AbilityIDs::FIRE_BLAST);
 
 			if(attack)
 			{
@@ -540,6 +544,18 @@ void ProbenderInputHandler::keyPressed( const OIS::KeyEvent &arg )
 					probender->Forward() * 2.0f));
 				attack->SetWorldOrientation(1.0f, 0.0f, 0.0f, 0.0f);
 
+				Ogre::Vector3 camForward = probender->camera->getDerivedOrientation() * -Ogre::Vector3::UNIT_Z;
+				camForward.normalise();
+
+				attack->SetWorldPosition(probender->GetWorldPosition()
+					+ (camForward * attack->GetHalfExtents().x ));
+
+				attack->SetWorldOrientation(1.0f, 0.0f, 0.0f, 0.0f);
+
+				//Launch the Projectile
+				attack->LaunchProjectile(HelperFunctions::OgreToPhysXVec3(camForward), 
+					probender->GetInGameData().CurrentAttributes.GetBonusAttackSpeed(),
+					probender->GetInGameData().CurrentAttributes.GetBonusAttackDamage());
 				/*((RigidBodyComponent*)attack->GetComponent(Component::RIGID_BODY_COMPONENT))->ApplyImpulse(
 					physx::PxVec3(camDir.x, camDir.y, camDir.z) * 20.0f);*/
 				/*attack->LaunchProjectile(physx::PxVec3(camDir.x, camDir.y, camDir.z), 
@@ -563,15 +579,27 @@ void ProbenderInputHandler::keyPressed( const OIS::KeyEvent &arg )
 
 				MeshRenderComponent* renderComp = (MeshRenderComponent*)attack->GetComponent(Component::MESH_RENDER_COMPONENT);
 
-				Ogre::Vector3 camDir = probender->Forward();
+				/*Ogre::Vector3 camDir = probender->Forward();
 
 				attack->SetWorldPosition(probender->GetWorldPosition() + 
-					(probender->Forward() * (renderComp->GetHalfExtents().x * 2)));
-				attack->SetWorldOrientation(1.0f, 0.0f, 0.0f, 0.0f);
+					(probender->Forward() * (renderComp->GetHalfExtents().x * 2)));*/
 
-				attack->LaunchProjectile(physx::PxVec3(camDir.x, camDir.y, camDir.z), 
+				Ogre::Vector3 camForward = probender->camera->getDerivedOrientation() * -Ogre::Vector3::UNIT_Z;
+				camForward.normalise();
+
+				attack->SetWorldPosition(probender->GetWorldPosition()
+					+ (camForward * attack->GetHalfExtents().x ));
+
+				attack->SetWorldOrientation(1.0f, 0.0f, 0.0f, 0.0f);
+				
+				//Launch the Projectile
+				attack->LaunchProjectile(HelperFunctions::OgreToPhysXVec3(camForward), 
 					probender->GetInGameData().CurrentAttributes.GetBonusAttackSpeed(),
 					probender->GetInGameData().CurrentAttributes.GetBonusAttackDamage());
+/*
+				attack->LaunchProjectile(physx::PxVec3(camDir.x, camDir.y, camDir.z), 
+					probender->GetInGameData().CurrentAttributes.GetBonusAttackSpeed(),
+					probender->GetInGameData().CurrentAttributes.GetBonusAttackDamage());*/
 
 				probender->rightHandAttack = attack;
 			}
@@ -586,7 +614,7 @@ void ProbenderInputHandler::keyPressed( const OIS::KeyEvent &arg )
 				attack->CasterContestantID = probender->contestantID;
 
 				attack->Enable();
-				attack->GetRigidBody()->SetUseGravity(true);
+				//attack->GetRigidBody()->SetUseGravity(true);
 
 				MeshRenderComponent* renderComp = (MeshRenderComponent*)attack->GetComponent(Component::MESH_RENDER_COMPONENT);
 

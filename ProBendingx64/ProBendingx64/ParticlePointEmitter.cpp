@@ -22,29 +22,7 @@ ParticlePointEmitter::~ParticlePointEmitter(void)
 
 void ParticlePointEmitter::Emit(const float gameTime, const unsigned int availableIndiceCount, physx::PxParticleCreationData& creationData)
 {
-	unsigned int emissionCount(0);
-
-	bool infiniteEmission = duration <= 0.0f;
-
-	if(!infiniteEmission)
-		timePassed += gameTime;
-	
-	//if time passed has not exceeded system duration or there should be infinite emission
-	if((timePassed <= duration && !infiniteEmission) || (infiniteEmission))
-	{
-		//Check amount of particles available
-		if(availableIndiceCount > 0)
-		{
-			//Calculate the number of particles to emit this frame
-			particlesToEmitThisFrame += particlesPerSecond * gameTime;
-			emissionCount = (unsigned int)PxFloor(particlesToEmitThisFrame);
-			particlesToEmitThisFrame -= emissionCount;
-
-			//Gather available indices
-			if(availableIndiceCount < emissionCount)
-				emissionCount = availableIndiceCount;
-		}
-	}
+	unsigned int emissionCount(GetEmissionCount(gameTime, availableIndiceCount));
 
 	//If we have creation data and indices can be used
 	if(emissionCount > 0)
@@ -52,11 +30,11 @@ void ParticlePointEmitter::Emit(const float gameTime, const unsigned int availab
 		//reset forces
 		forces.clear();
 
+		RandomNumberGenerator* random = RandomNumberGenerator::GetInstance();
+
 		//Generate initial force and update available indices
 		for (unsigned int i = 0; i < emissionCount; i++)
 		{
-			RandomNumberGenerator* random = RandomNumberGenerator::GetInstance();
-
 			float ranSpeed = random->GenerateRandom(minSpeed, maxSpeed);
 
 			forces.push_back(PxVec3(

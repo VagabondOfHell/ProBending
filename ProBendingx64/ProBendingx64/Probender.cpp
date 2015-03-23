@@ -49,15 +49,20 @@ Probender::~Probender(void)
 
 void Probender::SetCamera(Ogre::Camera* newCamera)
 {
-	gameObjectNode->attachObject(newCamera);
-
-	if(camera)
-		gameObjectNode->detachObject(camera);
-
 	camera = newCamera;
 
 	camera->setPosition(Ogre::Vector3(0.0f, PROBENDER_HALF_EXTENTS.y * 0.75f, -5.0f));
-	
+
+	Ogre::Vector3 currPos = GetWorldPosition();
+	Ogre::Vector3 diff = currentTarget->GetWorldPosition() - currPos;
+	diff.normalise();
+
+	Ogre::Vector3 newCamPos = Ogre::Vector3(currPos.x + diff.x * -7.50, 
+		PROBENDER_HALF_EXTENTS.y *2.0f, currPos.z + diff.z * -7.50f);
+
+	camera->setPosition(newCamPos);
+	camera->lookAt(currentTarget->GetWorldPosition());
+
 	if(currentTarget)
 		camera->lookAt(currentTarget->GetWorldPosition());
 	else
@@ -93,7 +98,7 @@ void Probender::Start()
 	rigid->CreateRigidBody(RigidBodyComponent::DYNAMIC);
 	
 	ShapeDefinition shapeDef = ShapeDefinition();
-	shapeDef.SetBoxGeometry(PROBENDER_HALF_EXTENTS);
+	shapeDef.SetBoxGeometry(physx::PxVec3(PROBENDER_HALF_EXTENTS.x * 0.5f, PROBENDER_HALF_EXTENTS.y, PROBENDER_HALF_EXTENTS.z));
 	shapeDef.AddMaterial("101000");
 	shapeDef.SetFilterFlags(ArenaData::CONTESTANT);
 	PhysXDataManager::GetSingletonPtr()->CreateShape(shapeDef, "ProbenderShape");
@@ -118,12 +123,28 @@ void Probender::Update(float gameTime)
 	GameObject::Update(gameTime);
 
 	if(currentTarget)
-		if(camera)
+	{
+		if(currentTarget->stateManager.GetCurrentState() != StateFlags::DODGE_STATE)
 		{
-			Ogre::Vector3 targetPos = currentTarget->GetWorldPosition();
-			camera->lookAt(targetPos.x, PROBENDER_HALF_EXTENTS.y * 1.75f, targetPos.z);
+			if(camera)
+			{
+				Ogre::Vector3 targetPos = currentTarget->GetWorldPosition();
+				Ogre::Vector3 currPos = GetWorldPosition();
+				Ogre::Vector3 diff = targetPos - currPos;
+				diff.normalise();
+
+				Ogre::Vector3 newCamPos = Ogre::Vector3(currPos.x + diff.x * -7.50, 
+					PROBENDER_HALF_EXTENTS.y *2.0f, currPos.z + diff.z * -7.50f);
+
+				camera->setPosition(newCamPos);
+
+				camera->lookAt(targetPos.x, PROBENDER_HALF_EXTENTS.y * 1.75f, targetPos.z);
+			}
 		}
+	}
+
 	inputHandler.Update(gameTime);
+
 	stateManager.Update(gameTime);	
 	progressTracker.Update(gameTime);
 
@@ -151,12 +172,19 @@ void Probender::Update(float gameTime)
 		break;
 	case StateFlags::DODGE_STATE:
 		{
-			float distanceAway = GetWorldPosition().z - dodgeTargetPos.z;
-				//(HelperFunctions::OgreToPhysXVec3(GetWorldPosition()) - dodgeTargetPos).magnitude();
-			if(distanceAway > 0.1f)
-				rigidBody->SetVelocity(dodgeDirection * characterData.CurrentAttributes.GetDodgeSpeed());
-			else
+			dodgeInfo.Percentile += characterData.CurrentAttributes.GetDodgeSpeed() * gameTime;
+
+			if(dodgeInfo.Percentile >= 1.0f)
+			{
 				stateManager.SetState(StateFlags::IDLE_STATE, 0.0f);
+				rigidBody->SetPosition(dodgeInfo.EndPos);
+			}
+			else
+			{
+				rigidBody->SetKinematicTarget(
+					HelperFunctions::Lerp(dodgeInfo.StartPos, dodgeInfo.EndPos, dodgeInfo.Percentile));
+			}
+			
 			break;
 		}
 	case StateFlags::REELING_STATE:
@@ -346,10 +374,8 @@ void Probender::StateExitted(StateFlags::PossibleStates exittedState)
 	case StateFlags::HEAL_STATE:
 		break;
 	case StateFlags::DODGE_STATE:
-		rigidBody->SetVelocity(physx::PxVec3(0.0f));
-		SetWorldPosition(dodgeTargetPos.x, dodgeTargetPos.y, dodgeTargetPos.z);
-		dodgeTargetPos = physx::PxVec3(0.0f);
-		dodgeDirection = dodgeTargetPos;
+		rigidBody->SetKinematic(false);
+		rigidBody->SetPosition(dodgeInfo.EndPos);
 		break;
 	case StateFlags::REELING_STATE:
 		break;
@@ -384,6 +410,7 @@ void Probender::StateEntered(StateFlags::PossibleStates enteredState)
 	case StateFlags::HEAL_STATE:
 		break;
 	case StateFlags::DODGE_STATE:
+		rigidBody->SetKinematic(true);
 		break;
 	case StateFlags::REELING_STATE:
 		break;

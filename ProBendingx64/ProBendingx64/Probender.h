@@ -7,6 +7,7 @@
 #include "GUIProgressTracker.h"
 #include "ProbenderEnergyMeter.h"
 
+#include "OgreCamera.h"
 #include <memory>
 
 namespace physx
@@ -54,9 +55,7 @@ private:
 
 	MeshRenderComponent* meshRenderComponent;
 
-	physx::PxVec3 dodgeTargetPos;//The final position
-	physx::PxVec3 dodgeDirection;//direction to move towards
-
+	TransitionData dodgeInfo;//The data for lerping dodge movements
 	TransitionData transitionInfo;//Info used during the transition state
 
 	std::string GetMeshAndMaterialName();
@@ -154,11 +153,12 @@ public:
 		{
 			float dirAndDist = DODGE_DISTANCE;
 						
-			if(direction == DD_LEFT)
+			if(direction == DD_RIGHT)
 				dirAndDist = -dirAndDist;
 
-			dodgeTargetPos = HelperFunctions::OgreToPhysXVec3(GetWorldPosition() + (dirAndDist * Right()));
-			dodgeDirection = dodgeTargetPos - HelperFunctions::OgreToPhysXVec3(GetWorldPosition());
+			dodgeInfo.EndPos = HelperFunctions::OgreToPhysXVec3(GetWorldPosition() + (dirAndDist * Right()));
+			dodgeInfo.StartPos = HelperFunctions::OgreToPhysXVec3(GetWorldPosition());
+			dodgeInfo.Percentile = 0.0f;
 		}
 	}
 

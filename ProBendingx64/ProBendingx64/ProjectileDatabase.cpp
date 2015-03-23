@@ -130,11 +130,11 @@ ProjectileDatabase::SharedProjectile ProjectileDatabase::CreateFireJab(IScene* s
 	newProjectile->tag = TagsAndLayersManager::ProjectileTag;
 	newProjectile->DestructionTriggers = ArenaData::PROJECTILE | ArenaData::WATER | ArenaData::WALL | ArenaData::ARENA_SURFACE;
 
-	ParticleComponent* fireEffect = ParticleFactory::CreateParticleSystem(ParticleFactory::Fire, 
+	ParticleComponent* fireEffect = ParticleFactory::CreateParticleSystem(ParticleFactory::PointFire, 
 		newProjectile.get(), scene);
 	fireEffect->particleSystem->GetEmitter()->SetEmissionRate(100.0f);
 
-	ParticleComponent* smokeEffect = ParticleFactory::CreateParticleSystem(ParticleFactory::Smoke,
+	ParticleComponent* smokeEffect = ParticleFactory::CreateParticleSystem(ParticleFactory::PointSmoke,
 		newProjectile.get(), scene);
 
 	RigidBodyComponent* rigidBody = new RigidBodyComponent();
@@ -156,8 +156,6 @@ ProjectileDatabase::SharedProjectile ProjectileDatabase::CreateFireJab(IScene* s
 		//rigidBody->CreateDebugDraw();
 		rigidBody->SetUseGravity(false);
 	}
-
-	newProjectile->SetScale(0.1f, 0.1f, 0.1f);
 
 	return newProjectile;
 }
@@ -172,21 +170,28 @@ ProjectileDatabase::SharedProjectile ProjectileDatabase::CreateFireBlast(IScene*
 	newProjectile->tag = TagsAndLayersManager::ProjectileTag;
 	newProjectile->DestructionTriggers = ArenaData::PROJECTILE | ArenaData::WATER | ArenaData::WALL;
 
-	ParticleComponent* fireEffect = ParticleFactory::CreateParticleSystem(ParticleFactory::Fire, 
+	ParticleComponent* fireEffect = ParticleFactory::CreateParticleSystem(ParticleFactory::SphereFire, 
 		newProjectile.get(), scene);
 
-	ParticleComponent* smokeEffect = ParticleFactory::CreateParticleSystem(ParticleFactory::Smoke,
+	ParticleComponent* smokeEffect = ParticleFactory::CreateParticleSystem(ParticleFactory::SphereSmoke,
 		newProjectile.get(), scene);
-			
+	
+	MeshRenderComponent* renderComponent = new MeshRenderComponent();
+	newProjectile->AttachComponent(renderComponent);
+	renderComponent->LoadModel("WaterSphere.mesh");
+	renderComponent->SetMaterial("FireSphereMaterial");
+	newProjectile->SetScale(0.25f, 0.25f, 0.25f);
+	
 	RigidBodyComponent* rigidBody = new RigidBodyComponent();
 	newProjectile->AttachComponent(rigidBody);
 	rigidBody->CreateRigidBody(RigidBodyComponent::DYNAMIC);
 
-	ShapeDefinition shapeDef = ShapeDefinition();
-	shapeDef.SetSphereGeometry(0.15f);
+	newProjectile->SetHalfExtents(renderComponent->GetHalfExtents());
+	physx::PxVec3 entityHalfSize = HelperFunctions::OgreToPhysXVec3(newProjectile->GetHalfExtents());
 
-	newProjectile->SetHalfExtents(Ogre::Vector3(0.15f));
-	
+	ShapeDefinition shapeDef = ShapeDefinition();
+	shapeDef.SetSphereGeometry(entityHalfSize.magnitude() * 0.45f);
+
 	shapeDef.SetFilterFlags(ArenaData::PROJECTILE);
 
 	shapeDef.AddMaterial(PhysXDataManager::GetSingletonPtr()->CreateMaterial(1.0f, 1.0f, 0.0f, "101000"));
@@ -198,8 +203,6 @@ ProjectileDatabase::SharedProjectile ProjectileDatabase::CreateFireBlast(IScene*
 		//rigidBody->CreateDebugDraw();
 		rigidBody->SetUseGravity(false);
 	}
-
-	newProjectile->SetScale(0.1f, 0.1f, 0.1f);
 
 	return newProjectile;
 }
@@ -218,11 +221,14 @@ ProjectileDatabase::SharedProjectile ProjectileDatabase::CreateWaterJab(IScene* 
 	std::string projName = AbilityIDs::WaterEnumToString(AbilityIDs::WATER_JAB);
 
 	ProjectileAttributes waterJabAttributes = 
-		ProjectileAttributes(Ogre::Vector3(0.0f), 0.2f, 350.0f, 450.0f, 30.0f, 20.0f, 30.0f, true);
+		ProjectileAttributes(Ogre::Vector3(0.0f), 0.2f, 350.0f, 450.0f, 30.0f, 20.0f, 30.0f, false);
 
 	SharedProjectile projectile = std::make_shared<Projectile>(scene, waterJabAttributes, projName);
 	projectile->tag = TagsAndLayersManager::ProjectileTag;
 	projectile->DestructionTriggers = ArenaData::PROJECTILE | ArenaData::WATER;
+
+	ParticleComponent* waterMist = ParticleFactory::CreateParticleSystem
+		(ParticleFactory::WaterMist, projectile.get(), scene);
 
 	MeshRenderComponent* renderComponent = new MeshRenderComponent();
 	projectile->AttachComponent(renderComponent);

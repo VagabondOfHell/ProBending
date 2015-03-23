@@ -12,8 +12,8 @@ void AttackDatabase::GetEarthAttacks(ProjectileManager* projManager, unsigned sh
 	AttackParams earthJabParams = AttackParams();
 
 	AttackGesture* earthJabCreateGesture = new AttackGesture(projManager->GetOwningScene()->GetGUIManager());
-	earthJabCreateGesture->AddDiscreteEvaluator(0.0f, "Jab", "", GestureEnums::INVALID_GESTURE_SLOT, false, 0.8f, true, true);
-	//earthJabCreateGesture->AddCustomEvaluator(0.0f, &AttackGestureEvaluators::ArmPunchGesture, GestureEnums::BODYSIDE_EITHER);
+	//earthJabCreateGesture->AddDiscreteEvaluator(0.0f, "Jab", "", GestureEnums::INVALID_GESTURE_SLOT, false, 0.8f, true, true);
+	earthJabCreateGesture->AddCustomEvaluator(0.0f, &AttackGestureEvaluators::ArmPunchGesture, GestureEnums::BODYSIDE_EITHER, "", GestureEnums::INVALID_GESTURE_SLOT);
 
 	ProjectileIdentifier earthJabID = ProjectileIdentifier();
 	earthJabID.Element = ElementEnum::Earth; earthJabID.AbilityID = AbilityIDs::EARTH_JAB;

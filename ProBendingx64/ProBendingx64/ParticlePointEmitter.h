@@ -1,12 +1,10 @@
 #pragma once
 #include "AbstractParticleEmitter.h"
-#include <vector>
 
 class ParticlePointEmitter :
 	public AbstractParticleEmitter
 {
 protected:
-	std::vector<physx::PxVec3>forces;//The forces to apply to newly created particles
 
 public:
 	///<summary>Constructor of the abstract class to fill common values</summary>
