@@ -35,7 +35,10 @@ ProjectileDatabase::SharedProjectile ProjectileDatabase::CreateEarthJab(IScene* 
 {
 	std::string projName = AbilityIDs::EarthEnumToString(AbilityIDs::EARTH_JAB);
 
-	ProjectileAttributes earthJabAttributes = ProjectileAttributes(Ogre::Vector3(0.0f), 20.0f, 40.0f, 250.0f, 800.0f, 20.0f, 30.0f, true);
+	/*ProjectileAttributes earthJabAttributes = 
+		ProjectileAttributes(Ogre::Vector3(0.0f), 20.0f, 40.0f, 250.0f, 800.0f, 20.0f, 30.0f, true);*/
+	ProjectileAttributes earthJabAttributes = 
+		ProjectileAttributes(Ogre::Vector3(0.0f), 20.0f, 40.0f, 25.0f, 100.0f, 20.0f, 30.0f, false);
 
 	SharedProjectile projectile = std::make_shared<Projectile>(scene, earthJabAttributes, projName);
 	projectile->tag = TagsAndLayersManager::ProjectileTag;
@@ -220,8 +223,10 @@ ProjectileDatabase::SharedProjectile ProjectileDatabase::CreateWaterJab(IScene* 
 {
 	std::string projName = AbilityIDs::WaterEnumToString(AbilityIDs::WATER_JAB);
 
+	/*ProjectileAttributes waterJabAttributes = 
+		ProjectileAttributes(Ogre::Vector3(0.0f), 0.2f, 350.0f, 450.0f, 30.0f, 20.0f, 30.0f, false);*/
 	ProjectileAttributes waterJabAttributes = 
-		ProjectileAttributes(Ogre::Vector3(0.0f), 0.2f, 350.0f, 450.0f, 30.0f, 20.0f, 30.0f, false);
+		ProjectileAttributes(Ogre::Vector3(0.0f), 20.0f, 40.0f, 25.0f, 100.0f, 20.0f, 30.0f, false);
 
 	SharedProjectile projectile = std::make_shared<Projectile>(scene, waterJabAttributes, projName);
 	projectile->tag = TagsAndLayersManager::ProjectileTag;
@@ -252,7 +257,7 @@ ProjectileDatabase::SharedProjectile ProjectileDatabase::CreateWaterJab(IScene* 
 	if(shape)
 	{
 		rigidBody->AttachShape(*shape);
-		rigidBody->CreateDebugDraw();
+		//rigidBody->CreateDebugDraw();
 		rigidBody->SetUseGravity(false);
 	}
 

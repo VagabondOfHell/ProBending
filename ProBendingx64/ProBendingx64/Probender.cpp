@@ -82,13 +82,13 @@ void Probender::Start()
 
 	MeshRenderComponent* renderComponent = new MeshRenderComponent();
 	AttachComponent(renderComponent);
-	
-	std::string entityToLoad = GetMeshAndMaterialName();
+	//renderComponent->SetBonePosition("Spineroot", Ogre::Vector3(0.0f));
+	//std::string entityToLoad = GetMeshAndMaterialName();
 
 	//Try loading required model
-	renderComponent->LoadModel(entityToLoad);
-
-	renderComponent->SetMaterial(entityToLoad);
+	renderComponent->LoadModel("BlackSuitSpiderman.mesh");//entityToLoad);
+	//renderComponent->LoadModel(entityToLoad);
+	//renderComponent->SetMaterial(entityToLoad);
 	
 	meshRenderComponent = renderComponent;
 
@@ -136,13 +136,13 @@ void Probender::Update(float gameTime)
 				Ogre::Vector3 newCamPos = Ogre::Vector3(currPos.x + diff.x * -7.50, 
 					PROBENDER_HALF_EXTENTS.y *2.0f, currPos.z + diff.z * -7.50f);
 
-				camera->setPosition(newCamPos);
+				//camera->setPosition(newCamPos);
 
-				camera->lookAt(targetPos.x, PROBENDER_HALF_EXTENTS.y * 1.75f, targetPos.z);
+				//camera->lookAt(targetPos.x, PROBENDER_HALF_EXTENTS.y * 1.75f, targetPos.z);
 			}
 		}
 	}
-
+	gameObjectNode->setOrientation(Ogre::Quaternion::IDENTITY);
 	inputHandler.Update(gameTime);
 
 	stateManager.Update(gameTime);	

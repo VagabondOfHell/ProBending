@@ -9,14 +9,14 @@ material WaterSphereMaterial
         pass WaterSphereMaterial
         {
             ambient 0.800000011920929 0.7962287664413452 0.7849150896072388 1.0
-            diffuse 0.6400000190734865 0.6369830226448627 0.627932081042708 1.0
+            diffuse 0.6400000190734865 0.6369830226448627 0.627932081042708 0.50
             specular 0.5 0.5 0.5 1.0 12.5
             emissive 0.0 0.0 0.0 1.0
 
             alpha_to_coverage off
             colour_write on
             cull_hardware clockwise
-            depth_check on
+            depth_check off
             depth_func less_equal
             depth_write on
             illumination_stage 
@@ -25,7 +25,7 @@ material WaterSphereMaterial
             lighting on
             normalise_normals off
             polygon_mode solid
-            scene_blend one zero
+            scene_blend alpha_blend
             scene_blend_op add
             shading gouraud
             transparent_sorting on

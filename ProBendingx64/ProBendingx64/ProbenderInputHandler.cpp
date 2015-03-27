@@ -11,10 +11,11 @@
 
 #include "IScene.h"
 #include "OgreCamera.h"
-
+#include "OgreBone.h"
 #include "PxRigidDynamic.h"
 #include "foundation/PxVec2.h"
 #include "AttackDatabase.h"
+#include "OgreSceneNode.h"
 
 const float ProbenderInputHandler::LEAN_RESET_DISTANCE = 0.15f;
 
@@ -155,12 +156,20 @@ void ProbenderInputHandler::Update(const float gameTime)
 	}
 	else//otherwise only update the active
 	{
-		if(NeedSpawnPosition)
+		if(!activeAttack->GetProjectile())
 		{
-			if(activeAttack->SpawnPositionValid())
+			activeAttack->Reset();
+			activeAttack = NULL;
+		}
+		else
+		{
+			if(NeedSpawnPosition)
 			{
-				PrepareProjectile();
-				NeedSpawnPosition = false;
+				if(activeAttack->SpawnPositionValid())
+				{
+					PrepareProjectile();
+					NeedSpawnPosition = false;
+				}
 			}
 		}
 
@@ -198,7 +207,7 @@ void ProbenderInputHandler::BodyFrameAcquired(const CompleteData& currentData, c
 {
 	UpdateDisplay(currentData);
 
-	CheckLean(currentData, previousData);
+	//CheckLean(currentData, previousData);
 
 	CheckJump(currentData, previousData);
 
@@ -208,7 +217,7 @@ void ProbenderInputHandler::BodyFrameAcquired(const CompleteData& currentData, c
 	frameData._BodyDimensions = &bodyDimensions;
 	frameData._Probender = probender;
 
-	HandleAttacks(frameData);
+	//HandleAttacks(frameData);
 }
 
 void ProbenderInputHandler::UpdateDisplay(const CompleteData& currentData)
@@ -217,7 +226,10 @@ void ProbenderInputHandler::UpdateDisplay(const CompleteData& currentData)
 	meshData.reserve(JointType::JointType_Count);
 
 	CameraSpacePoint spineBasePoint = currentData.JointData[JointType_SpineBase].Position;
-	Ogre::Vector3 spineBasePosition = Ogre::Vector3(-spineBasePoint.X, spineBasePoint.Y, 1.0f);
+	Ogre::Vector3 spineBasePosition = Ogre::Vector3(-spineBasePoint.X, spineBasePoint.Y, -spineBasePoint.Z);
+	JointOrientation spineOrientation = currentData.JointOrientations[JointType_SpineBase];
+	Ogre::Quaternion spineBaseOrientation = Ogre::Quaternion(spineOrientation.Orientation.w, 
+		spineOrientation.Orientation.x, spineOrientation.Orientation.y, spineOrientation.Orientation.z);
 
 	for (int i = 0; i < RenderableJointType::Count; i++)
 	{
@@ -225,12 +237,194 @@ void ProbenderInputHandler::UpdateDisplay(const CompleteData& currentData)
 		{
 			CameraSpacePoint point = currentData.JointData[i].Position;
 			
-			meshData.push_back((Ogre::Vector3(-point.X * PROBENDER_HALF_EXTENTS.x * 2, point.Y
-				* PROBENDER_HALF_EXTENTS.y * 1.5f, 1.0f)) - spineBasePosition);
+			/*meshData.push_back((Ogre::Vector3(-point.X * PROBENDER_HALF_EXTENTS.x * 2, point.Y
+				* PROBENDER_HALF_EXTENTS.y * 1.5f, 1.0f)) - spineBasePosition);*/
+			std::string boneName = RenderableJointType::GetBoneName((RenderableJointType::RenderableJointType)i);
+
+			switch ((RenderableJointType::RenderableJointType)i)
+			{
+			case RenderableJointType::Head:
+				boneName =  "head";
+				break;
+			case RenderableJointType::Neck:
+				//boneName =  "neck";
+				boneName = "";
+				break;
+			case RenderableJointType::SpineShoulder:
+				//boneName =  "ribs";
+				boneName = "";
+				break;
+			case RenderableJointType::SpineMid:
+				//boneName =  "spine";
+				boneName = "ribs";
+				break;
+			case RenderableJointType::SpineBase:
+				//boneName =  "hips";
+				boneName = "";
+				break;
+			case RenderableJointType::ShoulderRight:
+				boneName =  "shoulder.R";
+				//boneName = "upper_arm.R";
+				break;
+			case RenderableJointType::ElbowRight:
+				//boneName =  "forearm.R";
+				//boneName = "shoulder.R";
+
+				boneName = "upper_arm.R";
+				break;
+			case RenderableJointType::WristRight:
+				//boneName =  "hand.R";
+				boneName = "forearm.R";
+				break;
+			case RenderableJointType::HandRight:
+				boneName =  "";
+				break;
+			case RenderableJointType::HandTipRight:
+				boneName =  "";
+				break;
+			case RenderableJointType::ShoulderLeft:
+				boneName =  "shoulder.L";
+				break;
+			case RenderableJointType::ElbowLeft:
+				//boneName =  "forearm.L";
+				boneName = "shoulder.L";
+				break;
+			case RenderableJointType::WristLeft:
+				boneName =  "hand.L";
+				break;
+			case RenderableJointType::HandLeft:
+				boneName =  "";
+				break;
+			case RenderableJointType::ThumbRight:
+				boneName =  "thumb.02.R";
+				break;
+			case RenderableJointType::HandTipLeft:
+				boneName =  "";
+				break;
+			case RenderableJointType::ThumbLeft:
+				boneName =  "thumb.02.L";
+				break;
+			case RenderableJointType::HipLeft:
+				//boneName =  "thigh.L";
+				boneName =  "";
+				break;
+			case RenderableJointType::KneeLeft:
+				boneName =  "shin.L";
+				break;
+			case RenderableJointType::AnkleLeft:
+				boneName =  "heel.L";
+				break;
+			case RenderableJointType::FootLeft:
+				boneName =  "foot.L";
+				break;
+			case RenderableJointType::HipRight:
+				//boneName =  "thigh.R";
+				boneName =  "";
+				break;
+			case RenderableJointType::KneeRight:
+				boneName =  "shin.R";
+				break;
+			case RenderableJointType::AnkleRight:
+				boneName =  "heel.R";
+				break;
+			case RenderableJointType::FootRight:
+				boneName =  "foot.R";
+				break;
+			case RenderableJointType::Count:
+				boneName =  "";
+				break;
+			default:
+				boneName =  "";
+				break;
+			}
+
+			Ogre::Bone* rootBone = probender->meshRenderComponent->GetBone("hips");
+			
+			Ogre::Bone* foreArm = probender->meshRenderComponent->GetBone("forearm.R");
+			Ogre::Bone* upperArm = probender->meshRenderComponent->GetBone("upper_arm.R");
+			Ogre::Bone* shoulderBone = probender->meshRenderComponent->GetBone("shoulder.R");
+			//shoulderBone->resetOrientation();
+
+			//foreArm->setInheritOrientation(false);
+
+			if(!boneName.empty() && ((RenderableJointType::RenderableJointType)i) == RenderableJointType::ShoulderRight ||
+				(((RenderableJointType::RenderableJointType)i) == RenderableJointType::WristRight) ||
+				(((RenderableJointType::RenderableJointType)i) == RenderableJointType::ElbowRight)||
+				(((RenderableJointType::RenderableJointType)i) == RenderableJointType::SpineMid))// ||
+				//(((RenderableJointType::RenderableJointType)i) == RenderableJointType::ElbowLeft))
+				//|| ((RenderableJointType::RenderableJointType)i) == RenderableJointType::WristRight)
+			{
+				Ogre::Bone* currBone = probender->meshRenderComponent->GetBone(boneName);
+				currBone->setManuallyControlled(true);
+				//currBone->setInheritOrientation(false);
+				currBone->resetOrientation(); 
+				
+				CameraSpacePoint shoulder = currentData.JointData[JointType_ShoulderRight].Position;
+				CameraSpacePoint foreArm = currentData.JointData[JointType_ElbowRight].Position;
+				CameraSpacePoint wrist = currentData.JointData[JointType_HandRight].Position;
+				CameraSpacePoint spine = currentData.JointData[JointType_SpineMid].Position;
+				CameraSpacePoint shoulderL = currentData.JointData[JointType_ShoulderLeft].Position;
+				Ogre::Vector3 kinectPosition;
+				
+				if(i == RenderableJointType::ElbowRight)
+					//kinectPosition = Ogre::Vector3(shoulder.X, shoulder.Y, shoulder.Z);
+						kinectPosition = Ogre::Vector3(-foreArm.X, -foreArm.Y, -foreArm.Z);
+				else if(i == RenderableJointType::ShoulderRight)
+					kinectPosition = Ogre::Vector3(-shoulder.X, shoulder.Y, -shoulder.Z);
+				else if(i == RenderableJointType::WristRight)
+					kinectPosition = Ogre::Vector3(-wrist.X, wrist.Y, -wrist.Z);
+				else if(i == RenderableJointType::SpineMid)
+					kinectPosition = Ogre::Vector3(-spine.X, spine.Y, -spine.Z);
+				else if(i == RenderableJointType::ElbowLeft)
+					kinectPosition = Ogre::Vector3(shoulderL.X, shoulderL.Y, shoulderL.Z);
+
+				Ogre::Node* parent = probender->gameObjectNode;
+
+				Ogre::Quaternion parentOrientation = Ogre::Quaternion::IDENTITY;
+				
+				if(parent)
+					currBone->getParent()->_getFullTransform().extractQuaternion();
+
+				Vector4 currOrientation = currentData.JointOrientations[i].Orientation;
+
+				Ogre::Quaternion elbow = Ogre::Quaternion(currOrientation.w, 
+					currOrientation.x, currOrientation.y, currOrientation.z);
+			
+				Ogre::Quaternion extraction = 
+					 currBone->getParent()->_getFullTransform().extractQuaternion().Inverse();
+
+				//if(i == RenderableJointType::WristRight)
+				//{
+				//	currBone->setInheritOrientation(true);
+				//	extraction =  Ogre::Quaternion(Ogre::Radian(Ogre::Degree(180)), Ogre::Vector3(0.0, 1.0, 0.0).normalisedCopy()) *
+				//		extraction// *
+				//		//currBone->getParent()->getParent()->_getFullTransform().extractQuaternion().Inverse() 
+				//		;
+				//}
+				//else
+					extraction = Ogre::Quaternion(Ogre::Radian(Ogre::Degree(180)), Ogre::Vector3(0.0, 1.0, 0.0).normalisedCopy()) * 
+					extraction;
+				
+				currBone->setOrientation(extraction * elbow);// * Ogre::Quaternion(Ogre::Radian(Ogre::Degree(180)), Ogre::Vector3(0.0, 0.0, 1.0).normalisedCopy())
+				//	* Ogre::Quaternion(Ogre::Radian(Ogre::Degree(180)), Ogre::Vector3(0.0, 0.0, 1.0).normalisedCopy()));
+				//currBone->_getDerivedOrientation() * 
+				currBone->setPosition((//extraction * 
+					(kinectPosition - spineBasePosition)));// - spineBasePosition));
+
+				if(i == RenderableJointType::WristRight)
+				{
+					//upperArm->setInheritOrientation(false);
+					//foreArm->setInheritOrientation(false);
+					//upperArm->setOrientation(currBone->_getDerivedOrientation().Inverse() * elbow);
+					//foreArm->setOrientation(upperArm->_getDerivedOrientation().Inverse() * elbow);
+				}
+
+			}
+			
 		}
 	}
 
-	probender->meshRenderComponent->UpdateMesh(meshData, 0, Ogre::VES_POSITION);
+	//probender->meshRenderComponent->UpdateMesh(meshData, 0, Ogre::VES_POSITION);
 }
 
 void ProbenderInputHandler::CheckLean(const CompleteData& currentData, const CompleteData& previousData)
@@ -403,7 +597,7 @@ void ProbenderInputHandler::DiscreteGesturesAcquired(const std::vector<KinectGes
 	frameData._BodyDimensions = &bodyDimensions;
 	frameData._Probender = probender;
 
-	HandleAttacks(frameData);
+	//HandleAttacks(frameData);
 }
 
 void ProbenderInputHandler::ContinuousGesturesAcquired(const std::vector<KinectGestureResult>continuousGestureResults)
@@ -457,6 +651,8 @@ void ProbenderInputHandler::keyDown(const OIS::KeyEvent &arg)
 {
 }
 
+float angle = 0;
+
 void ProbenderInputHandler::keyPressed( const OIS::KeyEvent &arg )
 {
 	if(arg.key == OIS::KC_F)
@@ -493,18 +689,28 @@ void ProbenderInputHandler::keyPressed( const OIS::KeyEvent &arg )
 	}
 	else if(arg.key == OIS::KC_LEFT)
 	{
-		/*if(probender->rightHandAttack)
-		{
-			RigidBodyComponent* rigidBody = (RigidBodyComponent*)probender->rightHandAttack->GetComponent(Component::RIGID_BODY_COMPONENT);
-			Ogre::Vector3 currPos = probender->rightHandAttack->GetWorldPosition();
-			if(rigidBody)
-				rigidBody->ApplyForce(physx::PxVec3(-100.0f, 0.0f, 0.0f));
-		}
-		else*/
-		{
-			if(probender->contestantID == 0)
-			probender->Dodge(Probender::DD_LEFT);
-		}
+		//probender->Dodge(Probender::DD_LEFT);
+		Ogre::Bone* bone = probender->meshRenderComponent->GetBone("head");
+
+		Ogre::Vector3 bonePos = bone->_getDerivedPosition();
+
+		printf("Bone Pos: %f, %f, %f\n", bonePos.x, bonePos.y, bonePos.z);
+
+		bone->setManuallyControlled(true);
+		bone->setInheritOrientation(false);
+
+		bone->resetOrientation();
+
+		Ogre::Quaternion boneOri = bone->getOrientation();
+		Ogre::Quaternion boneDerived = bone->_getDerivedOrientation();
+
+		printf("Bone Local Ori: %f, %f, %f, %f\n", boneOri.w, boneOri.x, boneOri.y, boneOri.z);
+
+		printf("Bone Derived Ori: %f, %f, %f, %f\n", boneDerived.w, boneDerived.x, boneDerived.y, boneDerived.z);
+
+		/*<rotation angle="1.811495">
+		<axis x="0.051414" y="-0.884627" z="0.463456"/>*/
+
 	}
 	else if(arg.key == OIS::KC_RIGHT)
 	{
@@ -517,7 +723,21 @@ void ProbenderInputHandler::keyPressed( const OIS::KeyEvent &arg )
 		}
 		else*/
 		{
-			probender->Dodge(Probender::DD_RIGHT);
+			angle += 10;
+			//probender->Dodge(Probender::DD_RIGHT);
+			Ogre::Bone* bone = probender->meshRenderComponent->GetBone("head");
+
+			Ogre::Vector3 bonePos = bone->_getDerivedPosition();
+
+			printf("Bone Pos: %f, %f, %f\n", bonePos.x, bonePos.y, bonePos.z);
+
+			bone->setManuallyControlled(true);
+			bone->setInheritOrientation(false);
+			bone->yaw(Ogre::Radian(Ogre::Degree(angle)), Ogre::Node::TS_LOCAL);
+			//bone->rotate(Ogre::Quaternion(Ogre::Radian(Ogre::Degree(angle)), Ogre::Vector3(1.0f, 0.0f, 0.0f)));
+			//bone->setOrientation(Ogre::Quaternion(Ogre::Radian(Ogre::Degree(angle)), Ogre::Vector3(0.0f ,1.0f, 0.0f)));
+			bone->setPosition(0.0f, 0.106f, 0.0f);
+			
 		}
 	}
 	else if(arg.key == keysLayout.JumpButton)
@@ -618,12 +838,21 @@ void ProbenderInputHandler::keyPressed( const OIS::KeyEvent &arg )
 
 				MeshRenderComponent* renderComp = (MeshRenderComponent*)attack->GetComponent(Component::MESH_RENDER_COMPONENT);
 
-				Ogre::Vector3 camDir = probender->Forward();
+				//Ogre::Vector3 camDir = probender->Forward();
+				Ogre::Vector3 camForward = probender->camera->getDerivedOrientation() * -Ogre::Vector3::UNIT_Z;
+				camForward.normalise();
 
-				attack->SetWorldPosition(probender->GetWorldPosition() + 
-					(probender->Forward() * (renderComp->GetHalfExtents().x * 2)));
+				attack->SetWorldPosition(probender->GetWorldPosition()
+					+ (camForward * attack->GetHalfExtents().x ));
+
+				/*attack->SetWorldPosition(probender->GetWorldPosition() + 
+					(probender->Forward() * (renderComp->GetHalfExtents().x * 2)));*/
 				attack->SetWorldOrientation(1.0f, 0.0f, 0.0f, 0.0f);
 
+				//Launch the Projectile
+				attack->LaunchProjectile(HelperFunctions::OgreToPhysXVec3(camForward), 
+					probender->GetInGameData().CurrentAttributes.GetBonusAttackSpeed(),
+					probender->GetInGameData().CurrentAttributes.GetBonusAttackDamage());
 				/*attack->LaunchProjectile(physx::PxVec3(camDir.x, camDir.y, camDir.z), 
 				probender->GetInGameData().CurrentAttributes.GetBonusAttackSpeed(),
 				probender->GetInGameData().CurrentAttributes.GetBonusAttackDamage());*/

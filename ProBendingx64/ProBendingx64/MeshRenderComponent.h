@@ -64,6 +64,12 @@ public:
 	///<returns>Gets the half size of the rectangle representing the entity</returns>
 	Ogre::Vector3 GetHalfExtents()const;
 
+	void SetBonePosition(const std::string& boneName, const Ogre::Vector3& newBonePosition, bool localSpace = true);
+
+	void SetBoneOrientation(const std::string& boneName, const Ogre::Quaternion& newBoneOrientation, bool localSpace = true);
+
+	Ogre::Bone* GetBone(const std::string& boneName);
+
 	///<summary>Gets the vertices and indices of the mesh. Expensive method, call as few times as possible</summary>
 	///<returns>A shared pointer to the mesh info that was created</returns>
 	std::shared_ptr<MeshInfo> const GetMeshInfo()const;
@@ -86,6 +92,8 @@ public:
 	virtual void Start();
 
 	virtual void Update(float gameTime);
+
+	void DisplaySkeleton(bool val);
 
 	///<summary>Gets the component type of this component</summary>
 	///<returns>The type of component</returns>

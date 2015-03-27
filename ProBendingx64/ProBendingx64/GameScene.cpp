@@ -324,36 +324,36 @@ void GameScene::keyPressed( const OIS::KeyEvent &arg )
 
 	if(arg.key == OIS::KC_NUMPAD8)
 	{
-		mainOgreCamera->rotate(Ogre::Vector3::UNIT_X, Ogre::Radian(Ogre::Degree(1)));
+		mainOgreCamera->rotate(Ogre::Vector3::UNIT_X, Ogre::Radian(Ogre::Degree(10)));
 		//mainOgreCamera->yaw(Ogre::Radian(Ogre::Degree(10)));
 	}
 
 	if(arg.key == OIS::KC_NUMPAD2)
 	{
-		mainOgreCamera->rotate(Ogre::Vector3::UNIT_X, Ogre::Radian(Ogre::Degree(-1)));
+		mainOgreCamera->rotate(Ogre::Vector3::UNIT_X, Ogre::Radian(Ogre::Degree(-10)));
 		//mainOgreCamera->yaw(Ogre::Radian(Ogre::Degree(-10)));
 	}
 
 	if(arg.key == OIS::KC_NUMPAD4)
 	{
-		mainOgreCamera->rotate(Ogre::Vector3::UNIT_Y, Ogre::Radian(Ogre::Degree(1)));
+		mainOgreCamera->rotate(Ogre::Vector3::UNIT_Y, Ogre::Radian(Ogre::Degree(10)));
 		//mainOgreCamera->pitch(Ogre::Radian(Ogre::Degree(10)));
 	}
 	if(arg.key == OIS::KC_NUMPAD6)
 	{
-		mainOgreCamera->rotate(Ogre::Vector3::UNIT_Y, Ogre::Radian(Ogre::Degree(-1)));
+		mainOgreCamera->rotate(Ogre::Vector3::UNIT_Y, Ogre::Radian(Ogre::Degree(-10)));
 		//mainOgreCamera->pitch(Ogre::Radian(Ogre::Degree(-10)));
 	}
 
 	if(arg.key == OIS::KC_NUMPAD7)
 	{
 		
-		mainOgreCamera->rotate(Ogre::Vector3::UNIT_Z, Ogre::Radian(Ogre::Degree(1)));
+		mainOgreCamera->rotate(Ogre::Vector3::UNIT_Z, Ogre::Radian(Ogre::Degree(10)));
 		//mainOgreCamera->roll(Ogre::Radian(Ogre::Degree(10)));
 	}
 	if(arg.key == OIS::KC_NUMPAD9)
 	{
-		mainOgreCamera->rotate(Ogre::Vector3::UNIT_Z, Ogre::Radian(Ogre::Degree(-1)));
+		mainOgreCamera->rotate(Ogre::Vector3::UNIT_Z, Ogre::Radian(Ogre::Degree(-10)));
 		//mainOgreCamera->roll(Ogre::Radian(Ogre::Degree(-10)));
 	}
 

@@ -188,5 +188,49 @@ void MeshRenderComponent::UpdateMesh(const std::vector<Ogre::Vector3>& newData,
 	vbuf->unlock();
 }
 
+void MeshRenderComponent::SetBonePosition(const std::string& boneName, const Ogre::Vector3& newBonePosition, bool localSpace)
+{
+	if(entity)
+	{
+		Ogre::Bone* bone = entity->getSkeleton()->getBone(boneName);
+		bone->setManuallyControlled(true);
+
+		if(localSpace)
+			bone->setPosition(newBonePosition);
+		else
+			bone->_setDerivedPosition(newBonePosition);
+	}
+}
+
+void MeshRenderComponent::SetBoneOrientation(const std::string& boneName, const Ogre::Quaternion& newBoneOrientation, bool localSpace /*= true*/)
+{
+	if(entity)
+	{
+		Ogre::Bone* bone = entity->getSkeleton()->getBone(boneName);
+		bone->setManuallyControlled(true);
+
+		if(localSpace)
+			bone->setOrientation(newBoneOrientation);
+		else
+			bone->_setDerivedOrientation(newBoneOrientation);
+	}
+}
+
+Ogre::Bone* MeshRenderComponent::GetBone(const std::string& boneName)
+{
+	if(entity)
+	{
+		return entity->getSkeleton()->getBone(boneName);
+	}
+}
+
+void MeshRenderComponent::DisplaySkeleton(bool val)
+{
+	if(entity)
+	{
+		entity->setDisplaySkeleton(val);
+	}
+}
+
 
 

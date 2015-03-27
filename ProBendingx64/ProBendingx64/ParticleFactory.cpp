@@ -169,8 +169,10 @@ ParticleComponent* ParticleFactory::CreateParticleSystem(ParticlePrefabs prefab,
 		break;
 	case ParticleFactory::PointSmoke:
 		{
-			std::shared_ptr<SphereEmitter> emitter = std::make_shared<SphereEmitter>
-				(SphereEmitter(90, physx::PxVec3(0.0f), 0.0f, 0.25f, 0.50f, true, 0.50f, false));
+			std::shared_ptr<ParticlePointEmitter> emitter = std::make_shared<ParticlePointEmitter>
+				(ParticlePointEmitter(90, physx::PxVec3(0.0f, 0.10f, 0.0f), 
+				physx::PxVec3(-0.5f, 1.0f, -0.50f).getNormalized(), physx::PxVec3(0.50f, 1.0f, 0.50f).getNormalized(),
+				0.0f, 1.50f, 2.50f));
 			return CreateSmokeEffect(emitter, object, scene);
 			
 		}
