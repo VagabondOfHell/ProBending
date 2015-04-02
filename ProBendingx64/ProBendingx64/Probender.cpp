@@ -57,8 +57,8 @@ void Probender::SetCamera(Ogre::Camera* newCamera)
 	Ogre::Vector3 diff = currentTarget->GetWorldPosition() - currPos;
 	diff.normalise();
 
-	Ogre::Vector3 newCamPos = Ogre::Vector3(currPos.x + diff.x * -7.50, 
-		PROBENDER_HALF_EXTENTS.y *2.0f, currPos.z + diff.z * -7.50f);
+	Ogre::Vector3 newCamPos = Ogre::Vector3(currPos.x + diff.x * -2.50, 
+		PROBENDER_HALF_EXTENTS.y *2.50f, currPos.z + diff.z * -2.50f);
 
 	camera->setPosition(newCamPos);
 	camera->lookAt(currentTarget->GetWorldPosition());
@@ -86,7 +86,7 @@ void Probender::Start()
 	//std::string entityToLoad = GetMeshAndMaterialName();
 
 	//Try loading required model
-	renderComponent->LoadModel("BlackSuitSpiderman.mesh");//entityToLoad);
+	renderComponent->LoadModel("Ultimate_Spiderman.mesh");//entityToLoad);
 	//renderComponent->LoadModel(entityToLoad);
 	//renderComponent->SetMaterial(entityToLoad);
 	
@@ -133,12 +133,12 @@ void Probender::Update(float gameTime)
 				Ogre::Vector3 diff = targetPos - currPos;
 				diff.normalise();
 
-				Ogre::Vector3 newCamPos = Ogre::Vector3(currPos.x + diff.x * -7.50, 
-					PROBENDER_HALF_EXTENTS.y *2.0f, currPos.z + diff.z * -7.50f);
+				Ogre::Vector3 newCamPos = Ogre::Vector3(currPos.x + diff.x * -2.50, 
+					PROBENDER_HALF_EXTENTS.y *2.0f, currPos.z + diff.z * -1.50f);
 
-				//camera->setPosition(newCamPos);
+				/*camera->setPosition(newCamPos);
 
-				//camera->lookAt(targetPos.x, PROBENDER_HALF_EXTENTS.y * 1.75f, targetPos.z);
+				camera->lookAt(targetPos.x, PROBENDER_HALF_EXTENTS.y * 1.75f, targetPos.z);*/
 			}
 		}
 	}

@@ -70,6 +70,8 @@ public:
 
 	Ogre::Bone* GetBone(const std::string& boneName);
 
+	inline Ogre::Entity* GetEntity()const{return entity;}
+
 	///<summary>Gets the vertices and indices of the mesh. Expensive method, call as few times as possible</summary>
 	///<returns>A shared pointer to the mesh info that was created</returns>
 	std::shared_ptr<MeshInfo> const GetMeshInfo()const;

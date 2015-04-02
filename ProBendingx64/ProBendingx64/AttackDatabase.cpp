@@ -13,7 +13,8 @@ void AttackDatabase::GetEarthAttacks(ProjectileManager* projManager, unsigned sh
 
 	AttackGesture* earthJabCreateGesture = new AttackGesture(projManager->GetOwningScene()->GetGUIManager());
 	//earthJabCreateGesture->AddDiscreteEvaluator(0.0f, "Jab", "", GestureEnums::INVALID_GESTURE_SLOT, false, 0.8f, true, true);
-	earthJabCreateGesture->AddCustomEvaluator(0.0f, &AttackGestureEvaluators::ArmPunchGesture, GestureEnums::BODYSIDE_EITHER, "", GestureEnums::INVALID_GESTURE_SLOT);
+	earthJabCreateGesture->AddCustomEvaluator(0.0f, &AttackGestureEvaluators::ArmPunchGesture, GestureEnums::BODYSIDE_EITHER, "", 
+		GestureEnums::INVALID_GESTURE_SLOT);
 
 	ProjectileIdentifier earthJabID = ProjectileIdentifier();
 	earthJabID.Element = ElementEnum::Earth; earthJabID.AbilityID = AbilityIDs::EARTH_JAB;
@@ -74,9 +75,10 @@ void AttackDatabase::GetFireAttacks(ProjectileManager* projManager, unsigned sho
 	AttackParams fireJabParams = AttackParams();
 
 	AttackGesture* fireJabCreateGesture = new AttackGesture(projManager->GetOwningScene()->GetGUIManager());
-	//fireJabCreateGesture->AddCustomEvaluator(0.0f, &AttackGestureEvaluators::ArmPunchGesture, GestureEnums::BODYSIDE_EITHER);
-	fireJabCreateGesture->AddDiscreteEvaluator(0.0f, "Jab", std::string(""), 
-		GestureEnums::INVALID_GESTURE_SLOT, false, 0.5f, true, true);
+	fireJabCreateGesture->AddCustomEvaluator(0.0f, &AttackGestureEvaluators::ArmPunchGesture, GestureEnums::BODYSIDE_EITHER, "", 
+		GestureEnums::INVALID_GESTURE_SLOT);
+	//fireJabCreateGesture->AddDiscreteEvaluator(0.0f, "Jab", std::string(""), 
+		//GestureEnums::INVALID_GESTURE_SLOT, false, 0.5f, true, true);
 
 	ProjectileIdentifier fireJabID = ProjectileIdentifier();
 	fireJabID.Element = ElementEnum::Fire; fireJabID.AbilityID = AbilityIDs::FIRE_JAB;
@@ -141,8 +143,9 @@ void AttackDatabase::GetWaterAttacks(ProjectileManager* projManager, unsigned sh
 	AttackParams waterJabParams = AttackParams();
 
 	AttackGesture* waterJabCreateGesture = new AttackGesture(projManager->GetOwningScene()->GetGUIManager());
-	//fireJabCreateGesture->AddCustomEvaluator(0.0f, &AttackGestureEvaluators::ArmPunchGesture, GestureEnums::BODYSIDE_EITHER);
-	waterJabCreateGesture->AddDiscreteEvaluator(0.0f, "Jab", "", GestureEnums::INVALID_GESTURE_SLOT, false, 0.5f, true, true);
+	waterJabCreateGesture->AddCustomEvaluator(0.0f, &AttackGestureEvaluators::ArmPunchGesture, GestureEnums::BODYSIDE_EITHER, "", 
+		GestureEnums::INVALID_GESTURE_SLOT);
+	//waterJabCreateGesture->AddDiscreteEvaluator(0.0f, "Jab", "", GestureEnums::INVALID_GESTURE_SLOT, false, 0.5f, true, true);
 
 	ProjectileIdentifier waterJabID = ProjectileIdentifier();
 	waterJabID.Element = ElementEnum::Water; waterJabID.AbilityID = AbilityIDs::WATER_JAB;

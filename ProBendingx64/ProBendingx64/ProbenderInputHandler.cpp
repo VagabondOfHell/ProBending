@@ -10,6 +10,9 @@
 #include "ProjectileController.h"
 
 #include "IScene.h"
+#include "OgreSkeletonInstance.h"
+#include "OgreEntity.h"
+
 #include "OgreCamera.h"
 #include "OgreBone.h"
 #include "PxRigidDynamic.h"
@@ -29,6 +32,7 @@ ProbenderInputHandler::ProbenderInputHandler(Probender* _probenderToHandle, bool
 	ManageStance = manageStance;
 	canLean = true;
 	attackBreather = 0.0f;
+
 }
 
 
@@ -156,22 +160,23 @@ void ProbenderInputHandler::Update(const float gameTime)
 	}
 	else//otherwise only update the active
 	{
-		if(!activeAttack->GetProjectile())
+		if(NeedSpawnPosition)
 		{
-			activeAttack->Reset();
-			activeAttack = NULL;
+			if(activeAttack->SpawnPositionValid())
+			{
+				PrepareProjectile();
+				NeedSpawnPosition = false;
+			}
 		}
 		else
 		{
-			if(NeedSpawnPosition)
+			if(!activeAttack->GetProjectile())
 			{
-				if(activeAttack->SpawnPositionValid())
-				{
-					PrepareProjectile();
-					NeedSpawnPosition = false;
-				}
+				activeAttack->Reset();
+				activeAttack = NULL;
 			}
 		}
+	
 
 		if(activeAttack)
 			activeAttack->Update(gameTime);
@@ -209,7 +214,7 @@ void ProbenderInputHandler::BodyFrameAcquired(const CompleteData& currentData, c
 
 	//CheckLean(currentData, previousData);
 
-	CheckJump(currentData, previousData);
+	//CheckJump(currentData, previousData);
 
 	AttackData frameData = AttackData();
 	frameData.CurrentData = &currentData;
@@ -222,6 +227,8 @@ void ProbenderInputHandler::BodyFrameAcquired(const CompleteData& currentData, c
 
 void ProbenderInputHandler::UpdateDisplay(const CompleteData& currentData)
 {
+	FillJointWorldOrientations(currentData);
+
 	std::vector<Ogre::Vector3> meshData = std::vector<Ogre::Vector3>();
 	meshData.reserve(JointType::JointType_Count);
 
@@ -237,8 +244,8 @@ void ProbenderInputHandler::UpdateDisplay(const CompleteData& currentData)
 		{
 			CameraSpacePoint point = currentData.JointData[i].Position;
 			
-			/*meshData.push_back((Ogre::Vector3(-point.X * PROBENDER_HALF_EXTENTS.x * 2, point.Y
-				* PROBENDER_HALF_EXTENTS.y * 1.5f, 1.0f)) - spineBasePosition);*/
+			meshData.push_back((Ogre::Vector3(-point.X * PROBENDER_HALF_EXTENTS.x * 2, point.Y
+				* PROBENDER_HALF_EXTENTS.y * 1.5f, 1.0f)) - spineBasePosition);
 			std::string boneName = RenderableJointType::GetBoneName((RenderableJointType::RenderableJointType)i);
 
 			switch ((RenderableJointType::RenderableJointType)i)
@@ -247,16 +254,17 @@ void ProbenderInputHandler::UpdateDisplay(const CompleteData& currentData)
 				boneName =  "head";
 				break;
 			case RenderableJointType::Neck:
-				//boneName =  "neck";
-				boneName = "";
+				boneName =  "head";
+				//boneName = "";
 				break;
 			case RenderableJointType::SpineShoulder:
-				//boneName =  "ribs";
-				boneName = "";
+				boneName =  "ribs";
+				//boneName = "";
 				break;
 			case RenderableJointType::SpineMid:
 				//boneName =  "spine";
 				boneName = "ribs";
+				//boneName = "";
 				break;
 			case RenderableJointType::SpineBase:
 				//boneName =  "hips";
@@ -267,10 +275,10 @@ void ProbenderInputHandler::UpdateDisplay(const CompleteData& currentData)
 				//boneName = "upper_arm.R";
 				break;
 			case RenderableJointType::ElbowRight:
-				//boneName =  "forearm.R";
+				boneName =  "forearm.R";
 				//boneName = "shoulder.R";
 
-				boneName = "upper_arm.R";
+				//boneName = "upper_arm.R";
 				break;
 			case RenderableJointType::WristRight:
 				//boneName =  "hand.R";
@@ -338,93 +346,198 @@ void ProbenderInputHandler::UpdateDisplay(const CompleteData& currentData)
 				break;
 			}
 
-			Ogre::Bone* rootBone = probender->meshRenderComponent->GetBone("hips");
-			
-			Ogre::Bone* foreArm = probender->meshRenderComponent->GetBone("forearm.R");
-			Ogre::Bone* upperArm = probender->meshRenderComponent->GetBone("upper_arm.R");
-			Ogre::Bone* shoulderBone = probender->meshRenderComponent->GetBone("shoulder.R");
-			//shoulderBone->resetOrientation();
+			//probender->meshRenderComponent->GetBone("neck")->setInheritOrientation(false);
 
-			//foreArm->setInheritOrientation(false);
-
-			if(!boneName.empty() && ((RenderableJointType::RenderableJointType)i) == RenderableJointType::ShoulderRight ||
-				(((RenderableJointType::RenderableJointType)i) == RenderableJointType::WristRight) ||
-				(((RenderableJointType::RenderableJointType)i) == RenderableJointType::ElbowRight)||
-				(((RenderableJointType::RenderableJointType)i) == RenderableJointType::SpineMid))// ||
-				//(((RenderableJointType::RenderableJointType)i) == RenderableJointType::ElbowLeft))
-				//|| ((RenderableJointType::RenderableJointType)i) == RenderableJointType::WristRight)
-			{
-				Ogre::Bone* currBone = probender->meshRenderComponent->GetBone(boneName);
-				currBone->setManuallyControlled(true);
-				//currBone->setInheritOrientation(false);
-				currBone->resetOrientation(); 
-				
-				CameraSpacePoint shoulder = currentData.JointData[JointType_ShoulderRight].Position;
-				CameraSpacePoint foreArm = currentData.JointData[JointType_ElbowRight].Position;
-				CameraSpacePoint wrist = currentData.JointData[JointType_HandRight].Position;
-				CameraSpacePoint spine = currentData.JointData[JointType_SpineMid].Position;
-				CameraSpacePoint shoulderL = currentData.JointData[JointType_ShoulderLeft].Position;
-				Ogre::Vector3 kinectPosition;
-				
-				if(i == RenderableJointType::ElbowRight)
-					//kinectPosition = Ogre::Vector3(shoulder.X, shoulder.Y, shoulder.Z);
-						kinectPosition = Ogre::Vector3(-foreArm.X, -foreArm.Y, -foreArm.Z);
-				else if(i == RenderableJointType::ShoulderRight)
-					kinectPosition = Ogre::Vector3(-shoulder.X, shoulder.Y, -shoulder.Z);
-				else if(i == RenderableJointType::WristRight)
-					kinectPosition = Ogre::Vector3(-wrist.X, wrist.Y, -wrist.Z);
-				else if(i == RenderableJointType::SpineMid)
-					kinectPosition = Ogre::Vector3(-spine.X, spine.Y, -spine.Z);
-				else if(i == RenderableJointType::ElbowLeft)
-					kinectPosition = Ogre::Vector3(shoulderL.X, shoulderL.Y, shoulderL.Z);
-
-				Ogre::Node* parent = probender->gameObjectNode;
-
-				Ogre::Quaternion parentOrientation = Ogre::Quaternion::IDENTITY;
-				
-				if(parent)
-					currBone->getParent()->_getFullTransform().extractQuaternion();
-
-				Vector4 currOrientation = currentData.JointOrientations[i].Orientation;
-
-				Ogre::Quaternion elbow = Ogre::Quaternion(currOrientation.w, 
-					currOrientation.x, currOrientation.y, currOrientation.z);
-			
-				Ogre::Quaternion extraction = 
-					 currBone->getParent()->_getFullTransform().extractQuaternion().Inverse();
-
-				//if(i == RenderableJointType::WristRight)
-				//{
-				//	currBone->setInheritOrientation(true);
-				//	extraction =  Ogre::Quaternion(Ogre::Radian(Ogre::Degree(180)), Ogre::Vector3(0.0, 1.0, 0.0).normalisedCopy()) *
-				//		extraction// *
-				//		//currBone->getParent()->getParent()->_getFullTransform().extractQuaternion().Inverse() 
-				//		;
-				//}
-				//else
-					extraction = Ogre::Quaternion(Ogre::Radian(Ogre::Degree(180)), Ogre::Vector3(0.0, 1.0, 0.0).normalisedCopy()) * 
-					extraction;
-				
-				currBone->setOrientation(extraction * elbow);// * Ogre::Quaternion(Ogre::Radian(Ogre::Degree(180)), Ogre::Vector3(0.0, 0.0, 1.0).normalisedCopy())
-				//	* Ogre::Quaternion(Ogre::Radian(Ogre::Degree(180)), Ogre::Vector3(0.0, 0.0, 1.0).normalisedCopy()));
-				//currBone->_getDerivedOrientation() * 
-				currBone->setPosition((//extraction * 
-					(kinectPosition - spineBasePosition)));// - spineBasePosition));
-
-				if(i == RenderableJointType::WristRight)
-				{
-					//upperArm->setInheritOrientation(false);
-					//foreArm->setInheritOrientation(false);
-					//upperArm->setOrientation(currBone->_getDerivedOrientation().Inverse() * elbow);
-					//foreArm->setOrientation(upperArm->_getDerivedOrientation().Inverse() * elbow);
-				}
-
-			}
-			
+			//if(!boneName.empty() && //((RenderableJointType::RenderableJointType)i) == RenderableJointType::ShoulderRight ||
+			//	//(((RenderableJointType::RenderableJointType)i) == RenderableJointType::WristRight) ||
+			//	//(((RenderableJointType::RenderableJointType)i) == RenderableJointType::ElbowRight)||
+			//	(((RenderableJointType::RenderableJointType)i) == RenderableJointType::SpineShoulder) )//||
+			//	//(((RenderableJointType::RenderableJointType)i) == RenderableJointType::Neck))
+			//{
+			//	Ogre::Bone* currBone = probender->meshRenderComponent->GetBone(boneName);
+			//	currBone->setManuallyControlled(true);
+			//	currBone->setInheritOrientation(false);
+			//	currBone->resetOrientation(); 
+			//	
+			//	currBone->setOrientation(Ogre::Quaternion(Ogre::Radian(Ogre::Degree(180)), Ogre::Vector3(0.0f, 1.0f, 0.0f)) *
+			//		//currBone->getParent()->_getFullTransform().extractQuaternion().Inverse() * 
+			//		//currBone->convertWorldToLocalOrientation(
+			//		
+			//		jointWorldOrientations[i]);
+			//	/*currBone->rotate(jointWorldOrientations[i]
+			//	* Ogre::Quaternion(Ogre::Radian(Ogre::Degree(180)), Ogre::Vector3(0.0f, 1.0f, 0.0f)), Ogre::Node::TS_WORLD);*/
+			//}
 		}
 	}
 
 	//probender->meshRenderComponent->UpdateMesh(meshData, 0, Ogre::VES_POSITION);
+}
+
+void ProbenderInputHandler::SetBoneData(const std::string& boneName, const Ogre::Vector3& pos, bool inheritOrientation, 
+										const Ogre::Quaternion& quat/* = Ogre::Quaternion::IDENTITY*/)
+{
+	Ogre::Bone* currBone = probender->meshRenderComponent->GetBone(boneName);
+	currBone->setManuallyControlled(true);
+
+	if(!inheritOrientation)
+	{
+		currBone->setInheritOrientation(false);
+		currBone->resetOrientation(); 
+
+		currBone->_setDerivedOrientation(quat);
+	}
+	else
+	{
+		if(quat != Ogre::Quaternion::IDENTITY)
+		{
+			currBone->resetOrientation();
+			currBone->setOrientation(quat);
+			
+		}
+	}
+	
+	//currBone->_setDerivedPosition(pos);
+
+}
+
+void ProbenderInputHandler::SetBoneData(const std::string& boneName, const bool updatePosition, 
+		const bool updateOrientation, bool inheritOrientation /*= false*/, 
+		const Ogre::Vector3& newPos /*= Ogre::Vector3(0.0f)*/, const Ogre::Quaternion& quat /*= Ogre::Quaternion::IDENTITY*/)
+{
+	Ogre::Bone* currBone = probender->meshRenderComponent->GetBone(boneName);
+	currBone->setManuallyControlled(true);
+
+	if(updateOrientation)
+	{
+		if(!inheritOrientation)
+		{
+			currBone->setInheritOrientation(false);
+			currBone->resetOrientation(); 
+
+			currBone->_setDerivedOrientation(quat);
+		}
+		else
+		{
+			if(quat != Ogre::Quaternion::IDENTITY)
+			{
+				currBone->resetOrientation();
+				currBone->setOrientation(quat);
+
+			}
+		}
+	}
+	
+	if(updatePosition)
+	{
+		//currBone->_setDerivedPosition(newPos);
+	}
+}
+
+void ProbenderInputHandler::FillJointWorldOrientations(const CompleteData& currData)
+{
+	 Ogre::Quaternion rootQuat =  KinectVectorToOgreQuaternion(RenderableJointType::SpineBase, currData);
+	 Ogre::Vector3 rootPos = KinectPosToOgrePosition(RenderableJointType::SpineBase, currData);
+
+	SetBoneData("spine", false, true, false, Ogre::Vector3(0.0f),
+		KinectVectorToOgreQuaternion(RenderableJointType::SpineMid, currData));
+
+	SetBoneData("ribs", 
+		probender->meshRenderComponent->GetBone("ribs")->getParent()->_getFullTransform().extractQuaternion() *
+		(KinectPosToOgrePosition(RenderableJointType::SpineShoulder, currData) - rootPos),// * 1.5f,
+		false,
+		 probender->meshRenderComponent->GetBone("ribs")->getParent()->_getFullTransform().extractQuaternion() *
+		KinectVectorToOgreQuaternion(RenderableJointType::SpineShoulder, currData));
+	//End of spine
+
+	//Neck and Head
+	SetBoneData("neck", false, true, false, Ogre::Vector3(0.0f), 
+		probender->meshRenderComponent->GetBone("neck")->getParent()->_getDerivedOrientation() * 
+		KinectVectorToOgreQuaternion(RenderableJointType::Neck, currData));
+
+	SetBoneData("head", false, true, true, Ogre::Vector3(0.0f), 
+		probender->meshRenderComponent->GetBone("head")->getParent()->_getDerivedOrientation() * 
+		KinectVectorToOgreQuaternion(RenderableJointType::Neck, currData));
+	
+	//Right Arm
+	//probender->meshRenderComponent->GetBone("upper_arm.R")->reset();//setInheritOrientation(false);
+	SetBoneData("shoulder.R", 
+		probender->meshRenderComponent->GetBone("shoulder.R")->getParent()->_getFullTransform().extractQuaternion() *
+		((KinectPosToOgrePosition(RenderableJointType::ShoulderRight, currData)) - rootPos),
+		false,
+		probender->meshRenderComponent->GetBone("shoulder.R")->getParent()->_getFullTransform().extractQuaternion() * 
+		KinectVectorToOgreQuaternion(RenderableJointType::ShoulderRight, currData));
+
+	SetBoneData("upper_arm.R", false, true, false, Ogre::Vector3(0.0f),
+		probender->meshRenderComponent->GetBone("upper_arm.R")->getParent()->_getFullTransform().extractQuaternion() * 
+		KinectVectorToOgreQuaternion(RenderableJointType::ElbowRight, currData));
+
+	SetBoneData("forearm.R", false, true, false, Ogre::Vector3(0.0f),
+		probender->meshRenderComponent->GetBone("forearm.R")->getParent()->_getFullTransform().extractQuaternion() * 
+		KinectVectorToOgreQuaternion(RenderableJointType::WristRight, currData));
+
+	SetBoneData("hand.R", false, true, false, Ogre::Vector3(0.0f),
+		probender->meshRenderComponent->GetBone("hand.R")->getParent()->_getFullTransform().extractQuaternion() * 
+		KinectVectorToOgreQuaternion(RenderableJointType::WristRight, currData));
+	//End of right arm
+
+	//Left Arm
+	SetBoneData("shoulder.L", 
+		probender->meshRenderComponent->GetBone("shoulder.L")->getParent()->_getFullTransform().extractQuaternion() *
+		((KinectPosToOgrePosition(RenderableJointType::ShoulderLeft, currData)) - rootPos),
+		false,
+		probender->meshRenderComponent->GetBone("shoulder.L")->getParent()->_getFullTransform().extractQuaternion() * 
+		KinectVectorToOgreQuaternion(RenderableJointType::ShoulderLeft, currData));
+
+	SetBoneData("upper_arm.L", false, true, false, Ogre::Vector3(0.0f),
+		probender->meshRenderComponent->GetBone("upper_arm.L")->getParent()->_getFullTransform().extractQuaternion() * 
+		KinectVectorToOgreQuaternion(RenderableJointType::ElbowLeft, currData));
+
+	SetBoneData("forearm.L", false, true, false, Ogre::Vector3(0.0f),
+		probender->meshRenderComponent->GetBone("forearm.L")->getParent()->_getFullTransform().extractQuaternion() * 
+		KinectVectorToOgreQuaternion(RenderableJointType::WristLeft, currData));
+
+	SetBoneData("hand.L", false, true, false, Ogre::Vector3(0.0f),
+		probender->meshRenderComponent->GetBone("hand.L")->getParent()->_getFullTransform().extractQuaternion() * 
+		KinectVectorToOgreQuaternion(RenderableJointType::WristLeft, currData));
+	//End of Left arm
+
+	//Right leg
+	SetBoneData("thigh.R",
+		KinectPosToOgrePosition(RenderableJointType::HipRight, currData) - rootPos,
+		false,
+		probender->meshRenderComponent->GetBone("thigh.R")->getParent()->_getFullTransform().extractQuaternion() *
+		KinectVectorToOgreQuaternion(RenderableJointType::KneeRight, currData));
+
+	SetBoneData("shin.R",
+		KinectPosToOgrePosition(RenderableJointType::KneeRight, currData) - rootPos,
+		false,
+		probender->meshRenderComponent->GetBone("shin.R")->getParent()->_getFullTransform().extractQuaternion() *
+		KinectVectorToOgreQuaternion(RenderableJointType::AnkleRight, currData) );
+
+	SetBoneData("foot.R", false, true, true, KinectPosToOgrePosition(RenderableJointType::FootRight, currData) - rootPos, 
+		probender->meshRenderComponent->GetBone("foot.R")->getParent()->_getFullTransform().extractQuaternion() *
+		KinectVectorToOgreQuaternion(RenderableJointType::AnkleRight, currData));
+
+	//End of Right leg
+
+	//Left leg
+	SetBoneData("thigh.L",
+		KinectPosToOgrePosition(RenderableJointType::HipLeft, currData) - rootPos,
+		false,
+		probender->meshRenderComponent->GetBone("thigh.L")->getParent()->_getFullTransform().extractQuaternion() *
+		KinectVectorToOgreQuaternion(RenderableJointType::KneeLeft, currData));
+
+	SetBoneData("shin.L",
+		KinectPosToOgrePosition(RenderableJointType::KneeLeft, currData) - rootPos,
+		false,
+		probender->meshRenderComponent->GetBone("shin.L")->getParent()->_getFullTransform().extractQuaternion() *
+		KinectVectorToOgreQuaternion(RenderableJointType::AnkleLeft, currData) );
+
+	SetBoneData("foot.L", false, true, true, KinectPosToOgrePosition(RenderableJointType::FootRight, currData) - rootPos, 
+		probender->meshRenderComponent->GetBone("foot.L")->getParent()->_getFullTransform().extractQuaternion() *
+		KinectVectorToOgreQuaternion(RenderableJointType::AnkleLeft, currData));
+	//End of Left leg
+
 }
 
 void ProbenderInputHandler::CheckLean(const CompleteData& currentData, const CompleteData& previousData)
@@ -611,35 +724,35 @@ void ProbenderInputHandler::ContinuousGesturesAcquired(const std::vector<KinectG
 
 void ProbenderInputHandler::AudioDataReceived(AudioData* audioData)
 {
-	if(audioData)
-	{
-		std::wstring data = L"Data" + audioData->CommandValue;
-		wprintf(data.c_str());
-		std::wstring child = L"Child Data: " + audioData->ChildData->CommandValue;
-		wprintf(child.c_str());
+	//if(audioData)
+	//{
+	//	std::wstring data = L"Data" + audioData->CommandValue;
+	//	wprintf(data.c_str());
+	//	std::wstring child = L"Child Data: " + audioData->ChildData->CommandValue;
+	//	wprintf(child.c_str());
 
-		std::wcout << L"Data: " << audioData->CommandValue.c_str() << std::endl;
-		std::wcout << L"Child Data: " << audioData->ChildData->CommandValue.c_str() << std::endl;
+	//	std::wcout << L"Data: " << audioData->CommandValue.c_str() << std::endl;
+	//	std::wcout << L"Child Data: " << audioData->ChildData->CommandValue.c_str() << std::endl;
 
-		if(audioData->ChildData->CommandValue == L"AIR")
-		{
-			probender->SetCurrentElement(ElementEnum::Air);
-		}
-		else if(audioData->ChildData->CommandValue == L"EARTH")
-		{
-			probender->SetCurrentElement(ElementEnum::Earth);
-		}
-		else if(audioData->ChildData->CommandValue == L"FIRE")
-		{
-			probender->SetCurrentElement(ElementEnum::Fire);
-		}
-		else if(audioData->ChildData->CommandValue == L"WATER")
-		{
-			probender->SetCurrentElement(ElementEnum::Water);
-		}
-		//if(!reader->GetIsPaused())
-		//	reader->Pause();
-	}
+	//	if(audioData->ChildData->CommandValue == L"AIR")
+	//	{
+	//		probender->SetCurrentElement(ElementEnum::Air);
+	//	}
+	//	else if(audioData->ChildData->CommandValue == L"EARTH")
+	//	{
+	//		probender->SetCurrentElement(ElementEnum::Earth);
+	//	}
+	//	else if(audioData->ChildData->CommandValue == L"FIRE")
+	//	{
+	//		probender->SetCurrentElement(ElementEnum::Fire);
+	//	}
+	//	else if(audioData->ChildData->CommandValue == L"WATER")
+	//	{
+	//		probender->SetCurrentElement(ElementEnum::Water);
+	//	}
+	//	//if(!reader->GetIsPaused())
+	//	//	reader->Pause();
+	//}
 	//*quit = true;
 }
 
@@ -736,8 +849,10 @@ void ProbenderInputHandler::keyPressed( const OIS::KeyEvent &arg )
 			bone->yaw(Ogre::Radian(Ogre::Degree(angle)), Ogre::Node::TS_LOCAL);
 			//bone->rotate(Ogre::Quaternion(Ogre::Radian(Ogre::Degree(angle)), Ogre::Vector3(1.0f, 0.0f, 0.0f)));
 			//bone->setOrientation(Ogre::Quaternion(Ogre::Radian(Ogre::Degree(angle)), Ogre::Vector3(0.0f ,1.0f, 0.0f)));
-			bone->setPosition(0.0f, 0.106f, 0.0f);
-			
+			//bone->setPosition(0.0f, 0.106f, 0.0f);
+
+			printf(probender->meshRenderComponent->GetEntity()->getSkeleton()->getRootBone()->getName().c_str());
+
 		}
 	}
 	else if(arg.key == keysLayout.JumpButton)

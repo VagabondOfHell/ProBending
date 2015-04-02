@@ -8,7 +8,8 @@
 
 	<Font filename="slayer11.font" />
 	<Font filename="slayer24.font" />
-
+	<Font filename="Spiderman40.font" />
+	
 	<LookNFeel filename="Generic.looknfeel" />
 	<WindowRendererSet filename="CEGUICoreWindowRendererSet" />
 

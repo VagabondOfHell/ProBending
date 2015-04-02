@@ -272,7 +272,7 @@
                     <Property name="HorizontalAlignment" value="Right" />
                 </Window>
                 <Window type="Generic/Label" name="ElementLabel" >
-                    <Property name="Area" value="{{-0.77,0},{0,0},{-0.66,0},{0.5,0}}" />
+                    <Property name="Area" value="{{-0.77,0},{0,0},{-0.62,0},{0.5,0}}" />
                     <Property name="Font" value="slayer11" />
                     <Property name="Text" value="Element:" />
                     <Property name="MaxSize" value="{{1,0},{1,0}}" />
