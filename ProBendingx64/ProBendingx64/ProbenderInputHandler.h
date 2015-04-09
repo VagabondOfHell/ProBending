@@ -36,11 +36,12 @@ class ProbenderInputHandler :
 {
 public:
 	enum ProbenderStances{UnknownStance, OffenseStance, DefenceStance};
-	BodyDimensions bodyDimensions;
 	
 private:
 	static const float LEAN_RESET_DISTANCE;
 	static const float ATTACK_PAUSE; //A very short pause to prevent multiple gestures from acting at the same time
+	static const float BLOCK_MOVEMENT_THRESHOLD;//Elbow movement must be below this (prevent recognition when arms are trying to perform gestures)
+	static const float BLOCK_WRIST_DISTANCE;//How close the elbows must be to register block
 
 	Probender* probender;
 	ProbenderStances currentStance;
@@ -74,6 +75,8 @@ private:
 	void CheckLean(const CompleteData& currentData, const CompleteData& previousData);
 
 	void CheckJump(const CompleteData& currentData, const CompleteData& previousData);
+
+	void CheckBlock(const CompleteData& currentData, const CompleteData& previousData);
 
 	void HandleAttacks(const AttackData& attackData);
 

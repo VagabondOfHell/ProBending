@@ -1,8 +1,7 @@
 #include "AttackGestureEvaluators.h"
 
 GestureEnums::BodySide AttackGestureEvaluators::KneeRaiseGesture(const Probender* probender, 
-		const BodyDimensions& bodyDimensions, const CompleteData& currData, 
-		const CompleteData& prevData, const ExtraCustomData& customData)
+		const CompleteData& currData, const CompleteData& prevData, const ExtraCustomData& customData)
 {
 	if(customData.Side == GestureEnums::BODYSIDE_INVALID)
 		return GestureEnums::BODYSIDE_INVALID;
@@ -10,9 +9,7 @@ GestureEnums::BodySide AttackGestureEvaluators::KneeRaiseGesture(const Probender
 	if(customData.Side == GestureEnums::BODYSIDE_RIGHT || customData.Side == GestureEnums::BODYSIDE_EITHER)
 	{
 		if(currData.JointData[JointType_KneeRight].Position.Y >= currData.JointData[JointType_SpineBase].Position.Y)
-		{
 			return GestureEnums::BODYSIDE_RIGHT;
-		}
 	}
 	
 	if(customData.Side == GestureEnums::BODYSIDE_LEFT || customData.Side == GestureEnums::BODYSIDE_EITHER)
@@ -33,8 +30,7 @@ GestureEnums::BodySide AttackGestureEvaluators::KneeRaiseGesture(const Probender
 }
 
 GestureEnums::BodySide AttackGestureEvaluators::KneeDownGesture(const Probender* probender, 
-		const BodyDimensions& bodyDimensions, const CompleteData& currData, 
-		const CompleteData& prevData, const ExtraCustomData& customData)
+		const CompleteData& currData, const CompleteData& prevData, const ExtraCustomData& customData)
 {
 	if(customData.Side == GestureEnums::BODYSIDE_INVALID)
 		return GestureEnums::BODYSIDE_INVALID;
@@ -98,8 +94,7 @@ GestureEnums::BodySide AttackGestureEvaluators::KneeDownGesture(const Probender*
 }
 
 GestureEnums::BodySide AttackGestureEvaluators::ArmPunchGesture(const Probender* probender, 
-		const BodyDimensions& bodyDimensions, const CompleteData& currData, 
-		const CompleteData& prevData, const ExtraCustomData& customData)
+		const CompleteData& currData, const CompleteData& prevData, const ExtraCustomData& customData)
 {
 	if(customData.Side == GestureEnums::BODYSIDE_INVALID)
 		return GestureEnums::BODYSIDE_INVALID;
@@ -220,8 +215,7 @@ GestureEnums::BodySide AttackGestureEvaluators::ArmPunchGesture(const Probender*
 }
 
 GestureEnums::BodySide AttackGestureEvaluators::ArmsWideGesture(const Probender* probender, 
-		const BodyDimensions& bodyDimensions, const CompleteData& currData, 
-		const CompleteData& prevData, const ExtraCustomData& customData)
+		const CompleteData& currData, const CompleteData& prevData, const ExtraCustomData& customData)
 {
 	if(currData.JointData[JointType_HandRight].TrackingState == TrackingState::TrackingState_NotTracked ||
 		currData.JointData[JointType_HandLeft].TrackingState == TrackingState::TrackingState_NotTracked)
@@ -252,8 +246,7 @@ GestureEnums::BodySide AttackGestureEvaluators::ArmsWideGesture(const Probender*
 }
 
 GestureEnums::BodySide AttackGestureEvaluators::HandsClapGesture(const Probender* probender, 
-		const BodyDimensions& bodyDimensions, const CompleteData& currData, 
-		const CompleteData& prevData, const ExtraCustomData& customData)
+		const CompleteData& currData, const CompleteData& prevData, const ExtraCustomData& customData)
 {
 	//printf("Before Hands\n");
 	if(currData.JointData[JointType_HandRight].TrackingState == TrackingState::TrackingState_NotTracked ||

@@ -100,6 +100,19 @@ void MenusScene::Initialize()
 	//currentScreen = GameSetup;
 	handlers[currentScreen]->Show();
 
+	InputManager* inputManager = InputManager::GetInstance();
+
+	KinectSpeechReader* speechReader = inputManager->GetSpeechReader();
+	if(speechReader)
+	{
+		inputManager->RegisterAudioListener(&player1Nav);
+		//Load the grammar for this scene
+		if(!speechReader->LoadGrammarFile("MenusSpeech.grxml"))
+			printf("Grammer Load Fail\n");
+		//Set the confidence threshold
+		speechReader->SetConfidenceThreshold(0.6f);
+	}
+
 	ogreSceneManager->setAmbientLight(Ogre::ColourValue(1.0f, 1.0f, 1.0f, 1.0f));
 
 	CreateCameraAndViewport(Ogre::ColourValue(0.0f, 0.0f, 0.0f, 0.0f));

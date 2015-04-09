@@ -36,8 +36,8 @@ public:
 	void SetMinOffset(const physx::PxVec3& newMinOffset){minOffset = newMinOffset; UpdateHandAxis();}
 	void SetMaxOffset(const physx::PxVec3& newMaxOffset){maxOffset = newMaxOffset; UpdateHandAxis();}
 
-	virtual void ControlProjectile(Probender* bender, const BodyDimensions& bodyDimensions,
-		const CompleteData& currentData, const CompleteData& previousData);
+	virtual void ControlProjectile(Probender* bender, const CompleteData& currentData, 
+		const CompleteData& previousData);
 
 	virtual void ReceivePreviousResults(GestureEnums::BodySide prevResults);
 

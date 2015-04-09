@@ -14,14 +14,13 @@ class GUIManager;
 struct AttackData
 {
 	Probender*  _Probender;
-	const BodyDimensions* _BodyDimensions;
 	const CompleteData* CurrentData;
 	const CompleteData* PreviousData;
 	std::vector<KinectGestureResult>* DiscreteGestureResults;
 	std::vector<KinectGestureResult>* ContinuousGestureResults;
 
 	AttackData()
-		:_Probender(NULL), _BodyDimensions(NULL), CurrentData(NULL), PreviousData(NULL),
+		:_Probender(NULL), CurrentData(NULL), PreviousData(NULL),
 		DiscreteGestureResults(NULL), ContinuousGestureResults(NULL)
 	{
 
@@ -84,8 +83,8 @@ private:
 	//A union of the possible types of function pointers
 	union Evaluators
 	{
-		GestureEnums::BodySide (*CustomEvaluator)(const Probender*, 
-			const BodyDimensions&, const CompleteData&, const CompleteData&, const ExtraCustomData&);
+		GestureEnums::BodySide (*CustomEvaluator)(const Probender*, const CompleteData&, 
+			const CompleteData&, const ExtraCustomData&);
 		DiscreteEvaluator discreteEvaluator;
 		ContinuousEvaluator continuousEvaluator;
 	};
@@ -252,7 +251,7 @@ public:
 
 	~GestureEvaluator(){}
 
-	inline void SetCustomEvaluator(GestureEnums::BodySide(*customEvaluator)(const Probender*, const BodyDimensions&, 
+	inline void SetCustomEvaluator(GestureEnums::BodySide(*customEvaluator)(const Probender*,  
 		const CompleteData&, const CompleteData&, const ExtraCustomData&), ExtraCustomData extraData = ExtraCustomData())
 	{
 		evaluator.CustomEvaluator = customEvaluator;
@@ -260,7 +259,7 @@ public:
 		evaluatorType = ET_CUSTOM;
 	}
 
-	inline void SetCustomEvaluator(GestureEnums::BodySide(*customEvaluator)(const Probender*, const BodyDimensions&, 
+	inline void SetCustomEvaluator(GestureEnums::BodySide(*customEvaluator)(const Probender*,  
 		const CompleteData&, const CompleteData&, const ExtraCustomData&), 
 		GestureEnums::BodySide bodySide = GestureEnums::BODYSIDE_EITHER, void* customData = NULL)
 	{
@@ -344,7 +343,7 @@ public:
 			if(attackData.CurrentData == NULL || attackData.PreviousData == NULL)
 				return GestureEnums::BODYSIDE_INVALID;
 			return evaluator.CustomEvaluator(attackData._Probender, 
-				*attackData._BodyDimensions, *attackData.CurrentData, *attackData.PreviousData, extraCustomData);
+				*attackData.CurrentData, *attackData.PreviousData, extraCustomData);
 			break;
 		case GestureEvaluator::ET_DISCRETE:
 			if(attackData.DiscreteGestureResults == NULL)
@@ -396,7 +395,7 @@ public:
 	///<param name="timeToComplete">The time to complete the evaluator when it is the active one</param>
 	///<param name="CustomEvaluator">The pointer to the static method that will evaluate the body data</param>
 	inline void AddCustomEvaluator(float timeToComplete, GestureEnums::BodySide (*CustomEvaluator)
-		(const Probender*, const BodyDimensions&, const CompleteData&, const CompleteData&, const ExtraCustomData& extraCustomData),
+		(const Probender*, const CompleteData&, const CompleteData&, const ExtraCustomData& extraCustomData),
 		GestureEnums::BodySide bodySide, const std::string& _guiImageName, GestureEnums::GUIGestureSlot _guiSlot = GestureEnums::INVALID_GESTURE_SLOT,
 		GestureEnums::TransitionRules transitionFromPrevious = GestureEnums::TRANRULE_NONE, void* extraData = NULL)
 	{

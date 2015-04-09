@@ -157,3 +157,9 @@ bool MainMenuHandler::StartButtonClickEvent(const CEGUI::EventArgs& e)
 
 	return true;
 }
+
+void MainMenuHandler::ReceiveAudioInput(const AudioData* audioData)
+{
+	if(audioData->ChildData->CommandValue == L"ENTER TOURNAMENT")
+		StartButtonClickEvent(CEGUI::EventArgs());
+}

@@ -133,7 +133,7 @@ void Arena::Start()
 	PlaceContestants();
 
 	short earthCount, fireCount, waterCount, airCount;
-	earthCount = fireCount = waterCount = airCount = 0;
+	earthCount = fireCount = waterCount = airCount = 1;
 
 	//Loop and initialize each character
 	for (int i = 0; i < contestantCount; i++)

@@ -6,11 +6,11 @@ const float CharacterAttributes::MIN_DODGE_SPEED = 10.0f;
 const float CharacterAttributes::MIN_JUMP_HEIGHT = 24.0f;
 const float CharacterAttributes::MAX_JUMP_HEIGHT = 36.0f;
 
-const float CharacterAttributes::MIN_ENERGY_VAL = 100.0f;
-const float CharacterAttributes::MAX_ENERGY_VAL = 1000.0f;
+const float CharacterAttributes::MIN_ENERGY_VAL = 10.0f;
+const float CharacterAttributes::MAX_ENERGY_VAL = 100.0f;
 
-const float CharacterAttributes::MIN_ENERGY_REGEN_RATE = 100.0f;
-const float CharacterAttributes::MAX_ENERGY_REGEN_RATE = 150.0f;
+const float CharacterAttributes::MIN_ENERGY_REGEN_RATE = 25.0f;
+const float CharacterAttributes::MAX_ENERGY_REGEN_RATE = 50.0f;
 
 const float CharacterAttributes::MIN_RECOVERY_TIME = 1.0f;
 const float CharacterAttributes::MAX_RECOVERY_TIME = 0.1f;

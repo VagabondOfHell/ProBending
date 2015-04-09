@@ -57,10 +57,7 @@ void Probender::SetCamera(Ogre::Camera* newCamera)
 
 	gameObjectNode->attachObject(camera);
 
-	Ogre::Vector3 newCamPos = Ogre::Vector3(
-		//currPos.x + diff.x * -2.50, PROBENDER_HALF_EXTENTS.y *2.50f, currPos.z + diff.z * -2.50f
-		-2.0f, PROBENDER_HALF_EXTENTS.y , -2.0f
-		);
+	Ogre::Vector3 newCamPos = Ogre::Vector3(-2.0f, PROBENDER_HALF_EXTENTS.y , -2.0f);
 
 	camera->setPosition(newCamPos);
 	camera->lookAt(currentTarget->GetWorldPosition());
@@ -360,6 +357,7 @@ void Probender::StateExitted(StateFlags::PossibleStates exittedState)
 	case StateFlags::FALLING_STATE:
 		break;
 	case StateFlags::BLOCK_STATE:
+		printf("Not Blocking\n");
 		break;
 	case StateFlags::CATCH_STATE:
 		break;
@@ -394,6 +392,7 @@ void Probender::StateEntered(StateFlags::PossibleStates enteredState)
 	case StateFlags::FALLING_STATE:	
 		break;
 	case StateFlags::BLOCK_STATE:
+		printf("Blocking\n");
 		break;
 	case StateFlags::CATCH_STATE:
 		break;
@@ -453,14 +452,22 @@ void Probender::ApplyProjectileCollision(float damage, float knockback)
 {
 	characterData.CurrentAttributes.AddEnergy(-damage);
 
-	if(!stateManager.SetState(StateFlags::REELING_STATE, characterData.CurrentAttributes.GetRecoveryRate()))
-	{
-		stateManager.ResetCurrentState();
-	}
-
 	float energyDiff = characterData.CurrentAttributes.Energy / characterData.CurrentAttributes.GetMaxEnergy();
 
-	rigidBody->ApplyImpulse(-HelperFunctions::OgreToPhysXVec3(Forward()) * (knockback * (1.0f - (energyDiff * 0.75f))));	
+	//if not blocking, set character to reeling state and apply full knockback
+	if(stateManager.GetCurrentState() != StateFlags::BLOCK_STATE)
+	{
+		if(!stateManager.SetStateImmediate(StateFlags::REELING_STATE, characterData.CurrentAttributes.GetRecoveryRate()))
+			stateManager.ResetCurrentState();
+
+		rigidBody->ApplyImpulse(-HelperFunctions::OgreToPhysXVec3(Forward()) * 
+			(knockback * (1.0f - (energyDiff * 0.75f))));
+	}
+	else//otherwise ignore reeling state and apply only half knockback
+	{
+		rigidBody->ApplyImpulse(-HelperFunctions::OgreToPhysXVec3(Forward()) * 
+			((knockback * 0.5f) * (1.0f - (energyDiff * 0.75f))));
+	}
 }
 
 void Probender::Dodge(DodgeDirection direction)

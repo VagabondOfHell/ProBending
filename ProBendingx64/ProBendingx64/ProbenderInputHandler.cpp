@@ -24,6 +24,9 @@ const float ProbenderInputHandler::LEAN_RESET_DISTANCE = 0.15f;
 
 const float ProbenderInputHandler::ATTACK_PAUSE = 0.1f;
 
+const float ProbenderInputHandler::BLOCK_MOVEMENT_THRESHOLD = 0.20f;//Movement magnitude without sqrt
+const float ProbenderInputHandler::BLOCK_WRIST_DISTANCE = 0.10f;//Distance magnitude without sqrt
+
 ProbenderInputHandler::ProbenderInputHandler(Probender* _probenderToHandle, bool manageStance, 
 					ConfigurationLayout keyLayout/* = ConfigurationLayout()*/)
 					:keysLayout(keyLayout), activeAttack(NULL), NeedSpawnPosition(true)
@@ -99,7 +102,7 @@ void ProbenderInputHandler::GenerateGestures()
 {
 	mainElementGestures.clear();
 
-	switch (probender->characterData.MainElement)
+	switch (probender->characterData.CurrentElement)
 	{
 	case ElementEnum::Element::Earth:
 		PopulateWithGestures(mainElementGestures, ElementEnum::Earth);
@@ -257,10 +260,11 @@ void ProbenderInputHandler::BodyFrameAcquired(const CompleteData& currentData, c
 
 	CheckJump(currentData, previousData);
 
+	CheckBlock(currentData, previousData);
+
 	AttackData frameData = AttackData();
 	frameData.CurrentData = &currentData;
 	frameData.PreviousData = &previousData;
-	frameData._BodyDimensions = &bodyDimensions;
 	frameData._Probender = probender;
 
 	HandleAttacks(frameData);
@@ -333,6 +337,58 @@ void ProbenderInputHandler::CheckJump(const CompleteData& currentData, const Com
 			probender->Jump();
 		}
 	}
+}
+
+void ProbenderInputHandler::CheckBlock(const CompleteData& currentData, const CompleteData& previousData)
+{
+	if(currentData.JointData[JointType::JointType_WristLeft].TrackingState == TrackingState::TrackingState_NotTracked &&
+		currentData.JointData[JointType::JointType_WristRight].TrackingState == TrackingState::TrackingState_NotTracked &&
+		previousData.JointData[JointType::JointType_Head].TrackingState == TrackingState::TrackingState_NotTracked)
+	{
+		//if no valid data, return
+		return;
+	}
+
+	StateFlags::PossibleStates currentState = probender->stateManager.GetCurrentState();
+
+	CameraSpacePoint kinectPosition = currentData.JointData[JointType_WristLeft].Position;
+	Ogre::Vector3 leftWristPos(kinectPosition.X, kinectPosition.Y, kinectPosition.Z);
+
+	kinectPosition = currentData.JointData[JointType_WristRight].Position;
+	Ogre::Vector3 rightWristPos(kinectPosition.X, kinectPosition.Y, kinectPosition.Z);
+
+	kinectPosition = currentData.JointData[JointType_Head].Position;
+	Ogre::Vector3 headPos(kinectPosition.X, kinectPosition.Y, kinectPosition.Z);
+
+	kinectPosition = previousData.JointData[JointType_WristRight].Position;
+	Ogre::Vector3 prevRightWristPos(kinectPosition.X, kinectPosition.Y, kinectPosition.Z);
+
+	kinectPosition = previousData.JointData[JointType_WristLeft].Position;
+	Ogre::Vector3 prevLeftWristPos(kinectPosition.X, kinectPosition.Y, kinectPosition.Z);
+
+	Ogre::Vector3 rightWristDiff = rightWristPos - prevRightWristPos;
+	Ogre::Vector3 leftWristDiff = leftWristPos - prevLeftWristPos;
+
+	if(rightWristDiff.squaredLength() > BLOCK_MOVEMENT_THRESHOLD ||
+		leftWristDiff.squaredLength() > BLOCK_MOVEMENT_THRESHOLD)
+	{
+		if(currentState == StateFlags::BLOCK_STATE)
+			probender->stateManager.SetStateImmediate(StateFlags::IDLE_STATE, 0.0f);
+		return;
+	}
+
+	Ogre::Vector3 rightWristToHead = rightWristPos - headPos;
+	Ogre::Vector3 leftWristToHead = leftWristPos - headPos;
+
+	if(rightWristToHead.squaredLength() > BLOCK_WRIST_DISTANCE ||
+		leftWristToHead.squaredLength() > BLOCK_WRIST_DISTANCE)
+	{
+		if(currentState == StateFlags::BLOCK_STATE)
+			probender->stateManager.SetStateImmediate(StateFlags::IDLE_STATE, 0.0f);
+		return;
+	}
+
+	probender->stateManager.SetState(StateFlags::BLOCK_STATE, 0.0f);
 }
 
 void ProbenderInputHandler::HandleAttacks(const AttackData& attackData)
@@ -458,7 +514,6 @@ void ProbenderInputHandler::DiscreteGesturesAcquired(const std::vector<KinectGes
 	std::remove_const<const std::vector<KinectGestureResult>>::type noConstResults = discreteGestureResults;
 
 	frameData.DiscreteGestureResults = &noConstResults;
-	frameData._BodyDimensions = &bodyDimensions;
 	frameData._Probender = probender;
 
 	HandleAttacks(frameData);
@@ -475,36 +530,35 @@ void ProbenderInputHandler::ContinuousGesturesAcquired(const std::vector<KinectG
 
 void ProbenderInputHandler::AudioDataReceived(AudioData* audioData)
 {
-	//if(audioData)
-	//{
-	//	std::wstring data = L"Data" + audioData->CommandValue;
-	//	wprintf(data.c_str());
-	//	std::wstring child = L"Child Data: " + audioData->ChildData->CommandValue;
-	//	wprintf(child.c_str());
+	if(audioData)
+	{
+		std::wstring data = L"Data" + audioData->CommandValue;
+		wprintf(data.c_str());
+		std::wstring child = L"Child Data: " + audioData->ChildData->CommandValue;
+		wprintf(child.c_str());
 
-	//	std::wcout << L"Data: " << audioData->CommandValue.c_str() << std::endl;
-	//	std::wcout << L"Child Data: " << audioData->ChildData->CommandValue.c_str() << std::endl;
+		std::wcout << L"Data: " << audioData->CommandValue.c_str() << std::endl;
+		std::wcout << L"Child Data: " << audioData->ChildData->CommandValue.c_str() << std::endl;
 
-	//	if(audioData->ChildData->CommandValue == L"AIR")
-	//	{
-	//		probender->SetCurrentElement(ElementEnum::Air);
-	//	}
-	//	else if(audioData->ChildData->CommandValue == L"EARTH")
-	//	{
-	//		probender->SetCurrentElement(ElementEnum::Earth);
-	//	}
-	//	else if(audioData->ChildData->CommandValue == L"FIRE")
-	//	{
-	//		probender->SetCurrentElement(ElementEnum::Fire);
-	//	}
-	//	else if(audioData->ChildData->CommandValue == L"WATER")
-	//	{
-	//		probender->SetCurrentElement(ElementEnum::Water);
-	//	}
-	//	//if(!reader->GetIsPaused())
-	//	//	reader->Pause();
-	//}
-	//*quit = true;
+		if(audioData->ChildData->CommandValue == L"AIR")
+		{
+			probender->SetCurrentElement(ElementEnum::Air);
+		}
+		else if(audioData->ChildData->CommandValue == L"EARTH")
+		{
+			probender->SetCurrentElement(ElementEnum::Earth);
+		}
+		else if(audioData->ChildData->CommandValue == L"FIRE")
+		{
+			probender->SetCurrentElement(ElementEnum::Fire);
+		}
+		else if(audioData->ChildData->CommandValue == L"WATER")
+		{
+			probender->SetCurrentElement(ElementEnum::Water);
+		}
+
+		GenerateGestures();
+	}
 }
 
 #pragma endregion

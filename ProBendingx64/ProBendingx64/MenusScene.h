@@ -55,6 +55,9 @@ public:
 
 	void SwitchToGame();
 
+	inline void HandleAudioInput(const AudioData* audioData)
+	{handlers[currentScreen]->ReceiveAudioInput(audioData);}
+
 	void RegisterHoverBeginEvent(CEGUI::Window* window);
 	void RegisterHoverEndEvent(CEGUI::Window* window);
 

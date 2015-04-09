@@ -12,6 +12,8 @@ namespace CEGUI
 class IScene;
 class GUIManager;
 
+struct AudioData;
+
 class MenuHandler
 {
 public:
@@ -49,6 +51,8 @@ public:
 
 	void Disable();
 	void Enable();
+
+	virtual void ReceiveAudioInput(const AudioData* audioText){}
 };
 
 class MainMenuHandler: public MenuHandler
@@ -60,6 +64,8 @@ public:
 	virtual ~MainMenuHandler();
 
 	bool StartButtonClickEvent(const CEGUI::EventArgs& e); 
+
+	virtual void ReceiveAudioInput(const AudioData* audioText);
 
 };
 

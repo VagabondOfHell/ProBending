@@ -131,5 +131,7 @@ public:
 	bool ZoneSelBtnClickEvent(const CEGUI::EventArgs& e);
 	bool CharColourSelBtnClickEvent(const CEGUI::EventArgs& e);
 
+	virtual void ReceiveAudioInput(const AudioData* audioText);
+
 };
 

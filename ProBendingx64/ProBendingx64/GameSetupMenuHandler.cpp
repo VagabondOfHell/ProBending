@@ -595,4 +595,145 @@ bool GameSetupMenuHandler::CharColourSelBtnClickEvent(const CEGUI::EventArgs& e)
 	return true;
 }
 
+void GameSetupMenuHandler::ReceiveAudioInput(const AudioData* audioText)
+{
+	if(!audioText->ChildData)
+		return;
+
+	AudioData* child = audioText->ChildData;
+
+	bool player1 = false;
+
+	if(audioText->ChildData->CommandValue == L"ENTER TOURNAMENT")
+		StartGameBtnClickEvent(CEGUI::EventArgs());
+
+	if(child->CommandName == L"Player")
+	{
+		if(child->CommandValue == L"ONE")
+			player1 = true;
+	}
+
+	if(!child->SiblingData)
+		return;
+
+	AudioData* playerSibling = child->SiblingData;
+
+	MenusScene* menu = (MenusScene*)scene;
+
+	ElementEnum::Element newElement = ElementEnum::InvalidElement;
+
+	if(playerSibling->CommandName == L"Element")
+	{
+		if(playerSibling->CommandValue == L"FIRE")
+			newElement = ElementEnum::Fire;
+		else if(playerSibling->CommandValue == L"WATER")
+			newElement = ElementEnum::Water;
+		else if(playerSibling->CommandValue == L"EARTH")
+			newElement = ElementEnum::Earth;
+
+		if(player1)
+			menu->Player1Data.MainElement = newElement;
+		else
+			menu->Player2Data.MainElement = newElement;
+
+		ChangeElement(player1, newElement);
+	}
+	else if(playerSibling->CommandName == L"Zone")
+	{
+		AudioData* zoneColour = playerSibling->ChildData;
+		AudioData* zonePosition = zoneColour->SiblingData;
+
+		unsigned int newZoneVal;
+
+		if(zoneColour->CommandValue == L"BLUE")
+		{
+			if(zonePosition->CommandValue == L"ONE")
+				newZoneVal = 3;
+			else if(zonePosition->CommandValue == L"TWO")
+				newZoneVal = 4;
+			else if(zonePosition->CommandValue == L"THREE")
+				newZoneVal = 5;
+		}
+		else if(zoneColour->CommandValue == L"RED")
+		{
+			if(zonePosition->CommandValue == L"ONE")
+				newZoneVal = 2;
+			else if(zonePosition->CommandValue == L"TWO")
+				newZoneVal = 1;
+			else if(zonePosition->CommandValue == L"THREE")
+				newZoneVal = 0;
+		}
+
+		unsigned int* thisPlayerVal;
+		unsigned int* otherPlayerVal;
+
+		if(player1)
+		{
+			thisPlayerVal = &p1ZoneIndex;
+			otherPlayerVal = &p2ZoneIndex;
+		}
+		else
+		{
+			thisPlayerVal = &p2ZoneIndex;
+			otherPlayerVal = &p1ZoneIndex;
+		}
+
+		if(newZoneVal > *thisPlayerVal)
+		{
+			if(*thisPlayerVal > *otherPlayerVal)
+				*thisPlayerVal = newZoneVal;
+			else
+			{
+				if(newZoneVal == 5)
+				{
+					*otherPlayerVal = 5;
+					*thisPlayerVal = 4;
+				}
+				else
+				{
+					*otherPlayerVal = newZoneVal + 1;
+					*thisPlayerVal = newZoneVal;
+				}
+			}
+		}
+		else if(newZoneVal < *thisPlayerVal)
+		{
+			if(*thisPlayerVal < *otherPlayerVal)
+				*thisPlayerVal = newZoneVal;
+			else
+			{
+				if(newZoneVal == 0)
+				{
+					*otherPlayerVal = 0;
+					*thisPlayerVal = 1;
+				}
+				else
+				{
+					*otherPlayerVal = newZoneVal - 1;
+					*thisPlayerVal = newZoneVal;
+				}
+			}
+		}
+
+		SetZoneData();
+	}
+	else if(playerSibling->CommandName == L"Team")
+	{
+		if(playerSibling->CommandValue == L"BLUE")
+		{
+			if(player1)
+				SetTeamColours(ArenaData::BLUE_TEAM);
+			else
+				SetTeamColours(ArenaData::RED_TEAM);
+		}
+		else if(playerSibling->CommandValue == L"RED")
+		{
+			if(player1)
+				SetTeamColours(ArenaData::RED_TEAM);
+			else
+				SetTeamColours(ArenaData::BLUE_TEAM);
+		}
+	}
+}
+
 

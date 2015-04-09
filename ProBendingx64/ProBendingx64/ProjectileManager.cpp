@@ -9,9 +9,9 @@
 ///Perhaps have an index pool as well so we can re-use indices
 
 const unsigned short ProjectileManager::BASE_NUM_AIR_PROJECTILES = 3;
-const unsigned short ProjectileManager::BASE_NUM_WATER_PROJECTILES = 15;
-const unsigned short ProjectileManager::BASE_NUM_FIRE_PROJECTILES = 15;
-const unsigned short ProjectileManager::BASE_NUM_EARTH_PROJECTILES = 15;
+const unsigned short ProjectileManager::BASE_NUM_WATER_PROJECTILES = 6;
+const unsigned short ProjectileManager::BASE_NUM_FIRE_PROJECTILES = 6;
+const unsigned short ProjectileManager::BASE_NUM_EARTH_PROJECTILES = 6;
 
 ProjectileManager::ProjectileManager(IScene* _owningScene)
 	:owningScene(_owningScene)
