@@ -8,6 +8,7 @@
 
 #include "CharacterMenuHandler.h"
 #include "GameSetupMenuHandler.h"
+#include "TutorialMenuHandler.h"
 
 #include "GameScene.h"
 
@@ -73,6 +74,8 @@ void MenusScene::Initialize()
 	guiManager->AddScheme("MainMenu.scheme");
 	guiManager->LoadLayout("MainMenuLayout.layout", nullptr);
 	guiManager->LoadLayout("GameSetupMenu.layout", nullptr);
+	guiManager->LoadLayout("TutorialLayout.layout", nullptr);
+
 	//guiManager->LoadLayout("CharacterSetupMenu.layout", nullptr);
 	
 	if(progressBar.GetWindow() == NULL)
@@ -91,6 +94,7 @@ void MenusScene::Initialize()
 	handlers[Screens::MainMenu] = new MainMenuHandler(this);
 	//handlers[Screens::CharacterSetup] = new CharacterMenuHandler(this);
 	handlers[Screens::GameSetup] = new GameSetupMenuHandler(this);
+	handlers[Screens::Tutorial] = new TutorialMenuHandler(this);
 
 	for (unsigned int i = 0; i < Screens::Count; i++)
 	{

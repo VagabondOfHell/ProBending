@@ -238,10 +238,8 @@ GestureEnums::BodySide AttackGestureEvaluators::ArmsWideGesture(const Probender*
 	float xTarget = xShoulderLength * 1.2f;
 
 	if(xRightShoulderDiff >= xTarget && xLeftShoulderDiff >= xTarget)
-	{
-		printf("Arms Extended\n");
 		return GestureEnums::BODYSIDE_BOTH;
-	}
+
 	return GestureEnums::BODYSIDE_INVALID;
 }
 
@@ -261,11 +259,81 @@ GestureEnums::BodySide AttackGestureEvaluators::HandsClapGesture(const Probender
 	//printf("Clap Val: %f\n", xDist);
 
 	if(xDist <= 0.5f)
+		return GestureEnums::BODYSIDE_BOTH;
+
+	return GestureEnums::BODYSIDE_INVALID;
+}
+
+GestureEnums::BodySide AttackGestureEvaluators::HandsToSide(const Probender* probender, 
+		const CompleteData& currData, const CompleteData& prevData, const ExtraCustomData& customData)
+{
+	if(currData.JointData[JointType_HandRight].TrackingState == TrackingState::TrackingState_NotTracked ||
+		currData.JointData[JointType_HandLeft].TrackingState == TrackingState::TrackingState_NotTracked)
+		return GestureEnums::BODYSIDE_INVALID;
+
+	//Check shoulder validity (inferred is fine)
+	if(currData.JointData[JointType_ShoulderRight].TrackingState == TrackingState::TrackingState_NotTracked
+		|| currData.JointData[JointType_ShoulderLeft].TrackingState == TrackingState::TrackingState_NotTracked)
+		return GestureEnums::BODYSIDE_INVALID;	
+
+	if(currData.JointData[JointType_SpineBase].TrackingState == TrackingState::TrackingState_NotTracked)
+		return GestureEnums::BODYSIDE_INVALID;
+
+	CameraSpacePoint rightCurrHandPos = currData.JointData[JointType_HandRight].Position;
+	CameraSpacePoint leftCurrHandPos = currData.JointData[JointType_HandLeft].Position;
+	CameraSpacePoint rightShoulderPos = currData.JointData[JointType_ShoulderRight].Position;
+	CameraSpacePoint leftShoulderPos = currData.JointData[JointType_ShoulderLeft].Position;
+	CameraSpacePoint waistPos = currData.JointData[JointType_SpineMid].Position;
+
+	float xRightShoulderDiff = Ogre::Math::Abs(rightCurrHandPos.X - rightShoulderPos.X);
+	float xLeftShoulderDiff = Ogre::Math::Abs(leftCurrHandPos.X - leftShoulderPos.X);
+
+	float xShoulderLength = Ogre::Math::Abs(rightShoulderPos.X - leftShoulderPos.X);
+	float xTarget = xShoulderLength * 0.75f;
+
+	if(xRightShoulderDiff >= xTarget && xLeftShoulderDiff >= xTarget &&
+		rightCurrHandPos.Y <= waistPos.Y && leftCurrHandPos.Y <= waistPos.Y)
 	{
-		printf("Hands Clapped\n");
+		printf("Arms To Side\n");
 		return GestureEnums::BODYSIDE_BOTH;
 	}
 
 	return GestureEnums::BODYSIDE_INVALID;
 }
 
+GestureEnums::BodySide AttackGestureEvaluators::HandsOverHead(const Probender* probender, const CompleteData& currData, const CompleteData& prevData, const ExtraCustomData& customData)
+{
+	if(currData.JointData[JointType_HandRight].TrackingState == TrackingState::TrackingState_NotTracked ||
+		currData.JointData[JointType_HandLeft].TrackingState == TrackingState::TrackingState_NotTracked)
+		return GestureEnums::BODYSIDE_INVALID;
+
+	//Check shoulder validity (inferred is fine)
+	if(currData.JointData[JointType_ShoulderRight].TrackingState == TrackingState::TrackingState_NotTracked
+		|| currData.JointData[JointType_ShoulderLeft].TrackingState == TrackingState::TrackingState_NotTracked
+		|| currData.JointData[JointType_Head].TrackingState == TrackingState::TrackingState_NotTracked)
+		return GestureEnums::BODYSIDE_INVALID;	
+
+	CameraSpacePoint rightCurrHandPos = currData.JointData[JointType_HandRight].Position;
+	CameraSpacePoint leftCurrHandPos = currData.JointData[JointType_HandLeft].Position;
+	CameraSpacePoint rightShoulderPos = currData.JointData[JointType_ShoulderRight].Position;
+	CameraSpacePoint leftShoulderPos = currData.JointData[JointType_ShoulderLeft].Position;
+	CameraSpacePoint headPos = currData.JointData[JointType_Head].Position;
+
+	float yRightHeadDiff = (rightCurrHandPos.Y - headPos.Y);
+	float yLeftHeadDiff = (leftCurrHandPos.Y - headPos.Y);
+
+	float xHandDiff = Ogre::Math::Abs(rightCurrHandPos.X - leftCurrHandPos.X);
+	float xShoulderLength = Ogre::Math::Abs(rightShoulderPos.X - leftShoulderPos.X);
+	float yTarget = xShoulderLength * 0.75f;
+
+	printf("Head Diff: %f\n", yRightHeadDiff);
+	printf("YTarget: %f\n", yTarget);
+
+	if(xHandDiff <= xShoulderLength && 
+		yRightHeadDiff >= yTarget && yLeftHeadDiff >= yTarget)
+	{
+		printf("Arms Above Head\n");
+		return GestureEnums::BODYSIDE_BOTH;
+	}
+	return GestureEnums::BODYSIDE_INVALID;
+}

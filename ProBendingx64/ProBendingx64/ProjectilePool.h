@@ -45,7 +45,7 @@ public:
 	inline std::shared_ptr<Projectile> GetSharedProjectile()
 	{
 		auto result = std::find_if(pool.begin(), pool.end(), 
-			[](std::shared_ptr<Projectile> proj){return !proj->GetEnabled();});
+			[](std::shared_ptr<Projectile> proj){return proj->ValidForReuse();});
 
 		if(result != pool.end())
 			return *result;

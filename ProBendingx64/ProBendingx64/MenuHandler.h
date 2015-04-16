@@ -32,7 +32,8 @@ protected:
 		std::string ClickImage, HoverImage, DisabledImage, NormalImage;
 	};
 
-	void SetButtonImage(CEGUI::Window* button, ButtonSkinType skinType, ElementEnum::Element newElement);
+	void SetControlButtonImage(CEGUI::Window* button, ButtonSkinType skinType, ElementEnum::Element newElement);
+	void SetWindowImage(CEGUI::Window* button, const std::string& imagesetName, const std::string& imageName);
 
 	std::string GetElementPrefix(ElementEnum::Element newElement);
 	void GetButtonSkinSuffix(ButtonSkinType skinType, ButtonSkinListing& outVal);

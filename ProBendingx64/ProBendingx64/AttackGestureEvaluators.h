@@ -21,5 +21,11 @@ namespace AttackGestureEvaluators
 
 	GestureEnums::BodySide HandsClapGesture(const Probender* probender, const CompleteData& currData, 
 		const CompleteData& prevData, const ExtraCustomData& customData);
+
+	GestureEnums::BodySide HandsToSide(const Probender* probender, const CompleteData& currData,
+		const CompleteData& prevData, const ExtraCustomData& customData);
+
+	GestureEnums::BodySide HandsOverHead(const Probender* probender, const CompleteData& currData,
+		const CompleteData& prevData, const ExtraCustomData& customData);
 };
 

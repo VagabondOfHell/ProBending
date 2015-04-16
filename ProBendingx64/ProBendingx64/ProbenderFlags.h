@@ -207,7 +207,7 @@ namespace AbilityIDs
 	typedef unsigned short AbilityID;
 	enum FireAbilities{FIRE_JAB, FIRE_BLAST, FIRE_ABILITIES_COUNT};
 	enum EarthAbilities{EARTH_JAB, EARTH_COIN, EARTH_ABILITIES_COUNT};
-	enum WaterAbilities{WATER_JAB, WATER_ABILITIES_COUNT};
+	enum WaterAbilities{WATER_JAB, WATER_RISE, WATER_ABILITIES_COUNT};
 
 	static std::string FireEnumToString(const FireAbilities fireAbilities)
 	{
@@ -247,6 +247,9 @@ namespace AbilityIDs
 		{
 		case AbilityIDs::WATER_JAB:
 			return "Water_Jab";
+			break;
+		case AbilityIDs::WATER_RISE:
+			return "Water_Rise";
 			break;
 		default:
 			return "";

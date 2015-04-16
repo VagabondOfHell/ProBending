@@ -448,9 +448,6 @@ void ProbenderInputHandler::PrepareProjectile()
 		activeAttack->Reset();
 		activeAttack = NULL;
 
-		if(proj.get() != NULL)
-			proj->Disable();
-
 		NeedSpawnPosition = true;
 		return;
 	}
@@ -469,6 +466,8 @@ void ProbenderInputHandler::PrepareProjectile()
 		+ (probender->Forward() * proj->GetHalfExtents().x ));
 
 	proj->SetWorldOrientation(1.0f, 0.0f, 0.0f, 0.0f);
+
+	proj->Enable();
 
 	proj->GetRigidBody()->SetUseGravity(false);
 
@@ -648,7 +647,7 @@ void ProbenderInputHandler::keyPressed( const OIS::KeyEvent &arg )
 					probender->Forward() * 2.0f));
 				attack->SetWorldOrientation(1.0f, 0.0f, 0.0f, 0.0f);
 
-				Ogre::Vector3 camForward = probender->camera->getDerivedOrientation() * -Ogre::Vector3::UNIT_Z;
+				Ogre::Vector3 camForward = probender->Forward();
 				camForward.normalise();
 
 				attack->SetWorldPosition(probender->GetWorldPosition()
@@ -672,13 +671,12 @@ void ProbenderInputHandler::keyPressed( const OIS::KeyEvent &arg )
 		else if(probender->GetCurrentElement() == ElementEnum::Earth)
 		{
 			SharedProjectile attack = probender->GetOwningArena()->
-				GetProjectileManager()->CreateProjectile(ElementEnum::Earth, AbilityIDs::EARTH_JAB);
+				GetProjectileManager()->CreateProjectile(ElementEnum::Earth, AbilityIDs::EARTH_COIN);
 
 			if(attack)
 			{
 				attack->CasterContestantID = probender->contestantID;
 
-				attack->Enable();
 				attack->GetRigidBody()->SetUseGravity(true);
 
 				MeshRenderComponent* renderComp = (MeshRenderComponent*)attack->GetComponent(Component::MESH_RENDER_COMPONENT);
@@ -688,11 +686,13 @@ void ProbenderInputHandler::keyPressed( const OIS::KeyEvent &arg )
 				attack->SetWorldPosition(probender->GetWorldPosition() + 
 					(probender->Forward() * (renderComp->GetHalfExtents().x * 2)));*/
 
-				Ogre::Vector3 camForward = probender->camera->getDerivedOrientation() * -Ogre::Vector3::UNIT_Z;
+				Ogre::Vector3 camForward = probender->Forward();//probender->camera->getDerivedOrientation() * -Ogre::Vector3::UNIT_Z;
 				camForward.normalise();
 
 				attack->SetWorldPosition(probender->GetWorldPosition()
 					+ (camForward * attack->GetHalfExtents().x ));
+
+				attack->Enable();
 
 				attack->SetWorldOrientation(1.0f, 0.0f, 0.0f, 0.0f);
 				

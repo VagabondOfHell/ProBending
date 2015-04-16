@@ -159,6 +159,8 @@ public:
 
 	inline bool GetInfiniteLifetime()const{return infiniteLifetime;}
 
+	void inline SetInitialLifetime(const float newLifetime){initialLifetime = newLifetime;}
+
 	inline ParticleSystemMaterial* GetMaterial(){return &particleMaterial;}
 
 	///<summary>Gets the maximum number of particles allowed to be managed by the particle system at a time</summary>

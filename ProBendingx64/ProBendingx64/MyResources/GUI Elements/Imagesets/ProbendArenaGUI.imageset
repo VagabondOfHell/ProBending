@@ -25,4 +25,7 @@
     <Image height="16" name="U_R_CornerFrame" width="15" xPos="372" yPos="53" />
     <Image height="16" name="U_L_CornerFrame" width="15" xPos="393" yPos="53" />
     <Image height="67" name="WoodBacking" width="67" xPos="444" yPos="10" />
+    <Image height="127" name="WaterRiseBegin" width="127" xPos="5" yPos="337" />
+    <Image height="127" name="WaterRiseLaunch" width="127" xPos="264" yPos="338" />
+    <Image height="127" name="WaterRiseEnd" width="127" xPos="135" yPos="339" />
 </Imageset>

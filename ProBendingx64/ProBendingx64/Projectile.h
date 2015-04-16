@@ -16,6 +16,8 @@ namespace physx
 	class PxRigidDynamic;
 };
 
+class SpecialEffect;
+
 struct ProjectileIdentifier
 {
 	ElementEnum::Element Element;
@@ -33,8 +35,12 @@ class Projectile : public GameObject
 	friend class ProjectileManager;
 	ProjectileAttributes baseAttributes;
 
+	bool ShowDestructionEffect();
+
 public:
 	ProjectileAttributes Attributes;
+
+	SpecialEffect* CreationEffect, *DestructionEffect;
 
 	ArenaData::RaycastFilter DestructionTriggers;
 
@@ -64,10 +70,6 @@ public:
 
 	std::shared_ptr<Projectile> Clone()const;
 
-	/*void LaunchProjectile(const physx::PxVec3& direction, const float speed){LaunchProjectile(direction * speed);}
-
-	void LaunchProjectile(const physx::PxVec3& velocity);*/
-
 	void LaunchProjectile(const physx::PxVec3& direction, float attackSpeedBonus, float attackBonus);
 
 	virtual void OnCollisionEnter(const CollisionReport& collision);
@@ -80,5 +82,8 @@ public:
 
 	virtual void OnTriggerLeave(GameObject* trigger, GameObject* other);
 
+	virtual void Enable();
+
+	bool ValidForReuse();
 };
 

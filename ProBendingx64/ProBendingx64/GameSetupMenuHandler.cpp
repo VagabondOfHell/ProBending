@@ -67,6 +67,10 @@ void GameSetupMenuHandler::SubscribeEvents()
 		(&GameSetupMenuHandler::StartGameBtnClickEvent,this));
 	menu->RegisterHoverEvents(GetWindow(MW_BEGIN_GAME_BTN));
 
+	GetWindow(MW_TUTORIAL_BTN)->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber
+		(&GameSetupMenuHandler::ViewTutorialClickEvent, this));
+	menu->RegisterHoverEvents(GetWindow(MW_TUTORIAL_BTN));
+
 	GetWindow(MW_MODE_LEFT_SEL)->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber
 		(&GameSetupMenuHandler::GameModeSelBtnClickEvent,this));
 	menu->RegisterHoverEvents(GetWindow(MW_MODE_LEFT_SEL));
@@ -131,6 +135,8 @@ void GameSetupMenuHandler::UnsubscribeEvents()
 	//Need to unsubscribe manually because CEGUI crashes if we don't unregister Mouse Exit for some reason.
 	//This is a work around
 	menu->UnregisterHoverEvents(GetWindow(MW_BEGIN_GAME_BTN));
+
+	menu->UnregisterHoverEvents(GetWindow(MW_TUTORIAL_BTN));
 
 	menu->UnregisterHoverEvents(GetWindow(MW_MODE_LEFT_SEL));
 
@@ -293,6 +299,10 @@ CEGUI::Window* GameSetupMenuHandler::GetWindow(MenuWindows windowToGet, bool pla
 	case GameSetupMenuHandler::MW_CHARACTER_SELECT_BTN:
 		return guiManager->GetChildWindow(rootWindow, "CharacterSetupButton");
 		break;
+
+	case GameSetupMenuHandler::MW_TUTORIAL_BTN:
+		return guiManager->GetChildWindow(rootWindow, "TutorialButton");
+		break;
 	default:
 		return NULL;
 		break;
@@ -319,6 +329,13 @@ bool GameSetupMenuHandler::StartGameBtnClickEvent(const CEGUI::EventArgs& e)
 	menu->SwitchToGame();
 
 	UnsubscribeEvents();
+
+	return true;
+}
+
+bool GameSetupMenuHandler::ViewTutorialClickEvent(const CEGUI::EventArgs& e)
+{
+	((MenusScene*)scene)->SetScreen(MenusScene::Tutorial);
 
 	return true;
 }
@@ -432,17 +449,17 @@ void GameSetupMenuHandler::SetControlSkins(bool player1, ElementEnum::Element el
 	//Set image for the name backing
 	GetWindow(MW_PLAYER_ID_BACKING, player1)->setProperty("Image", "MenuControls/"+elementPrefix+"Lrg_Frame");
 
-	SetButtonImage(GetWindow(MW_PLAYER_ELEMENT_LEFT_SEL, player1), BTN_SKIN_LEFT_BTN_HORZ, elementSkin);
-	SetButtonImage(GetWindow(MW_PLAYER_ELEMENT_RIGHT_SEL, player1), BTN_SKIN_RIGHT_BTN_HORZ, elementSkin);
+	SetControlButtonImage(GetWindow(MW_PLAYER_ELEMENT_LEFT_SEL, player1), BTN_SKIN_LEFT_BTN_HORZ, elementSkin);
+	SetControlButtonImage(GetWindow(MW_PLAYER_ELEMENT_RIGHT_SEL, player1), BTN_SKIN_RIGHT_BTN_HORZ, elementSkin);
 	
-	SetButtonImage(GetWindow(MW_PLAYER_TEAM_COLOUR_LEFT_SEL, player1), BTN_SKIN_LEFT_BTN_HORZ, elementSkin);
-	SetButtonImage(GetWindow(MW_PLAYER_TEAM_COLOUR_RIGHT_SEL, player1), BTN_SKIN_RIGHT_BTN_HORZ, elementSkin);
+	SetControlButtonImage(GetWindow(MW_PLAYER_TEAM_COLOUR_LEFT_SEL, player1), BTN_SKIN_LEFT_BTN_HORZ, elementSkin);
+	SetControlButtonImage(GetWindow(MW_PLAYER_TEAM_COLOUR_RIGHT_SEL, player1), BTN_SKIN_RIGHT_BTN_HORZ, elementSkin);
 
-	SetButtonImage(GetWindow(MW_PLAYER_ZONE_LEFT_SEL, player1), BTN_SKIN_LEFT_BTN_HORZ, elementSkin);
-	SetButtonImage(GetWindow(MW_PLAYER_ZONE_RIGHT_SEL, player1), BTN_SKIN_RIGHT_BTN_HORZ, elementSkin);
+	SetControlButtonImage(GetWindow(MW_PLAYER_ZONE_LEFT_SEL, player1), BTN_SKIN_LEFT_BTN_HORZ, elementSkin);
+	SetControlButtonImage(GetWindow(MW_PLAYER_ZONE_RIGHT_SEL, player1), BTN_SKIN_RIGHT_BTN_HORZ, elementSkin);
 
-	SetButtonImage(GetWindow(MW_PLAYER_COLOUR_LEFT_SEL, player1), BTN_SKIN_LEFT_BTN_HORZ, elementSkin);
-	SetButtonImage(GetWindow(MW_PLAYER_COLOUR_RIGHT_SEL, player1), BTN_SKIN_RIGHT_BTN_HORZ, elementSkin);
+	SetControlButtonImage(GetWindow(MW_PLAYER_COLOUR_LEFT_SEL, player1), BTN_SKIN_LEFT_BTN_HORZ, elementSkin);
+	SetControlButtonImage(GetWindow(MW_PLAYER_COLOUR_RIGHT_SEL, player1), BTN_SKIN_RIGHT_BTN_HORZ, elementSkin);
 }
 
 

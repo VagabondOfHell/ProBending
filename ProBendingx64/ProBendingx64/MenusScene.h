@@ -11,7 +11,7 @@ class MenusScene :
 {
 public:
 	//enum Screens{MainMenu, CharacterSetup, GameSetup, Count};
-	enum Screens{MainMenu, GameSetup, Count};
+	enum Screens{MainMenu, GameSetup, Tutorial, Count};
 
 	static RadialProgressBar progressBar;
 

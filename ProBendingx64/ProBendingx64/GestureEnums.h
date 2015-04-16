@@ -18,6 +18,10 @@ namespace GestureEnums
 	static const std::string FIRE_BLAST_END_IMAGE = PROBEND_ARENA_GUI_PATH + "FireBlastEnd";
 	static const std::string FIRE_BLAST_LAUNCH_IMAGE = PROBEND_ARENA_GUI_PATH + "FireBlastLaunch";
 
+	static const std::string WATER_RISE_BEGIN_IMAGE = PROBEND_ARENA_GUI_PATH + "WaterRiseBegin";
+	static const std::string WATER_RISE_END_IMAGE = PROBEND_ARENA_GUI_PATH + "WaterRiseEnd";
+	static const std::string WATER_RISE_LAUNCH_IMAGE = PROBEND_ARENA_GUI_PATH + "WaterRiseLaunch";
+
 	static const std::string GUI_GESTURE_SLOT_PATHS[] = {
 		PROBEND_GUI_ROOT_PATH + "P1GestureRoot/Gesture1",
 		PROBEND_GUI_ROOT_PATH + "P1GestureRoot/Gesture2",

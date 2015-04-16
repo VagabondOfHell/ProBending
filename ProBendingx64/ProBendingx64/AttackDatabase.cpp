@@ -158,4 +158,38 @@ void AttackDatabase::GetWaterAttacks(ProjectileManager* projManager, unsigned sh
 	waterJabParams.LaunchOnCreate = true;
 
 	outVal.emplace_back(0.20f, projManager, waterJabID, waterJabParams);
+
+	AttackParams waterRiseParams = AttackParams();
+
+	GestureEnums::GUIGestureSlot waterRiseGestureSlot;
+
+	if(contestantID == 0)
+		waterRiseGestureSlot = GestureEnums::P1_GESTURE_SLOT_1;
+	else
+		waterRiseGestureSlot = GestureEnums::P2_GESTURE_SLOT_1;
+
+	AttackGesture* waterRiseCreateGesture = new AttackGesture(projManager->GetOwningScene()->GetGUIManager());
+	waterRiseCreateGesture->AddCustomEvaluator(0.0f, &AttackGestureEvaluators::HandsToSide, GestureEnums::BODYSIDE_BOTH,
+		GestureEnums::WATER_RISE_BEGIN_IMAGE, waterRiseGestureSlot);
+	waterRiseCreateGesture->AddCustomEvaluator(0.5f, &AttackGestureEvaluators::HandsOverHead, GestureEnums::BODYSIDE_BOTH,
+		GestureEnums::WATER_RISE_END_IMAGE, waterRiseGestureSlot);
+
+	AttackGesture* waterRiseLaunchGesture = new AttackGesture(projManager->GetOwningScene()->GetGUIManager());
+	waterRiseLaunchGesture->AddCustomEvaluator(0.0f, &AttackGestureEvaluators::ArmPunchGesture, GestureEnums::BODYSIDE_BOTH,
+		GestureEnums::WATER_RISE_LAUNCH_IMAGE, waterRiseGestureSlot);
+
+	ProjectileIdentifier waterRiseID = ProjectileIdentifier();
+	waterRiseID.Element = ElementEnum::Water; waterRiseID.AbilityID = AbilityIDs::WATER_RISE;
+
+	HandMoveController* waterRiseController = new HandMoveController(NULL, HandMoveController::CH_BOTH,
+		physx::PxVec3(-PROBENDER_HALF_EXTENTS.x, -PROBENDER_HALF_EXTENTS.y, 0.0f), 
+		physx::PxVec3(PROBENDER_HALF_EXTENTS.x, PROBENDER_HALF_EXTENTS.y * 0.5f, 0.0f), GestureEnums::TRANRULE_SAME);
+
+	waterRiseParams.CreationGesture = waterRiseCreateGesture;
+	waterRiseParams.LaunchGesture = waterRiseLaunchGesture;
+	waterRiseParams.ProjController = waterRiseController;
+	waterRiseParams.PositionCalculator = SpawnPositionCalculator(GestureEnums::TRANRULE_SAME, GestureEnums::BODYSIDE_BOTH,
+		SpawnPositionCalculator::LIMB_HANDS, SpawnPositionCalculator::CALC_OPTIONS_AVERAGE);
+
+	outVal.emplace_back(0.20f, projManager, waterRiseID, waterRiseParams);
 }

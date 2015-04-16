@@ -9,9 +9,9 @@
 ///Perhaps have an index pool as well so we can re-use indices
 
 const unsigned short ProjectileManager::BASE_NUM_AIR_PROJECTILES = 3;
-const unsigned short ProjectileManager::BASE_NUM_WATER_PROJECTILES = 6;
-const unsigned short ProjectileManager::BASE_NUM_FIRE_PROJECTILES = 6;
-const unsigned short ProjectileManager::BASE_NUM_EARTH_PROJECTILES = 6;
+const unsigned short ProjectileManager::BASE_NUM_WATER_PROJECTILES = 4;
+const unsigned short ProjectileManager::BASE_NUM_FIRE_PROJECTILES = 4;
+const unsigned short ProjectileManager::BASE_NUM_EARTH_PROJECTILES = 4;
 
 ProjectileManager::ProjectileManager(IScene* _owningScene)
 	:owningScene(_owningScene)
@@ -39,9 +39,6 @@ SharedProjectile const ProjectileManager::CreateProjectile(const ElementEnum::El
 		return NULL;
 
 	SharedProjectile retVal = abilityResult->second.GetSharedProjectile();
-
-	if(retVal.get() != NULL)
-		retVal->Enable();
 
 	//if we reach this point, ask the Pool if it has one available for us
 	return retVal;
