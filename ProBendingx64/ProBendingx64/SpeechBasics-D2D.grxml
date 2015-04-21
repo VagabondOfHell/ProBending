@@ -2,40 +2,27 @@
   <rule id="rootRule">
     <one-of>
       <item>
-        <tag>FORWARD</tag>
+        <tag>RED</tag>
         <one-of>
-          <item> forwards </item>
-          <item> forward </item>
-          <item> straight </item>
+          <item> red </item>
         </one-of>
       </item>
       <item>
-        <tag>BACKWARD</tag>
+        <tag>BLUE</tag>
         <one-of>
-          <item> backward </item>
-          <item> backwards </item>
-          <item> back </item>
+          <item> blue </item>
         </one-of>
       </item>
       <item>
-        <tag>LEFT</tag>
+        <tag>GREEN</tag>
         <one-of>
-          <item> turn left </item>
-		  <item> left </item>
+          <item> green </item>
         </one-of>
       </item>
       <item>
-        <tag>RIGHT</tag>
+        <tag>BLACK</tag>
         <one-of>
-          <item> turn right </item>
-		  <item> right </item>
-        </one-of>
-      </item>
-	  <item>
-        <tag>FRUIT</tag>
-        <one-of>
-          <item> apple </item>
-		  <item> banana </item>
+          <item> black </item>
         </one-of>
       </item>
     </one-of>

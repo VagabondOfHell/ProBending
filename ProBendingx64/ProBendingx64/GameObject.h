@@ -1,13 +1,13 @@
 #pragma once
 #include "OgreVector3.h"
 #include "HelperFunctions.h"
-#include <map>
-#include <unordered_set>
-
 #include "Component.h"
+#include "ArenaData.h"
 
 #include "PxSimulationEventCallback.h"
 
+#include <map>
+#include <unordered_set>
 #include <vector>
 #include <memory>
 
@@ -28,6 +28,9 @@ struct CollisionReport
 {
 	GameObject* Collider;
 
+	ArenaData::RaycastFilter ThisFilterData;
+	ArenaData::RaycastFilter OtherFilterData;
+
 	std::vector<physx::PxContactPairPoint> ContactPoints;
 
 };
@@ -46,7 +49,8 @@ protected:
 	RigidBodyComponent* rigidBody;
 
 	bool started;
-	
+	bool enabled;
+
 public:
 	std::string tag;
 
@@ -59,6 +63,12 @@ public:
 	virtual void Start();
 
 	virtual void Update(float gameTime);
+
+	void Enable();
+
+	void Disable();
+
+	inline bool GetEnabled(){return enabled;}
 
 	///<summary>At the moment this is used to differentiate between standard Game Objects and Projectiles and Probenders
 	///Eventually may move the serialization into Game Objects, but at the moment this is easier, since Projectiles
@@ -113,6 +123,12 @@ public:
 
 	void SetInheritOrientation(const bool val);
 
+	Ogre::Vector3 Forward(){return GetWorldOrientation() * Ogre::Vector3::UNIT_Z;}
+
+	Ogre::Vector3 Up(){return GetWorldOrientation() * Ogre::Vector3::UNIT_Y;}
+
+	Ogre::Vector3 Right(){return GetWorldOrientation() * Ogre::Vector3::UNIT_X;}
+
 	Ogre::Vector3 GetLocalScale()const;
 
 	void SetScale(const Ogre::Vector3& newScale);
@@ -149,7 +165,9 @@ public:
 			return NULL;
 	}
 
-	SharedGameObject Clone();
+	inline RigidBodyComponent* GetRigidBody(){return rigidBody;}
+
+	SharedGameObject Clone()const;
 
 	virtual void OnCollisionEnter(const CollisionReport& collision){}
 

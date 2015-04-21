@@ -1,6 +1,0 @@
-#include "KinectReader.h"
-#include "KinectBody.h"
-#include "KinectBodyListener.h"
-#include "KinectBodyEventNotifier.h"
-#include "KinectBodyReader.h"
-#include "KinectGestureDatabase.h"

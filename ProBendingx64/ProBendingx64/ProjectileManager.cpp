@@ -1,29 +1,26 @@
 #include "ProjectileManager.h"
-#include "ProjectileFactory.h"
 #include "Probender.h"
-#include "AbilityDescriptor.h"
+
 #include "RigidBodyComponent.h"
+#include "ProjectileDatabase.h"
 ///When a projectile gets removed, check its ability data for the caster
 ///and check if the projectile is on one of the casters hands. If it is,
 ///set that hand to null before deleting the projectile
 ///Perhaps have an index pool as well so we can re-use indices
 
+const unsigned short ProjectileManager::BASE_NUM_AIR_PROJECTILES = 3;
+const unsigned short ProjectileManager::BASE_NUM_WATER_PROJECTILES = 15;
+const unsigned short ProjectileManager::BASE_NUM_FIRE_PROJECTILES = 15;
+const unsigned short ProjectileManager::BASE_NUM_EARTH_PROJECTILES = 15;
 
 ProjectileManager::ProjectileManager(IScene* _owningScene)
-	:owningScene(_owningScene), NEXT_PROJECTILE_ID(0)
+	:owningScene(_owningScene)
 {
 }
 
 ProjectileManager::~ProjectileManager(void)
 {
-	ProjectileMap::iterator iter = projectileMap.begin();
-	while (iter != projectileMap.end())
-	{
-		iter->second.reset();
-		++iter;
-	}
-	//Destroy all projectiles
-	projectileMap.clear();
+
 }
 
 SharedProjectile const ProjectileManager::CreateProjectile(const ElementEnum::Element element, const AbilityIDs::AbilityID abilityID)
@@ -31,46 +28,115 @@ SharedProjectile const ProjectileManager::CreateProjectile(const ElementEnum::El
 	if(element == ElementEnum::InvalidElement)
 		return NULL;
 
-	SharedProjectile projectile = ProjectileFactory::CreateProjectile(owningScene, element, abilityID);
+	//Search for the proper element collection
+	auto elementResult = projectileMap.find(element);
+	if(elementResult == projectileMap.end())
+		return NULL;
 
-	if(projectile)
-	{
-		//If insertion is successful
-		if(projectileMap.insert(ProjectileMap::value_type(NEXT_PROJECTILE_ID, projectile)).second)
-		{
-			projectile->projectileID = NEXT_PROJECTILE_ID;
+	//Search for the ability id
+	auto abilityResult = elementResult->second.find(abilityID);
+	if(abilityResult == elementResult->second.end())
+		return NULL;
 
-			//increment id
-			++NEXT_PROJECTILE_ID;
+	SharedProjectile retVal = abilityResult->second.GetSharedProjectile();
 
-			projectile->Start();
-			//return the projectile
-			return projectile;
-		}
-	}
-	
-	return NULL;
+	if(retVal.get() != NULL)
+		retVal->Enable();
+
+	//if we reach this point, ask the Pool if it has one available for us
+	return retVal;
 }
 
-bool ProjectileManager::DestroyProjectile(SharedProjectile projectile)
+void ProjectileManager::RemoveProjectile(SharedProjectile projectile)
 {
-	ProjectileMap::iterator iter = projectileMap.find(projectile->projectileID);
-	if(iter != projectileMap.end())
-	{
-		projectileMap.erase(iter);
-		return true;
-	}
-
-	return false;
+	projectilesToDisable.push_back(projectile.get());
 }
 
 void ProjectileManager::Update(const float gameTime)
 {
-	//Loop through and update all projectiles
-	/*ProjectileMap::iterator iter = projectileMap.begin();
-	while (iter != projectileMap.end())
+	for (int i = 0; i < projectilesToDisable.size(); i++)
 	{
-		iter->second->Update(gameTime);
-		++iter;
-	}*/
+		projectilesToDisable[i]->Disable();
+	}
+
+	projectilesToDisable.clear();
+
+	//Loop through projectile pool collection
+	for (auto start = projectileMap.begin(); start != projectileMap.end(); ++start)
+	{
+		//Loop through projectile pools
+		for (auto projectiles = start->second.begin(); projectiles != start->second.end(); ++projectiles)
+		{
+			projectiles->second.Update(gameTime);
+		}
+	}
+}
+
+void ProjectileManager::CreatePool(ElementEnum::Element elementPool, unsigned short numberOfElement)
+{
+	if(numberOfElement == 0)
+		return;
+
+	ProjectileMap::iterator result;
+
+	//if it exists, ignore
+	if(FindExistingWithHint(elementPool, result))
+		return;
+
+	switch (elementPool)
+	{
+	case ElementEnum::Air:
+		return;
+		break;
+	case ElementEnum::Earth:
+		{
+			ProjectileDatabase::ProjectileDictionary earthDictionary = ProjectileDatabase::GetEarthProjectiles(owningScene);
+
+			AbilityPool abilityPool;
+			
+			for (auto start = earthDictionary.begin(); start != earthDictionary.end(); ++start)
+			{
+				ProjectilePool pool = ProjectilePool(BASE_NUM_EARTH_PROJECTILES * numberOfElement, start->second);
+				abilityPool.insert(AbilityPool::value_type(start->first, pool));
+			}
+
+			projectileMap.insert(ProjectileMap::value_type(ElementEnum::Earth, abilityPool));
+		}
+		
+		break;
+	case ElementEnum::Fire:
+		{
+			ProjectileDatabase::ProjectileDictionary fireDictionary = ProjectileDatabase::GetFireProjectiles(owningScene);
+
+			AbilityPool abilityPool;
+
+			for (auto start = fireDictionary.begin(); start != fireDictionary.end(); ++start)
+			{
+				ProjectilePool pool = ProjectilePool(BASE_NUM_FIRE_PROJECTILES * numberOfElement, start->second);
+				abilityPool.insert(AbilityPool::value_type(start->first, pool));
+			}
+
+			projectileMap.insert(ProjectileMap::value_type(ElementEnum::Fire, abilityPool));
+		}
+		break;
+	case ElementEnum::Water:
+		{
+			ProjectileDatabase::ProjectileDictionary waterDictionary = 
+				ProjectileDatabase::GetWaterProjectiles(owningScene);
+
+			AbilityPool abilityPool;
+
+			for (auto start = waterDictionary.begin(); start != waterDictionary.end(); ++start)
+			{
+				ProjectilePool pool = ProjectilePool(BASE_NUM_WATER_PROJECTILES * numberOfElement, start->second);
+				abilityPool.insert(AbilityPool::value_type(start->first, pool));
+			}
+
+			projectileMap.insert(ProjectileMap::value_type(ElementEnum::Water, abilityPool));
+		}
+		break;
+	default:
+		return;
+		break;
+	}
 }

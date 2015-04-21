@@ -1,0 +1,401 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<GUILayout version="4" >
+    <Window type="DefaultWindow" name="SetupMenuRoot" >
+        <Property name="Area" value="{{0,0},{0,0},{1,0},{1,0}}" />
+        <Property name="MaxSize" value="{{1,0},{1,0}}" />
+        <Window type="Generic/Image" name="Background" >
+            <Property name="Area" value="{{0,0},{0,1},{1,0},{1,1}}" />
+            <Property name="Image" value="PaperBackground/PaperBackground" />
+            <Property name="MaxSize" value="{{1,0},{1,0}}" />
+            <Property name="ZOrderingEnabled" value="false" />
+        </Window>
+        <Window type="DefaultWindow" name="ArenaDescriptor" >
+            <Property name="Area" value="{{-0.08,0},{0.05,0},{0.12,0},{0.35,0}}" />
+            <Property name="MaxSize" value="{{1,0},{1,0}}" />
+            <Property name="HorizontalAlignment" value="Right" />
+            <Window type="Generic/Image" name="ArenaBacking" >
+                <Property name="Area" value="{{0,0},{0,0},{1,0},{1,0}}" />
+                <Property name="Image" value="MenuControls/Wood_Lrg_Frame" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="HorizontalAlignment" value="Centre" />
+            </Window>
+            <Window type="Generic/Label" name="ArenaLabel" >
+                <Property name="Area" value="{{0,0},{0.04,0},{1,0},{0.24,0}}" />
+                <Property name="Font" value="slayer11" />
+                <Property name="Text" value="Arena:" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="AlwaysOnTop" value="true" />
+                <Property name="ClippedByParent" value="false" />
+                <Property name="NormalTextColour" value="FFC8AA64" />
+                <Property name="HorizontalAlignment" value="Centre" />
+            </Window>
+            <Window type="Generic/Image" name="ArenaSelectionImage" >
+                <Property name="Area" value="{{0,0},{0.1,0},{0.7,0},{0.8,0}}" />
+                <Property name="Image" value="MenuItems/ProbendArenaThumbnail" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="AlwaysOnTop" value="true" />
+                <Property name="VerticalAlignment" value="Centre" />
+                <Property name="HorizontalAlignment" value="Centre" />
+            </Window>
+        </Window>
+        <Window type="Generic/Image" name="TitleBacking" >
+            <Property name="Area" value="{{0.09,0},{0.02,0},{0.59,0},{0.14,0}}" />
+            <Property name="Image" value="MenuControls/Wood_Title_Bar" />
+            <Property name="MaxSize" value="{{1,0},{1,0}}" />
+            <Window type="Generic/Label" name="ScreenTitle" >
+                <Property name="Area" value="{{0,0},{0,0},{1,0},{1,0}}" />
+                <Property name="Font" value="slayer24" />
+                <Property name="Text" value="Battle Setup" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="NormalTextColour" value="FFE1AA64" />
+            </Window>
+        </Window>
+        <Window type="DefaultWindow" name="PlayerOptionsRoot" >
+            <Property name="Area" value="{{0,0},{0.34,0},{1,0},{0.89,-36}}" />
+            <Property name="MaxSize" value="{{1,0},{1,0}}" />
+            <Window type="Generic/Image" name="Player1Backing" >
+                <Property name="Area" value="{{-0.5,0},{0.05,0},{-0.3,0},{0.17,0}}" />
+                <Property name="Image" value="MenuControls/A_Lrg_Frame" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="HorizontalAlignment" value="Right" />
+                <Window type="Generic/Label" name="Player1Label" >
+                    <Property name="Area" value="{{0,0},{0,0},{1,0},{1,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="Player 1:" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                </Window>
+            </Window>
+            <Window type="Generic/Image" name="Player2Backing" >
+                <Property name="Area" value="{{-0.13,0},{0.05,0},{0.07,0},{0.17,0}}" />
+                <Property name="Image" value="MenuControls/A_Lrg_Frame" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="HorizontalAlignment" value="Right" />
+                <Window type="Generic/Label" name="Player2Label" >
+                    <Property name="Area" value="{{0,0},{0,0},{1,0},{1,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="Player 2:" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                </Window>
+            </Window>
+            <Window type="DefaultWindow" name="TeamLabelRoot" >
+                <Property name="Area" value="{{0,0},{0.38,0},{1,0},{0.53,0}}" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Window type="Generic/Label" name="TeamLabel" >
+                    <Property name="Area" value="{{-0.77,0},{0,0},{-0.67,0},{0.5,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="Team:" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="VerticalAlignment" value="Centre" />
+                    <Property name="HorizontalAlignment" value="Right" />
+                </Window>
+                <Window type="Generic/ImageButton" name="P1TeamSelLeft" >
+                    <Property name="Area" value="{{-0.65,0},{0,0},{-0.6,0},{1,0}}" />
+                    <Property name="HoverImage" value="MenuControls/A_Left_Sel_Hover" />
+                    <Property name="NormalImage" value="MenuControls/A_Left_Sel_Normal" />
+                    <Property name="PushedImage" value="MenuControls/A_Left_Sel_Click" />
+                    <Property name="DisabledImage" value="MenuControls/A_Left_Sel_Disabled" />
+                    <Property name="HorizontalAlignment" value="Right" />
+                </Window>
+                <Window type="Generic/Image" name="P1TeamColour" >
+                    <Property name="Area" value="{{-0.52,0},{0,0},{-0.46,0},{1,0}}" />
+                    <Property name="Image" value="MenuControls/W_Lrg_Frame" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="HorizontalAlignment" value="Right" />
+                </Window>
+                <Window type="Generic/ImageButton" name="P1TeamSelRight" >
+                    <Property name="Area" value="{{-0.4,0},{0,0},{-0.35,0},{1,0}}" />
+                    <Property name="HoverImage" value="MenuControls/A_Right_Sel_Hover" />
+                    <Property name="NormalImage" value="MenuControls/A_Right_Sel_Normal" />
+                    <Property name="PushedImage" value="MenuControls/A_Right_Sel_Click" />
+                    <Property name="DisabledImage" value="MenuControls/A_Right_Sel_Disabled" />
+                    <Property name="HorizontalAlignment" value="Right" />
+                </Window>
+                <Window type="Generic/ImageButton" name="P2TeamSelRight" >
+                    <Property name="Area" value="{{-0.03,0},{0,0},{0.02,0},{1,0}}" />
+                    <Property name="HoverImage" value="MenuControls/A_Right_Sel_Hover" />
+                    <Property name="NormalImage" value="MenuControls/A_Right_Sel_Normal" />
+                    <Property name="PushedImage" value="MenuControls/A_Right_Sel_Click" />
+                    <Property name="DisabledImage" value="MenuControls/A_Right_Sel_Disabled" />
+                    <Property name="HorizontalAlignment" value="Right" />
+                </Window>
+                <Window type="Generic/Image" name="P2TeamColour" >
+                    <Property name="Area" value="{{-0.149,0},{0,0},{-0.089,0},{1,0}}" />
+                    <Property name="Image" value="MenuControls/W_Lrg_Frame" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="HorizontalAlignment" value="Right" />
+                </Window>
+                <Window type="Generic/ImageButton" name="P2TeamSelLeft" >
+                    <Property name="Area" value="{{-0.28,0},{0,0},{-0.23,0},{1,0}}" />
+                    <Property name="HoverImage" value="MenuControls/A_Left_Sel_Hover" />
+                    <Property name="NormalImage" value="MenuControls/A_Left_Sel_Normal" />
+                    <Property name="PushedImage" value="MenuControls/A_Left_Sel_Click" />
+                    <Property name="DisabledImage" value="MenuControls/A_Left_Sel_Disabled" />
+                    <Property name="HorizontalAlignment" value="Right" />
+                </Window>
+            </Window>
+            <Window type="DefaultWindow" name="CharColourLabelRoot" >
+                <Property name="Area" value="{{0,0},{0.56,0},{1,0},{0.71,0}}" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Window type="Generic/Label" name="ColourLabel" >
+                    <Property name="Area" value="{{-0.77,0},{0,0},{-0.635,0},{0.5,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="Colour:" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="VerticalAlignment" value="Bottom" />
+                    <Property name="HorizontalAlignment" value="Right" />
+                </Window>
+                <Window type="Generic/ImageButton" name="P1ColourSelLeft" >
+                    <Property name="Area" value="{{-0.65,0},{0,0},{-0.6,0},{1,0}}" />
+                    <Property name="HoverImage" value="MenuControls/A_Left_Sel_Hover" />
+                    <Property name="NormalImage" value="MenuControls/A_Left_Sel_Normal" />
+                    <Property name="PushedImage" value="MenuControls/A_Left_Sel_Click" />
+                    <Property name="DisabledImage" value="MenuControls/A_Left_Sel_Disabled" />
+                    <Property name="HorizontalAlignment" value="Right" />
+                </Window>
+                <Window type="Generic/ImageButton" name="P1ColourSelRight" >
+                    <Property name="Area" value="{{-0.4,0},{0,0},{-0.35,0},{1,0}}" />
+                    <Property name="HoverImage" value="MenuControls/A_Right_Sel_Hover" />
+                    <Property name="NormalImage" value="MenuControls/A_Right_Sel_Normal" />
+                    <Property name="PushedImage" value="MenuControls/A_Right_Sel_Click" />
+                    <Property name="DisabledImage" value="MenuControls/A_Right_Sel_Disabled" />
+                    <Property name="HorizontalAlignment" value="Right" />
+                </Window>
+                <Window type="Generic/ImageButton" name="P2ColourSelRight" >
+                    <Property name="Area" value="{{-0.03,0},{0,0},{0.02,0},{1,0}}" />
+                    <Property name="HoverImage" value="MenuControls/A_Right_Sel_Hover" />
+                    <Property name="NormalImage" value="MenuControls/A_Right_Sel_Normal" />
+                    <Property name="PushedImage" value="MenuControls/A_Right_Sel_Click" />
+                    <Property name="DisabledImage" value="MenuControls/A_Right_Sel_Disabled" />
+                    <Property name="HorizontalAlignment" value="Right" />
+                </Window>
+                <Window type="Generic/ImageButton" name="P2ColourSelLeft" >
+                    <Property name="Area" value="{{-0.28,0},{0,0},{-0.23,0},{1,0}}" />
+                    <Property name="HoverImage" value="MenuControls/A_Left_Sel_Hover" />
+                    <Property name="NormalImage" value="MenuControls/A_Left_Sel_Normal" />
+                    <Property name="PushedImage" value="MenuControls/A_Left_Sel_Click" />
+                    <Property name="DisabledImage" value="MenuControls/A_Left_Sel_Disabled" />
+                    <Property name="HorizontalAlignment" value="Right" />
+                </Window>
+                <Window type="Generic/Label" name="ProbenderLabel" >
+                    <Property name="Area" value="{{-0.77,0},{0,0},{-0.57,0},{0.5,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="Probender" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="HorizontalAlignment" value="Right" />
+                </Window>
+                <Window type="Generic/Label" name="P2CharColour" >
+                    <Property name="Area" value="{{0.74,0},{0,0},{0.9,0},{1,0}}" />
+                    <Property name="Text" value="Blue" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                </Window>
+                <Window type="Generic/Label" name="P1CharColour" >
+                    <Property name="Area" value="{{0.37,0},{0,0},{0.53,0},{1,0}}" />
+                    <Property name="Text" value="Red" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                </Window>
+            </Window>
+            <Window type="DefaultWindow" name="StartZoneLabelRoot" >
+                <Property name="Area" value="{{0,0},{0.74,0},{1,0},{0.89,0}}" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Window type="Generic/ImageButton" name="P1SelLeft" >
+                    <Property name="Area" value="{{-0.65,0},{0,0},{-0.6,0},{1,0}}" />
+                    <Property name="HoverImage" value="MenuControls/A_Left_Sel_Hover" />
+                    <Property name="NormalImage" value="MenuControls/A_Left_Sel_Normal" />
+                    <Property name="PushedImage" value="MenuControls/A_Left_Sel_Click" />
+                    <Property name="DisabledImage" value="MenuControls/A_Left_Sel_Disabled" />
+                    <Property name="HorizontalAlignment" value="Right" />
+                </Window>
+                <Window type="Generic/ImageButton" name="P1SelRight" >
+                    <Property name="Area" value="{{-0.4,0},{0,0},{-0.35,0},{1,0}}" />
+                    <Property name="HoverImage" value="MenuControls/A_Right_Sel_Hover" />
+                    <Property name="NormalImage" value="MenuControls/A_Right_Sel_Normal" />
+                    <Property name="PushedImage" value="MenuControls/A_Right_Sel_Click" />
+                    <Property name="DisabledImage" value="MenuControls/A_Right_Sel_Disabled" />
+                    <Property name="HorizontalAlignment" value="Right" />
+                </Window>
+                <Window type="Generic/ImageButton" name="P2SelRight" >
+                    <Property name="Area" value="{{-0.03,0},{0,0},{0.02,0},{1,0}}" />
+                    <Property name="HoverImage" value="MenuControls/A_Right_Sel_Hover" />
+                    <Property name="NormalImage" value="MenuControls/A_Right_Sel_Normal" />
+                    <Property name="PushedImage" value="MenuControls/A_Right_Sel_Click" />
+                    <Property name="DisabledImage" value="MenuControls/A_Right_Sel_Disabled" />
+                    <Property name="HorizontalAlignment" value="Right" />
+                </Window>
+                <Window type="Generic/ImageButton" name="P2SelLeft" >
+                    <Property name="Area" value="{{-0.28,0},{0,0},{-0.23,0},{1,0}}" />
+                    <Property name="HoverImage" value="MenuControls/A_Left_Sel_Hover" />
+                    <Property name="NormalImage" value="MenuControls/A_Left_Sel_Normal" />
+                    <Property name="PushedImage" value="MenuControls/A_Left_Sel_Click" />
+                    <Property name="DisabledImage" value="MenuControls/A_Left_Sel_Disabled" />
+                    <Property name="HorizontalAlignment" value="Right" />
+                </Window>
+                <Window type="Generic/Label" name="ProbenderLabel" >
+                    <Property name="Area" value="{{-0.77,0},{0,0},{-0.56,0},{0.5,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="Start Zone:" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="VerticalAlignment" value="Centre" />
+                    <Property name="HorizontalAlignment" value="Right" />
+                </Window>
+                <Window type="Generic/Label" name="P1ZoneColour" >
+                    <Property name="Area" value="{{0.37,0},{0,0},{0.53,0},{0.5,0}}" />
+                    <Property name="Text" value="Red" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                </Window>
+                <Window type="Generic/Label" name="P1ZonePosition" >
+                    <Property name="Area" value="{{0.37,0},{0,0},{0.53,0},{0.5,0}}" />
+                    <Property name="Text" value="Zone 1" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="VerticalAlignment" value="Bottom" />
+                </Window>
+                <Window type="Generic/Label" name="P2ZoneColour" >
+                    <Property name="Area" value="{{0.74,0},{0,0},{0.9,0},{0.5,0}}" />
+                    <Property name="Text" value="Blue" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                </Window>
+                <Window type="Generic/Label" name="P2ZonePosition" >
+                    <Property name="Area" value="{{0.74,0},{0,0},{0.9,0},{0.5,0}}" />
+                    <Property name="Text" value="Zone 1" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="VerticalAlignment" value="Bottom" />
+                </Window>
+            </Window>
+            <Window type="DefaultWindow" name="ProbenderElementLabelRoot" >
+                <Property name="Area" value="{{0,0},{0.2,0},{1,0},{0.35,0}}" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Window type="Generic/Label" name="ProbenderLabel" >
+                    <Property name="Area" value="{{-0.77,0},{0,0},{-0.57,0},{0.5,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="Probender" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="HorizontalAlignment" value="Right" />
+                </Window>
+                <Window type="Generic/Label" name="ElementLabel" >
+                    <Property name="Area" value="{{-0.77,0},{0,0},{-0.62,0},{0.5,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="Element:" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="VerticalAlignment" value="Bottom" />
+                    <Property name="HorizontalAlignment" value="Right" />
+                </Window>
+                <Window type="Generic/ImageButton" name="P1ElementSelLeft" >
+                    <Property name="Area" value="{{-0.65,0},{0,0},{-0.6,0},{1,0}}" />
+                    <Property name="HoverImage" value="MenuControls/A_Left_Sel_Hover" />
+                    <Property name="NormalImage" value="MenuControls/A_Left_Sel_Normal" />
+                    <Property name="PushedImage" value="MenuControls/A_Left_Sel_Click" />
+                    <Property name="DisabledImage" value="MenuControls/A_Left_Sel_Disabled" />
+                    <Property name="HorizontalAlignment" value="Right" />
+                </Window>
+                <Window type="Generic/Label" name="P1Element" >
+                    <Property name="Area" value="{{0.37,0},{0,0},{0.53,0},{1,0}}" />
+                    <Property name="Text" value="Fire" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                </Window>
+                <Window type="Generic/ImageButton" name="P1ElementSelRight" >
+                    <Property name="Area" value="{{-0.4,0},{0,0},{-0.35,0},{1,0}}" />
+                    <Property name="HoverImage" value="MenuControls/A_Right_Sel_Hover" />
+                    <Property name="NormalImage" value="MenuControls/A_Right_Sel_Normal" />
+                    <Property name="PushedImage" value="MenuControls/A_Right_Sel_Click" />
+                    <Property name="DisabledImage" value="MenuControls/A_Right_Sel_Disabled" />
+                    <Property name="HorizontalAlignment" value="Right" />
+                </Window>
+                <Window type="Generic/ImageButton" name="P2ElementSelLeft" >
+                    <Property name="Area" value="{{-0.28,0},{0,0},{-0.23,0},{1,0}}" />
+                    <Property name="HoverImage" value="MenuControls/A_Left_Sel_Hover" />
+                    <Property name="NormalImage" value="MenuControls/A_Left_Sel_Normal" />
+                    <Property name="PushedImage" value="MenuControls/A_Left_Sel_Click" />
+                    <Property name="DisabledImage" value="MenuControls/A_Left_Sel_Disabled" />
+                    <Property name="HorizontalAlignment" value="Right" />
+                </Window>
+                <Window type="Generic/ImageButton" name="P2ElementSelRight" >
+                    <Property name="Area" value="{{-0.03,0},{0,0},{0.02,0},{1,0}}" />
+                    <Property name="HoverImage" value="MenuControls/A_Right_Sel_Hover" />
+                    <Property name="NormalImage" value="MenuControls/A_Right_Sel_Normal" />
+                    <Property name="PushedImage" value="MenuControls/A_Right_Sel_Click" />
+                    <Property name="DisabledImage" value="MenuControls/A_Right_Sel_Disabled" />
+                    <Property name="HorizontalAlignment" value="Right" />
+                </Window>
+                <Window type="Generic/Label" name="P2Element" >
+                    <Property name="Area" value="{{0.74,0},{0,0},{0.9,0},{1,0}}" />
+                    <Property name="Text" value="Earth" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                </Window>
+            </Window>
+        </Window>
+        <Window type="DefaultWindow" name="GameOptionsRoot" >
+            <Property name="Area" value="{{0,0},{0.16,0},{0.7,0},{0.4,0}}" />
+            <Property name="MaxSize" value="{{1,0},{1,0}}" />
+            <Window type="Generic/Label" name="GameModeLabel" >
+                <Property name="Area" value="{{0.01,0},{0.1,0},{0.34,0},{0.3,0}}" />
+                <Property name="Font" value="slayer11" />
+                <Property name="Text" value="Game Mode:" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+            </Window>
+            <Window type="Generic/Label" name="GameMode" >
+                <Property name="Area" value="{{-0.15,0},{0,0},{0.25,0},{0.4,0}}" />
+                <Property name="Font" value="slayer11" />
+                <Property name="Text" value="Last Man Standing" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="HorzFormatting" value="WordWrapCentreAligned" />
+                <Property name="HorizontalAlignment" value="Right" />
+            </Window>
+            <Window type="Generic/ImageButton" name="GameModeSelLButton" >
+                <Property name="Area" value="{{0.35,0},{0.05,0},{0.42,0},{0.35,0}}" />
+                <Property name="HoverImage" value="MenuControls/Wood_Left_Sel_Hover" />
+                <Property name="NormalImage" value="MenuControls/Wood_Left_Sel_Normal" />
+                <Property name="PushedImage" value="MenuControls/Wood_Left_Sel_Click" />
+                <Property name="DisabledImage" value="MenuControls/Wood_Left_Sel_Disabled" />
+            </Window>
+            <Window type="Generic/ImageButton" name="GameModeSelRButton" >
+                <Property name="Area" value="{{0.88,0},{0.05,0},{0.95,0},{0.35,0}}" />
+                <Property name="HoverImage" value="MenuControls/Wood_Right_Sel_Hover" />
+                <Property name="NormalImage" value="MenuControls/Wood_Right_Sel_Normal" />
+                <Property name="PushedImage" value="MenuControls/Wood_Right_Sel_Click" />
+                <Property name="DisabledImage" value="MenuControls/Wood_Right_Sel_Disabled" />
+            </Window>
+        </Window>
+        <Window type="Generic/ImageButton" name="BeginGameButton" >
+            <Property name="Area" value="{{-0.1,0},{-0.01,0},{0.2,0},{0.09,0}}" />
+            <Property name="HoverImage" value="MenuControls/Wood_Btn_Hover" />
+            <Property name="NormalImage" value="MenuControls/Wood_Btn_Normal" />
+            <Property name="PushedImage" value="MenuControls/Wood_Btn_Click" />
+            <Property name="DisabledImage" value="MenuControls/Wood_Btn_Disabled" />
+            <Property name="VerticalAlignment" value="Bottom" />
+            <Property name="HorizontalAlignment" value="Right" />
+            <Window type="Generic/Label" name="Text" >
+                <Property name="Area" value="{{0,0},{0,0},{1,0},{1,0}}" />
+                <Property name="Text" value="Begin Game" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="NormalTextColour" value="FFFA9632" />
+                <Property name="MousePassThroughEnabled" value="true" />
+                <Property name="MouseInputPropagationEnabled" value="true" />
+            </Window>
+        </Window>
+        <Window type="Generic/ImageButton" name="CharacterSetupButton" >
+            <Property name="Area" value="{{0.1,0},{-0.01,0},{0.4,0},{0.09,0}}" />
+            <Property name="HoverImage" value="MenuControls/Wood_Btn_Hover" />
+            <Property name="NormalImage" value="MenuControls/Wood_Btn_Normal" />
+            <Property name="PushedImage" value="MenuControls/Wood_Btn_Click" />
+            <Property name="DisabledImage" value="MenuControls/Wood_Btn_Disabled" />
+            <Property name="VerticalAlignment" value="Bottom" />
+            <Window type="Generic/Label" name="CharacterText" >
+                <Property name="Area" value="{{0,0},{0.1,0},{1,0},{0.5,0}}" />
+                <Property name="Text" value="Character" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="NormalTextColour" value="FFFA9632" />
+                <Property name="MousePassThroughEnabled" value="true" />
+                <Property name="MouseInputPropagationEnabled" value="true" />
+            </Window>
+            <Window type="Generic/Label" name="SetupText" >
+                <Property name="Area" value="{{0,0},{-0.2,0},{1,0},{0.2,0}}" />
+                <Property name="Text" value="Setup" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="NormalTextColour" value="FFFA9632" />
+                <Property name="VerticalAlignment" value="Bottom" />
+                <Property name="MousePassThroughEnabled" value="true" />
+                <Property name="MouseInputPropagationEnabled" value="true" />
+            </Window>
+        </Window>
+    </Window>
+</GUILayout>

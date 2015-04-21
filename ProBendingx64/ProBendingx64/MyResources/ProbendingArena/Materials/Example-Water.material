@@ -163,6 +163,31 @@ material Examples/Water7
 		}
 	}
 }
+
+material Examples/WaterSphere
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			//scene_blend add
+			depth_write off
+			cull_hardware none
+			cull_software none
+
+			texture_unit
+			{
+				texture water-texture.jpg
+				//tex_address_mode clamp
+				scale 0.1 0.1
+				//env_map spherical
+			}
+		}
+	}
+
+}
+
 material Examples/Water8
 {
 	technique

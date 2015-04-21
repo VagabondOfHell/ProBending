@@ -42,6 +42,8 @@ protected:
 
 			return cursorPoint;
 		}
+
+		return DepthSpacePoint();
 	}
 
 	virtual void BodyLost( const CompleteData& currentData, const CompleteData& previousData);

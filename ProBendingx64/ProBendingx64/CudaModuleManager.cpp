@@ -48,7 +48,7 @@ CudaModule* CudaModuleManager::LoadModule(std::string moduleFilepath)
 		previousCudaError = cuModuleLoadData(&module, buf );
 
 		//Now we are done with the character array representing the kernel, so delete it
-		delete buf;
+		delete[] buf;
 
 		//if successful
 		if(previousCudaError == CUDA_SUCCESS)

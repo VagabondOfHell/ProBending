@@ -4,6 +4,18 @@
 #include "OgreMesh.h"
 #include "OgreSubMesh.h"
 
+#include "foundation/PxQuat.h"
+
+#include <codecvt>
+
+#ifndef M_PI
+#define M_PI 3.1415926535897932384626433832795
+#endif
+
+#ifndef DEGREES_TO_RADIANS
+#define DEGREES_TO_RADIANS (M_PI / 180.0f)
+#endif 
+
 void HelperFunctions::DrawBoxGeometry(const physx::PxVec3 shapePosition, 
 			const physx::PxBoxGeometry* const boxGeometry, Ogre::ManualObject* manualObject)
 {
@@ -186,4 +198,48 @@ void HelperFunctions::GetMeshInformation(const Ogre::Mesh* const mesh, MeshInfo&
 	meshInfo.aaBB.scale(scale);
 
 	meshInfo.sphereRadius = Ogre::Math::Abs(position.distance(position - meshInfo.aaBB.getMaximum()));
+}
+
+std::wstring HelperFunctions::StringToWideString(const std::string& stringToConvert)
+{
+	typedef std::codecvt_utf8<wchar_t> convert_typeX;
+	std::wstring_convert<convert_typeX, wchar_t> converterX;
+
+	return converterX.from_bytes(stringToConvert);
+}
+
+std::string HelperFunctions::WideStringToString(const std::wstring& stringToConvert)
+{
+	typedef std::codecvt_utf8<wchar_t> convert_typeX;
+	std::wstring_convert<convert_typeX, wchar_t> converterX;
+
+	return converterX.to_bytes(stringToConvert);
+}
+
+physx::PxQuat HelperFunctions::FromEulerAngles(const physx::PxVec3& angles)
+{
+	float roll = angles.x * DEGREES_TO_RADIANS;
+	float pitch = angles.y * DEGREES_TO_RADIANS;
+	float yaw = angles.z * DEGREES_TO_RADIANS;
+
+	float cyaw, cpitch, croll, syaw, spitch, sroll;
+	float cyawcpitch, syawspitch, cyawspitch, syawcpitch;
+
+	cyaw = cosf(0.5f * yaw);
+	cpitch = cosf(0.5f * pitch);
+	croll = cosf(0.5f * roll);
+	syaw = sinf(0.5f * yaw);
+	spitch = sinf(0.5f * pitch);
+	sroll = sinf(0.5f * roll);
+
+	cyawcpitch = cyaw * cpitch;
+	syawspitch = syaw * spitch;
+	cyawspitch = cyaw * spitch;
+	syawcpitch = syaw * cpitch;
+
+	return physx::PxQuat(
+		cyawcpitch * sroll - syawspitch * croll,
+		cyawspitch * croll + syawcpitch * sroll,
+		syawcpitch * croll - cyawspitch * sroll,
+		cyawcpitch * croll + syawspitch * sroll);
 }

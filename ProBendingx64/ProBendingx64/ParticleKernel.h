@@ -10,8 +10,10 @@ typedef struct CUfunc_st *CUfunction;
 class ParticleAffector;
 class ScaleParticleAffector;
 class ColourFadeParticleAffector;
+class TextureParticleAffector;
+class RotationAffector;
 
-class ParticleSystemBase;
+class FluidAndParticleBase;
 
 class CudaGPUData;
 struct MappedGPUData;
@@ -47,7 +49,13 @@ protected:
 	std::shared_ptr<ColourFadeParticleAffector> colourFadeAffector;
 	MappedGPUData* colourMappedData;
 
-	virtual void PrepareAffectorData(ParticleSystemBase* particleSystem, AffectorMap::iterator affector);
+	std::shared_ptr<TextureParticleAffector> textureParticleAffector;
+	MappedGPUData* textureMappedData;
+
+	std::shared_ptr<RotationAffector> rotationParticleAffector;
+	MappedGPUData* rotationMappedData;
+
+	virtual void PrepareAffectorData(FluidAndParticleBase* particleSystem, AffectorMap::iterator affector);
 
 	virtual GPUParamsCollection GetAffectorDevices();
 
@@ -75,7 +83,7 @@ public:
 	///<param name="affectors">Pointer to the affectors that represent the data that the kernel should use.
 	///Only uses affectors that are indicated to run on the GPU. Does not claim ownership of memory</param>
 	///<returns>Kernel Error enum value. If this isn't successful, chances are that launch kernel will fail</returns>
-	virtual ParticleKernelError PopulateData(ParticleSystemBase* particleSystem, AffectorMap* affectors);
+	virtual ParticleKernelError PopulateData(FluidAndParticleBase* particleSystem, AffectorMap* affectors);
 
 	///<summary>Launches the CUDA kernel represented by this class</summary>
 	///<param name="particleData">The particle data as provided by Physx</param>

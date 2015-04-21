@@ -20,25 +20,7 @@ KinectReader::KinectReader(bool _deleteReadersOnClose)
 
 KinectReader::~KinectReader(void)
 {
-	if(deleteReadersOnClose)
-	{
-		CloseBodyReader();
-	}
-
-	CloseSpeechReader();
-
-	if(mCoordinateMapper != NULL)
-	{
-		mCoordinateMapper->Release();
-		mCoordinateMapper = NULL;
-	}
-
-	if(mSensor != NULL)
-	{
-		mSensor->Close();
-		mSensor->Release();
-		mSensor = NULL;
-	}
+	CloseKinect();
 }
 
 HRESULT KinectReader::InitializeKinect(const UINT32 windowWidth, const UINT32 windowHeight)
@@ -85,6 +67,29 @@ HRESULT KinectReader::InitializeKinect(const UINT32 windowWidth, const UINT32 wi
 	return hr;
 }
 
+void KinectReader::CloseKinect()
+{
+	if(deleteReadersOnClose)
+	{
+		CloseBodyReader();
+	}
+
+	CloseSpeechReader();
+
+	if(mCoordinateMapper != NULL)
+	{
+		mCoordinateMapper->Release();
+		mCoordinateMapper = NULL;
+	}
+
+	if(mSensor != NULL)
+	{
+		mSensor->Close();
+		mSensor->Release();
+		mSensor = NULL;
+	}
+}
+
 void KinectReader::SetWindowSize(const UINT32 width, const UINT32 height)
 {
 	//Validate
@@ -128,8 +133,17 @@ bool KinectReader::CaptureBodyReader()
 	{
 		hr = bodyReader->Capture();
 	}
+	
+	bool oldAvailable = isAvailable ? true : false;
 
-	return SUCCEEDED(hr) ? true : false;
+	//Get the availability of the sensor
+	IsAvailable();
+
+	if(oldAvailable && !isAvailable)
+		if(kinectListener)
+			kinectListener->SensorDisconnected();
+
+	return SUCCEEDED(hr) || hr == E_PENDING ? true : false;
 }
 
 bool KinectReader::CaptureSpeechReader()

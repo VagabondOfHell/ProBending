@@ -83,7 +83,7 @@ HRESULT KinectBodyReader::Capture()const
 		{
 			for (int i = 0; i < BODY_COUNT; i++)
 			{
-				if (ppBodies[BODY_COUNT])
+				if (ppBodies[i])
 				{
 					bodies[i]->RecieveBodyInformation(ppBodies[i]);
 				}

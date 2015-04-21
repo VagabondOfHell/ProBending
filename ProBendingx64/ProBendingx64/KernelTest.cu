@@ -87,6 +87,15 @@ extern "C" __global__ void UpdateParticleSystem(
 						else
 							p->w = affectorParams->scaleParameters->minScale + (affectorParams->scaleParameters->scaleDiff * percent);
 					}
+
+					if(affectorParams->rotationParameters)
+					{
+						const PxU32 vec3Offset = destIndex*sizeof(PxVec3);
+						PxVec3* n = ptrOffset(graphicsResources.normals, vec3Offset);
+
+						n->x = affectorParams->rotationParameters->maxRotation -
+							affectorParams->rotationParameters->difference * percent;
+					}
 				}
 				
 				++destIndex;

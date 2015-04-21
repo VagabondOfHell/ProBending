@@ -1,17 +1,39 @@
 #pragma once
 #include "IScene.h"
 #include "ProbenderData.h"
-#include <vector>
 #include "InputObserver.h"
 #include "CollisionReporter.h"
+#include "PxBatchQuery.h"
+
+#include <vector>
 
 class Arena;
 
+namespace CEGUI
+{
+	class Window;
+};
+
 class GameScene:public IScene, public InputObserver
 {
+public:
+	enum GameState{GS_INTRO, GS_COUNTDOWN, GS_TRANSITION, GS_GAMEPLAY, GS_END_GAME};
+
 protected:
 	Arena* battleArena;
 	CollisionReporter collisionReporter;
+
+	CEGUI::Window* screenSeparator;
+	CEGUI::Window* progressTrackerWindow;
+
+	Ogre::Camera* Camera2;
+	
+	GameState currentState;
+
+	bool horizontalScreens;
+
+	void SetUpCameras();
+	void ChangeScreenSplit();
 
 public:
 
@@ -31,6 +53,8 @@ public:
 	///<returns>Pointer to the Game Arena</returns>
 	inline Arena* const GetArena()const{return battleArena;}
 
+	inline GameState GetCurrentState()const{return currentState;}
+
 	virtual physx::PxSceneDesc* GetSceneDescription(physx::PxVec3& gravity, bool initializeCuda);
 
 	virtual void Initialize();
@@ -39,13 +63,26 @@ public:
 
 	virtual bool Update(float gameTime);
 
+	void SetGameState(GameState newState);
+
 	virtual void Close();
 
-	virtual bool keyPressed( const OIS::KeyEvent &arg );
-	virtual bool keyReleased( const OIS::KeyEvent &arg ){return true;}
-	virtual bool mouseMoved( const OIS::MouseEvent &arg ) {return true;}
-	virtual bool mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID id ) {return true;}
-	virtual bool mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id ){return true;}
+	inline Ogre::Camera* GetCamera2()const{return Camera2;}
+
+	void ChangeScreenOrientation(bool horizontal)
+	{
+		if(horizontal != horizontalScreens)
+		{
+			horizontalScreens = horizontal;
+			ChangeScreenSplit();
+		}
+	}
+
+	virtual void keyPressed( const OIS::KeyEvent &arg );
+	virtual void keyReleased( const OIS::KeyEvent &arg ){}
+	virtual void mouseMoved( const OIS::MouseEvent &arg ) {}
+	virtual void mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID id ) {}
+	virtual void mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id ){}
 
 
 };

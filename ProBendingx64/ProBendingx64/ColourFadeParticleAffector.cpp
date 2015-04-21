@@ -37,6 +37,10 @@ void ColourFadeParticleAffector::Update(const float gameTime, GPUResourcePointer
 		pointers.primaryColour[particleIndex].x = newColour.x;
 		pointers.primaryColour[particleIndex].y = newColour.y;
 		pointers.primaryColour[particleIndex].z = newColour.z;
+		if(percentile >= 0.0f)
+			pointers.primaryColour[particleIndex].w = newColour.w;
+		else
+			pointers.primaryColour[particleIndex].w = 0.0f;
 	}
 }
 
@@ -46,5 +50,12 @@ GPUColourFaderAffectorParams* const ColourFadeParticleAffector::GetGPUParamaters
 		return NULL;
 
 	return &affectorAttributes;
+}
+
+ColourFadeParticleAffector* ColourFadeParticleAffector::Clone()
+{
+	return new ColourFadeParticleAffector(affectorAttributes.startColour, affectorAttributes.endColour,
+		affectorAttributes.onGPU);
+
 }
 

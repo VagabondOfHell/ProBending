@@ -7,12 +7,10 @@
 #include "IScene.h"
 #include "GameObject.h"
 
-#include "NotImplementedException.h"
-
 Ogre::SceneNode* ParticleComponent::WORLD_PARTICLES_NODE = NULL;
 int ParticleComponent::NUM_INSTANCES = 0;
 
-ParticleComponent::ParticleComponent(ParticleSystemBase* _particleSystem, bool _useLocalSpace)
+ParticleComponent::ParticleComponent(FluidAndParticleBase* _particleSystem, bool _useLocalSpace)
 	:Component(), particleSystem(_particleSystem), useLocalSpace(_useLocalSpace)
 {
 	++NUM_INSTANCES;
@@ -51,6 +49,14 @@ void ParticleComponent::OnAttach()
 	CreateSceneNode();
 
 	particleSystem->Initialize(owningGameObject->GetOwningScene()->GetPhysXScene());
+
+	ParticleSystemBase* cast = dynamic_cast<ParticleSystemBase*>(particleSystem);
+
+	if(cast != NULL)
+	{
+		if(cast->GetParticleKernel() == NULL)
+			cast->AssignAffectorKernel(cast->FindBestKernel());
+	}
 }
 
 void ParticleComponent::CreateSceneNode()
@@ -122,5 +128,29 @@ void ParticleComponent::SetTransformationSpace(const bool _useLocalSpace)
 
 ParticleComponent* ParticleComponent::Clone(GameObject* gameObject)
 {
-	throw NotImplementedException("Particle Component Clone Not Implemented");
+	ParticleComponent* clone = new ParticleComponent(particleSystem->Clone(), useLocalSpace);
+
+	if(!enabled)
+		clone->Disable();
+
+	return clone;
+}
+
+void ParticleComponent::Enable()
+{
+	if(!enabled)
+	{
+		particleSystem->EnableSimulation();
+		enabled = true;
+	}
+}
+
+void ParticleComponent::Disable()
+{
+	if(enabled)
+	{
+		particleSystem->DisableSimulation();
+		enabled = false;
+	}
+	
 }

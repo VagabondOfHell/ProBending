@@ -1,0 +1,3 @@
+<Imageset autoScaled="" imagefile="paper background.png" name="PaperBackground" nativeHorzRes="800" nativeVertRes="600" version="2">
+    <Image height="512" name="PaperBackground" width="512" xPos="0" yPos="0" />
+</Imageset>

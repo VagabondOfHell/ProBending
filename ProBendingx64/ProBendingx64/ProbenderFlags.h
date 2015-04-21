@@ -1,5 +1,8 @@
 #pragma once
 #include <string>
+#include "foundation/PxVec3.h"
+
+static const physx::PxVec3 PROBENDER_HALF_EXTENTS = physx::PxVec3(0.60f, 1.30f, 0.40f);
 
 namespace RenderableJointType
 {
@@ -32,6 +35,96 @@ namespace RenderableJointType
 		FootRight = 19,
 		Count = ThumbRight + 1
 	};
+
+	static std::string GetBoneName(RenderableJointType jointType)
+	{
+		switch (jointType)
+		{
+		case RenderableJointType::Head:
+			return "head";
+			break;
+		case RenderableJointType::Neck:
+			return "neck";
+			break;
+		case RenderableJointType::SpineShoulder:
+			return "ribs";
+			break;
+		case RenderableJointType::SpineMid:
+			return "spine";
+			break;
+		case RenderableJointType::SpineBase:
+			return "hips";
+			break;
+		case RenderableJointType::ShoulderRight:
+			return "shoulder.R";
+			break;
+		case RenderableJointType::ElbowRight:
+			return "forearm.R";
+			break;
+		case RenderableJointType::WristRight:
+			return "hand.R";
+			break;
+		case RenderableJointType::HandRight:
+			return "";
+			break;
+		case RenderableJointType::HandTipRight:
+			return "";
+			break;
+		case RenderableJointType::ShoulderLeft:
+			return "shoulder.L";
+			break;
+		case RenderableJointType::ElbowLeft:
+			return "forearm.L";
+			break;
+		case RenderableJointType::WristLeft:
+			return "hand.L";
+			break;
+		case RenderableJointType::HandLeft:
+			return "";
+			break;
+		case RenderableJointType::ThumbRight:
+			return "thumb.02.R";
+			break;
+		case RenderableJointType::HandTipLeft:
+			return "";
+			break;
+		case RenderableJointType::ThumbLeft:
+			return "thumb.02.L";
+			break;
+		case RenderableJointType::HipLeft:
+			//return "thigh.L";
+			return "";
+			break;
+		case RenderableJointType::KneeLeft:
+			return "shin.L";
+			break;
+		case RenderableJointType::AnkleLeft:
+			return "heel.L";
+			break;
+		case RenderableJointType::FootLeft:
+			return "foot.L";
+			break;
+		case RenderableJointType::HipRight:
+			//return "thigh.R";
+			return "";
+			break;
+		case RenderableJointType::KneeRight:
+			return "shin.R";
+			break;
+		case RenderableJointType::AnkleRight:
+			return "heel.R";
+			break;
+		case RenderableJointType::FootRight:
+			return "foot.R";
+			break;
+		case RenderableJointType::Count:
+			return "";
+			break;
+		default:
+			return "";
+			break;
+		}
+	}
 };
 
 namespace ElementEnum
@@ -194,37 +287,60 @@ namespace ElementFlags
 namespace ProbenderAttributes
 {
 	///The maximum allowed skill points for attributes
-	static const short MAX_ATTRIBUTE_POINTS_ALLOWED = 99;
+	static const short MAX_ATTRIBUTE_POINTS_ALLOWED = 10;
 
-	enum Attributes{InvalidAttribute, Health, Focus, OffensiveStrength, DefensiveStrength, Agility, Luck};
-};
-
-namespace ProbenderGeneralSkills
-{
-	///The maximum allowed skill points for skills
-	static const short MAX_SKILL_POINTS_ALLOWED = 99;
-	enum Skills{InvalidSkill, Dodge, Jump, Fly, SameElementCatch, Block, CounterAttack, ArenaInteraction, Healing};
-};
-
-namespace ProbenderStatusModifiers
-{
-	enum Modifiers{InvalidModifier, Damage, Burn, Stun, Poison, Immobilization, Distraction, Electrocution, Knockback,
-		BloodControl, Freeze, AirAttack, GroundAttack, FallingMiniGame};
-};
-
-namespace ProbenderAbilities
-{
-	///The number of modifiers for abilities (where points are placed in)
-	static const short NUM_ABILITY_MODIFIERS = 3;
-	//Maximum for skill point application to special abilities
-	static const short MAX_SKILL_POINTS_ALLOWED = 99;
+	enum Attributes{InvalidAttribute, Endurance, Recovery, Strength, Defense, Agility, Luck};
 };
 
 namespace AbilityIDs
 {
 	typedef unsigned short AbilityID;
-	enum FireAbilities{FIRE_JAB, FIRE_ABILITIES_COUNT};
-	enum EarthAbilities{EARTH_BOULDER, EARTH_ABILITIES_COUNT};
-	enum AirAbilities{AIR_ABILITIES_COUNT};
-	enum WaterAbilities{WATER_ABILITIES_COUNT};
+	enum FireAbilities{FIRE_JAB, FIRE_BLAST, FIRE_ABILITIES_COUNT};
+	enum EarthAbilities{EARTH_JAB, EARTH_COIN, EARTH_ABILITIES_COUNT};
+	enum WaterAbilities{WATER_JAB, WATER_ABILITIES_COUNT};
+
+	static std::string FireEnumToString(const FireAbilities fireAbilities)
+	{
+		switch (fireAbilities)
+		{
+		case FIRE_JAB:
+			return "Fire_Jab";
+			break;
+		case FIRE_BLAST:
+			return "Fire_Blast";
+			break;
+		default:
+			return "";
+			break;
+		}
+	}
+
+	static std::string EarthEnumToString(const EarthAbilities earthAbilities)
+	{
+		switch (earthAbilities)
+		{
+		case EARTH_JAB:
+			return "Earth_Jab";
+			break;
+		case EARTH_COIN:
+			return "Earth_Coin";
+			break;
+		default:
+			return "";
+			break;
+		}
+	}
+
+	static std::string WaterEnumToString(const WaterAbilities waterAbilities)
+	{
+		switch (waterAbilities)
+		{
+		case AbilityIDs::WATER_JAB:
+			return "Water_Jab";
+			break;
+		default:
+			return "";
+			break;
+		}
+	}
 }

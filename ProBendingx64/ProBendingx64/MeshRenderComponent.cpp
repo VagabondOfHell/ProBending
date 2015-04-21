@@ -10,12 +10,14 @@
 #include "OgreEntity.h"
 #include "OgreMesh.h"
 #include "OgreSubMesh.h"
+#include "OgreSubEntity.h"
 
 #include "geometry/PxBoxGeometry.h"
 
 MeshRenderComponent::MeshRenderComponent()
 	:Component()
 {
+
 }
 
 MeshRenderComponent::~MeshRenderComponent(void)
@@ -102,17 +104,13 @@ std::shared_ptr<MeshInfo> const MeshRenderComponent::GetMeshInfo() const
 
 void MeshRenderComponent::Enable()
 {
-	if(!enabled)
-		owningGameObject->gameObjectNode->attachObject(entity);
-
+	owningGameObject->gameObjectNode->setVisible(true);
 	enabled = true;
 }
 
 void MeshRenderComponent::Disable()
 {
-	if(enabled)
-		owningGameObject->gameObjectNode->detachObject(entity);
-	
+	owningGameObject->gameObjectNode->setVisible(false);
 	enabled = false;
 }
 
@@ -135,9 +133,13 @@ MeshRenderComponent* MeshRenderComponent::Clone(GameObject* gameObject)
 	{
 		Ogre::NameGenerator nameGenerator = Ogre::NameGenerator(entity->getName());
 		clone->LoadModel(GetMeshName());
-			//entity->clone(nameGenerator.generate());
+		
+		clone->SetMaterial(entity->getSubEntity(0)->getMaterialName());//entity->getMesh()->getSubMesh(0)->getMaterialName());
 	}
 	
+	if(!enabled)
+		clone->Disable();
+
 	return clone;
 }
 
@@ -184,6 +186,50 @@ void MeshRenderComponent::UpdateMesh(const std::vector<Ogre::Vector3>& newData,
 	}
 
 	vbuf->unlock();
+}
+
+void MeshRenderComponent::SetBonePosition(const std::string& boneName, const Ogre::Vector3& newBonePosition, bool localSpace)
+{
+	if(entity)
+	{
+		Ogre::Bone* bone = entity->getSkeleton()->getBone(boneName);
+		bone->setManuallyControlled(true);
+
+		if(localSpace)
+			bone->setPosition(newBonePosition);
+		else
+			bone->_setDerivedPosition(newBonePosition);
+	}
+}
+
+void MeshRenderComponent::SetBoneOrientation(const std::string& boneName, const Ogre::Quaternion& newBoneOrientation, bool localSpace /*= true*/)
+{
+	if(entity)
+	{
+		Ogre::Bone* bone = entity->getSkeleton()->getBone(boneName);
+		bone->setManuallyControlled(true);
+
+		if(localSpace)
+			bone->setOrientation(newBoneOrientation);
+		else
+			bone->_setDerivedOrientation(newBoneOrientation);
+	}
+}
+
+Ogre::Bone* MeshRenderComponent::GetBone(const std::string& boneName)
+{
+	if(entity)
+	{
+		return entity->getSkeleton()->getBone(boneName);
+	}
+}
+
+void MeshRenderComponent::DisplaySkeleton(bool val)
+{
+	if(entity)
+	{
+		entity->setDisplaySkeleton(val);
+	}
 }
 
 

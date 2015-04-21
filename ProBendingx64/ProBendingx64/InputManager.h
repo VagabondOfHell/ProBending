@@ -35,7 +35,7 @@ public:
 		return instance;
 	}
 
-	inline void DestroySingleton()
+	inline static void DestroySingleton()
 	{
 		if(instance)
 		{
@@ -43,6 +43,8 @@ public:
 			instance = NULL;
 		}
 	}
+
+	void CloseKinect();
 
 	///<summary>Gets the Gesture Reader of the Input Manager
 	///Meant to be a Default gesture reader</summary>
@@ -111,6 +113,9 @@ public:
 	///<param name="listener">The listener to attach</param>
 	///<returns>True if successful, false if not</returns>
 	bool RegisterListenerToBody(UINT8 bodyID, KinectBodyListener* listener);
+
+	///<summary>Removes all flagged listeners</summary>
+	void FlushListeners();
 
 	///<summary>Swaps the bodies that each listener is listening to</summary>
 	///<param name="listener1">The listener to switch from</param>

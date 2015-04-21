@@ -28,8 +28,8 @@ InputManager::~InputManager(void)
 {
 	ShutdownThreads();
 
-	KinectBodyEventNotifier::GetInstance()->DestroySingleton();
-	KinectAudioEventNotifier::GetInstance()->DestroySingleton();
+	KinectBodyEventNotifier::DestroySingleton();
+	KinectAudioEventNotifier::DestroySingleton();
 
 	if(gestureReader)
 	{
@@ -44,18 +44,31 @@ void InputManager::ShutdownThreads()
 	cancelBodyCapture = true;
 
 	DWORD result = WaitForSingleObject(speechCaptureThread.native_handle(), 100);
+	printf("First Wait Done\n");
 
 	speechCaptureThread.join();
 
+	printf("First Join Done\n");
+
+	cancelBodyCapture = true;
 	result = WaitForSingleObject(bodyCaptureThread.native_handle(), 100);
 
-	bodyCaptureThread.join();
+	printf("Second Wait Done\n");
+	if(bodyCaptureThread.joinable())
+		bodyCaptureThread.join();
+
+	printf("Second Join Done\n");
 
 	if(kinectReader)
 	{
 		delete kinectReader;
 		kinectReader = NULL;
 	}
+}
+
+void InputManager::CloseKinect()
+{
+	ShutdownThreads();
 }
 
 bool InputManager::InitializeKinect(const UINT32 windowWidth, const UINT32 windowHeight)
@@ -72,7 +85,7 @@ bool InputManager::InitializeKinect(const UINT32 windowWidth, const UINT32 windo
 	Sleep(1000);
 
 	 bool result = kinectReader->OpenBodyReader();
-
+	 
 	if(!result)
 		return false;
 
@@ -156,6 +169,11 @@ bool InputManager::RegisterListenerToNewBody(KinectBodyListener* listener)
 	}
 
 	return false;
+}
+
+void InputManager::FlushListeners()
+{
+	KinectBodyEventNotifier::GetInstance()->FlushListeners();
 }
 
 bool InputManager::RegisterListenerToBody(UINT8 bodyID, KinectBodyListener* listener)
@@ -255,10 +273,18 @@ void InputManager::BodyCapture()
 	cancelBodyCapture = false;
 	pauseBodyCapture = false;
 
-	while (!cancelBodyCapture)
+	bool breakNow = false;
+
+//	while (!cancelBodyCapture)
 	{
 		if(!pauseBodyCapture)
-			kinectReader->CaptureBodyReader();
+			breakNow = !kinectReader->CaptureBodyReader();
+
+		//if(breakNow)
+		//	break;
+
+		if(cancelBodyCapture)
+			printf("Wanna Leave\n");
 	}
 }
 
@@ -277,7 +303,7 @@ void InputManager::AudioCapture()
 
 void InputManager::BeginAllCapture()
 {
-	bodyCaptureThread = std::thread(&InputManager::BodyCapture, this);
+	//bodyCaptureThread = std::thread(&InputManager::BodyCapture, this);
 	speechCaptureThread = std::thread(&InputManager::AudioCapture, this);
 }
 
@@ -293,6 +319,8 @@ void InputManager::SetBodyCaptureState(bool enabled)
 
 void InputManager::ProcessEvents()
 {
+	BodyCapture();
 	KinectBodyEventNotifier::GetInstance()->ProcessEvents();
 	KinectAudioEventNotifier::GetInstance()->ProcessEvents();
+	FlushListeners();
 }

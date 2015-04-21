@@ -1,0 +1,16 @@
+<Imageset autoScaled="" imagefile="MainMenuGUI.png" name="MenuItems" nativeHorzRes="800" nativeVertRes="600" version="2">
+    <Image autoScaled="true" height="66" name="Title_Probending" width="620" xPos="0" yPos="0" />
+    <Image height="70" name="Title_Tournament" width="620" xPos="0" yPos="69" />
+    <Image height="204" name="ProbendArenaThumbnail" width="245" xPos="0" yPos="158" />
+    <Image height="34" name="Radial_Bar_1" width="33" xPos="5" yPos="388" />
+    <Image height="34" name="Radial_Bar_2" width="33" xPos="46" yPos="388" />
+    <Image height="34" name="Radial_Bar_3" width="33" xPos="87" yPos="388" />
+    <Image height="34" name="Radial_Bar_4" width="33" xPos="128" yPos="388" />
+    <Image height="34" name="Radial_Bar_5" width="33" xPos="170" yPos="388" />
+    <Image height="34" name="Radial_Bar_6" width="33" xPos="211" yPos="388" />
+    <Image height="34" name="Radial_Bar_7" width="33" xPos="252" yPos="388" />
+    <Image height="34" name="Radial_Bar_8" width="33" xPos="293" yPos="388" />
+    <Image height="34" name="Radial_Bar_9" width="33" xPos="335" yPos="388" />
+    <Image height="67" name="Title_Stickman" width="451" xPos="283" yPos="152" />
+    <Image height="70" name="Title_Tournament_Earth" width="611" xPos="264" yPos="227" />
+</Imageset>

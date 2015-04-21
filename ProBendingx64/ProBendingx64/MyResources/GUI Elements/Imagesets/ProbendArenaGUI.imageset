@@ -1,0 +1,28 @@
+<Imageset autoScaled="true" imagefile="InGameGUI.png" name="ProbendArenaGUI" nativeHorzRes="1920" nativeVertRes="1080" version="2">
+    <Image height="19" name="RedZoneBar" width="119" xPos="0" yPos="0" />
+    <Image height="19" name="BlueZoneBar" width="119" xPos="0" yPos="20" />
+    <Image height="58" name="ZoneSeparatorBar" width="19" xPos="121" yPos="0" />
+    <Image height="58" name="RedCharacterBar" width="19" xPos="141" yPos="0" />
+    <Image height="58" name="BlueCharacterBar" width="19" xPos="161" yPos="0" />
+    <Image height="58" name="YellowCharacterBar" width="19" xPos="181" yPos="0" />
+    <Image height="58" name="GreenCharacterBar" width="19" xPos="201" yPos="0" />
+    <Image height="58" name="PurpleCharacterBar" width="19" xPos="221" yPos="0" />
+    <Image height="58" name="OrangeCharacterBar" width="19" xPos="241" yPos="0" />
+    <Image height="127" name="EarthStompBegin" width="127" xPos="5" yPos="78" />
+    <Image height="127" name="EarthStompEnd" width="127" xPos="132" yPos="78" />
+    <Image height="127" name="EarthStompLaunch" width="127" xPos="262" yPos="78" />
+    <Image height="127" name="FireBlastEnd" width="127" xPos="133" yPos="210" />
+    <Image height="127" name="FireBlastBegin" width="127" xPos="5" yPos="210" />
+    <Image height="127" name="FireBlastLaunch" width="127" xPos="262" yPos="210" />
+    <Image height="120" name="VertBlueZoneBar" width="20" xPos="10" yPos="539" />
+    <Image height="120" name="VertRedZoneBar" width="20" xPos="30" yPos="539" />
+    <Image height="19" name="WhiteBar" width="119" xPos="0" yPos="41" />
+    <Image height="67" name="GreyBacking" width="69" xPos="266" yPos="5" />
+    <Image height="59" name="VerticalFrame" width="4" xPos="355" yPos="10" />
+    <Image height="5" name="HorizontalFrame" width="60" xPos="363" yPos="37" />
+    <Image height="16" name="D_R_CornerFrame" width="15" xPos="371" yPos="9" />
+    <Image height="16" name="D_L_CornerFrame" width="15" xPos="394" yPos="9" />
+    <Image height="16" name="U_R_CornerFrame" width="15" xPos="372" yPos="53" />
+    <Image height="16" name="U_L_CornerFrame" width="15" xPos="393" yPos="53" />
+    <Image height="67" name="WoodBacking" width="67" xPos="444" yPos="10" />
+</Imageset>

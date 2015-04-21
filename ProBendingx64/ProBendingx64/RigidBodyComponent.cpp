@@ -17,6 +17,7 @@
 #include "OgreEntity.h"
 #include "OgreManualObject.h"
 #endif
+#include "OgreNameGenerator.h"
 
 using namespace physx;
 
@@ -107,7 +108,7 @@ bool RigidBodyComponent::AttachShape(PxShape& newShape)
 bool RigidBodyComponent::AttachShape(const std::string& shapeName)
 {
 	physx::PxShape* shape = PhysXDataManager::GetSingletonPtr()->GetShape(shapeName);
-	
+
 	if(shape)
 		return AttachShape(*shape);
 
@@ -307,7 +308,10 @@ void RigidBodyComponent::CreateDebugDraw()
 				
 					const physx::PxVec3* vertexBuffer = meshGeometry.convexMesh->getVertices();
 					const physx::PxU8* indexBuffer = meshGeometry.convexMesh->getIndexBuffer();
-									
+							
+					//Ogre::Vector3 scale = owningGameObject->GetWorldScale();
+					physx::PxVec3 scale = meshGeometry.scale.scale;
+
 					Ogre::ManualObject* manObject = sceneManager->createManualObject();
 					manObject->begin("WireframeRender", Ogre::RenderOperation::OT_TRIANGLE_LIST);
 					
@@ -315,7 +319,8 @@ void RigidBodyComponent::CreateDebugDraw()
 
 					for (unsigned int i = 0; i < meshGeometry.convexMesh->getNbVertices(); i++)
 					{
-						manObject->position(vertexBuffer[i].x,vertexBuffer[i].y , vertexBuffer[i].z );
+						//manObject->position(vertexBuffer[i].x,vertexBuffer[i].y, vertexBuffer[i].z );
+						manObject->position(vertexBuffer[i].x * scale.x,vertexBuffer[i].y * scale.y, vertexBuffer[i].z* scale.z );
 						//manObject->position(vertexBuffer[i].x - pos.x,vertexBuffer[i].y - pos.y, vertexBuffer[i].z - pos.z );
 					}
 
@@ -332,8 +337,10 @@ void RigidBodyComponent::CreateDebugDraw()
 					}
 
 					manObject->end();
-					Ogre::MeshPtr mesh = manObject->convertToMesh("RockConvexMesh");
-					physxDebugNode->attachObject(sceneManager->createEntity(mesh));
+										
+					//Ogre::MeshPtr mesh = manObject->convertToMesh(ng.generate());
+					physxDebugNode->attachObject(manObject);//sceneManager->createEntity(mesh));
+					//physxDebugNode->setScale(scale);
 				}
 			default:
 				break;
@@ -341,7 +348,7 @@ void RigidBodyComponent::CreateDebugDraw()
 	}
 	
 	if(shapes)
-		delete shapes;
+		delete[] shapes;
 
 	
 	// add ManualObject to the node so it will be visible
@@ -535,7 +542,7 @@ void RigidBodyComponent::SetMass(const float newMass)
 		bodyStorage.dynamicActor->setMass(newMass);
 }
 
-void RigidBodyComponent::SetVelocity(physx::PxVec3& newVel)
+void RigidBodyComponent::SetVelocity(const physx::PxVec3& newVel)
 {
 	if(bodyType == DYNAMIC)
 	{
@@ -586,13 +593,11 @@ RigidBodyComponent* RigidBodyComponent::Clone(GameObject* gameObject)
 {
 	RigidBodyComponent* clone = new RigidBodyComponent();
 
-	clone->enabled = enabled;
 	clone->owningGameObject = gameObject;
 
 	if(bodyType != NONE)
 	{
 		physx::PxRigidActor* actor = NULL;
-
 		if(bodyType == DYNAMIC)
 			actor = bodyStorage.dynamicActor;
 		else if(bodyType == STATIC)
@@ -616,6 +621,15 @@ RigidBodyComponent* RigidBodyComponent::Clone(GameObject* gameObject)
 
 			if(physxDebugNode)
 				clone->CreateDebugDraw();
+
+		}
+
+		if(!enabled)
+			clone->Disable();
+
+		if(bodyType == DYNAMIC)
+		{
+			clone->SetUseGravity(!bodyStorage.dynamicActor->getActorFlags().isSet(PxActorFlag::eDISABLE_GRAVITY));
 		}
 	}
 
@@ -636,4 +650,79 @@ void RigidBodyComponent::SetKinematicTarget(const physx::PxTransform& target)
 	}
 }
 
+void RigidBodyComponent::SetLinearDamping(const float damping)
+{
+	if(bodyType == DYNAMIC)
+	{
+		bodyStorage.dynamicActor->setLinearDamping(damping);
+	}
+}
 
+void RigidBodyComponent::SetAngularDamping(const float damping)
+{
+	if(bodyType == DYNAMIC)
+	{
+		bodyStorage.dynamicActor->setAngularDamping(damping);
+	}
+}
+
+float RigidBodyComponent::GetLinearDamping() const
+{
+	if(bodyType == DYNAMIC)
+		return bodyStorage.dynamicActor->getLinearDamping();
+
+	return 0.0f;
+}
+
+float RigidBodyComponent::GetAngularDamping() const
+{
+	if(bodyType == DYNAMIC)
+		return bodyStorage.dynamicActor->getAngularDamping();
+
+	return 0.0f;
+}
+
+void RigidBodyComponent::Enable()
+{
+	if(bodyType == DYNAMIC)
+		bodyStorage.dynamicActor->setActorFlag(physx::PxActorFlag::eDISABLE_SIMULATION, false);
+	else if(bodyType == STATIC)
+		bodyStorage.staticActor->setActorFlag(physx::PxActorFlag::eDISABLE_SIMULATION, false);
+
+#if _DEBUG
+	if(physxDebugNode)
+		physxDebugNode->setVisible(true);
+#endif
+	enabled = true;
+}
+
+void RigidBodyComponent::Disable()
+{
+	if(bodyType == DYNAMIC)
+		bodyStorage.dynamicActor->setActorFlag(physx::PxActorFlag::eDISABLE_SIMULATION, true);
+	else if(bodyType == STATIC)
+		bodyStorage.staticActor->setActorFlag(physx::PxActorFlag::eDISABLE_SIMULATION, true);
+#if _DEBUG
+	if(physxDebugNode)
+		physxDebugNode->setVisible(false);
+#endif
+	enabled = false;
+}
+
+void RigidBodyComponent::PutToSleep()
+{
+	if(bodyType == DYNAMIC)
+		bodyStorage.dynamicActor->putToSleep();
+}
+
+void RigidBodyComponent::WakeUp()
+{
+	if(bodyType == DYNAMIC)
+		bodyStorage.dynamicActor->wakeUp();
+}
+
+void RigidBodyComponent::SetCCD(const bool val)
+{
+	if(bodyType == DYNAMIC)
+		bodyStorage.dynamicActor->setRigidBodyFlag(physx::PxRigidBodyFlag::eENABLE_CCD, val);
+}

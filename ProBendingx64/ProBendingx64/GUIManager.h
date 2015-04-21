@@ -1,17 +1,26 @@
 #pragma once
-#include <CEGUI\CEGUI.h>
 #include <CEGUI\RendererModules\Ogre\Renderer.h>
-
+#include "CEGUI\InputEvent.h"
 #include "InputObserver.h"
 
-class GUIManager: public InputObserver
+namespace CEGUI
+{
+	class GUIContext;
+	class Window;
+}
+
+class GUIManager
 {
 private:
 	static CEGUI::OgreRenderer* mRenderer;
 
 	CEGUI::MouseButton ConvertButton(OIS::MouseButtonID buttonID);
 
+	CEGUI::GUIContext* defaultContext;
+
 	CEGUI::Window* rootWindow;
+
+	CEGUI::Window* LoadLayoutFile(const CEGUI::String& layoutFileName);
 
 public:
 	////////////////////////TODO///////////////////////////////////
@@ -42,6 +51,17 @@ public:
 	///<returns>True if successful, false if not</returns>
 	bool LoadLayout(const CEGUI::String& layoutFileName, const CEGUI::String& windowName = "", const CEGUI::String& schemeFileName = "");
 	
+	///<summary>Loads a layout and attaches the result to the root or sets it as root</summary>
+	///<param name="layoutFileName">The name of the layout file to load</param>
+	///<param name="setAsRoot">True to set it as the root window, false to add it to the root window</param>
+	///<returns>True if successful, false if not</returns>
+	bool LoadLayout(const CEGUI::String& layoutFileName, bool setAsRoot = true);
+
+	///<summary>Loads a layout and attaches the result to the specified window</summary>
+	///<param name="layoutFileName">The name of the layout file to load</param>
+	///<param name="parentWindow">The window to attach the new window to, or NULL to add to Root window</param>
+	///<returns>True if successful, false if not</returns>
+	bool LoadLayout(const CEGUI::String& layoutFileName, CEGUI::Window* parentWindow);
 
 	///<summary>Creates a push button as a child of the root window</summary>
 	///<param name="style">The style to use. An Example is "TaharezLook/Button". This is passed to the CEGUI Window Factory</param>
@@ -63,14 +83,22 @@ public:
 	///<returns>The element if found, NULL if not</returns>
 	CEGUI::NamedElement* GetChildItem(const CEGUI::String& elementPath);
 
+	CEGUI::Window* GetChildWindow(const CEGUI::String& windowPath);
+
+	CEGUI::Window* GetChildWindow(const CEGUI::Window* const searchStartWindow, const CEGUI::String& pathFromPassedWindow);
+
 	///<summary>Removes a scheme from CEGUI. Unfortunately there is no way to know if this 
 	///was successful or not from CEGUI's end. Though there aren't too many instances that it would
 	///be necessary to call this function anyways</summary>
 	///<param name="schemeName">The name of the scheme to remove</param>
 	void RemoveScheme(const CEGUI::String& schemeName);
 
-	virtual bool mouseMoved( const OIS::MouseEvent &arg );
-	virtual bool mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID id );
-	virtual bool mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id );
+	void InjectMousePosition(float x, float y);
+	void InjectMouseMove(float x, float y);
+
+	void InjectMouseClick(OIS::MouseButtonID button);
+	void InjectMouseButtonDown(OIS::MouseButtonID button);
+	void InjectMouseButtonUp(OIS::MouseButtonID button);
+
 };
 

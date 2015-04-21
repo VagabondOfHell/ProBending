@@ -1,4 +1,9 @@
 #pragma once
+#define MEMORY_LEAK_DETECT 0
+
+#if(MEMORY_LEAK_DETECT)
+#include "vld.h"
+#endif
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -14,7 +19,7 @@ extern "C" {
 #endif
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-    INT WINAPI WinMain( HINSTANCE hInst, HINSTANCE, LPSTR strCmdLine, INT )
+    INT WINAPI WinMain(_In_ HINSTANCE hInst, _In_opt_ HINSTANCE, _In_ LPSTR strCmdLine, _In_ INT )
 #else
     int main(int argc, char *argv[])
 #endif

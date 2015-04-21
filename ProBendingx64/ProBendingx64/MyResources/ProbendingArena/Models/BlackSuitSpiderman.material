@@ -1,0 +1,17 @@
+material BlackSuit
+{
+        technique
+        {
+                pass
+                {
+                        ambient 1.000000 1.000000 1.000000
+                        diffuse 0.640000 0.640000 0.640000
+                        specular 0.250000 0.180000 1.000000 0
+                        emissive 0.650000 0.650000 0.650000
+                        texture_unit
+                        {
+                                texture Symbiote.tga
+                        }
+                }
+        }
+}

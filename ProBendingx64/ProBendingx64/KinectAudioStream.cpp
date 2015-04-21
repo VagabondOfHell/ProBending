@@ -101,7 +101,7 @@ STDMETHODIMP KinectAudioStream::Read(void *pBuffer, ULONG cbBuffer, ULONG *pcbRe
     *pcbRead = cbBuffer;
 
 exit:
-    delete p32Buffer;
+    delete[] p32Buffer;
     return hr;
 }
 

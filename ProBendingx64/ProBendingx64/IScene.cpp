@@ -7,18 +7,21 @@
 
 #include "PxPhysics.h"
 #include "PxScene.h"
+#include "geometry\PxGeometry.h"
 #include "extensions\PxDefaultCpuDispatcher.h"
 #include "extensions\PxDefaultSimulationFilterShader.h"
 #include "foundation\PxFoundation.h"
 #include "pxtask\PxCudaContextManager.h"
 #include "PhysXDataManager.h"
 
+#include "PxQueryReport.h"
+
 IScene::IScene(SceneManager* _owningManager, Ogre::Root* root, std::string _sceneName, std::string _resourceGroupName)
 	: physicsWorld(NULL), physxSimulating(false), physxEnabled(false), cudaContextManager(NULL), guiManager(new GUIManager()), started(false),
-	owningManager(_owningManager), resourceGroupName(_resourceGroupName), mainOgreCamera(NULL)
+	mCpuDispatcher(NULL), owningManager(_owningManager), resourceGroupName(_resourceGroupName), mainOgreCamera(NULL)
 {
 	guiManager->InitializeGUI();
-
+	
 	ogreSceneManager = root->createSceneManager(Ogre::SceneType::ST_GENERIC, _sceneName);
 }
 
@@ -210,4 +213,24 @@ SharedGameObject IScene::FindByName(const std::string& nameToFind)
 		return *result;
 	else
 		return NULL;
+}
+
+bool IScene::Raycast(const physx::PxVec3& origin, const physx::PxVec3& unitDir, const physx::PxReal maxDistance,
+					 physx::PxRaycastBuffer& outValHitResult, 
+					 const physx::PxFilterData& filterData/* = physx::PxFilterData()*/, 
+					 const physx::PxQueryFlags queryFlags /*= physx::PxQueryFlag::eDYNAMIC | physx::PxQueryFlag::eSTATIC*/,
+					 const physx::PxHitFlags hitFilter /*= physx::PxHitFlag::eDEFAULT*/)
+{
+	return physicsWorld->raycast(origin, unitDir, maxDistance, outValHitResult, hitFilter, 
+		physx::PxQueryFilterData(filterData, queryFlags));
+}
+
+bool IScene::GeometryCast(const physx::PxGeometry& geo, const physx::PxTransform& origin, 
+	const physx::PxVec3& unitDir, const physx::PxReal maxDistance, 
+	physx::PxSweepBuffer& outValHitResult, const physx::PxHitFlags hitFlags /*= physx::PxHitFlag::eDEFAULT*/, 
+	const physx::PxFilterData& filterData /*= physx::PxFilterData()*/, 
+	const physx::PxQueryFlags queryFlags /*= physx::PxQueryFlag::eDYNAMIC | physx::PxQueryFlag::eSTATIC*/)
+{
+	return physicsWorld->sweep(geo,origin, unitDir, maxDistance, outValHitResult, hitFlags,
+		physx::PxQueryFilterData(filterData, queryFlags));
 }

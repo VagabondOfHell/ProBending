@@ -1,8 +1,15 @@
 #pragma once
 #include "KinectAudioListener.h"
 #include "KinectBodyListener.h"
+
 #include "InputManager.h"
 #include "InputNotifier.h"
+
+#include "Attack.h"
+
+#include "ProbenderData.h"
+#include "ProbenderFlags.h"
+#include "ProbenderOptions.h"
 
 class Probender;
 
@@ -12,9 +19,11 @@ struct ConfigurationLayout
 
 	KeyboardKey AttackButton;
 	KeyboardKey JumpButton;
+	KeyboardKey StopListeningButton;
 
-	ConfigurationLayout(KeyboardKey attackButton = OIS::KC_SPACE, KeyboardKey jumpButton = OIS::KC_J)
-		:AttackButton(attackButton), JumpButton(jumpButton)
+	ConfigurationLayout(KeyboardKey attackButton = OIS::KC_SPACE, KeyboardKey jumpButton = OIS::KC_J, 
+		KeyboardKey stopListening = OIS::KC_1)
+		:AttackButton(attackButton), JumpButton(jumpButton), StopListeningButton(stopListening)
 	{
 
 	}
@@ -25,22 +34,60 @@ class ProbenderInputHandler :
 {
 public:
 	enum ProbenderStances{UnknownStance, OffenseStance, DefenceStance};
-
+	BodyDimensions bodyDimensions;
+	
 private:
+	static const float LEAN_RESET_DISTANCE;
+	static const float ATTACK_PAUSE; //A very short pause to prevent multiple gestures from acting at the same time
+
 	Probender* probender;
 	ProbenderStances currentStance;
 	
+	float attackBreather;
+
+	bool canLean;
+
+	bool NeedSpawnPosition;
+
+	std::vector<Attack> mainElementGestures;
+	std::vector<Attack> subElementGestures;
+
+	Attack* activeAttack;
+
+	void GenerateGestures();
+
+	void PopulateWithGestures(std::vector<Attack>& elementVector, ElementEnum::Element element);
+
+	///<summary>Updates the Probender Mesh to match the Kinect Input</summary>
+	///<param name="currentData">The current data of the frame</param>
+	void UpdateDisplay(const CompleteData& currentData);
+
+	///<summary>Checks current and previous lean values and fires the Dodge Movement on the probender if valid</summary>
+	///<param name="currentData">Data of the current body frame</param>
+	///<param name="previousData">Data of the last body frame</param>
+	void CheckLean(const CompleteData& currentData, const CompleteData& previousData);
+
+	void CheckJump(const CompleteData& currentData, const CompleteData& previousData);
+
+	void HandleAttacks(const AttackData& attackData);
+
+	void PrepareProjectile();
+	void PrepareProjectileLaunch();
+
 public:
 	ConfigurationLayout keysLayout;
+	ProbenderOptions controlOptions;
 
 	bool ManageStance; //True to allow the input handler to set Stances based on foot position. False to require input on stances
-
+	
 	ProbenderInputHandler(Probender* _probenderToHandle = NULL, bool manageStance = true,
 		ConfigurationLayout keyLayout = ConfigurationLayout());
 
 	virtual ~ProbenderInputHandler(void);
 
 	void SetProbenderToHandle(Probender* _probenderToHandle);
+
+	bool ListenToBody(UINT8 bodyIndex);
 
 	///<summary>Overrides the current stance used by the input handler and sets Manage Stance to false</summary>
 	///<param name="newStance">The new stance to be used. Setting to Unknown Stance will
@@ -57,7 +104,11 @@ public:
 	void BeginListeningToAll();
 
 	///<summary>Begins listening to Kinect Body input</summary>
-	inline void BeginListeningToKinectBody(){InputManager::GetInstance()->RegisterListenerToNewBody(this); KinectBodyListener::Enabled = true;}
+	inline void BeginListeningToKinectBody(){
+		if(!IsListening())
+			InputManager::GetInstance()->RegisterListenerToNewBody(this); 
+		KinectBodyListener::Enabled = true;
+	}
 
 	///<summary>Begins listening to Kinect Speech input</summary>
 	inline void BeginListeningToKinectSpeech(){InputManager::GetInstance()->RegisterAudioListener(this); KinectAudioListener::Enabled = true;}
@@ -108,12 +159,33 @@ protected:
 
 #pragma region Kinect Input
 
-	virtual void LeanTrackingStateChanged(const CompleteData& currentData, const CompleteData& previousData);
-	
 	virtual void HandTrackingStateChanged(const Hand hand, const CompleteData& currentData, const CompleteData& previousData);
 	virtual void HandConfidenceChanged(const Hand hand, const CompleteData& currentData, const CompleteData& previousData);
 
 	virtual void BodyFrameAcquired(const CompleteData& currentData, const CompleteData& previousData);
+
+	inline Ogre::Quaternion KinectVectorToOgreQuaternion(
+		const RenderableJointType::RenderableJointType joint, const CompleteData& currData)const
+	{
+		Vector4 kinectQuat = currData.JointOrientations[joint].Orientation;
+		return 
+			Ogre::Quaternion(Ogre::Radian(Ogre::Degree(180.0f)), Ogre::Vector3(0.0f, 1.0f, 0.0f)) *
+			Ogre::Quaternion(kinectQuat.w, kinectQuat.x, kinectQuat.y, kinectQuat.z);
+	}
+
+	inline Ogre::Vector3 KinectPosToOgrePosition(const RenderableJointType::RenderableJointType joint, const CompleteData& currData)
+	{
+		CameraSpacePoint kinectPos = currData.JointData[joint].Position;
+		return Ogre::Vector3(-kinectPos.X, kinectPos.Y, -kinectPos.Z);
+	}
+
+	void SetBoneData(const std::string& boneName, const Ogre::Vector3& pos, bool inheritOrientation, 
+		const Ogre::Quaternion& quat = Ogre::Quaternion::IDENTITY);
+
+	void SetBoneData(const std::string& boneName, const bool updatePosition, const bool updateOrientation, bool inheritOrientation = false,
+		const Ogre::Vector3& newPos = Ogre::Vector3(0.0f), const Ogre::Quaternion& quat = Ogre::Quaternion::IDENTITY);
+
+	void FillJointWorldOrientations(const CompleteData& currData);
 
 	virtual void DiscreteGesturesAcquired(const std::vector<KinectGestureResult>discreteGestureResults);
 	virtual void ContinuousGesturesAcquired(const std::vector<KinectGestureResult>continuousGestureResults);
@@ -124,12 +196,12 @@ protected:
 #pragma endregion
 
 #pragma region Mouse and Key Input
-	virtual bool keyDown(const OIS::KeyEvent &arg);
-	virtual bool keyPressed( const OIS::KeyEvent &arg );
-	virtual bool keyReleased( const OIS::KeyEvent &arg );
-	virtual bool mouseMoved( const OIS::MouseEvent &arg );
-	virtual bool mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID id );
-	virtual bool mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id );
+	virtual void keyDown(const OIS::KeyEvent &arg);
+	virtual void keyPressed( const OIS::KeyEvent &arg );
+	virtual void keyReleased( const OIS::KeyEvent &arg );
+	virtual void mouseMoved( const OIS::MouseEvent &arg );
+	virtual void mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID id );
+	virtual void mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id );
 
 	virtual void BodyAcquired();
 

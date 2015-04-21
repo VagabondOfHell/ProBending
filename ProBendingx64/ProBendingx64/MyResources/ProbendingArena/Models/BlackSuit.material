@@ -1,0 +1,42 @@
+// BlackSuit genrated by blender2ogre 0.6.0
+
+material BlackSuit 
+{
+    receive_shadows on 
+
+    technique
+    {
+        pass BlackSuit
+        {
+            ambient 0.6399999856948853 0.6399999856948853 0.6399999856948853 1.0
+            diffuse 0.5119999961853026 0.5119999961853026 0.5119999961853026 1.0
+            specular 0.25 0.18000000715255737 1.0 1.0 3.0
+            emissive 0.4159999754428867 0.4159999754428867 0.4159999754428867 1.0
+
+            alpha_to_coverage off
+            colour_write on
+            cull_hardware clockwise
+            depth_check on
+            depth_func less_equal
+            depth_write on
+            illumination_stage 
+            light_clip_planes off
+            light_scissor off
+            lighting on
+            normalise_normals off
+            polygon_mode solid
+            scene_blend one zero
+            scene_blend_op add
+            shading gouraud
+            transparent_sorting on
+
+            texture_unit 
+            {
+                texture Symbiote.tga
+                tex_address_mode wrap
+                scale 1.0 1.0
+                colour_op modulate
+            }
+        }
+    }
+}

@@ -1,15 +1,23 @@
 #pragma once
 #include "ProbenderInputHandler.h"
-#include "ProbenderInGameData.h"
 #include "ProbenderStateManager.h"
 #include "ProbenderData.h"
 #include "Projectile.h"
 
+#include "GUIProgressTracker.h"
+#include "ProbenderEnergyMeter.h"
+
+#include "OgreCamera.h"
 #include <memory>
 
 namespace physx
 {
 	class PxRigidDynamic;
+};
+
+namespace Ogre
+{
+	class Camera;
 };
 
 class MeshRenderComponent;
@@ -18,6 +26,12 @@ class Arena;
 
 typedef std::shared_ptr<Projectile> SharedProjectile;
 
+struct TransitionData
+{
+	physx::PxVec3 StartPos, EndPos;
+	float Percentile;
+};
+
 class Probender : public GameObject
 {
 	friend class ProbenderInputHandler;
@@ -25,57 +39,59 @@ class Probender : public GameObject
 private:
 	unsigned short contestantID;//The ID the contestant is stored in the arena with
 	
-	static const physx::PxVec3 HALF_EXTENTS;
+	static const float DODGE_DISTANCE;
+	static const float FALL_FORCE;
 
-	TeamData::ContestantColour playerColour;
-	ArenaData::Team currentTeam;
+	Ogre::Camera* camera;
 
-	ElementEnum::Element currentElement;//The current element used
-
-	ProbenderInGameData characterData;//The characters game stats
-
+	ProbenderData characterData;//The characters game stats
+	
 	ProbenderInputHandler inputHandler;//The component handling input
-
-	///Flight Game Object here
 
 	SharedProjectile leftHandAttack;//The projectile in the left hand
 	SharedProjectile rightHandAttack;//The projectile in the right hand
 	
-	Probender* currentTarget;//The probender currently targeted by this player
-
 	Arena* owningArena;//The arena the contestant is part of
 
 	MeshRenderComponent* meshRenderComponent;
 
-	Ogre::Vector3 jumpOrigin;
+	TransitionData dodgeInfo;//The data for lerping dodge movements
+	TransitionData transitionInfo;//Info used during the transition state
 
 	std::string GetMeshAndMaterialName();
 
-	void HandleJump();
+	GUIProgressTracker progressTracker;
+	ProbenderEnergyMeter energyMeter;
 
 public:
-	ArenaData::Zones CurrentZone;
+	Probender* currentTarget;//The probender currently targeted by this player
+
 	ProbenderStateManager stateManager;//The state manager for probenders
 	
 	enum InputState{Listen, Pause, Stop};
+	enum DodgeDirection{DD_INVALID, DD_RIGHT, DD_LEFT};
 
 	Probender();
-	Probender(const unsigned short _contestantID, Arena* _owningArena);
+	Probender(const unsigned short _contestantID, const ProbenderData charData, Arena* _owningArena);
 	~Probender(void);
 
 	///<summary>At the moment this is used to differentiate between standard Game Objects and Projectiles and Probenders</summary>
 	///<returns>True if serializable, false if not</returns>
 	virtual inline bool IsSerializable()const{return false;}
 
-	inline ArenaData::Team GetTeam()const{return currentTeam;}
+	inline unsigned short GetContestantID()const {return contestantID;}
 
-	inline TeamData::ContestantColour GetColour()const {return playerColour;}
+	inline ArenaData::Team GetTeam()const{return characterData.TeamDatas.Team;}
 
-	inline ArenaData::Zones GetCurrentZone()const{return CurrentZone;}
+	inline TeamData::ContestantColour GetColour()const {return characterData.TeamDatas.PlayerColour;}
 
-	///<summary>Takes the menu created data of the probender and converts it to usable in-game data</summary>
-	///<param name="data">The menu data to convert</param>
-	void CreateInGameData(const ProbenderData& data);
+	inline ArenaData::Zones GetCurrentZone()const{return characterData.TeamDatas.CurrentZone;}
+	
+	inline Ogre::Camera* GetCamera()const{return camera;}
+
+	void SetCamera(Ogre::Camera* newCamera);
+
+	void TransitionToPoint(physx::PxVec3& positionToMoveTo);
 
 	void Start();
 
@@ -83,7 +99,7 @@ public:
 	
 	///<summary>Gets a read-only copy of the Probender Data</summary>
 	///<returns>A read-only version of Probender In-Game Data</returns>
-	const ProbenderInGameData GetInGameData(){return characterData;}
+	const ProbenderData& GetInGameData(){return characterData;}
 
 	///<summary>Has the probender acquire a new target</summary>
 	///<param name="toRight">True to look to the right for the target, false to look to the left</param>
@@ -105,11 +121,14 @@ public:
 	
 	///<summary>Gets a read-only copy of the current element equipped</summary>
 	///<returns>Read-only current element equipped</returns>
-	inline const ElementEnum::Element GetCurrentElement()const{return currentElement;}
+	inline const ElementEnum::Element GetCurrentElement()const{return characterData.CurrentElement;}
 
 	///<summary>Sets the element that the probender has currently equipped</summary>
 	///<param name="elementToSet">The element to set to</param>
-	virtual void SetCurrentElement(const ElementEnum::Element elementToSet);
+	inline void SetCurrentElement(const ElementEnum::Element elementToSet)
+	{
+		characterData.CurrentElement = elementToSet;
+	}
 
 	///<summary>Creates the mesh for the specified colours</summary>
 	///<param name="sceneMan">The Ogre Scene Manager used to create the Manual Object with</param>
@@ -126,13 +145,34 @@ public:
 
 	void StateEntered(StateFlags::PossibleStates enteredState);
 
-	void Jump();
+	inline void Jump(){stateManager.SetState(StateFlags::JUMP_STATE, 0.0f);}
 	
-	void HandleFall();
+	inline void Dodge(DodgeDirection direction)
+	{
+		if(stateManager.SetState(StateFlags::DODGE_STATE, 0.0f))
+		{
+			float dirAndDist = DODGE_DISTANCE;
+						
+			if(direction == DD_RIGHT)
+				dirAndDist = -dirAndDist;
+
+			dodgeInfo.EndPos = HelperFunctions::OgreToPhysXVec3(GetWorldPosition() + (dirAndDist * Right()));
+			dodgeInfo.StartPos = HelperFunctions::OgreToPhysXVec3(GetWorldPosition());
+			dodgeInfo.Percentile = 0.0f;
+		}
+	}
+
+	void ApplyProjectileCollision(float damage, float knockback);
 
 	virtual void OnCollisionEnter(const CollisionReport& collision);
 
 	virtual void OnCollisionLeave(const CollisionReport& collision);
+
+	virtual void OnTriggerEnter(GameObject* trigger, GameObject* other);
+
+	virtual void OnTriggerLeave(GameObject* trigger, GameObject* other);
+
+	virtual void OnCollisionStay(const CollisionReport& collision);
 
 };
 

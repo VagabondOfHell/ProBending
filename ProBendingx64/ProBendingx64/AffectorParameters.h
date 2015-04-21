@@ -49,6 +49,29 @@ struct GPUScaleAffectorParams:public GPUParticleAffectorParams
 	}
 };
 
+struct GPUTextureAffectorParams: public GPUParticleAffectorParams
+{
+	bool animated;
+	float animationTime;
+	float percentStep;
+	unsigned short maxTextures;
+
+	GPUTextureAffectorParams(bool _animated = false, float _animationTime = 0.0f, unsigned short _maxTextures = 0)
+		: animated(_animated), percentStep(0), maxTextures(_maxTextures), animationTime(_animationTime)
+	{
+		
+	}
+
+	void CalculatePercentStep(float initialLifetime)
+	{
+		float loops = initialLifetime / animationTime;
+
+		float timePerFrame = animationTime / maxTextures;
+
+		percentStep = timePerFrame / loops;
+	}
+};
+
 struct GPUColourFaderAffectorParams: public GPUParticleAffectorParams
 {
 	physx::PxVec4 startColour;
@@ -76,14 +99,42 @@ struct GPUColourFaderAffectorParams: public GPUParticleAffectorParams
 	}
 };
 
+struct GPURotationAffectorParams: public GPUParticleAffectorParams
+{
+	float minRotation, maxRotation;
+	bool increase;
+	float rotSpeed;
+
+	float difference;
+
+	GPURotationAffectorParams(float _minRotationDegrees = 0.0f, float _maxRotationDegrees = 0.0f)
+	{
+		minRotation = DegreesToRadians(_minRotationDegrees);
+		maxRotation = DegreesToRadians(_maxRotationDegrees);
+		rotSpeed = DegreesToRadians(_minRotationDegrees);
+
+
+		difference = maxRotation - minRotation;
+	}
+	
+	float DegreesToRadians(float val)
+	{
+		return val * (3.14159265359f / 180.0f);
+	}
+};
+
 struct GPUParamsCollection
 {
 	GPUScaleAffectorParams* scaleParameters;
 	GPUColourFaderAffectorParams* colourFadeParams;
+	GPUTextureAffectorParams* textureParameters;
+	GPURotationAffectorParams* rotationParameters;
 
 	GPUParamsCollection(){
 		scaleParameters = NULL;
 		colourFadeParams = NULL;
+		textureParameters = NULL;
+		rotationParameters = NULL;
 	}
 
 	~GPUParamsCollection(){}

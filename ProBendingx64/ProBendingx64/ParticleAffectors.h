@@ -48,6 +48,11 @@ public:
 	///Also maps CUDA buffers if they are not already. Remember to call UnmapBuffers though.</summary>
 	///<returns>Derived structure representing the derived affectors necessary data</returns>
 	virtual GPUParticleAffectorParams* const GetGPUParamaters() = 0;
+
+	virtual GPUParticleAffectorParams* const GetParameters() = 0;
+
+	virtual ParticleAffector* Clone() = 0;
+
 };
 
 class ScaleParticleAffector : public ParticleAffector
@@ -65,8 +70,8 @@ public:
 	///<summary>Constructor of the Particle Scaling Affector</summary>
 	///<param name="_onGPU">True if on GPU, false if not</param>
 	///<param name="enlarge">True to grow, false to shrink</param>
-	///<param name="_minScale">The smallest scale permitted (used as start scale if growing)</param>
-	///<param name="_maxScale">The largest scale permitted (used as start scale if shrinking)</param>
+	///<param name="_minScale">The smallest scale permitted (lowest is 0.0f) (used as start scale if growing)</param>
+	///<param name="_maxScale">The largest scale permitted (highest is 1.0f) (used as start scale if shrinking)</param>
 	///<param name="onGPU">True to utilize CUDA, false if not. Will be overwritten 
 	///if a valid Cuda Context is not given in Initialize</param>
 	ScaleParticleAffector(const bool enlarge, const float _minScale, const float _maxScale, bool onGPU = false);
@@ -94,4 +99,9 @@ public:
 	virtual void Update(const float gameTime, GPUResourcePointers& pointers, const float percentile, const unsigned int particleIndex) ;
 
 	virtual GPUScaleAffectorParams* const GetGPUParamaters() ;
+
+	virtual GPUScaleAffectorParams* const GetParameters(){return &affectorAttributes;}
+
+	virtual ParticleAffector* Clone();
+
 };

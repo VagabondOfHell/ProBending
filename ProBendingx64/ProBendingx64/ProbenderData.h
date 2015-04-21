@@ -1,112 +1,209 @@
 #pragma once
+#include "ProbenderFlags.h"
 #include "ArenaData.h"
-#include "PassiveAbility.h"
-#include "StatusEffectModifiers.h"
+
 #include <array>
+
+struct BodyDimensions
+{
+	float RightArmLength;
+	float LeftArmLength;
+	float RightLegLength;
+	float LeftLegLength;
+	float RightHipToKnee;
+	float LeftHipToKnee;
+
+	BodyDimensions(float rightArmLength = 0.4f, float leftArmLength = 0.4f, float rightLegLength = 0.6f, float leftLegLength = 0.6f,
+		float rightHipToKnee = 0.3f, float leftHipToKnee = 0.3f )
+		:RightArmLength(rightArmLength), LeftArmLength(leftArmLength), RightLegLength(rightLegLength), LeftLegLength(leftLegLength),
+		RightHipToKnee(rightHipToKnee), LeftHipToKnee(leftHipToKnee)
+	{
+
+	}
+};
 
 struct CharacterAttributes
 {
-	ElementEnum::Element MainElement;
-	ElementEnum::Element SubElement;
+private:
+	static const float MAX_DODGE_SPEED, MIN_DODGE_SPEED;
+	static const float MIN_JUMP_HEIGHT, MAX_JUMP_HEIGHT;
 
-	unsigned short Health, Focus, OffensiveStrength, DefensiveStrength, Agility, Luck;
+	static const float MIN_ENERGY_VAL, MAX_ENERGY_VAL;
+	static const float MIN_ENERGY_REGEN_RATE, MAX_ENERGY_REGEN_RATE;
+	static const float MIN_RECOVERY_TIME, MAX_RECOVERY_TIME;
+
+	static const float MIN_ATTACK_SPEED_BONUS, MAX_ATTACK_SPEED_BONUS;
+	static const float MIN_ATTACK_BONUS, MAX_ATTACK_BONUS;
+
+	unsigned short Endurance, Recovery, Strength, Defense, Agility, Luck;
+
+	float MaxEnergy;
+	float EnergyRegenRate; //Energy Regeneration per second
+	float RecoveryRate;
+	float AttackBonus, AttackSpeed;
+	float DefenseBonus, AgilityBonus;
+	float DodgeSpeed, JumpHeight;
+	float LuckBonus;
+
+	void CalculateStats();
+
+public:
+	float Energy;
 
 	CharacterAttributes(ElementEnum::Element _mainElement = ElementEnum::InvalidElement, 
 		ElementEnum::Element _subElement = ElementEnum::InvalidElement,
-			unsigned short _health = 0, unsigned short _focus = 0, short _offensiveStrength = 0,
-			unsigned short _defensiveStrength  = 0, unsigned short _agility = 0, short _luck = 0)
-			:MainElement(_mainElement), SubElement(_subElement), Health(_health), Focus(_focus), 
-			OffensiveStrength(_offensiveStrength), DefensiveStrength(_defensiveStrength), Agility(_agility), 
-			Luck(_luck)
+			unsigned short _endurance = 0, unsigned short _recovery = 0, unsigned short _strength = 0,
+			unsigned short _defense = 0, unsigned short _agility = 0, short _luck = 0)
+			:Endurance(_endurance), Recovery(_recovery), Strength(_strength), Defense(_defense), Agility(_agility), 
+			Luck(_luck), Energy(0), DefenseBonus(0.0f), AgilityBonus(0.0f)
 	{
 		//Check to make sure attributes aren't too high
-		if(Health > ProbenderAttributes::MAX_ATTRIBUTE_POINTS_ALLOWED)
-			Health = ProbenderAttributes::MAX_ATTRIBUTE_POINTS_ALLOWED;
-		if(Focus > ProbenderAttributes::MAX_ATTRIBUTE_POINTS_ALLOWED)
-			Focus = ProbenderAttributes::MAX_ATTRIBUTE_POINTS_ALLOWED;
-		if(OffensiveStrength > ProbenderAttributes::MAX_ATTRIBUTE_POINTS_ALLOWED)
-			OffensiveStrength = ProbenderAttributes::MAX_ATTRIBUTE_POINTS_ALLOWED;
-		if(DefensiveStrength > ProbenderAttributes::MAX_ATTRIBUTE_POINTS_ALLOWED)
-			DefensiveStrength = ProbenderAttributes::MAX_ATTRIBUTE_POINTS_ALLOWED;
+		if(Endurance > ProbenderAttributes::MAX_ATTRIBUTE_POINTS_ALLOWED)
+			Endurance = ProbenderAttributes::MAX_ATTRIBUTE_POINTS_ALLOWED;
+		if(Recovery > ProbenderAttributes::MAX_ATTRIBUTE_POINTS_ALLOWED)
+			Recovery = ProbenderAttributes::MAX_ATTRIBUTE_POINTS_ALLOWED;
+		if(Strength > ProbenderAttributes::MAX_ATTRIBUTE_POINTS_ALLOWED)
+			Strength = ProbenderAttributes::MAX_ATTRIBUTE_POINTS_ALLOWED;
+		if(Defense > ProbenderAttributes::MAX_ATTRIBUTE_POINTS_ALLOWED)
+			Defense = ProbenderAttributes::MAX_ATTRIBUTE_POINTS_ALLOWED;
 		if(Agility > ProbenderAttributes::MAX_ATTRIBUTE_POINTS_ALLOWED)
 			Agility = ProbenderAttributes::MAX_ATTRIBUTE_POINTS_ALLOWED;
 		if(Luck > ProbenderAttributes::MAX_ATTRIBUTE_POINTS_ALLOWED)
 			Luck = ProbenderAttributes::MAX_ATTRIBUTE_POINTS_ALLOWED;
+
+		CalculateStats();
 	}
-};
 
-struct GeneralSkills
-{
-	unsigned short Dodge, Jump, Fly, SameElementCatch, Block, 
-		CounterAttack, ArenaInteraction, Healing;
-
-	GeneralSkills(unsigned short dodge = 0, unsigned short jump = 0, unsigned short fly = 0, 
-		unsigned short sameElementCatch = 0, unsigned short block = 0, unsigned short counterAttack = 0, 
-		unsigned short arenaInteraction = 0, unsigned short healing = 0)
-		:Dodge(dodge), Jump(jump), Fly(fly), SameElementCatch(sameElementCatch), Block(block), CounterAttack(counterAttack),
-		ArenaInteraction(arenaInteraction), Healing(healing)
+	inline void SetAttribute(ProbenderAttributes::Attributes attribute, unsigned short value)
 	{
-		///Keep all the values below the highest allowed
-		if(Dodge > ProbenderGeneralSkills::MAX_SKILL_POINTS_ALLOWED)
-			Dodge = ProbenderGeneralSkills::MAX_SKILL_POINTS_ALLOWED;
-		if(Jump > ProbenderGeneralSkills::MAX_SKILL_POINTS_ALLOWED)
-			Jump = ProbenderGeneralSkills::MAX_SKILL_POINTS_ALLOWED;
-		if(Fly > ProbenderGeneralSkills::MAX_SKILL_POINTS_ALLOWED)
-			Fly = ProbenderGeneralSkills::MAX_SKILL_POINTS_ALLOWED;
-		if(SameElementCatch > ProbenderGeneralSkills::MAX_SKILL_POINTS_ALLOWED)
-			SameElementCatch = ProbenderGeneralSkills::MAX_SKILL_POINTS_ALLOWED;
-		if(Block > ProbenderGeneralSkills::MAX_SKILL_POINTS_ALLOWED)
-			Block = ProbenderGeneralSkills::MAX_SKILL_POINTS_ALLOWED;
-		if(CounterAttack > ProbenderGeneralSkills::MAX_SKILL_POINTS_ALLOWED)
-			CounterAttack = ProbenderGeneralSkills::MAX_SKILL_POINTS_ALLOWED;
-		if(ArenaInteraction > ProbenderGeneralSkills::MAX_SKILL_POINTS_ALLOWED)
-			ArenaInteraction = ProbenderGeneralSkills::MAX_SKILL_POINTS_ALLOWED;
-		if(Healing > ProbenderGeneralSkills::MAX_SKILL_POINTS_ALLOWED)
-			Healing = ProbenderGeneralSkills::MAX_SKILL_POINTS_ALLOWED;
-	}
-};
+		if(value > ProbenderAttributes::MAX_ATTRIBUTE_POINTS_ALLOWED)
+			value = ProbenderAttributes::MAX_ATTRIBUTE_POINTS_ALLOWED;
 
-struct AbilityPoints
-{
-	typedef std::array<unsigned short, ProbenderAbilities::NUM_ABILITY_MODIFIERS> SkillPointArray;
-	
-	PassiveAbility* Passive;
-	SkillPointArray SpecialAbility1;//Array of ability skill points
-	SkillPointArray SpecialAbility2;
-	SkillPointArray SpecialAbility3;
-	unsigned short MasteryAbility;
-	
-	AbilityPoints(PassiveAbility* passiveAbility = 0, unsigned short masteryAbilityPoints = 0,
-		SkillPointArray specialAbilityPoints1 = SkillPointArray(), SkillPointArray specialAbilityPoints2 = SkillPointArray(),
-		SkillPointArray specialAbilityPoints3 = SkillPointArray())
-		:Passive(passiveAbility), MasteryAbility(masteryAbilityPoints), SpecialAbility1(specialAbilityPoints1), 
-		SpecialAbility2(specialAbilityPoints2), SpecialAbility3(specialAbilityPoints3)
+		switch (attribute)
+		{
+		case ProbenderAttributes::Endurance:
+			Endurance = value;
+			break;
+		case ProbenderAttributes::Strength:
+			Strength = value;
+			break;
+		case ProbenderAttributes::Recovery:
+			Recovery = value;
+			break;
+		case ProbenderAttributes::Defense:
+			Defense = value;
+			break;
+		case ProbenderAttributes::Agility:
+			Agility = value;
+			break;
+		case ProbenderAttributes::Luck:
+			Luck = value;
+			break;
+		default:
+			return;
+			break;
+		}
+		CalculateStats();
+	}
+
+	inline void SetAllAttributes(unsigned short endurance, unsigned short strength, unsigned short recovery,
+		unsigned short defense, unsigned short agility, unsigned short luck)
 	{
+		SetAttribute(ProbenderAttributes::Endurance, endurance);
+		SetAttribute(ProbenderAttributes::Strength, strength);
+		SetAttribute(ProbenderAttributes::Recovery, recovery);
+		SetAttribute(ProbenderAttributes::Defense, defense);
+		SetAttribute(ProbenderAttributes::Agility, agility);
+		SetAttribute(ProbenderAttributes::Luck, luck);
 	}
 
-	~AbilityPoints()
+	inline unsigned short GetAttribute(ProbenderAttributes::Attributes attribute)const
 	{
-		if(Passive)
-			delete Passive;
+		switch (attribute)
+		{
+		case ProbenderAttributes::Endurance:
+			return Endurance;
+			break;
+		case ProbenderAttributes::Recovery:
+			return Recovery;
+			break;
+		case ProbenderAttributes::Strength:
+			return Strength;
+			break;
+		case ProbenderAttributes::Defense:
+			return Defense;
+			break;
+		case ProbenderAttributes::Agility:
+			return Agility;
+			break;
+		case ProbenderAttributes::Luck:
+			return Luck;
+			break;
+		default:
+			return 0;
+			break;
+		}
 	}
-};
 
-struct EquipmentData
-{
-	
+	inline void AddEnergy(const float val)
+	{
+		Energy += val;
+
+		if(Energy > MaxEnergy)
+			Energy = MaxEnergy;
+		else if(Energy < 0.0f)
+			Energy = 0.0f;
+	}
+
+	inline float GetMaxEnergy()const{return MaxEnergy;}
+	inline float GetEnergyRegen()const{return EnergyRegenRate;}
+	inline float GetRecoveryRate()const{return RecoveryRate;}
+	inline float GetBonusAttackSpeed()const{return AttackSpeed;}
+	inline float GetBonusAttackDamage()const{return AttackBonus;}
+
+	inline float GetDodgeSpeed()const{return DodgeSpeed;}
+	inline float GetJumpHeight()const{return JumpHeight;}
 };
 
 struct TeamData
 {
 	enum ContestantColour{INVALID_COLOUR, RED, BLUE, GREEN, YELLOW, PURPLE, ORANGE};
 
-	ArenaData::Team StartTeam;
-	ArenaData::Zones StartZone;
+	inline static std::string EnumToString(const ContestantColour colour)
+	{
+		switch (colour)
+		{
+		case TeamData::RED:
+			return "Red";
+			break;
+		case TeamData::BLUE:
+			return "Blue";
+			break;
+		case TeamData::GREEN:
+			return "Green";
+			break;
+		case TeamData::YELLOW:
+			return "Yellow";
+			break;
+		case TeamData::PURPLE:
+			return "Purple";
+			break;
+		case TeamData::ORANGE:
+			return "Orange";
+			break;
+		default:
+			return "";
+			break;
+		}
+	}
+
+	ArenaData::Team Team;
+	ArenaData::Zones CurrentZone;
 	ContestantColour PlayerColour;
 
 	TeamData(ArenaData::Team _team = ArenaData::INVALID_TEAM, 
 		ArenaData::Zones _zone = ArenaData::INVALID_ZONE, ContestantColour _colour = INVALID_COLOUR)
-		:StartTeam(_team), StartZone(_zone), PlayerColour(_colour)
+		:Team(_team), CurrentZone(_zone), PlayerColour(_colour)
 	{
 
 	}
@@ -114,19 +211,23 @@ struct TeamData
 
 struct ProbenderData
 {
-	CharacterAttributes Attributes;
-	StatusEffectModifiers StatusModifiers;
-	GeneralSkills Skills;
-	AbilityPoints Abilities;
-	EquipmentData Equipment;
+	unsigned short Level;
+	short BodyID;//used to transfer control of the same user to the game. not unsigned so this way we can apply -1
+
+	ElementEnum::Element MainElement;
+	ElementEnum::Element SubElement;
+
+	ElementEnum::Element CurrentElement;
+
+	CharacterAttributes BaseAttributes;
+	CharacterAttributes CurrentAttributes;
+
 	TeamData TeamDatas;
 
-	ProbenderData(CharacterAttributes attributes = CharacterAttributes(), 
-		StatusEffectModifiers statusModifiers = StatusEffectModifiers(),
-		GeneralSkills generalSkills = GeneralSkills(), AbilityPoints abilityPoints = AbilityPoints(),
-		EquipmentData equipment = EquipmentData(), TeamData _teamData = TeamData())
-		: Attributes(attributes), StatusModifiers(statusModifiers), Skills(generalSkills), Abilities(abilityPoints),
-		Equipment(equipment), TeamDatas(_teamData)
+	ProbenderData(ElementEnum::Element _mainElement = ElementEnum::InvalidElement, ElementEnum::Element _subElement = ElementEnum::InvalidElement, 
+		unsigned short level = 0, CharacterAttributes baseAttributes = CharacterAttributes(), TeamData _teamData = TeamData())
+		: MainElement(_mainElement), SubElement(_subElement), CurrentElement(_mainElement), Level(level), 
+		BaseAttributes(baseAttributes), CurrentAttributes(baseAttributes), TeamDatas(_teamData), BodyID(-1)
 	{	}
 	
 };

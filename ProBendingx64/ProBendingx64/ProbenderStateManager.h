@@ -13,10 +13,11 @@ private:
 
 	StateFlags::PossibleStates currentState;//The current state held by the state manager
 
-	//7 States allowed in total. Don't like having the 7 there but no choice
-	std::array<State, 8> States;
+	//8 States allowed in total. Don't like having the 8 there but no choice
+	std::array<State, StateFlags::PossibleStates::COUNT> States;
 
 	float timeInCurrentState;//The amount of time that has been spent in the current state
+	float timeForcedInState;//Amount of time that must pass before another switch is allowed
 
 	float expirationTime;
 	float stateChangeBlockTimer;//The amount that time in current state must exceed before a new state is allowed
@@ -31,7 +32,7 @@ private:
 		if(stateToGet == StateFlags::COUNT)
 			return NULL;
 
-		return &States[stateToGet];
+		return &States[stateToGet - 1];
 	}
 
 public:
@@ -58,6 +59,11 @@ public:
 	///<param name="timeInNewState">The amount of time forced to be in this state</param>
 	///<returns>True if successful, false if disallowStateChange is true or newState is current state<returns>
 	bool SetStateImmediate(StateFlags::PossibleStates newState, float timeInNewState);
+
+	inline void ResetCurrentState()
+	{
+		timeInCurrentState = 0.0f;
+	}
 
 	inline bool GetOnGround()const{return onGround;}
 

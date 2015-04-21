@@ -191,7 +191,7 @@ public:
 
 	void SetKinematic(const bool kinematicOn);
 
-	void SetVelocity(physx::PxVec3& newVel);
+	void SetVelocity(const physx::PxVec3& newVel);
 
 	void SetPosition(physx::PxVec3& position);
 
@@ -227,12 +227,26 @@ public:
 		SetKinematicTarget(targetPos, GetOrientation());
 	}
 
+	void SetLinearDamping(const float damping);
+
+	void SetAngularDamping(const float damping);
+
+	float GetLinearDamping()const;
+
+	float GetAngularDamping()const;
+
 	///<summary>Use this to only set rotation for a kinematic actor</summary>
 	///<param name="targetRot">The target orientation</param>
 	inline void SetKinematicTarget(const physx::PxQuat& targetRot)
 	{
 		SetKinematicTarget(GetPosition(), targetRot);
 	}
+
+	void SetCCD(const bool val);
+
+	void PutToSleep();
+
+	void WakeUp();
 
 #if _DEBUG
 	void CreateDebugDraw();
@@ -253,5 +267,10 @@ public:
 	}
 
 	RigidBodyComponent* Clone(GameObject* gameObject);
+
+	virtual void Enable();
+
+	virtual void Disable();
+
 };
 

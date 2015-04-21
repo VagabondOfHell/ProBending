@@ -22,6 +22,7 @@ ScaleParticleAffector::ScaleParticleAffector(const bool _enlarge, const float _m
 	{
 		affectorAttributes.maxScale = _minScale;
 		affectorAttributes.minScale = _maxScale;
+
 		affectorAttributes.scaleDiff = affectorAttributes.maxScale - affectorAttributes.minScale;
 	}
 }
@@ -57,6 +58,12 @@ GPUScaleAffectorParams* const ScaleParticleAffector::GetGPUParamaters()
 		return NULL;
 
 	return &affectorAttributes;
+}
+
+ParticleAffector* ScaleParticleAffector::Clone()
+{
+	return new ScaleParticleAffector(affectorAttributes.enlarge, 
+		affectorAttributes.minScale, affectorAttributes.maxScale, affectorAttributes.onGPU);
 }
 
 #pragma endregion

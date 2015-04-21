@@ -291,15 +291,15 @@ bool SceneSerializer::SerializeParticleComponent(XMLWriter& writer, const Partic
 		writer.AddAttribute(Enabled, particles->IsEnabled());
 		writer.AddAttribute(ParticleSpace, particles->GetTransformationSpace(), false);//Store transformation space
 		
-		ParticleSystemBase* particleSystem = particles->particleSystem;
-		particleSystem->pxParticleSystem->releaseParticles();
+		FluidAndParticleBase* particleSystem = particles->particleSystem;
+		particleSystem->particleBase->releaseParticles();
 
 		//Add particle system actor to the collection and store the ID in our format
-		if(PhysXSerializerWrapper::AddToWorkingCollection(*particleSystem->pxParticleSystem))
+		if(PhysXSerializerWrapper::AddToWorkingCollection(*particleSystem->particleBase))
 		{
 			PhysXSerializerWrapper::CreateIDs(ActorCollection, StartID);
 			long long systemID = PhysXSerializerWrapper::GetID(ActorCollection, 
-				*particleSystem->pxParticleSystem);
+				*particleSystem->particleBase);
 
 			if(systemID > PX_SERIAL_OBJECT_ID_INVALID)
 				writer.AddAttribute(ParticleActorID, systemID);
@@ -351,7 +351,6 @@ bool SceneSerializer::SerializeParticleEmitter(XMLWriter& writer, const Particle
 		writer.AddAttribute(MinEmitSpeed, emitter->minSpeed);
 		writer.AddAttribute(MaxEmitSpeed, emitter->maxSpeed);
 		writer.AddAttribute(Duration, emitter->duration);
-		writer.AddAttribute(EmitLoop, emitter->loop);
 		writer.CreateNode(Position);
 		AddVector3Attribute(writer, emitter->position);
 		writer.PopNode();
@@ -373,15 +372,15 @@ bool SceneSerializer::SerializeParticleEmitter(XMLWriter& writer, const Particle
 
 bool SceneSerializer::SerializeParticleAffectors(XMLWriter& writer, const ParticleComponent* particles)
 {
-	ParticleSystemBase* particleSystem = particles->particleSystem;
+	ParticleSystemBase* particleSystem = (ParticleSystemBase*)particles->particleSystem;
 
-	if(particleSystem->affectorMap.size() > 0)
+	if(particleSystem->affectors.affectorMap.size() > 0)
 		writer.CreateNode(ParticleAffectors);
 	else
 		return true;//if none to process, return as if successful
 
-	for (auto affectIter = particleSystem->affectorMap.begin();
-		affectIter != particleSystem->affectorMap.end(); ++affectIter)
+	for (auto affectIter = particleSystem->affectors.GetMapBegin();
+		affectIter != particleSystem->affectors.GetMapEnd(); ++affectIter)
 	{
 		ParticleAffectorType::ParticleAffectorType affectType = 
 			affectIter->second->GetAffectorType();
@@ -674,14 +673,16 @@ SharedGameObject SceneSerializer::DeserializedGameObject(XMLReader& reader, ISce
 
 			if(currNode == Position)
 			{
-				DeserializeVector3(reader, objectPosition);
+				if(DeserializeVector3(reader, objectPosition))
+					newObject->SetWorldPosition(objectPosition);
 			}
 			else if(currNode == Rotation)
 			{
 				if(!DeserializeVector4(reader, objectRotation.x,
 					objectRotation.y, objectRotation.z, objectRotation.w))
 					printf("Rot Fail\n");
-					//newObject->SetWorldOrientation(objectRotation);
+				else
+					newObject->SetWorldOrientation(objectRotation);
 
 				bool inheritRot = true;
 
@@ -690,8 +691,8 @@ SharedGameObject SceneSerializer::DeserializedGameObject(XMLReader& reader, ISce
 			}
 			else if(currNode == Scale)
 			{
-				DeserializeVector3(reader, objectScale);
-					//newObject->SetScale(objectScale);
+				if(DeserializeVector3(reader, objectScale))
+					newObject->SetScale(objectScale);
 
 				bool inheritScale = true;
 
@@ -825,7 +826,8 @@ bool SceneSerializer::DeserializeRigidBodyComponent(XMLReader& reader, SharedGam
 					if(dynamic)
 						rigid->CreateRigidBody(RigidBodyComponent::DYNAMIC);
 					else
-						rigid->CreateRigidBody(RigidBodyComponent::STATIC);
+						rigid->CreateRigidBody(RigidBodyComponent::STATIC, 
+							HelperFunctions::OgreToPhysXVec3(objectToAdd->GetWorldPosition()));
 					rigidCreated = true;
 				}
 				else
@@ -857,7 +859,7 @@ bool SceneSerializer::DeserializeRigidBodyComponent(XMLReader& reader, SharedGam
 
 		//pop off shapes node
 		reader.PopNode();
-		rigid->CreateDebugDraw();
+		//rigid->CreateDebugDraw();
 		return success;
 	}
 
@@ -960,7 +962,8 @@ bool SceneSerializer::DeserializeParticleComponent(XMLReader& reader, SharedGame
 				}
 			}
 
-			particleSystem->setMaterial(particleSystem->FindBestShader());
+			particleSystem->GetMaterial()->CreateMaterial(particleSystem);
+			particleSystem->setMaterial(particleSystem->GetMaterial()->GetMaterialName());
 
 			return true;
 		}
@@ -1040,7 +1043,7 @@ bool SceneSerializer::DeserializeParticleEmitter(XMLReader& reader,
 		if (nodeName == PointEmitter)
 		{
 			outEmitter = std::make_shared<ParticlePointEmitter>(ParticlePointEmitter(pps, position, 
-				minDirection, maxDirection, emitLoop, duration, minSpeed, maxSpeed));
+				minDirection, maxDirection, duration, minSpeed, maxSpeed));
 			emitterCreated = true;
 		}
 	}

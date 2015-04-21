@@ -22,6 +22,11 @@ struct ParticleSystemParams
 	physx::PxParticleBaseFlags baseFlags;
 	physx::PxCudaContextManager* cudaContext;
 	physx::PxFilterData filterData;
+	physx::PxParticleReadDataFlags readData;
+
+	physx::PxReal viscosity;
+	physx::PxReal stiffness;
+	physx::PxReal restParticleDistance;
 
 	///<summary>Constructor used to set all values</summary>
 	///<param name="_gridSize">The size of the grid between 0 and 1000</param>
@@ -43,13 +48,23 @@ struct ParticleSystemParams
 		physx::PxReal _particleMass = 1.0f, bool _useGravity = true, physx::PxParticleBaseFlags _baseFlags = 
 		physx::PxParticleBaseFlag::eENABLED, physx::PxReal _restOffset = 1.0f, physx::PxReal _staticFriction = 0.0f, 
 		physx::PxReal _dynamicFriction = 0.0f, physx::PxReal _restitution = 1.0f, physx::PxReal _contactOffset = 0.0f, 
-		physx::PxReal _damping = 0.0f, physx::PxFilterData _filterData = physx::PxFilterData())
+		physx::PxReal _damping = 0.0f, physx::PxFilterData _filterData = physx::PxFilterData(),
+		physx::PxParticleReadDataFlags _readData = physx::PxParticleReadDataFlag::ePOSITION_BUFFER
+		| physx::PxParticleReadDataFlag::eFLAGS_BUFFER)
 
 		:gridSize(_gridSize), maxMotionDistance(_maxMotionDistance), cudaContext(_cudaContext),
 		externalAcceleration(_externalAcceleration), 
 		useGravity(_useGravity), particleMass(_particleMass), baseFlags(_baseFlags), restOffset(_restOffset), 
 		staticFriction(_staticFriction), dynamicFriction(_dynamicFriction), 
-		restitution(_restitution), contactOffset(_contactOffset), damping(_damping), filterData(_filterData)
+		restitution(_restitution), contactOffset(_contactOffset), damping(_damping), filterData(_filterData),
+		readData(_readData)
 	{
+	}
+
+	void SetFluidParameters(physx::PxReal _viscosity, physx::PxReal _stiffness, physx::PxReal _restParticleDistance)
+	{
+		viscosity = _viscosity;
+		stiffness = _stiffness;
+		restParticleDistance = _restParticleDistance;
 	}
 };

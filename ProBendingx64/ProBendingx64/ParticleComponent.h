@@ -2,7 +2,8 @@
 #include <string>
 #include "Component.h"
 
-class ParticleSystemBase;
+class FluidAndParticleBase;
+class ParticleBehaviour;
 
 namespace Ogre
 {
@@ -28,13 +29,13 @@ protected:
 
 public:
 	Ogre::SceneNode* sceneNode;//The scene node used to position the particle component
-	ParticleSystemBase* particleSystem; //The manipulator of the particles
+	FluidAndParticleBase* particleSystem; //The manipulator of the particles
 	
 	///<summary>Constructor of the particle component</summary>
 	///<param name="_owningObject">The object that owns the component</param>
 	///<param name="_particleSystem">The particle system that controls particle data</param>
 	///<param name="useLocalSpace">True to use local space, false to use world space</param>
-	ParticleComponent(ParticleSystemBase* _particleSystem, bool useLocalSpace = true);
+	ParticleComponent(FluidAndParticleBase* _particleSystem, bool useLocalSpace = true);
 
 	virtual ~ParticleComponent(void);
 
@@ -55,6 +56,10 @@ public:
 	bool GetTransformationSpace()const{return useLocalSpace;}
 
 	ParticleComponent* Clone(GameObject* gameObject);
+
+	virtual void Enable();
+
+	virtual void Disable();
 
 };
 

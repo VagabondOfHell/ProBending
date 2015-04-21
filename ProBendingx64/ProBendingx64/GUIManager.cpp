@@ -1,5 +1,7 @@
 #include "GUIManager.h"
 
+#include <CEGUI\CEGUI.h>
+
 CEGUI::OgreRenderer* GUIManager::mRenderer;
 
 GUIManager::GUIManager(void)
@@ -11,6 +13,12 @@ GUIManager::GUIManager(void)
 
 GUIManager::~GUIManager(void)
 {
+	for (int i = 0; i < rootWindow->getChildCount(); i++)
+	{
+		rootWindow->getChildAtIdx(i)->removeAllEvents();
+
+		CEGUI::WindowManager::getSingleton().destroyWindow(rootWindow->getChildAtIdx(i));
+	}
 }
 
 void GUIManager::BootstrapSystem(Ogre::RenderTarget* renderTarget)
@@ -32,14 +40,14 @@ void GUIManager::InitializeGUI()
     CEGUI::WindowManager::setDefaultResourceGroup("Layouts");
 	
     CEGUI::SchemeManager::getSingleton().createFromFile("TaharezLook.scheme");
- 
-    CEGUI::System::getSingleton().getDefaultGUIContext().getMouseCursor().setDefaultImage("TaharezLook/MouseArrow");
- 
+	defaultContext = &CEGUI::System::getSingleton().getDefaultGUIContext();
+
+    defaultContext->getMouseCursor().setDefaultImage("TaharezLook/MouseArrow");
+	
 	CEGUI::WindowManager* wmgr = CEGUI::WindowManager::getSingletonPtr();
 	
-	rootWindow = wmgr->createWindow("DefaultWindow", "RootWindow");
-
-	CEGUI::System::getSingleton().getDefaultGUIContext().setRootWindow(rootWindow);
+	rootWindow = wmgr->createWindow("DefaultWindow", "_MasterRoot");
+	defaultContext->setRootWindow(rootWindow);
 }
 
 void GUIManager::Update(float gameTime)
@@ -62,6 +70,23 @@ bool GUIManager::AddScheme(const CEGUI::String& schemeFileName)
 	return false;
 }
 
+CEGUI::Window* GUIManager::LoadLayoutFile(const CEGUI::String& layoutFileName)
+{
+	CEGUI::Window* retVal;
+
+	try
+	{
+		retVal = CEGUI::WindowManager::getSingleton().loadLayoutFromFile(layoutFileName);
+	}
+	catch(CEGUI::Exception e)
+	{
+		printf(e.getMessage().c_str());
+		return NULL;
+	}
+
+	return retVal;
+}
+
 bool GUIManager::LoadLayout(const CEGUI::String& layoutFileName, const CEGUI::String& windowName, const CEGUI::String& schemeFileName)
 {
 	CEGUI::Window* newWindow = NULL;
@@ -69,8 +94,8 @@ bool GUIManager::LoadLayout(const CEGUI::String& layoutFileName, const CEGUI::St
 	{
 		if(!schemeFileName.empty())
 			CEGUI::SchemeManager::getSingleton().createFromFile(schemeFileName);
-
-		newWindow = CEGUI::WindowManager::getSingleton().loadLayoutFromFile(layoutFileName);
+		
+		newWindow = LoadLayoutFile(layoutFileName);
 	}
 	catch(CEGUI::Exception e)
 	{
@@ -83,6 +108,40 @@ bool GUIManager::LoadLayout(const CEGUI::String& layoutFileName, const CEGUI::St
 			newWindow->setName(windowName);
 
 		rootWindow->addChild(newWindow);
+
+		return true;
+	}
+
+	return false;
+}
+
+bool GUIManager::LoadLayout(const CEGUI::String& layoutFileName, bool setAsRoot /*= true*/)
+{
+	CEGUI::Window* newWindow = LoadLayoutFile(layoutFileName);
+
+	if(newWindow)
+	{
+		if(setAsRoot)
+			defaultContext->setRootWindow(newWindow);
+		else
+			defaultContext->getRootWindow()->addChild(newWindow);
+
+		return true;
+	}
+
+	return false;
+}
+
+bool GUIManager::LoadLayout(const CEGUI::String& layoutFileName, CEGUI::Window* parentWindow)
+{
+	CEGUI::Window* newWindow = LoadLayoutFile(layoutFileName);
+
+	if(newWindow)
+	{
+		if(parentWindow)
+			parentWindow->addChild(newWindow);
+		else
+			defaultContext->getRootWindow()->addChild(newWindow);
 
 		return true;
 	}
@@ -105,6 +164,44 @@ bool GUIManager::DestroyWindow(const CEGUI::String& windowName)
 	return false;
 }
 
+CEGUI::Window* GUIManager::GetChildWindow(const CEGUI::String& windowPath)
+{
+	CEGUI::Window* returnElement = NULL;
+
+	try
+	{
+		returnElement = rootWindow->getChild(windowPath);
+	}
+	catch(CEGUI::Exception e)
+	{
+		printf(e.what());
+		printf(e.getMessage().c_str());
+
+		returnElement = NULL;
+	}
+
+	return returnElement;
+}
+
+CEGUI::Window* GUIManager::GetChildWindow(const CEGUI::Window* const searchStartWindow, const CEGUI::String& pathFromPassedWindow)
+{
+	CEGUI::Window* returnElement = NULL;
+
+	try
+	{
+		returnElement = searchStartWindow->getChild(pathFromPassedWindow);
+	}
+	catch(CEGUI::Exception e)
+	{
+		printf(e.what());
+		printf(e.getMessage().c_str());
+
+		returnElement = NULL;
+	}
+
+	return returnElement;
+}
+
 CEGUI::NamedElement* GUIManager::GetChildItem(const CEGUI::String& elementPath)
 {
 	CEGUI::NamedElement* returnElement = NULL;
@@ -115,6 +212,9 @@ CEGUI::NamedElement* GUIManager::GetChildItem(const CEGUI::String& elementPath)
 	}
 	catch(CEGUI::Exception e)
 	{
+		printf(e.what());
+		printf(e.getMessage().c_str());
+
 		returnElement = NULL;
 	}
 	
@@ -124,31 +224,6 @@ CEGUI::NamedElement* GUIManager::GetChildItem(const CEGUI::String& elementPath)
 void GUIManager::RemoveScheme(const CEGUI::String& schemeName)
 {
 	CEGUI::SchemeManager::getSingleton().destroy(schemeName);
-}
-
-bool GUIManager::mouseMoved( const OIS::MouseEvent &arg )
-{
-	CEGUI::GUIContext& context = CEGUI::System::getSingleton().getDefaultGUIContext();
-	context.injectMouseMove(arg.state.X.rel, arg.state.Y.rel);
-
-	if(arg.state.Z.rel)
-		context.injectMouseWheelChange(arg.state.Z.rel / 120.0f);
-	
-	return true;
-}
-
-bool GUIManager::mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID id )
-{
-	CEGUI::System::getSingleton().getDefaultGUIContext().injectMouseButtonDown(ConvertButton(id));
-	
-	return true;
-}
-
-bool GUIManager::mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id )
-{
-	CEGUI::System::getSingleton().getDefaultGUIContext().injectMouseButtonUp(ConvertButton(id));
-
-	return true;
 }
 
 CEGUI::MouseButton GUIManager::ConvertButton(OIS::MouseButtonID buttonID)
@@ -178,10 +253,39 @@ CEGUI::PushButton* const GUIManager::CreateGUIButton(const CEGUI::String& style,
 	{
 		button->setText(buttonText);
 		button->setSize(size);
+		button->setPosition(position);
 		rootWindow->addChild(button);
 
 		return static_cast<CEGUI::PushButton*>(button);
 	}
 	
 	return NULL;
+}
+
+void GUIManager::InjectMousePosition(float x, float y)
+{
+	defaultContext->injectMousePosition(x, y);
+}
+
+void GUIManager::InjectMouseMove(float x, float y)
+{
+	defaultContext->injectMouseMove(x, y);
+}
+
+void GUIManager::InjectMouseClick(OIS::MouseButtonID button)
+{
+	if(!defaultContext->injectMouseButtonClick(ConvertButton(button)))
+		printf("NO HANDLE\n");
+	else
+		printf("HANDLED\n");
+}
+
+void GUIManager::InjectMouseButtonDown(OIS::MouseButtonID button)
+{
+	defaultContext->injectMouseButtonDown(ConvertButton(button));
+}
+
+void GUIManager::InjectMouseButtonUp(OIS::MouseButtonID button)
+{
+	defaultContext->injectMouseButtonUp(ConvertButton(button));
 }

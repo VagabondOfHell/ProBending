@@ -6,8 +6,10 @@ namespace ParticleAffectorType
 	enum ParticleAffectorType{None = 0, 
 		Scale = 1,
 		AlphaFade = 1 << 1,
-		ColourToColour = 1 << 2
+		ColourToColour = 1 << 2,
+		Texture = 1 << 3,
+		Rotation = 1 << 4
 	};
 
-	typedef char ParticleAffectorFlag;
+	typedef unsigned short ParticleAffectorFlag;
 };

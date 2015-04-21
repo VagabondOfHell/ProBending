@@ -167,6 +167,23 @@ void KinectBodyEventNotifier::FlagListenerForRemoval(KinectBody* const _body, Ki
 	}
 }
 
+void KinectBodyEventNotifier::FlushListeners()
+{
+	for (int bodyID = 0; bodyID < bodyListeners.size(); bodyID++)
+	{
+		//If there are listeners to remove from this body index
+		if(listenersToRemove[bodyID].size() > 0)
+		{
+			//Loop through each one and unregister it
+			for (int i = 0; i < listenersToRemove[bodyID].size(); i++)
+			{
+				UnregisterListener(listenersToRemove[bodyID][i]->GetBody(), listenersToRemove[bodyID][i]);
+				listenersToRemove[bodyID].erase(listenersToRemove[bodyID].begin() + i);
+			}
+		}
+	}
+}
+
 void KinectBodyEventNotifier::InjectBodyFrameData(KinectBody* const body, 
 					CompleteData* previousData, CompleteData* currentData)
 {
@@ -226,7 +243,7 @@ void KinectBodyEventNotifier::ProcessEvents()
 
 			UINT8 bodyID = frameData.Body->GetBodyID();
 
-				//Notify each listener of the events that occured
+			//Notify each listener of the events that occured
 			for (unsigned int i = 0; i < bodyListeners[bodyID].size(); i++)
 			{
 				if(changedData & ChangedData::TrackingIDLost)
@@ -255,7 +272,6 @@ void KinectBodyEventNotifier::ProcessEvents()
 				}
 			}
 
-			
 			//If there are listeners to remove from this body index
 			if(listenersToRemove[bodyID].size() > 0)
 			{
@@ -266,8 +282,6 @@ void KinectBodyEventNotifier::ProcessEvents()
 					listenersToRemove[bodyID].erase(listenersToRemove[bodyID].begin() + i);
 				}
 			}
-			
-
 		}
 	}
 		

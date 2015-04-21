@@ -2,7 +2,10 @@
 #include "CudaGPUData.h"
 #include "ParticleAffectors.h"
 #include "ColourFadeParticleAffector.h"
-#include "ParticleSystemBase.h"
+#include "TextureParticleAffector.h"
+#include "RotationAffector.h"
+
+#include "FluidAndParticleBase.h"
 #include "CudaModuleManager.h"
 #if _DEBUG
 #include "OgreLogManager.h"
@@ -17,6 +20,8 @@ ParticleKernel::ParticleKernel(void)
 	gpuData = NULL;
 	colourMappedData = NULL;
 	scaleMappedData = NULL;
+	textureMappedData = NULL;
+	rotationMappedData = NULL;
 }
 
 ParticleKernel::~ParticleKernel(void)
@@ -36,7 +41,7 @@ ParticleKernel::~ParticleKernel(void)
 	}
 }
 
-ParticleKernel::ParticleKernelError ParticleKernel::PopulateData(ParticleSystemBase* particleSystem, AffectorMap* affectors)
+ParticleKernel::ParticleKernelError ParticleKernel::PopulateData(FluidAndParticleBase* particleSystem, AffectorMap* affectors)
 {
 	if(gpuData) //If the gpu data already exists, break out early
 		return SUCCESS;
@@ -69,6 +74,7 @@ ParticleKernel::ParticleKernelError ParticleKernel::PopulateData(ParticleSystemB
 	if(gpuAllocationResult)
 		gpuAllocationResult = gpuData->AllocateGPUMemory(DevicePointers::AffectorParameterCollection, sizeof(GPUParamsCollection));
 
+
 	if(!gpuAllocationResult)//if failed, undo what we've done
 	{
 		gpuData->FreeAllGPUMemory();
@@ -78,15 +84,18 @@ ParticleKernel::ParticleKernelError ParticleKernel::PopulateData(ParticleSystemB
 		return ALLOCATION_ERROR;
 	}
 
-	for (AffectorMap::iterator start = affectors->begin(); start != affectors->end(); ++start)
+	if(affectors)
 	{
-		PrepareAffectorData(particleSystem, start);
+		for (AffectorMap::iterator start = affectors->begin(); start != affectors->end(); ++start)
+		{
+			PrepareAffectorData(particleSystem, start);
+		}
 	}
 
 	return SUCCESS;
 }
 
-void ParticleKernel::PrepareAffectorData(ParticleSystemBase* particleSystem, AffectorMap::iterator affector)
+void ParticleKernel::PrepareAffectorData(FluidAndParticleBase* particleSystem, AffectorMap::iterator affector)
 {
 	CUresult allocationResult = CUDA_SUCCESS;
 
@@ -104,13 +113,24 @@ void ParticleKernel::PrepareAffectorData(ParticleSystemBase* particleSystem, Aff
 		if(allocationResult == CUDA_SUCCESS)//if memory allocated successfully, add this affector
 			scaleParticleAffector = std::dynamic_pointer_cast<ScaleParticleAffector>(affector->second);
 		break;
-
+	case ParticleAffectorType::Texture:
+		textureMappedData = new MappedGPUData();
+		allocationResult = CudaGPUData::AllocateGPUMemory(*textureMappedData, sizeof(GPUTextureAffectorParams));
+		if(allocationResult == CUDA_SUCCESS)
+			textureParticleAffector = std::dynamic_pointer_cast<TextureParticleAffector>(affector->second);
+		break;
+	case ParticleAffectorType::Rotation:
+		rotationMappedData = new MappedGPUData();
+		allocationResult = CudaGPUData::AllocateGPUMemory(*rotationMappedData, sizeof(GPURotationAffectorParams));
+		if(allocationResult == CUDA_SUCCESS)
+			rotationParticleAffector = std::dynamic_pointer_cast<RotationAffector>(affector->second);
+		break;
 	default:
 		break;
 	}	
 
 	//Already registered to Positions, so make sure we don't do it again
-	if(affector->second->GetDesiredBuffer() != Ogre::VES_POSITION)
+	if(affector->second->GetDesiredBuffer() != Ogre::VES_POSITION && affector->second->GetDesiredBuffer() != Ogre::VES_COUNT)
 		RegisterBufferResource(affector->second->GetDesiredBuffer(), particleSystem->CreateVertexBuffer(affector->second->GetDesiredBuffer()));
 }
 
@@ -295,6 +315,20 @@ GPUParamsCollection ParticleKernel::GetAffectorDevices()
 			devPtrCollection.scaleParameters = reinterpret_cast<GPUScaleAffectorParams*>(scaleMappedData->devicePointer);
 	}
 	
+	if(textureMappedData)
+	{
+		copyResult = CudaGPUData::CopyHostToDevice(*textureMappedData, textureParticleAffector->GetGPUParamaters());
+		if(copyResult == CUDA_SUCCESS)
+			devPtrCollection.textureParameters = reinterpret_cast<GPUTextureAffectorParams*>(textureMappedData->devicePointer);
+	}
+
+	if(rotationMappedData)
+	{
+		copyResult = CudaGPUData::CopyHostToDevice(*rotationMappedData, rotationParticleAffector->GetGPUParamaters());
+		if(copyResult == CUDA_SUCCESS)
+			devPtrCollection.rotationParameters = reinterpret_cast<GPURotationAffectorParams*>(rotationMappedData->devicePointer);
+	}
+
 	return devPtrCollection;
 }
 
@@ -303,6 +337,8 @@ ParticleKernel* ParticleKernel::Clone()
 	ParticleKernel* clone = new ParticleKernel(*this);
 	clone->colourFadeAffector = NULL;
 	clone->scaleParticleAffector = NULL;
+	clone->textureParticleAffector = NULL;
+	clone->rotationParticleAffector = NULL;
 	clone->gpuData = NULL;
 
 	return clone;
@@ -320,5 +356,17 @@ void ParticleKernel::FreeAndDestroyGPUAffectorMemory()
 	{
 		CudaGPUData::FreeGPUMemory(*scaleMappedData);
 		delete scaleMappedData;
+	}
+
+	if(textureMappedData)
+	{
+		CudaGPUData::FreeGPUMemory(*textureMappedData);
+		delete textureMappedData;
+	}
+
+	if(rotationMappedData)
+	{
+		CudaGPUData::FreeGPUMemory(*rotationMappedData);
+		delete rotationMappedData;
 	}
 }

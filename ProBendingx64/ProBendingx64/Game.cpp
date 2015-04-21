@@ -1,4 +1,5 @@
-//#include "vld.h"
+
+
 #include "Game.h"
 #include "InputManager.h"
 #include "GameScene.h"
@@ -18,6 +19,8 @@
 #include <OgreViewport.h>
 #include <OgreSceneManager.h>
 #include <OgreRenderWindow.h>
+#include "RandomNumberGenerator.h"
+#include "MenusScene.h"
 
 SpeechController speechController = SpeechController(NULL);
 
@@ -223,6 +226,7 @@ bool Game::ConnectToPVD()
 		std::cout << "Connected to PhysX Visual Debugger!\n";
  
 		gPhysicsSDK->getVisualDebugger()->setVisualizeConstraints(true);
+		gPhysicsSDK->getVisualDebugger()->setVisualDebuggerFlag(physx::PxVisualDebuggerFlag::eTRANSMIT_SCENEQUERIES, true);
 		gPhysicsSDK->getVisualDebugger()->setVisualDebuggerFlag(physx::PxVisualDebuggerFlag::eTRANSMIT_CONTACTS, true);
 
 		return true;
@@ -286,6 +290,8 @@ void Game::CloseGame()
 	InputNotifier::DestroySingleton();
 	InputManager::GetInstance()->DestroySingleton();
 
+	RandomNumberGenerator::DestroyInstance();
+
 	///Release Physx Systems
 	if(mProfileZoneManager)
 	{
@@ -345,27 +351,14 @@ void Game::Run()
 	freopen("conout$","w",stdout);
 	freopen("conout$","w",stderr);
 	printf("Debugging Window:\n");
-	
-	std::vector<ProbenderData> contestantData;
-	ProbenderData player1Data = ProbenderData();
-	player1Data.Attributes.MainElement = ElementEnum::Element::Fire;
-	player1Data.TeamDatas.StartTeam = ArenaData::BLUE_TEAM;
-	player1Data.TeamDatas.StartZone = ArenaData::BLUE_ZONE_1;
-	player1Data.TeamDatas.PlayerColour = TeamData::RED;
 
-	ProbenderData player2Data = ProbenderData();
-	player2Data.Attributes.MainElement = ElementEnum::Element::Fire;
-	player2Data.TeamDatas.StartTeam = ArenaData::RED_TEAM;
-	player2Data.TeamDatas.StartZone = ArenaData::RED_ZONE_1;
-	player2Data.TeamDatas.PlayerColour = TeamData::BLUE;
-
-	contestantData.push_back(player1Data);
-	contestantData.push_back(player2Data);
-
-	std::shared_ptr<GameScene> gameScene(new GameScene(sceneManager, mRoot, "Probending Arena", contestantData));
+	/*std::shared_ptr<GameScene> gameScene(new GameScene(sceneManager, mRoot, "Probending Arena", contestantData));
 	sceneManager->FlagSceneSwitch(gameScene, true);
+	gameScene.reset();*/
 
-	gameScene.reset();
+	std::shared_ptr<MenusScene> menuScene = std::make_shared<MenusScene>(sceneManager, mRoot, MenusScene::Screens::MainMenu);
+	sceneManager->FlagSceneSwitch(menuScene, true);
+	menuScene.reset();
 
 	bool rendering = true;
 
@@ -381,8 +374,9 @@ void Game::Run()
 			rendering = false;
 
 		//Ogre::WindowEventUtilities::messagePump();
+#if(!MEMORY_LEAK_DETECT)
 		mRoot->renderOneFrame();
-
+#endif
 		currentTime = (float)gameTimer.getMilliseconds();
 		
 		previousTime = currentTime;

@@ -35,7 +35,7 @@ public:
 	}
 	
 	
-	inline void DestroySingleton()
+	inline static void DestroySingleton()
 	{
 		if(instance)
 		{
@@ -93,6 +93,9 @@ public:
 	/// <param name="bodyIndex">The body index of the listener</param>	
 	/// <param name="listener">The listener to unregister</param>	
 	void FlagListenerForRemoval(KinectBody* const _body, KinectBodyListener* listener);
+
+	///<summary>Unregisters all listeners that were flagged for removal</summary>
+	void FlushListeners();
 
 	/// <summary>
 	///Injects data from the current Body Frame
