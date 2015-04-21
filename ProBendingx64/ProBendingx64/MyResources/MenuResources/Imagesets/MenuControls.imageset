@@ -241,4 +241,5 @@
     <Image height="20" name="Dbl_Line_Corner_U_L" width="20" xPos="1161" yPos="612" />
     <Image height="20" name="Dbl_Line_Corner_U_R" width="20" xPos="1193" yPos="677" />
     <Image height="5" name="Sng_Line_Horz" width="59" xPos="1332" yPos="565" />
+    <Image height="68" name="A_Backing" width="67" xPos="667" yPos="804" />
 </Imageset>

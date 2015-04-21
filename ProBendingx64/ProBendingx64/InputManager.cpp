@@ -51,11 +51,10 @@ void InputManager::ShutdownThreads()
 	printf("First Join Done\n");
 
 	cancelBodyCapture = true;
-	result = WaitForSingleObject(bodyCaptureThread.native_handle(), 100);
+	result = WaitForSingleObject(bodyCaptureThread.native_handle(), 500);
 
 	printf("Second Wait Done\n");
-	if(bodyCaptureThread.joinable())
-		bodyCaptureThread.join();
+	bodyCaptureThread.join();
 
 	printf("Second Join Done\n");
 
@@ -275,16 +274,13 @@ void InputManager::BodyCapture()
 
 	bool breakNow = false;
 
-//	while (!cancelBodyCapture)
+	while (!cancelBodyCapture)
 	{
 		if(!pauseBodyCapture)
 			breakNow = !kinectReader->CaptureBodyReader();
 
-		//if(breakNow)
-		//	break;
-
-		if(cancelBodyCapture)
-			printf("Wanna Leave\n");
+		if(breakNow)
+			break;
 	}
 }
 
@@ -303,7 +299,7 @@ void InputManager::AudioCapture()
 
 void InputManager::BeginAllCapture()
 {
-	//bodyCaptureThread = std::thread(&InputManager::BodyCapture, this);
+	bodyCaptureThread = std::thread(&InputManager::BodyCapture, this);
 	speechCaptureThread = std::thread(&InputManager::AudioCapture, this);
 }
 
@@ -319,7 +315,6 @@ void InputManager::SetBodyCaptureState(bool enabled)
 
 void InputManager::ProcessEvents()
 {
-	BodyCapture();
 	KinectBodyEventNotifier::GetInstance()->ProcessEvents();
 	KinectAudioEventNotifier::GetInstance()->ProcessEvents();
 	FlushListeners();

@@ -130,9 +130,7 @@ bool KinectReader::CaptureBodyReader()
 	HRESULT hr = E_FAIL;
 
 	if(bodyReader)
-	{
 		hr = bodyReader->Capture();
-	}
 	
 	bool oldAvailable = isAvailable ? true : false;
 

@@ -109,19 +109,22 @@ void Arena::BeginTransition(unsigned short contestantID, ArenaData::Zones newZon
 	}
 	else
 	{
-		gameScene->SetGameState(GameScene::GS_TRANSITION);
-
-		//Get the contestant that was pushed across the line to move towards the center of the current zone
-		contestants[contestantID]->TransitionToPoint(
-			HelperFunctions::OgreToPhysXVec3(zoneStartPositions[newZone - 1]->GetWorldPosition()));
-
 		unsigned short otherContestantID = contestantID == 0 ? 1 : 0;
 		
 		ArenaData::Zones zoneToTransitionTo = ArenaData::GetAdjacentZone(
 			contestants[otherContestantID]->GetCurrentZone(), newZone > oldZone);
 
-		contestants[otherContestantID]->TransitionToPoint(
-			HelperFunctions::OgreToPhysXVec3(zoneStartPositions[zoneToTransitionTo - 1]->GetWorldPosition()));
+		if(zoneToTransitionTo != ArenaData::INVALID_ZONE)
+		{
+			gameScene->SetGameState(GameScene::GS_TRANSITION);
+
+			//Get the contestant that was pushed across the line to move towards the center of the current zone
+			contestants[contestantID]->TransitionToPoint(
+				HelperFunctions::OgreToPhysXVec3(zoneStartPositions[newZone - 1]->GetWorldPosition()));
+
+			contestants[otherContestantID]->TransitionToPoint(
+				HelperFunctions::OgreToPhysXVec3(zoneStartPositions[zoneToTransitionTo - 1]->GetWorldPosition()));
+		}
 	}
 }
 
@@ -130,7 +133,7 @@ void Arena::Start()
 	PlaceContestants();
 
 	short earthCount, fireCount, waterCount, airCount;
-	earthCount = fireCount = waterCount = airCount = 0;
+	earthCount = fireCount = waterCount = airCount = 1;
 
 	//Loop and initialize each character
 	for (int i = 0; i < contestantCount; i++)

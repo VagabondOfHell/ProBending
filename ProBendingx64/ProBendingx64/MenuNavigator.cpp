@@ -19,6 +19,7 @@ MenuNavigator::MenuNavigator(MenusScene* _menuScene /*= NULL*/)
 MenuNavigator::~MenuNavigator(void)
 {
 	InputManager::GetInstance()->UnregisterBodyListener(this);
+	InputManager::GetInstance()->UnregisterAudioListener(this);
 	InputManager::GetInstance()->FlushListeners();
 
 	InputNotifier::GetInstance()->RemoveObserver(this);
@@ -136,5 +137,23 @@ void MenuNavigator::Update(float gameTime)
 
 void MenuNavigator::AudioDataReceived(AudioData* audioData)
 {
-	//throw std::logic_error("The method or operation is not implemented.");
+	if(audioData)
+	{
+		std::wstring data = L"Data" + audioData->CommandValue;
+		wprintf(data.c_str());
+		std::wstring child = L"";
+		
+		if(audioData->ChildData)
+		{
+			child = L"Child Data: " + audioData->ChildData->CommandValue;
+			wprintf(child.c_str());
+			
+			std::wcout << L"Child Data: " << audioData->ChildData->CommandValue.c_str() << std::endl;
+		}
+
+		std::wcout << L"Data: " << audioData->CommandValue.c_str() << std::endl;
+		
+		menuScene->HandleAudioInput(audioData);
+
+	}
 }

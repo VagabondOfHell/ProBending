@@ -30,8 +30,8 @@ public:
 
 	virtual ~ProjectileController(){}
 
-	virtual void ControlProjectile(Probender* bender, const BodyDimensions& bodyDimensions,
-		const CompleteData& currentData, const CompleteData& previousData) = 0;
+	virtual void ControlProjectile(Probender* bender, const CompleteData& currentData, 
+		const CompleteData& previousData) = 0;
 
 	virtual void ReceivePreviousResults(GestureEnums::BodySide prevResults){}
 };

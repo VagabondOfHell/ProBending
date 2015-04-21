@@ -12,6 +12,8 @@ namespace CEGUI
 class IScene;
 class GUIManager;
 
+struct AudioData;
+
 class MenuHandler
 {
 public:
@@ -30,7 +32,8 @@ protected:
 		std::string ClickImage, HoverImage, DisabledImage, NormalImage;
 	};
 
-	void SetButtonImage(CEGUI::Window* button, ButtonSkinType skinType, ElementEnum::Element newElement);
+	void SetControlButtonImage(CEGUI::Window* button, ButtonSkinType skinType, ElementEnum::Element newElement);
+	void SetWindowImage(CEGUI::Window* button, const std::string& imagesetName, const std::string& imageName);
 
 	std::string GetElementPrefix(ElementEnum::Element newElement);
 	void GetButtonSkinSuffix(ButtonSkinType skinType, ButtonSkinListing& outVal);
@@ -49,6 +52,8 @@ public:
 
 	void Disable();
 	void Enable();
+
+	virtual void ReceiveAudioInput(const AudioData* audioText){}
 };
 
 class MainMenuHandler: public MenuHandler
@@ -60,6 +65,8 @@ public:
 	virtual ~MainMenuHandler();
 
 	bool StartButtonClickEvent(const CEGUI::EventArgs& e); 
+
+	virtual void ReceiveAudioInput(const AudioData* audioText);
 
 };
 

@@ -73,7 +73,8 @@ std::string MenuHandler::GetElementPrefix(ElementEnum::Element newElement)
 	}
 }
 
-void MenuHandler::SetButtonImage(CEGUI::Window* button, ButtonSkinType skinType, ElementEnum::Element newElement)
+void MenuHandler::SetControlButtonImage(CEGUI::Window* button, ButtonSkinType skinType, 
+										ElementEnum::Element newElement)
 {
 	ButtonSkinListing buttonListing;
 	std::string elementPrefix = GetElementPrefix(newElement);
@@ -83,6 +84,12 @@ void MenuHandler::SetButtonImage(CEGUI::Window* button, ButtonSkinType skinType,
 	button->setProperty("DisabledImage", "MenuControls/" + elementPrefix + buttonListing.DisabledImage);
 	button->setProperty("HoverImage", "MenuControls/" + elementPrefix + buttonListing.HoverImage);
 	button->setProperty("PushedImage", "MenuControls/" + elementPrefix + buttonListing.ClickImage);
+}
+
+void MenuHandler::SetWindowImage(CEGUI::Window* button, const std::string& imagesetName, const std::string& imageName)
+{
+	if(!imageName.empty() && !imagesetName.empty())
+		button->setProperty("Image", imagesetName + "/" + imageName);
 }
 
 void MenuHandler::GetButtonSkinSuffix(ButtonSkinType skinType, ButtonSkinListing& outVal)
@@ -156,4 +163,10 @@ bool MainMenuHandler::StartButtonClickEvent(const CEGUI::EventArgs& e)
 	menus->SetScreen(MenusScene::GameSetup);
 
 	return true;
+}
+
+void MainMenuHandler::ReceiveAudioInput(const AudioData* audioData)
+{
+	if(audioData->ChildData->CommandValue == L"ENTER TOURNAMENT")
+		StartButtonClickEvent(CEGUI::EventArgs());
 }

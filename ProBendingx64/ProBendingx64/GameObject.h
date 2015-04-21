@@ -64,9 +64,9 @@ public:
 
 	virtual void Update(float gameTime);
 
-	void Enable();
+	virtual void Enable();
 
-	void Disable();
+	virtual void Disable();
 
 	inline bool GetEnabled(){return enabled;}
 

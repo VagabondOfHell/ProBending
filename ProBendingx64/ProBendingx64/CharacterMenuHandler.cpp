@@ -278,8 +278,8 @@ void CharacterMenuHandler::ChangeElement(bool player1, ElementEnum::Element newE
 	GetWindow(MW_NAME_BACKING, player1)->setProperty("Image", "MenuControls/"+elementPrefix+"Lrg_Frame");
 
 	//Set the image for the two element controls
-	SetButtonImage(GetWindow(MW_ELEMENT_SEL_LEFT, player1), BTN_SKIN_LEFT_BTN_HORZ, newElement);
-	SetButtonImage(GetWindow(MW_ELEMENT_SEL_RIGHT, player1), BTN_SKIN_RIGHT_BTN_HORZ, newElement);
+	SetControlButtonImage(GetWindow(MW_ELEMENT_SEL_LEFT, player1), BTN_SKIN_LEFT_BTN_HORZ, newElement);
+	SetControlButtonImage(GetWindow(MW_ELEMENT_SEL_RIGHT, player1), BTN_SKIN_RIGHT_BTN_HORZ, newElement);
 }
 
 void CharacterMenuHandler::SetSkinsForGroup(bool player1, Stage stage, ElementEnum::Element elementSkin)
@@ -292,39 +292,39 @@ void CharacterMenuHandler::SetSkinsForGroup(bool player1, Stage stage, ElementEn
 	case CharacterMenuHandler::MainDialog:
 		{
 			//Set button images for each of the windows in the Main Dialog Window
-			SetButtonImage(GetWindow(MW_MAIN_CREATE_CHAR_BTN, player1), BTN_SKIN_PUSH_BUTTON, elementSkin);
-			SetButtonImage(GetWindow(MW_MAIN_EDIT_CHAR_BTN, player1), BTN_SKIN_PUSH_BUTTON, elementSkin);
-			SetButtonImage(GetWindow(MW_MAIN_LOAD_CHAR_BTN, player1), BTN_SKIN_PUSH_BUTTON, elementSkin);
-			SetButtonImage(GetWindow(MW_MAIN_DONE_BTN, player1), BTN_SKIN_PUSH_BUTTON, elementSkin);
+			SetControlButtonImage(GetWindow(MW_MAIN_CREATE_CHAR_BTN, player1), BTN_SKIN_PUSH_BUTTON, elementSkin);
+			SetControlButtonImage(GetWindow(MW_MAIN_EDIT_CHAR_BTN, player1), BTN_SKIN_PUSH_BUTTON, elementSkin);
+			SetControlButtonImage(GetWindow(MW_MAIN_LOAD_CHAR_BTN, player1), BTN_SKIN_PUSH_BUTTON, elementSkin);
+			SetControlButtonImage(GetWindow(MW_MAIN_DONE_BTN, player1), BTN_SKIN_PUSH_BUTTON, elementSkin);
 		}
 		break;
 	case CharacterMenuHandler::CreateStats:
 	case CharacterMenuHandler::EditStats:
 		{
-			SetButtonImage(GetWindow(MW_STATS_ENDUR_ADD, player1), BTN_SKIN_ADD_BTN_HORZ, elementSkin);
-			SetButtonImage(GetWindow(MW_STATS_ENDUR_MINUS, player1), BTN_SKIN_MINUS_BTN_HORZ, elementSkin);
-			SetButtonImage(GetWindow(MW_STATS_RECO_ADD, player1), BTN_SKIN_ADD_BTN_HORZ, elementSkin);
-			SetButtonImage(GetWindow(MW_STATS_RECO_MINUS, player1), BTN_SKIN_MINUS_BTN_HORZ, elementSkin);
-			SetButtonImage(GetWindow(MW_STATS_STR_ADD, player1), BTN_SKIN_ADD_BTN_HORZ, elementSkin);
-			SetButtonImage(GetWindow(MW_STATS_STR_MINUS, player1), BTN_SKIN_MINUS_BTN_HORZ, elementSkin);
-			SetButtonImage(GetWindow(MW_STATS_DEF_ADD, player1), BTN_SKIN_ADD_BTN_HORZ, elementSkin);
-			SetButtonImage(GetWindow(MW_STATS_DEF_MINUS, player1), BTN_SKIN_MINUS_BTN_HORZ, elementSkin);
-			SetButtonImage(GetWindow(MW_STATS_AGI_ADD, player1), BTN_SKIN_ADD_BTN_HORZ, elementSkin);
-			SetButtonImage(GetWindow(MW_STATS_AGI_MINUS, player1), BTN_SKIN_MINUS_BTN_HORZ, elementSkin);
-			SetButtonImage(GetWindow(MW_STATS_LUCK_ADD, player1), BTN_SKIN_ADD_BTN_HORZ, elementSkin);
-			SetButtonImage(GetWindow(MW_STATS_LUCK_MINUS, player1), BTN_SKIN_MINUS_BTN_HORZ, elementSkin);
-			SetButtonImage(GetWindow(MW_STATS_OK_BTN, player1), BTN_SKIN_PUSH_BUTTON, elementSkin);
-			SetButtonImage(GetWindow(MW_STATS_CANCEL_BTN, player1), BTN_SKIN_PUSH_BUTTON, elementSkin);
+			SetControlButtonImage(GetWindow(MW_STATS_ENDUR_ADD, player1), BTN_SKIN_ADD_BTN_HORZ, elementSkin);
+			SetControlButtonImage(GetWindow(MW_STATS_ENDUR_MINUS, player1), BTN_SKIN_MINUS_BTN_HORZ, elementSkin);
+			SetControlButtonImage(GetWindow(MW_STATS_RECO_ADD, player1), BTN_SKIN_ADD_BTN_HORZ, elementSkin);
+			SetControlButtonImage(GetWindow(MW_STATS_RECO_MINUS, player1), BTN_SKIN_MINUS_BTN_HORZ, elementSkin);
+			SetControlButtonImage(GetWindow(MW_STATS_STR_ADD, player1), BTN_SKIN_ADD_BTN_HORZ, elementSkin);
+			SetControlButtonImage(GetWindow(MW_STATS_STR_MINUS, player1), BTN_SKIN_MINUS_BTN_HORZ, elementSkin);
+			SetControlButtonImage(GetWindow(MW_STATS_DEF_ADD, player1), BTN_SKIN_ADD_BTN_HORZ, elementSkin);
+			SetControlButtonImage(GetWindow(MW_STATS_DEF_MINUS, player1), BTN_SKIN_MINUS_BTN_HORZ, elementSkin);
+			SetControlButtonImage(GetWindow(MW_STATS_AGI_ADD, player1), BTN_SKIN_ADD_BTN_HORZ, elementSkin);
+			SetControlButtonImage(GetWindow(MW_STATS_AGI_MINUS, player1), BTN_SKIN_MINUS_BTN_HORZ, elementSkin);
+			SetControlButtonImage(GetWindow(MW_STATS_LUCK_ADD, player1), BTN_SKIN_ADD_BTN_HORZ, elementSkin);
+			SetControlButtonImage(GetWindow(MW_STATS_LUCK_MINUS, player1), BTN_SKIN_MINUS_BTN_HORZ, elementSkin);
+			SetControlButtonImage(GetWindow(MW_STATS_OK_BTN, player1), BTN_SKIN_PUSH_BUTTON, elementSkin);
+			SetControlButtonImage(GetWindow(MW_STATS_CANCEL_BTN, player1), BTN_SKIN_PUSH_BUTTON, elementSkin);
 		}
 		break;
 	case CharacterMenuHandler::LoadDialog:
 		{
-			SetButtonImage(GetWindow(MW_LOAD_FILE1_BTN, player1), BTN_SKIN_PUSH_BUTTON, elementSkin);
-			SetButtonImage(GetWindow(MW_LOAD_FILE2_BTN, player1), BTN_SKIN_PUSH_BUTTON, elementSkin);
-			SetButtonImage(GetWindow(MW_LOAD_FILE3_BTN, player1), BTN_SKIN_PUSH_BUTTON, elementSkin);
-			SetButtonImage(GetWindow(MW_LOAD_PAGE_LEFT_BTN, player1), BTN_SKIN_LEFT_BTN_HORZ, elementSkin);
-			SetButtonImage(GetWindow(MW_LOAD_PAGE_RIGHT_BTN, player1), BTN_SKIN_RIGHT_BTN_HORZ, elementSkin);
-			SetButtonImage(GetWindow(MW_LOAD_CANCEL_BUTTON, player1), BTN_SKIN_PUSH_BUTTON, elementSkin);
+			SetControlButtonImage(GetWindow(MW_LOAD_FILE1_BTN, player1), BTN_SKIN_PUSH_BUTTON, elementSkin);
+			SetControlButtonImage(GetWindow(MW_LOAD_FILE2_BTN, player1), BTN_SKIN_PUSH_BUTTON, elementSkin);
+			SetControlButtonImage(GetWindow(MW_LOAD_FILE3_BTN, player1), BTN_SKIN_PUSH_BUTTON, elementSkin);
+			SetControlButtonImage(GetWindow(MW_LOAD_PAGE_LEFT_BTN, player1), BTN_SKIN_LEFT_BTN_HORZ, elementSkin);
+			SetControlButtonImage(GetWindow(MW_LOAD_PAGE_RIGHT_BTN, player1), BTN_SKIN_RIGHT_BTN_HORZ, elementSkin);
+			SetControlButtonImage(GetWindow(MW_LOAD_CANCEL_BUTTON, player1), BTN_SKIN_PUSH_BUTTON, elementSkin);
 		}
 		break;
 	default:

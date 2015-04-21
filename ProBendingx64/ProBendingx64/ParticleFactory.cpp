@@ -17,14 +17,6 @@
 ParticleComponent* ParticleFactory::CreateFireEffect(std::shared_ptr<AbstractParticleEmitter> emitter,
 													 GameObject* object, IScene* scene)
 {
-//	/*std::shared_ptr<ParticlePointEmitter> emitter = std::make_shared<ParticlePointEmitter>
-//		(ParticlePointEmitter(90, physx::PxVec3(0.0f, 0.0f, 0.0f), 
-//		physx::PxVec3(-0.7f, 1.0f, -0.70f).getNormalized(), physx::PxVec3(0.70f, 1.0f, 0.70f).getNormalized(),
-//		0.0f, 1.50f, 2.50f));*/
-//
-//	std::shared_ptr<SphereEmitter> emitter = std::make_shared<SphereEmitter>
-//		(SphereEmitter(90, physx::PxVec3(0.0f), 0.0f, 0.15f, 0.250f, true, 0.40f, true));
-//
 	ParticleSystemParams params = ParticleSystemParams(1.0f, 2.0f, scene->GetCudaContextManager(),
 		physx::PxVec3(0.0f, 0.0f, 0.0f),1.0f, false, physx::PxParticleBaseFlag::eENABLED,
 		0.50f, 0.0f, 0.0f, 0.30f, 0.1f, 0.0f, physx::PxFilterData());
@@ -84,7 +76,7 @@ ParticleComponent* ParticleFactory::CreateSmokeEffect(std::shared_ptr<AbstractPa
 	particles->AddAffector(std::make_shared<ScaleParticleAffector>(ScaleParticleAffector(false, 0.0f, 0.80f, true)));
 	particles->AddAffector(std::make_shared<ColourFadeParticleAffector>(
 		ColourFadeParticleAffector(physx::PxVec4(0.588240f, 0.568627f, 0.568627f, 0.00f), 
-		physx::PxVec4(0.588240f, 0.568627f, 0.568627f, 0.30f), 
+		physx::PxVec4(0.588240f, 0.568627f, 0.568627f, 0.60f), 
 		true)));
 
 	particles->AddAffector(std::make_shared<RotationAffector>(0.0f, -360.0f, true));
@@ -187,9 +179,61 @@ ParticleComponent* ParticleFactory::CreateParticleSystem(ParticlePrefabs prefab,
 	case ParticleFactory::WaterMist:
 		return CreateWaterMistEffect(object, scene);
 		break;
+	case ParticleFactory::EarthExplosion:
+		return CreateExplosion(physx::PxVec4(0.410f, 0.41f, 0.41f, 0.8f),
+			physx::PxVec4(0.55f, 0.27f, 0.062f, 0.0f),
+			object, scene);
+		break;
+	case ParticleFactory::FireExplosion:
+		return CreateExplosion(physx::PxVec4(1.0f, 0.3f, 0.0f, 1.0f), 
+			physx::PxVec4(1.0f, 0.0f, 0.0f, 0.20f),
+			object, scene);
+		break;
+	case ParticleFactory::WaterExplosion:
+		return CreateExplosion(physx::PxVec4(0.3f, 0.0f, 1.0f, 1.0f), 
+			physx::PxVec4(0.0f, 0.0f, 1.0f, 0.20f),
+			object, scene);
+		break;
 	default:
 		return nullptr;
 		break;
 	}
+}
+
+ParticleComponent* ParticleFactory::CreateExplosion(physx::PxVec4& startColour, physx::PxVec4& endColour, GameObject* object, IScene* scene)
+{
+	std::shared_ptr<SphereEmitter> emitter = std::make_shared<SphereEmitter>
+	(SphereEmitter(900, physx::PxVec3(0.0f), 0.0f, 1.5f, 2.50f, false, 0.50f, false));
+	
+	ParticleSystemParams params = ParticleSystemParams(1.0f, 2.0f, scene->GetCudaContextManager(),
+		physx::PxVec3(0.0f, 0.0f, 0.0f),1.0f, false, physx::PxParticleBaseFlag::eENABLED,
+		0.50f, 0.0f, 0.0f, 0.30f, 0.1f, 0.0f);
+
+	ParticleSystemBase* particles = new ParticleSystemBase(emitter, 30, 0.25f,params);
+	particles->ResetOnDisable = true;
+	
+	ParticleComponent* particleComponent = new ParticleComponent(particles, false);
+
+	object->AttachComponent(particleComponent);
+
+	particles->AddAffector(std::make_shared<ScaleParticleAffector>(ScaleParticleAffector(false, 0.0f, 0.80f, true)));
+	particles->AddAffector(std::make_shared<ColourFadeParticleAffector>(startColour, endColour, true));
+
+	particles->AddAffector(std::make_shared<RotationAffector>(0.0f, -360.0f, true));
+
+	std::shared_ptr<TextureParticleAffector> texShared = 
+		std::make_shared<TextureParticleAffector>(particles, true, 0.50f, false);
+
+	particles->AddAffector(texShared);
+
+	particles->GetMaterial()->CreateMaterial(particles, 1);
+	texShared->AddTextureToMaterial("smoke.png");
+
+	texShared->CalculateFrameStep(0.7500f);
+
+	particles->AssignAffectorKernel(particles->FindBestKernel());
+	particles->setMaterial(particles->GetMaterial()->GetMaterialName());
+
+	return particleComponent;
 }
 

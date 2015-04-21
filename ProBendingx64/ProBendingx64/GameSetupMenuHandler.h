@@ -22,7 +22,7 @@ protected:
 		MW_PLAYER_TEAM_COLOUR_LEFT_SEL, MW_PLAYER_TEAM_COLOUR_RIGHT_SEL, MW_PLAYER_TEAM_COLOUR_VAL, 
 		MW_PLAYER_COLOUR_LEFT_SEL, MW_PLAYER_COLOUR_RIGHT_SEL, MW_PLAYER_COLOUR_VAL,
 		MW_PLAYER_ZONE_LEFT_SEL, MW_PLAYER_ZONE_RIGHT_SEL, MW_PLAYER_ZONE_COLOUR_VAL, MW_PLAYER_ZONE_POS_VAL,
-		MW_BEGIN_GAME_BTN, MW_CHARACTER_SELECT_BTN};
+		MW_BEGIN_GAME_BTN, MW_CHARACTER_SELECT_BTN, MW_TUTORIAL_BTN};
 
 	void GetRootWindows();
 
@@ -124,12 +124,16 @@ public:
 	virtual ~GameSetupMenuHandler(void);
 
 	bool StartGameBtnClickEvent(const CEGUI::EventArgs& e);
+	bool ViewTutorialClickEvent(const CEGUI::EventArgs& e);
+
 	bool GameModeSelBtnClickEvent(const CEGUI::EventArgs& e);
 
 	bool ElementSelBtnClickEvent(const CEGUI::EventArgs& e);
 	bool TeamSelBtnClickEvent(const CEGUI::EventArgs& e);
 	bool ZoneSelBtnClickEvent(const CEGUI::EventArgs& e);
 	bool CharColourSelBtnClickEvent(const CEGUI::EventArgs& e);
+
+	virtual void ReceiveAudioInput(const AudioData* audioText);
 
 };
 

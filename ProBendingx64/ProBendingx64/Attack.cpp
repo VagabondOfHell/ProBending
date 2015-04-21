@@ -121,7 +121,7 @@ Attack::AttackState Attack::Evaluate(const AttackData& bodyData)
 		if(projectileController)
 		{
 			if(bodyData.CurrentData && bodyData.PreviousData)
-				projectileController->ControlProjectile(bodyData._Probender, *bodyData._BodyDimensions, 
+				projectileController->ControlProjectile(bodyData._Probender,
 					*bodyData.CurrentData, *bodyData.PreviousData);
 		}
 

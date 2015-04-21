@@ -35,96 +35,6 @@ namespace RenderableJointType
 		FootRight = 19,
 		Count = ThumbRight + 1
 	};
-
-	static std::string GetBoneName(RenderableJointType jointType)
-	{
-		switch (jointType)
-		{
-		case RenderableJointType::Head:
-			return "head";
-			break;
-		case RenderableJointType::Neck:
-			return "neck";
-			break;
-		case RenderableJointType::SpineShoulder:
-			return "ribs";
-			break;
-		case RenderableJointType::SpineMid:
-			return "spine";
-			break;
-		case RenderableJointType::SpineBase:
-			return "hips";
-			break;
-		case RenderableJointType::ShoulderRight:
-			return "shoulder.R";
-			break;
-		case RenderableJointType::ElbowRight:
-			return "forearm.R";
-			break;
-		case RenderableJointType::WristRight:
-			return "hand.R";
-			break;
-		case RenderableJointType::HandRight:
-			return "";
-			break;
-		case RenderableJointType::HandTipRight:
-			return "";
-			break;
-		case RenderableJointType::ShoulderLeft:
-			return "shoulder.L";
-			break;
-		case RenderableJointType::ElbowLeft:
-			return "forearm.L";
-			break;
-		case RenderableJointType::WristLeft:
-			return "hand.L";
-			break;
-		case RenderableJointType::HandLeft:
-			return "";
-			break;
-		case RenderableJointType::ThumbRight:
-			return "thumb.02.R";
-			break;
-		case RenderableJointType::HandTipLeft:
-			return "";
-			break;
-		case RenderableJointType::ThumbLeft:
-			return "thumb.02.L";
-			break;
-		case RenderableJointType::HipLeft:
-			//return "thigh.L";
-			return "";
-			break;
-		case RenderableJointType::KneeLeft:
-			return "shin.L";
-			break;
-		case RenderableJointType::AnkleLeft:
-			return "heel.L";
-			break;
-		case RenderableJointType::FootLeft:
-			return "foot.L";
-			break;
-		case RenderableJointType::HipRight:
-			//return "thigh.R";
-			return "";
-			break;
-		case RenderableJointType::KneeRight:
-			return "shin.R";
-			break;
-		case RenderableJointType::AnkleRight:
-			return "heel.R";
-			break;
-		case RenderableJointType::FootRight:
-			return "foot.R";
-			break;
-		case RenderableJointType::Count:
-			return "";
-			break;
-		default:
-			return "";
-			break;
-		}
-	}
 };
 
 namespace ElementEnum
@@ -297,7 +207,7 @@ namespace AbilityIDs
 	typedef unsigned short AbilityID;
 	enum FireAbilities{FIRE_JAB, FIRE_BLAST, FIRE_ABILITIES_COUNT};
 	enum EarthAbilities{EARTH_JAB, EARTH_COIN, EARTH_ABILITIES_COUNT};
-	enum WaterAbilities{WATER_JAB, WATER_ABILITIES_COUNT};
+	enum WaterAbilities{WATER_JAB, WATER_RISE, WATER_ABILITIES_COUNT};
 
 	static std::string FireEnumToString(const FireAbilities fireAbilities)
 	{
@@ -337,6 +247,9 @@ namespace AbilityIDs
 		{
 		case AbilityIDs::WATER_JAB:
 			return "Water_Jab";
+			break;
+		case AbilityIDs::WATER_RISE:
+			return "Water_Rise";
 			break;
 		default:
 			return "";

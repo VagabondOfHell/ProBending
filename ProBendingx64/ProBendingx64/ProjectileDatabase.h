@@ -20,6 +20,7 @@ class ProjectileDatabase
 	static SharedProjectile CreateFireBlast(IScene* scene);
 
 	static SharedProjectile CreateWaterJab(IScene* scene);
+	static SharedProjectile CreateWaterRise(IScene* scene);
 
 public:
 	typedef std::map<AbilityIDs::AbilityID, SharedProjectile> ProjectileDictionary;

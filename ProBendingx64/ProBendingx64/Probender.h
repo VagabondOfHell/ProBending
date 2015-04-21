@@ -8,6 +8,7 @@
 #include "ProbenderEnergyMeter.h"
 
 #include "OgreCamera.h"
+
 #include <memory>
 
 namespace physx
@@ -147,20 +148,7 @@ public:
 
 	inline void Jump(){stateManager.SetState(StateFlags::JUMP_STATE, 0.0f);}
 	
-	inline void Dodge(DodgeDirection direction)
-	{
-		if(stateManager.SetState(StateFlags::DODGE_STATE, 0.0f))
-		{
-			float dirAndDist = DODGE_DISTANCE;
-						
-			if(direction == DD_RIGHT)
-				dirAndDist = -dirAndDist;
-
-			dodgeInfo.EndPos = HelperFunctions::OgreToPhysXVec3(GetWorldPosition() + (dirAndDist * Right()));
-			dodgeInfo.StartPos = HelperFunctions::OgreToPhysXVec3(GetWorldPosition());
-			dodgeInfo.Percentile = 0.0f;
-		}
-	}
+	void Dodge(DodgeDirection direction);
 
 	void ApplyProjectileCollision(float damage, float knockback);
 

@@ -51,14 +51,13 @@ void Probender::SetCamera(Ogre::Camera* newCamera)
 {
 	camera = newCamera;
 
-	camera->setPosition(Ogre::Vector3(0.0f, PROBENDER_HALF_EXTENTS.y * 0.75f, -5.0f));
-
 	Ogre::Vector3 currPos = GetWorldPosition();
 	Ogre::Vector3 diff = currentTarget->GetWorldPosition() - currPos;
 	diff.normalise();
 
-	Ogre::Vector3 newCamPos = Ogre::Vector3(currPos.x + diff.x * -2.50, 
-		PROBENDER_HALF_EXTENTS.y *2.50f, currPos.z + diff.z * -2.50f);
+	gameObjectNode->attachObject(camera);
+
+	Ogre::Vector3 newCamPos = Ogre::Vector3(-2.0f, PROBENDER_HALF_EXTENTS.y , -2.0f);
 
 	camera->setPosition(newCamPos);
 	camera->lookAt(currentTarget->GetWorldPosition());
@@ -71,12 +70,6 @@ void Probender::SetCamera(Ogre::Camera* newCamera)
 
 void Probender::Start()
 {
-	inputHandler.SetProbenderToHandle(this);
-	if(!inputHandler.ListenToBody(characterData.BodyID))
-		printf("Listen to specified body failed\n");
-
-	SetInputState(Probender::Listen);
-
 	characterData.BaseAttributes.Energy = characterData.CurrentAttributes.Energy = 
 		characterData.BaseAttributes.GetMaxEnergy();
 
@@ -116,6 +109,11 @@ void Probender::Start()
 	energyMeter.Initialize(owningScene->GetGUIManager(), contestantID);
 	energyMeter.SetValue(characterData.CurrentAttributes.Energy, characterData.CurrentAttributes.GetMaxEnergy());
 
+	inputHandler.SetProbenderToHandle(this);
+	if(!inputHandler.ListenToBody(characterData.BodyID))
+		printf("Listen to specified body failed\n");
+
+	SetInputState(Probender::Listen);
 }
 
 void Probender::Update(float gameTime)
@@ -126,23 +124,16 @@ void Probender::Update(float gameTime)
 	{
 		if(currentTarget->stateManager.GetCurrentState() != StateFlags::DODGE_STATE)
 		{
-			if(camera)
-			{
-				Ogre::Vector3 targetPos = currentTarget->GetWorldPosition();
-				Ogre::Vector3 currPos = GetWorldPosition();
-				Ogre::Vector3 diff = targetPos - currPos;
-				diff.normalise();
+			Ogre::Vector3 targetPos = currentTarget->GetWorldPosition();
+			Ogre::Vector3 currPos = GetWorldPosition();
+			Ogre::Vector3 diff = targetPos - currPos;
+			diff.y = 0.0f;
+			diff.normalise();
 
-				Ogre::Vector3 newCamPos = Ogre::Vector3(currPos.x + diff.x * -2.50, 
-					PROBENDER_HALF_EXTENTS.y *2.0f, currPos.z + diff.z * -1.50f);
-
-				/*camera->setPosition(newCamPos);
-
-				camera->lookAt(targetPos.x, PROBENDER_HALF_EXTENTS.y * 1.75f, targetPos.z);*/
-			}
+			gameObjectNode->rotate(Forward().getRotationTo(diff)); 
 		}
 	}
-	gameObjectNode->setOrientation(Ogre::Quaternion::IDENTITY);
+	//gameObjectNode->setOrientation(Ogre::Quaternion::IDENTITY);
 	inputHandler.Update(gameTime);
 
 	stateManager.Update(gameTime);	
@@ -167,8 +158,6 @@ void Probender::Update(float gameTime)
 	case StateFlags::BLOCK_STATE:
 		break;
 	case StateFlags::CATCH_STATE:
-		break;
-	case StateFlags::HEAL_STATE:
 		break;
 	case StateFlags::DODGE_STATE:
 		{
@@ -368,10 +357,9 @@ void Probender::StateExitted(StateFlags::PossibleStates exittedState)
 	case StateFlags::FALLING_STATE:
 		break;
 	case StateFlags::BLOCK_STATE:
+		printf("Not Blocking\n");
 		break;
 	case StateFlags::CATCH_STATE:
-		break;
-	case StateFlags::HEAL_STATE:
 		break;
 	case StateFlags::DODGE_STATE:
 		rigidBody->SetKinematic(false);
@@ -404,10 +392,9 @@ void Probender::StateEntered(StateFlags::PossibleStates enteredState)
 	case StateFlags::FALLING_STATE:	
 		break;
 	case StateFlags::BLOCK_STATE:
+		printf("Blocking\n");
 		break;
 	case StateFlags::CATCH_STATE:
-		break;
-	case StateFlags::HEAL_STATE:
 		break;
 	case StateFlags::DODGE_STATE:
 		rigidBody->SetKinematic(true);
@@ -465,12 +452,39 @@ void Probender::ApplyProjectileCollision(float damage, float knockback)
 {
 	characterData.CurrentAttributes.AddEnergy(-damage);
 
-	if(!stateManager.SetState(StateFlags::REELING_STATE, characterData.CurrentAttributes.GetRecoveryRate()))
-	{
-		stateManager.ResetCurrentState();
-	}
-
 	float energyDiff = characterData.CurrentAttributes.Energy / characterData.CurrentAttributes.GetMaxEnergy();
 
-	rigidBody->ApplyImpulse(-HelperFunctions::OgreToPhysXVec3(Forward()) * (knockback * (1.0f - (energyDiff * 0.75f))));	
+	//if not blocking, set character to reeling state and apply full knockback
+	if(stateManager.GetCurrentState() != StateFlags::BLOCK_STATE)
+	{
+		if(!stateManager.SetStateImmediate(StateFlags::REELING_STATE, characterData.CurrentAttributes.GetRecoveryRate()))
+			stateManager.ResetCurrentState();
+
+		rigidBody->ApplyImpulse(-HelperFunctions::OgreToPhysXVec3(Forward()) * 
+			(knockback * (1.0f - (energyDiff * 0.75f))));
+	}
+	else//otherwise ignore reeling state and apply only half knockback
+	{
+		rigidBody->ApplyImpulse(-HelperFunctions::OgreToPhysXVec3(Forward()) * 
+			((knockback * 0.5f) * (1.0f - (energyDiff * 0.75f))));
+	}
+}
+
+void Probender::Dodge(DodgeDirection direction)
+{
+	if(stateManager.SetState(StateFlags::DODGE_STATE, 0.0f))
+	{
+		float dirAndDist = DODGE_DISTANCE;
+
+		if(direction == DD_RIGHT)
+			dirAndDist = -dirAndDist;
+
+		if(Forward().x < 0)
+			dodgeInfo.EndPos = HelperFunctions::OgreToPhysXVec3(GetWorldPosition() + (dirAndDist * Ogre::Vector3::UNIT_Z));
+		else
+			dodgeInfo.EndPos = HelperFunctions::OgreToPhysXVec3(GetWorldPosition() + (dirAndDist * Ogre::Vector3::NEGATIVE_UNIT_Z));
+
+		dodgeInfo.StartPos = HelperFunctions::OgreToPhysXVec3(GetWorldPosition());
+		dodgeInfo.Percentile = 0.0f;
+	}
 }

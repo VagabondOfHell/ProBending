@@ -2,6 +2,8 @@
 #include "KinectAudioListener.h"
 #include "KinectBodyListener.h"
 
+#include "KinectMeshAnimator.h"
+
 #include "InputManager.h"
 #include "InputNotifier.h"
 
@@ -34,11 +36,12 @@ class ProbenderInputHandler :
 {
 public:
 	enum ProbenderStances{UnknownStance, OffenseStance, DefenceStance};
-	BodyDimensions bodyDimensions;
 	
 private:
 	static const float LEAN_RESET_DISTANCE;
 	static const float ATTACK_PAUSE; //A very short pause to prevent multiple gestures from acting at the same time
+	static const float BLOCK_MOVEMENT_THRESHOLD;//Elbow movement must be below this (prevent recognition when arms are trying to perform gestures)
+	static const float BLOCK_WRIST_DISTANCE;//How close the elbows must be to register block
 
 	Probender* probender;
 	ProbenderStances currentStance;
@@ -54,13 +57,17 @@ private:
 
 	Attack* activeAttack;
 
+	KinectMeshAnimator meshAnimator;
+
+	void MapAnimationBones();
+
 	void GenerateGestures();
 
 	void PopulateWithGestures(std::vector<Attack>& elementVector, ElementEnum::Element element);
 
 	///<summary>Updates the Probender Mesh to match the Kinect Input</summary>
 	///<param name="currentData">The current data of the frame</param>
-	void UpdateDisplay(const CompleteData& currentData);
+	void UpdateStickman(const CompleteData& currentData);
 
 	///<summary>Checks current and previous lean values and fires the Dodge Movement on the probender if valid</summary>
 	///<param name="currentData">Data of the current body frame</param>
@@ -68,6 +75,8 @@ private:
 	void CheckLean(const CompleteData& currentData, const CompleteData& previousData);
 
 	void CheckJump(const CompleteData& currentData, const CompleteData& previousData);
+
+	void CheckBlock(const CompleteData& currentData, const CompleteData& previousData);
 
 	void HandleAttacks(const AttackData& attackData);
 
@@ -163,29 +172,6 @@ protected:
 	virtual void HandConfidenceChanged(const Hand hand, const CompleteData& currentData, const CompleteData& previousData);
 
 	virtual void BodyFrameAcquired(const CompleteData& currentData, const CompleteData& previousData);
-
-	inline Ogre::Quaternion KinectVectorToOgreQuaternion(
-		const RenderableJointType::RenderableJointType joint, const CompleteData& currData)const
-	{
-		Vector4 kinectQuat = currData.JointOrientations[joint].Orientation;
-		return 
-			Ogre::Quaternion(Ogre::Radian(Ogre::Degree(180.0f)), Ogre::Vector3(0.0f, 1.0f, 0.0f)) *
-			Ogre::Quaternion(kinectQuat.w, kinectQuat.x, kinectQuat.y, kinectQuat.z);
-	}
-
-	inline Ogre::Vector3 KinectPosToOgrePosition(const RenderableJointType::RenderableJointType joint, const CompleteData& currData)
-	{
-		CameraSpacePoint kinectPos = currData.JointData[joint].Position;
-		return Ogre::Vector3(-kinectPos.X, kinectPos.Y, -kinectPos.Z);
-	}
-
-	void SetBoneData(const std::string& boneName, const Ogre::Vector3& pos, bool inheritOrientation, 
-		const Ogre::Quaternion& quat = Ogre::Quaternion::IDENTITY);
-
-	void SetBoneData(const std::string& boneName, const bool updatePosition, const bool updateOrientation, bool inheritOrientation = false,
-		const Ogre::Vector3& newPos = Ogre::Vector3(0.0f), const Ogre::Quaternion& quat = Ogre::Quaternion::IDENTITY);
-
-	void FillJointWorldOrientations(const CompleteData& currData);
 
 	virtual void DiscreteGesturesAcquired(const std::vector<KinectGestureResult>discreteGestureResults);
 	virtual void ContinuousGesturesAcquired(const std::vector<KinectGestureResult>continuousGestureResults);

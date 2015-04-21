@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<GUILayout version="4" >
+    <Window type="DefaultWindow" name="TutorialRootWindow" >
+        <Property name="Area" value="{{0,0},{0,0},{1,0},{1,0}}" />
+        <Property name="MaxSize" value="{{1,0},{1,0}}" />
+        <Window type="Generic/Image" name="OpaqueBackground" >
+            <Property name="Area" value="{{0,0},{0,0},{1,0},{1,0}}" />
+            <Property name="Image" value="PaperBackground/PaperBackground" />
+            <Property name="MaxSize" value="{{1,0},{1,0}}" />
+            <Property name="ImageColours" value="tl:E6FFFFFF tr:E6FFFFFF bl:E6FFFFFF br:E6FFFFFF" />
+        </Window>
+        <Window type="Generic/Image" name="DialogBacking" >
+            <Property name="Area" value="{{0,0},{0,0},{0.9,0},{0.9,0}}" />
+            <Property name="Image" value="MenuControls/A_Backing" />
+            <Property name="MaxSize" value="{{1,0},{1,0}}" />
+            <Property name="AlwaysOnTop" value="true" />
+            <Property name="VerticalAlignment" value="Centre" />
+            <Property name="HorizontalAlignment" value="Centre" />
+            <Property name="DistributeCapturedInputs" value="true" />
+            <Window type="Generic/Image" name="FrameTop" >
+                <Property name="Area" value="{{0,0},{0,0},{1,0},{0,22}}" />
+                <Property name="Image" value="MenuControls/Dbl_Line_Bar_Horz" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+            </Window>
+            <Window type="Generic/Image" name="FrameBottom" >
+                <Property name="Area" value="{{0,0},{0,0},{1,0},{0,22}}" />
+                <Property name="Image" value="MenuControls/Dbl_Line_Bar_Horz" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="VerticalAlignment" value="Bottom" />
+            </Window>
+            <Window type="Generic/Image" name="FrameLeft" >
+                <Property name="Area" value="{{0,0},{0,0},{0,22},{1,0}}" />
+                <Property name="Image" value="MenuControls/Dbl_Line_Bar" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+            </Window>
+            <Window type="Generic/Image" name="FrameRight" >
+                <Property name="Area" value="{{0,0},{0,0},{0,22},{1,0}}" />
+                <Property name="Image" value="MenuControls/Dbl_Line_Bar" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="HorizontalAlignment" value="Right" />
+            </Window>
+            <Window type="Generic/Image" name="TopLeftCorner" >
+                <Property name="Area" value="{{0,0},{0,0},{0,50},{0,50}}" />
+                <Property name="Image" value="MenuControls/Dbl_Line_Corner_D_R" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+            </Window>
+            <Window type="Generic/Image" name="TopRightCorner" >
+                <Property name="Area" value="{{0,0},{0,0},{0,50},{0,50}}" />
+                <Property name="Image" value="MenuControls/Dbl_Line_Corner_D_L" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="HorizontalAlignment" value="Right" />
+            </Window>
+            <Window type="Generic/Image" name="BottomLeftCorner" >
+                <Property name="Area" value="{{0,0},{0,0},{0,50},{0,50}}" />
+                <Property name="Image" value="MenuControls/Dbl_Line_Corner_U_R" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="VerticalAlignment" value="Bottom" />
+            </Window>
+            <Window type="Generic/Image" name="BottomRightCorner" >
+                <Property name="Area" value="{{0,0},{0,0},{0,50},{0,50}}" />
+                <Property name="Image" value="MenuControls/Dbl_Line_Corner_U_L" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="VerticalAlignment" value="Bottom" />
+                <Property name="HorizontalAlignment" value="Right" />
+            </Window>
+            <Window type="Generic/Label" name="Text" >
+                <Property name="Area" value="{{0.04,0},{0.45,0},{0.955,0},{0.75,0}}" />
+                <Property name="Font" value="slayer11" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="HorzFormatting" value="WordWrapCentreAligned" />
+                <Property name="VertFormatting" value="TopAligned" />
+            </Window>
+            <Window type="Generic/ImageButton" name="NextButton" >
+                <Property name="Area" value="{{-0.05,0},{-0.07,0},{0.15,0},{0.08,0}}" />
+                <Property name="HoverImage" value="MenuControls/Wood_Btn_Hover" />
+                <Property name="NormalImage" value="MenuControls/Wood_Btn_Normal" />
+                <Property name="PushedImage" value="MenuControls/Wood_Btn_Click" />
+                <Property name="DisabledImage" value="MenuControls/Wood_Btn_Disabled" />
+                <Property name="VerticalAlignment" value="Bottom" />
+                <Property name="HorizontalAlignment" value="Right" />
+                <Window type="Generic/Label" name="Text" >
+                    <Property name="Area" value="{{0,0},{0,0},{1,0},{1,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="NEXT" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="NormalTextColour" value="FFFFFF96" />
+                    <Property name="VerticalAlignment" value="Centre" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                    <Property name="MousePassThroughEnabled" value="true" />
+                    <Property name="DistributeCapturedInputs" value="true" />
+                </Window>
+            </Window>
+            <Window type="Generic/ImageButton" name="PreviousButton" >
+                <Property name="Area" value="{{-0.3,0},{-0.07,0},{-0.1,0},{0.08,0}}" />
+                <Property name="HoverImage" value="MenuControls/Wood_Btn_Hover" />
+                <Property name="NormalImage" value="MenuControls/Wood_Btn_Normal" />
+                <Property name="PushedImage" value="MenuControls/Wood_Btn_Click" />
+                <Property name="DisabledImage" value="MenuControls/Wood_Btn_Disabled" />
+                <Property name="VerticalAlignment" value="Bottom" />
+                <Property name="HorizontalAlignment" value="Right" />
+                <Window type="Generic/Label" name="Text" >
+                    <Property name="Area" value="{{0,0},{0,0},{1,0},{1,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="PREV" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="NormalTextColour" value="FFFFFF96" />
+                    <Property name="VerticalAlignment" value="Centre" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                    <Property name="MousePassThroughEnabled" value="true" />
+                    <Property name="DistributeCapturedInputs" value="true" />
+                </Window>
+            </Window>
+            <Window type="Generic/Image" name="Image1" >
+                <Property name="Area" value="{{0,-350},{0.25,0},{0,-230},{0.25,120}}" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="Visible" value="false" />
+                <Property name="HorizontalAlignment" value="Centre" />
+            </Window>
+            <Window type="Generic/ImageButton" name="GeneralPage" >
+                <Property name="Area" value="{{0.05,0},{0.03,0},{0.25,0},{0.18,0}}" />
+                <Property name="HoverImage" value="MenuControls/Wood_Btn_Hover" />
+                <Property name="NormalImage" value="MenuControls/Wood_Btn_Normal" />
+                <Property name="PushedImage" value="MenuControls/Wood_Btn_Click" />
+                <Property name="DisabledImage" value="MenuControls/Wood_Btn_Disabled" />
+                <Window type="Generic/Label" name="Text" >
+                    <Property name="Area" value="{{0,0},{0,0},{1,0},{1,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="General" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="NormalTextColour" value="FFFFFF96" />
+                    <Property name="VerticalAlignment" value="Centre" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                    <Property name="MousePassThroughEnabled" value="true" />
+                    <Property name="DistributeCapturedInputs" value="true" />
+                </Window>
+            </Window>
+            <Window type="Generic/ImageButton" name="FirePage" >
+                <Property name="Area" value="{{0.515,0},{0.03,0},{0.715,0},{0.18,0}}" />
+                <Property name="HoverImage" value="MenuControls/Wood_Btn_Hover" />
+                <Property name="NormalImage" value="MenuControls/Wood_Btn_Normal" />
+                <Property name="PushedImage" value="MenuControls/Wood_Btn_Click" />
+                <Property name="DisabledImage" value="MenuControls/Wood_Btn_Disabled" />
+                <Window type="Generic/Label" name="Text" >
+                    <Property name="Area" value="{{0,0},{0,0},{1,0},{1,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="Fire" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="NormalTextColour" value="FFFFFF96" />
+                    <Property name="VerticalAlignment" value="Centre" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                    <Property name="MousePassThroughEnabled" value="true" />
+                    <Property name="DistributeCapturedInputs" value="true" />
+                </Window>
+            </Window>
+            <Window type="Generic/ImageButton" name="WaterPage" >
+                <Property name="Area" value="{{0.745,0},{0.03,0},{0.945,0},{0.18,0}}" />
+                <Property name="HoverImage" value="MenuControls/Wood_Btn_Hover" />
+                <Property name="NormalImage" value="MenuControls/Wood_Btn_Normal" />
+                <Property name="PushedImage" value="MenuControls/Wood_Btn_Click" />
+                <Property name="DisabledImage" value="MenuControls/Wood_Btn_Disabled" />
+                <Window type="Generic/Label" name="Text" >
+                    <Property name="Area" value="{{0,0},{0,0},{1,0},{1,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="Water" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="NormalTextColour" value="FFFFFF96" />
+                    <Property name="VerticalAlignment" value="Centre" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                    <Property name="MousePassThroughEnabled" value="true" />
+                    <Property name="DistributeCapturedInputs" value="true" />
+                </Window>
+            </Window>
+            <Window type="Generic/ImageButton" name="ExitButton" >
+                <Property name="Area" value="{{0.05,0},{-0.07,0},{0.25,0},{0.08,0}}" />
+                <Property name="HoverImage" value="MenuControls/Wood_Btn_Hover" />
+                <Property name="NormalImage" value="MenuControls/Wood_Btn_Normal" />
+                <Property name="PushedImage" value="MenuControls/Wood_Btn_Click" />
+                <Property name="DisabledImage" value="MenuControls/Wood_Btn_Disabled" />
+                <Property name="VerticalAlignment" value="Bottom" />
+                <Window type="Generic/Label" name="Text" >
+                    <Property name="Area" value="{{0,0},{0,0},{1,0},{1,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="EXIT" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="NormalTextColour" value="FFFFFF96" />
+                    <Property name="VerticalAlignment" value="Centre" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                    <Property name="MousePassThroughEnabled" value="true" />
+                    <Property name="DistributeCapturedInputs" value="true" />
+                </Window>
+            </Window>
+            <Window type="Generic/ImageButton" name="EarthPage" >
+                <Property name="Area" value="{{0.285,0},{0.03,0},{0.485,0},{0.18,0}}" />
+                <Property name="HoverImage" value="MenuControls/Wood_Btn_Hover" />
+                <Property name="NormalImage" value="MenuControls/Wood_Btn_Normal" />
+                <Property name="PushedImage" value="MenuControls/Wood_Btn_Click" />
+                <Property name="DisabledImage" value="MenuControls/Wood_Btn_Disabled" />
+                <Window type="Generic/Label" name="Text" >
+                    <Property name="Area" value="{{0,0},{0,0},{1,0},{1,0}}" />
+                    <Property name="Font" value="slayer11" />
+                    <Property name="Text" value="Earth" />
+                    <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                    <Property name="NormalTextColour" value="FFFFFF96" />
+                    <Property name="VerticalAlignment" value="Centre" />
+                    <Property name="HorizontalAlignment" value="Centre" />
+                    <Property name="MousePassThroughEnabled" value="true" />
+                    <Property name="DistributeCapturedInputs" value="true" />
+                </Window>
+            </Window>
+            <Window type="Generic/Image" name="Image2" >
+                <Property name="Area" value="{{0,-180},{0.25,0},{0,-60},{0.25,120}}" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="Visible" value="false" />
+                <Property name="HorizontalAlignment" value="Centre" />
+            </Window>
+            <Window type="Generic/Image" name="Image3" >
+                <Property name="Area" value="{{0,0},{0.25,0},{0,120},{0.25,120}}" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="Visible" value="false" />
+                <Property name="HorizontalAlignment" value="Centre" />
+            </Window>
+            <Window type="Generic/Image" name="Image4" >
+                <Property name="Area" value="{{0,180},{0.25,0},{0,300},{0.25,120}}" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="Visible" value="false" />
+                <Property name="HorizontalAlignment" value="Centre" />
+            </Window>
+            <Window type="Generic/Image" name="Image5" >
+                <Property name="Area" value="{{0,350},{0.25,0},{0,470},{0.25,120}}" />
+                <Property name="MaxSize" value="{{1,0},{1,0}}" />
+                <Property name="Visible" value="false" />
+                <Property name="HorizontalAlignment" value="Centre" />
+            </Window>
+        </Window>
+    </Window>
+</GUILayout>

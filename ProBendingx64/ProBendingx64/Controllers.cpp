@@ -30,8 +30,8 @@ HandMoveController::~HandMoveController(void)
 {
 }
 
-void HandMoveController::ControlProjectile(Probender* bender, const BodyDimensions& bodyDimensions, 
-			const CompleteData& currentData, const CompleteData& previousData)
+void HandMoveController::ControlProjectile(Probender* bender, const CompleteData& currentData, 
+	const CompleteData& previousData)
 {
 	if(HandUsed == CH_RIGHT)
 	{
@@ -48,7 +48,7 @@ void HandMoveController::ControlProjectile(Probender* bender, const BodyDimensio
 			if(!previousData.GetTrackedOrInferredPosition(JointType_HandRight, r_hand))
 				return;
 
-		UpdateProjectilePosition(bender, bodyDimensions.RightArmLength, r_shoulder, r_hand);
+		UpdateProjectilePosition(bender, 0.4f, r_shoulder, r_hand);
 	}
 	else if(HandUsed == CH_LEFT)
 	{
@@ -65,7 +65,7 @@ void HandMoveController::ControlProjectile(Probender* bender, const BodyDimensio
 			if(!previousData.GetTrackedOrInferredPosition(JointType_HandLeft, l_hand))
 				return;
 
-		UpdateProjectilePosition(bender, bodyDimensions.LeftArmLength, l_shoulder, l_hand);
+		UpdateProjectilePosition(bender, 0.4f, l_shoulder, l_hand);
 	}
 	else if(HandUsed == CH_BOTH)
 	{
@@ -110,7 +110,7 @@ void HandMoveController::ControlProjectile(Probender* bender, const BodyDimensio
 			shoulderAvg.Y = (r_shoulder.Y + l_shoulder.Y) * 0.5f; shoulderAvg.Z = (r_shoulder.Z + l_shoulder.Z) * 0.5f;
 
 		//Calculate the arm length average
-		float armLenAvg = (bodyDimensions.LeftArmLength + bodyDimensions.RightArmLength) * 0.5f;
+		float armLenAvg = (0.4f + 0.4f) * 0.5f;
 
 		UpdateProjectilePosition(bender, armLenAvg, shoulderAvg, handAvg);
 	}

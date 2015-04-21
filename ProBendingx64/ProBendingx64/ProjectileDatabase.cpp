@@ -16,6 +16,8 @@
 #include "RotationAffector.h"
 
 #include "ParticleFactory.h"
+#include "SpecialEffect.h"
+#include "SphereEmitter.h"
 
 const std::string ProjectileDatabase::ShapeString = "Shape";
 
@@ -35,10 +37,8 @@ ProjectileDatabase::SharedProjectile ProjectileDatabase::CreateEarthJab(IScene* 
 {
 	std::string projName = AbilityIDs::EarthEnumToString(AbilityIDs::EARTH_JAB);
 
-	/*ProjectileAttributes earthJabAttributes = 
-		ProjectileAttributes(Ogre::Vector3(0.0f), 20.0f, 40.0f, 250.0f, 800.0f, 20.0f, 30.0f, true);*/
 	ProjectileAttributes earthJabAttributes = 
-		ProjectileAttributes(Ogre::Vector3(0.0f), 20.0f, 40.0f, 25.0f, 100.0f, 20.0f, 30.0f, false);
+		ProjectileAttributes(Ogre::Vector3(0.0f), 10.0f, 20.0f, 25.0f, 100.0f, 20.0f, 30.0f, false);
 
 	SharedProjectile projectile = std::make_shared<Projectile>(scene, earthJabAttributes, projName);
 	projectile->tag = TagsAndLayersManager::ProjectileTag;
@@ -57,7 +57,6 @@ ProjectileDatabase::SharedProjectile ProjectileDatabase::CreateEarthJab(IScene* 
 
 	ShapeDefinition shapeDef = ShapeDefinition();
 	shapeDef.SetSphereGeometry(entityHalfSize.magnitude() * 0.5f);
-	//shapeDef.SetBoxGeometry(entityHalfSize);
 	shapeDef.SetFilterFlags(ArenaData::PROJECTILE);
 
 	shapeDef.AddMaterial(PhysXDataManager::GetSingletonPtr()->CreateMaterial(1.0f, 1.0f, 0.0f, "101000"));
@@ -69,6 +68,19 @@ ProjectileDatabase::SharedProjectile ProjectileDatabase::CreateEarthJab(IScene* 
 		rigidBody->SetUseGravity(false);
 	}
 
+	SharedGameObject destructionObject = std::make_shared<GameObject>(scene);
+	ParticleFactory::CreateParticleSystem(ParticleFactory::EarthExplosion, destructionObject.get(), scene);
+	destructionObject->Disable();
+
+	SpecialEffect* destructionEffect = new SpecialEffect(destructionObject);
+	destructionEffect->SpawnPosition = Ogre::Vector3(0.0f, 0.0f, 0.0f);
+	destructionEffect->XIsAbsolute = false;
+	destructionEffect->YIsAbsolute = false;
+	destructionEffect->ZIsAbsolute = false;
+
+	destructionEffect->Duration = 0.30f;
+	projectile->DestructionEffect = destructionEffect;
+	
 	return projectile;
 }
 
@@ -76,7 +88,8 @@ ProjectileDatabase::SharedProjectile ProjectileDatabase::CreateEarthCoin(IScene*
 {
 	std::string projName = AbilityIDs::EarthEnumToString(AbilityIDs::EARTH_COIN);
 	
-	ProjectileAttributes earthCoinAttributes = ProjectileAttributes(Ogre::Vector3(0.0f), 1.0f, 2.0f, 400.0f, 500.0f, 30.0f, 50.0f, true);
+	ProjectileAttributes earthCoinAttributes = ProjectileAttributes(Ogre::Vector3(0.0f), 20.0f, 30.0f, 
+		400.0f, 500.0f, 30.0f, 50.0f, true);
 
 	SharedProjectile projectile = std::make_shared<Projectile>(scene, earthCoinAttributes, projName);
 	projectile->tag = TagsAndLayersManager::ProjectileTag;
@@ -95,7 +108,6 @@ ProjectileDatabase::SharedProjectile ProjectileDatabase::CreateEarthCoin(IScene*
 	physx::PxVec3 entityHalfSize = HelperFunctions::OgreToPhysXVec3(projectile->GetHalfExtents());
 	
 	ShapeDefinition shapeDef = ShapeDefinition();
-	//shapeDef.SetSphereGeometry(entityHalfSize.magnitude() * 0.5f);
 	shapeDef.SetBoxGeometry(entityHalfSize);
 	shapeDef.SetFilterFlags(ArenaData::PROJECTILE);
 
@@ -107,6 +119,41 @@ ProjectileDatabase::SharedProjectile ProjectileDatabase::CreateEarthCoin(IScene*
 		//rigidBody->CreateDebugDraw();
 		rigidBody->SetUseGravity(false);
 	}
+
+	SharedGameObject destructionObject = std::make_shared<GameObject>(scene);
+	ParticleFactory::CreateParticleSystem(ParticleFactory::EarthExplosion, destructionObject.get(), scene);
+	destructionObject->Disable();
+
+	SpecialEffect* destructionEffect = new SpecialEffect(destructionObject);
+	destructionEffect->SpawnPosition = Ogre::Vector3(0.0f, 0.0f, 0.0f);
+	destructionEffect->XIsAbsolute = false;
+	destructionEffect->YIsAbsolute = false;
+	destructionEffect->ZIsAbsolute = false;
+
+	destructionEffect->Duration = 0.20f;
+	projectile->DestructionEffect = destructionEffect;
+
+	SharedGameObject creationObject = std::make_shared<GameObject>(scene);
+	ParticleComponent* smokeComponent =
+		ParticleFactory::CreateParticleSystem(ParticleFactory::PointSmoke, creationObject.get(), scene);
+	smokeComponent->particleSystem->GetEmitter()->SetDirections(physx::PxVec3(-0.4f, 1.0f, -0.4f),
+		physx::PxVec3(0.4f, 1.0f, 0.4f));
+	smokeComponent->particleSystem->GetEmitter()->SetSpeeds(5.0f, 10.0f);
+	smokeComponent->particleSystem->GetEmitter()->SetEmissionRate(500.0f);
+	smokeComponent->particleSystem->GetPxParticleSystem()->setMaxMotionDistance(15.0f);
+
+	smokeComponent->particleSystem->SetInitialLifetime(0.4f);
+
+	creationObject->Disable();
+
+	SpecialEffect* creationEffect = new SpecialEffect(creationObject);
+	creationEffect->SpawnPosition = Ogre::Vector3(0.0f, 0.0f, 0.0f);
+	creationEffect->XIsAbsolute = false;
+	creationEffect->YIsAbsolute = true;
+	creationEffect->ZIsAbsolute = false;
+
+	creationEffect->Duration = 0.30f;
+	projectile->CreationEffect = creationEffect;
 
 	return projectile;
 }
@@ -127,7 +174,8 @@ ProjectileDatabase::SharedProjectile ProjectileDatabase::CreateFireJab(IScene* s
 {
 	std::string projName = AbilityIDs::FireEnumToString(AbilityIDs::FIRE_JAB);
 
-	ProjectileAttributes attributes = ProjectileAttributes(Ogre::Vector3(0.0f), 20.0f, 40.0f, 25.0f, 100.0f, 20.0f, 30.0f, false);
+	ProjectileAttributes attributes = ProjectileAttributes(Ogre::Vector3(0.0f), 10.0f, 20.0f, 
+		25.0f, 100.0f, 20.0f, 30.0f, false);
 
 	SharedProjectile newProjectile = std::make_shared<Projectile>(scene, attributes, projName);
 	newProjectile->tag = TagsAndLayersManager::ProjectileTag;
@@ -167,7 +215,8 @@ ProjectileDatabase::SharedProjectile ProjectileDatabase::CreateFireBlast(IScene*
 {
 	std::string projName = AbilityIDs::FireEnumToString(AbilityIDs::FIRE_BLAST);
 
-	ProjectileAttributes attributes = ProjectileAttributes(Ogre::Vector3(0.0f), 0.0f, 1.0f, 400.0f, 500.0f, 15.0f, 25.0f, false);
+	ProjectileAttributes attributes = ProjectileAttributes(Ogre::Vector3(0.0f), 20.0f, 30.0f, 
+		400.0f, 500.0f, 15.0f, 25.0f, false);
 
 	SharedProjectile newProjectile = std::make_shared<Projectile>(scene, attributes, projName);
 	newProjectile->tag = TagsAndLayersManager::ProjectileTag;
@@ -207,6 +256,27 @@ ProjectileDatabase::SharedProjectile ProjectileDatabase::CreateFireBlast(IScene*
 		rigidBody->SetUseGravity(false);
 	}
 
+	SharedGameObject destructionObject = std::make_shared<GameObject>(scene);
+	ParticleComponent* fireComponent =
+		ParticleFactory::CreateParticleSystem(ParticleFactory::FireExplosion, destructionObject.get(), scene);
+	
+	fireComponent->particleSystem->GetEmitter()->SetSpeeds(5.0f, 10.0f);
+	fireComponent->particleSystem->GetEmitter()->SetEmissionRate(500.0f);
+	fireComponent->particleSystem->GetPxParticleSystem()->setMaxMotionDistance(15.0f);
+	fireComponent->particleSystem->SetInitialLifetime(0.2f);
+
+	destructionObject->Disable();
+
+	SpecialEffect* destructionEffect = new SpecialEffect(destructionObject);
+	destructionEffect->SpawnPosition = Ogre::Vector3(0.0f, 0.0f, 0.0f);
+	destructionEffect->XIsAbsolute = false;
+	destructionEffect->YIsAbsolute = false;
+	destructionEffect->ZIsAbsolute = false;
+
+	destructionEffect->Duration = 0.10f;
+
+	newProjectile->DestructionEffect = destructionEffect;
+
 	return newProjectile;
 }
 
@@ -215,6 +285,7 @@ ProjectileDatabase::ProjectileDictionary ProjectileDatabase::GetWaterProjectiles
 	ProjectileDictionary waterDictionary = ProjectileDictionary();
 
 	waterDictionary.insert(ProjectileDictionary::value_type(AbilityIDs::WATER_JAB, CreateWaterJab(scene)));
+	waterDictionary.insert(ProjectileDictionary::value_type(AbilityIDs::WATER_RISE, CreateWaterRise(scene)));
 
 	return waterDictionary;
 }
@@ -223,10 +294,51 @@ ProjectileDatabase::SharedProjectile ProjectileDatabase::CreateWaterJab(IScene* 
 {
 	std::string projName = AbilityIDs::WaterEnumToString(AbilityIDs::WATER_JAB);
 
-	/*ProjectileAttributes waterJabAttributes = 
-		ProjectileAttributes(Ogre::Vector3(0.0f), 0.2f, 350.0f, 450.0f, 30.0f, 20.0f, 30.0f, false);*/
 	ProjectileAttributes waterJabAttributes = 
-		ProjectileAttributes(Ogre::Vector3(0.0f), 20.0f, 40.0f, 25.0f, 100.0f, 20.0f, 30.0f, false);
+		ProjectileAttributes(Ogre::Vector3(0.0f), 10.0f, 20.0f, 25.0f, 100.0f, 20.0f, 30.0f, false);
+
+	SharedProjectile projectile = std::make_shared<Projectile>(scene, waterJabAttributes, projName);
+	projectile->tag = TagsAndLayersManager::ProjectileTag;
+	projectile->DestructionTriggers = ArenaData::PROJECTILE | ArenaData::WATER;
+
+	ParticleComponent* waterMist = ParticleFactory::CreateParticleSystem
+		(ParticleFactory::WaterMist, projectile.get(), scene);
+
+//	MeshRenderComponent* renderComponent = new MeshRenderComponent();
+//	projectile->AttachComponent(renderComponent);
+//	renderComponent->LoadModel("WaterSphere.mesh");
+////	renderComponent->SetMaterial("Examples/WaterSphere");
+//	projectile->SetScale(0.25f, 0.25f, 0.25f);
+
+	RigidBodyComponent* rigidBody = new RigidBodyComponent();
+	projectile->AttachComponent(rigidBody);
+	rigidBody->CreateRigidBody(RigidBodyComponent::DYNAMIC); //Create dynamic body at 0,0,0 with 0 rotation
+
+	projectile->SetHalfExtents(Ogre::Vector3(0.25f));//renderComponent->GetHalfExtents());
+	physx::PxVec3 entityHalfSize = HelperFunctions::OgreToPhysXVec3(projectile->GetHalfExtents());
+
+	ShapeDefinition shapeDef = ShapeDefinition();
+	shapeDef.SetSphereGeometry(entityHalfSize.magnitude() * 0.45f);
+	shapeDef.SetFilterFlags(ArenaData::PROJECTILE);
+
+	shapeDef.AddMaterial(PhysXDataManager::GetSingletonPtr()->CreateMaterial(1.0f, 1.0f, 0.0f, "101000"));
+	physx::PxShape* shape = PhysXDataManager::GetSingletonPtr()->CreateShape(shapeDef, projName + ShapeString);
+	if(shape)
+	{
+		rigidBody->AttachShape(*shape);
+		//rigidBody->CreateDebugDraw();
+		rigidBody->SetUseGravity(false);
+	}
+
+	return projectile;
+}
+
+ProjectileDatabase::SharedProjectile ProjectileDatabase::CreateWaterRise(IScene* scene)
+{
+	std::string projName = AbilityIDs::WaterEnumToString(AbilityIDs::WATER_RISE);
+
+	ProjectileAttributes waterJabAttributes = 
+		ProjectileAttributes(Ogre::Vector3(0.0f), 10.0f, 20.0f, 25.0f, 100.0f, 20.0f, 30.0f, false);
 
 	SharedProjectile projectile = std::make_shared<Projectile>(scene, waterJabAttributes, projName);
 	projectile->tag = TagsAndLayersManager::ProjectileTag;
@@ -238,7 +350,7 @@ ProjectileDatabase::SharedProjectile ProjectileDatabase::CreateWaterJab(IScene* 
 	MeshRenderComponent* renderComponent = new MeshRenderComponent();
 	projectile->AttachComponent(renderComponent);
 	renderComponent->LoadModel("WaterSphere.mesh");
-//	renderComponent->SetMaterial("Examples/WaterSphere");
+	//	renderComponent->SetMaterial("Examples/WaterSphere");
 	projectile->SetScale(0.25f, 0.25f, 0.25f);
 
 	RigidBodyComponent* rigidBody = new RigidBodyComponent();
@@ -260,6 +372,27 @@ ProjectileDatabase::SharedProjectile ProjectileDatabase::CreateWaterJab(IScene* 
 		//rigidBody->CreateDebugDraw();
 		rigidBody->SetUseGravity(false);
 	}
+
+	SharedGameObject destructionObject = std::make_shared<GameObject>(scene);
+	ParticleComponent* waterComponent =
+		ParticleFactory::CreateParticleSystem(ParticleFactory::WaterExplosion, destructionObject.get(), scene);
+
+	waterComponent->particleSystem->GetEmitter()->SetSpeeds(5.0f, 10.0f);
+	waterComponent->particleSystem->GetEmitter()->SetEmissionRate(500.0f);
+	waterComponent->particleSystem->GetPxParticleSystem()->setMaxMotionDistance(15.0f);
+	waterComponent->particleSystem->SetInitialLifetime(0.1f);
+
+	destructionObject->Disable();
+
+	SpecialEffect* destructionEffect = new SpecialEffect(destructionObject);
+	destructionEffect->SpawnPosition = Ogre::Vector3(0.0f, 0.0f, 0.0f);
+	destructionEffect->XIsAbsolute = false;
+	destructionEffect->YIsAbsolute = false;
+	destructionEffect->ZIsAbsolute = false;
+
+	destructionEffect->Duration = 0.10f;
+
+	projectile->DestructionEffect = destructionEffect;
 
 	return projectile;
 }

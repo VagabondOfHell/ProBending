@@ -1,0 +1,89 @@
+﻿<grammar version="1.0" xml:lang="en-US" root="MainMenuRule" tag-format="semantics/1.0" xmlns="http://www.w3.org/2001/06/grammar">
+	<rule id="MainMenuRule">
+		<one-of>
+			<item>
+				<tag>out = "ENTER TOURNAMENT"</tag>
+				<one-of>
+					<item>Enter Tournament</item>
+					<item>Enter</item>
+					<item>Begin</item>
+					<item>Begin Game</item>
+					<item>Start</item>
+					<item>Start Game</item>
+					<item>Go</item>
+				</one-of>
+			</item>
+			<item>
+				<ruleref uri="#PlayerSelectionRule"/> <tag>out.Player = rules.latest();</tag>
+				<ruleref uri="#ElementsRule"/><tag>out.Element = rules.latest();</tag>
+			</item>
+			<item>
+				<ruleref uri="#PlayerSelectionRule"/> <tag>out.Player = rules.latest();</tag>
+				<ruleref uri="#ZonesRule"/><tag>out.Zone = rules.latest();</tag>
+			</item>
+			<item>
+				<ruleref uri="#PlayerSelectionRule"/> <tag>out.Player = rules.latest();</tag>
+				<ruleref uri="#TeamSelectionRule"/><tag>out.Team = rules.latest();</tag>
+			</item>
+		</one-of>
+	</rule>
+	
+	<rule id="PlayerSelectionRule">
+		player
+		<one-of>
+			<item>one <tag>out="ONE"</tag></item>
+			<item>two <tag>out="TWO"</tag></item>
+		</one-of>
+	</rule>
+	
+	<rule id="TeamSelectionRule">
+		<one-of>
+			<item>Blue Team <tag>out = "BLUE"</tag></item>
+			<item>Red Team <tag>out = "RED"</tag></item>
+			<item>Blue <tag>out = "BLUE"</tag></item>
+			<item>Red <tag>out = "RED"</tag></item>
+			<item>Team Blue <tag>out = "BLUE"</tag></item>
+			<item>Team Red <tag>out = "RED"</tag></item>
+		</one-of>
+	</rule>
+	
+	<rule id="ZonesRule">
+		<one-of>
+			<item>Blue <tag>out.ZoneColour = "BLUE"</tag></item>
+			<item>Red <tag>out.ZoneColour = "RED"</tag></item>
+		</one-of>
+		<item repeat="0-1">Zone</item>
+		<one-of>
+			<item>One <tag>out.ZonePosition = "ONE"</tag></item>
+			<item>Two <tag>out.ZonePosition = "TWO"</tag></item>
+			<item>Three <tag>out.ZonePosition = "THREE"</tag></item>
+		</one-of>
+	</rule>
+	
+	<rule id="ElementsRule">
+		<one-of>
+		  <item>
+			<one-of>
+			  <item> fire <tag>out = "FIRE"</tag></item>
+			</one-of>
+		  </item>
+		  <item>
+			<one-of>
+			  <item> earth <tag>out = "EARTH"</tag></item>
+			</one-of>
+		  </item>
+		  <item>
+			<one-of>
+			  <item> air <tag>out = "AIR"</tag> </item>
+			  <item> wind <tag>out = "AIR"</tag> </item>
+			</one-of>
+		  </item>
+		  <item>
+			<one-of>
+			  <item> water <tag>out = "WATER"</tag></item>
+			</one-of>
+		  </item>
+		</one-of>
+	</rule>
+	
+</grammar>

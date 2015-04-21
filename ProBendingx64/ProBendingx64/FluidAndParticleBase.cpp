@@ -264,7 +264,18 @@ void FluidAndParticleBase::Update(float time)
 				}
 			}
 			else
+			{
 				printf("CREATION ERROR");
+				particleBase->releaseParticles();
+				usedIndices.clear();
+				indicesToRemove.clear();
+				availableIndices.clear();
+
+				for (int i = maximumParticles - 1; i >= 0; i--)
+				{
+					availableIndices.push_back(i);
+				}
+			}
 		}	
 	}
 
@@ -567,7 +578,11 @@ void FluidAndParticleBase::EnableSimulation()
 	if(!enabled)
 	{
 		if(particleBase)
+		{
 			particleBase->setActorFlag(physx::PxActorFlag::eDISABLE_SIMULATION, false);
+			particleBase->releaseParticles();
+		}
+
 		setVisible(true);
 		enabled = true;
 	}
@@ -578,13 +593,16 @@ void FluidAndParticleBase::DisableSimulation()
 	if(enabled)
 	{
 		if(particleBase)
+		{
+			particleBase->releaseParticles();
 			particleBase->setActorFlag(physx::PxActorFlag::eDISABLE_SIMULATION, true);
+		}
 		setVisible(false);
 		enabled = false;
 
 		if(ResetOnDisable)
 		{
-			particleBase->releaseParticles();
+			
 			if(bufferMap.find(Ogre::VES_POSITION) != bufferMap.end())
 			{
 				GPUResourcePointers lockedBufferData = LockBuffersCPU();
@@ -595,6 +613,19 @@ void FluidAndParticleBase::DisableSimulation()
 				}
 				UnlockBuffersCPU();
 			}	
+			
+			if(usedIndices.size() > 0)
+				SetPositions(maximumParticles, physx::PxStrideIterator<unsigned int>(&usedIndices[0]),
+					physx::PxStrideIterator<physx::PxVec3>(&physx::PxVec3(0.0f), 0));
+
+			availableIndices.clear();
+			usedIndices.clear();
+			indicesToRemove.clear();
+
+			for (int i = maximumParticles - 1; i >= 0; --i)
+			{
+				availableIndices.push_back(i);
+			}
 		}
 	}
 }
